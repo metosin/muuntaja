@@ -38,3 +38,25 @@
         resp (json-echo req)]
     (is (= {"id" 3 "foo" "bar"} (:params resp)))
     (is (= {"foo" "bar"} (:body-params resp)))))
+
+(def yaml-echo
+  (wrap-yaml-params identity))
+
+(deftest augments-with-yaml-content-type
+  (let [req {:content-type "application/x-yaml; charset=UTF-8"
+             :body (stream "foo: bar")
+             :params {"id" 3}}
+             resp (yaml-echo req)]
+    (is (= {"id" 3 :foo "bar"} (:params resp)))
+    (is (= {:foo "bar"} (:body-params resp)))))
+
+(def clojure-echo
+  (wrap-clojure-params identity))
+
+(deftest augments-with-clojure-content-type
+  (let [req {:content-type "application/clojure; charset=UTF-8"
+             :body (stream "{:foo \"bar\"}")
+             :params {"id" 3}}
+             resp (clojure-echo req)]
+    (is (= {"id" 3 :foo "bar"} (:params resp)))
+    (is (= {:foo "bar"} (:body-params resp)))))
