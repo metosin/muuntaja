@@ -2,6 +2,13 @@
   (:require [clj-json.core :as json]
             [clj-yaml.core :as yaml]))
 
+(defn get-charset
+  [{:keys [content-type] :as req}]
+  (let [default-charset "utf-8"]
+    (if content-type
+      (or (second (re-find #";\s*charset=([^\s;]+)" content-type)) default-charset)
+      default-charset)))
+
 (defn make-type-request-pred
   "Predicate that returns a predicate fn checking if Content-Type request header matches a specified regexp and body is set."
   [regexp]
@@ -30,7 +37,7 @@
   [handler & {:keys [predicate decoder charset]
               :or {predicate json-request?
                    decoder json/parse-string
-                   charset "utf-8"}}]
+                   charset get-charset}}]
   (wrap-format-params handler :predicate predicate :decoder decoder :charset charset))
 
 (def yaml-request?
@@ -40,7 +47,7 @@
   [handler & {:keys [predicate decoder charset]
               :or {predicate yaml-request?
                    decoder yaml/parse-string
-                   charset "utf-8"}}]
+                   charset get-charset}}]
   (wrap-format-params handler :predicate predicate :decoder decoder :charset charset))
 
 (def clojure-request?
@@ -50,7 +57,7 @@
   [handler & {:keys [predicate decoder charset]
               :or {predicate clojure-request?
                    decoder read-string
-                   charset "utf-8"}}]
+                   charset get-charset}}]
   (wrap-format-params handler :predicate predicate :decoder decoder :charset charset))
 
 (defn wrap-restful-params
