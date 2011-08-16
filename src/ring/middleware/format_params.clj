@@ -52,3 +52,10 @@
                    decoder read-string
                    charset "utf-8"}}]
   (wrap-format-params handler :predicate predicate :decoder decoder :charset charset))
+
+(defn wrap-restful-params
+  [handler]
+  (-> handler
+      (wrap-json-params)
+      (wrap-clojure-params)
+      (wrap-yaml-params)))

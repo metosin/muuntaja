@@ -60,3 +60,14 @@
              resp (clojure-echo req)]
     (is (= {"id" 3 :foo "bar"} (:params resp)))
     (is (= {:foo "bar"} (:body-params resp)))))
+
+(def restful-echo
+  (wrap-restful-params identity))
+
+(deftest test-restful-params-wrapper
+  (let [req {:content-type "application/clojure; charset=UTF-8"
+             :body (stream "{:foo \"bar\"}")
+             :params {"id" 3}}
+             resp (restful-echo req)]
+    (is (= {"id" 3 :foo "bar"} (:params resp)))
+    (is (= {:foo "bar"} (:body-params resp)))))
