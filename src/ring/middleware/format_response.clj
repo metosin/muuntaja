@@ -23,16 +23,16 @@
 (def json-accepted? (make-type-accepted-pred #"^application/(vnd.+)?json"))
 
 (defn wrap-format-response
-  "Wraps an app such that responses body to requests are formatted to the right format.
+  "Wraps a handler such that responses body to requests are formatted to the right format.
 :predicate is a predicate taking the request as sole argument to test if serialization should be used.
 :encoder specifies a fn taking the body as sole argument and giving back an encoded string.
 :type allows to specify a Content-Type for the encoded string.
 :charset can be either a string representing a valid charset or a fn taking the req as argument and returning a valid charset (utf-8 is strongly suggested)."
-  [app & {:keys [predicate encoder type charset]}]
+  [handler & {:keys [predicate encoder type charset]}]
   (fn [req]
-    (let [{:keys [headers body] :as response} (app req)]
+    (let [{:keys [headers body] :as response} (handler req)]
       (if (predicate response)
-        (let [char-enc (if (string? charset) charset (apply charset [req]))
+        (let [char-enc (if (string? charset) charset (charset req))
               body-string (encoder body)
               body* (.getBytes body-string char-enc)
               body-length (count body*)]
@@ -44,12 +44,12 @@
 
 (defn wrap-json-response
   "wrapper to serialize structures in :body to JSON with sane defaults"
-  [app & {:keys [predicate encoder type charset]
+  [handler & {:keys [predicate encoder type charset]
           :or {predicate serializable?
                encoder json/generate-string
                type "application/json"
                charset "utf-8"}}]
-  (wrap-format-response app
+  (wrap-format-response handler
                         :predicate predicate
                         :encoder encoder
                         :type type
@@ -71,13 +71,13 @@
 (defn wrap-clojure-response
   "wrapper to serialize structures in :body to Clojure native with sane defaults.
 If :hf is set to true, will use *print-dup* for high-fidelity printing ( see https://groups.google.com/d/msg/clojure/5wRBTPNu8qo/1dJbtHX0G-IJ )"
-  [app & {:keys [predicate encoder type charset hf]
+  [handler & {:keys [predicate encoder type charset hf]
           :or {predicate serializable?
                encoder generate-native-clojure
                type "application/clojure"
                charset "utf-8"
                hf false}}]
-  (wrap-format-response app
+  (wrap-format-response handler
                         :predicate predicate
                         :encoder (if hf generate-hf-clojure encoder)
                         :type type
@@ -89,12 +89,12 @@ If :hf is set to true, will use *print-dup* for high-fidelity printing ( see htt
 
 (defn wrap-yaml-response
   "wrapper to serialize structures in :body to YAML with sane defaults"
-  [app & {:keys [predicate encoder type charset]
+  [handler & {:keys [predicate encoder type charset]
           :or {predicate serializable?
                encoder yaml/generate-string
                type "application/x-yaml"
                charset "utf-8"}}]
-  (wrap-format-response app
+  (wrap-format-response handler
                         :predicate predicate
                         :encoder encoder
                         :type type
@@ -111,12 +111,12 @@ If :hf is set to true, will use *print-dup* for high-fidelity printing ( see htt
 
 (defn wrap-yaml-in-html-response
   "wrapper to serialize structures in :body to YAML wrapped in HTML to check things out in the browser"
-  [app & {:keys [predicate encoder type charset]
+  [handler & {:keys [predicate encoder type charset]
           :or {predicate html-accepted?
                encoder wrap-yaml-in-html
                type "text/html"
                charset "utf-8"}}]
-  (wrap-format-response app
+  (wrap-format-response handler
                         :predicate predicate
                         :encoder encoder
                         :type type
@@ -126,8 +126,8 @@ If :hf is set to true, will use *print-dup* for high-fidelity printing ( see htt
   "wrapper that tries to do the right thing with the response :body and provide a solid basis for a RESTful API.
 It will serialize to JSON, YAML, Clojure or HTML-wrapped YAML depending on Accept header.
 It takes an optional :default parameter wich is a wrapper fn that is used last as a default (JSON by default)."
-  [app & {:keys [default] :or {default wrap-json-response}}]
-  (-> app
+  [handler & {:keys [default] :or {default wrap-json-response}}]
+  (-> handler
       (wrap-json-response :predicate json-accepted?)
       (wrap-yaml-response :predicate yaml-accepted?)
       (wrap-clojure-response :predicate clojure-accepted?)
