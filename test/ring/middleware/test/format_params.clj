@@ -12,6 +12,8 @@
 (def json-echo
   (wrap-json-params identity))
 
+;; stolen from ring-json-params to confirm compatibility
+
 (deftest noop-with-other-content-type
   (let [req {:content-type "application/xml"
              :body (stream "<xml></xml>")
@@ -27,7 +29,7 @@
              :params {"id" 3}}
         resp (json-echo req)]
     (is (= {"id" 3 "foo" "bar"} (:params resp)))
-    (is (= {"foo" "bar"} (:json-params resp)))))
+    (is (= {"foo" "bar"} (:body-params resp)))))
 
 (deftest augments-with-vnd-json-content-type
   (let [req {:content-type "application/vnd.foobar+json; charset=UTF-8"
@@ -35,4 +37,4 @@
              :params {"id" 3}}
         resp (json-echo req)]
     (is (= {"id" 3 "foo" "bar"} (:params resp)))
-    (is (= {"foo" "bar"} (:json-params resp)))))
+    (is (= {"foo" "bar"} (:body-params resp)))))
