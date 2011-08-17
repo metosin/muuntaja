@@ -22,7 +22,7 @@
     (if (predicate req)
       (let [body (:body req)
             char-enc (if (string? charset) charset (charset req))
-            bstr (slurp body :enc char-enc)
+            bstr (slurp body :encoding char-enc)
             fmt-params (decoder bstr)
             req* (assoc req
                    :body-params fmt-params

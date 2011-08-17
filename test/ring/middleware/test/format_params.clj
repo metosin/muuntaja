@@ -71,3 +71,14 @@
              resp (restful-echo req)]
     (is (= {"id" 3 :foo "bar"} (:params resp)))
     (is (= {:foo "bar"} (:body-params resp)))))
+
+(defn stream-iso [s]
+  (ByteArrayInputStream. (.getBytes s "ISO-8859-1")))
+
+(deftest test-different-params-charset
+  (let [req {:content-type "application/clojure; charset=ISO-8859-1"
+             :body (stream-iso "{:fée \"böz\"}")
+             :params {"id" 3}}
+        resp (restful-echo req)]
+    (is (= {"id" 3 :fée "böz"} (:params resp)))
+    (is (= {:fée "böz"} (:body-params resp)))))
