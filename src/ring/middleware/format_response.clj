@@ -7,31 +7,31 @@
 
 (defn serializable?
   "Predicate that returns true whenever the response body is not a String, File or InputStream."
-  [{:keys [body] :as req}]
+  [_ {:keys [body]}]
   (not (or
         (string? body)
         (instance? File body)
         (instance? InputStream body))))
 
 (defn make-type-accepted-pred
-  "Predicate that returns a predicate fn checking if Accept request header matches a specified regexp."
+  "Predicate that returns a predicate fn checking if Accept request header matches a specified regexp and the response body is serializable."
   [regexp]
-  (fn [{:keys [headers] :as req}]
+  (fn [{:keys [headers] :as request} response]
     (if-let [#^String type (get headers "Accept")]
-      (and (serializable? req) (not (empty? (re-find regexp type)))))))
+      (and (serializable? request response) (not (empty? (re-find regexp type)))))))
 
 (def json-accepted? (make-type-accepted-pred #"^application/(vnd.+)?json"))
 
 (defn wrap-format-response
   "Wraps a handler such that responses body to requests are formatted to the right format.
-:predicate is a predicate taking the request as sole argument to test if serialization should be used.
+:predicate is a predicate taking the request and response as arguments to test if serialization should be used.
 :encoder specifies a fn taking the body as sole argument and giving back an encoded string.
 :type allows to specify a Content-Type for the encoded string.
 :charset can be either a string representing a valid charset or a fn taking the req as argument and returning a valid charset (utf-8 is strongly suggested)."
   [handler & {:keys [predicate encoder type charset]}]
   (fn [req]
     (let [{:keys [headers body] :as response} (handler req)]
-      (if (predicate response)
+      (if (predicate req response)
         (let [char-enc (if (string? charset) charset (charset req))
               body-string (encoder body)
               body* (.getBytes body-string char-enc)
@@ -43,7 +43,7 @@
         response))))
 
 (defn wrap-json-response
-  "wrapper to serialize structures in :body to JSON with sane defaults"
+  "Wrapper to serialize structures in :body to JSON with sane defaults. See wrap-format-response for more details."
   [handler & {:keys [predicate encoder type charset]
           :or {predicate serializable?
                encoder json/generate-string
@@ -69,8 +69,9 @@
 (def clojure-accepted? (make-type-accepted-pred #"^application/(vnd.+)?clojure"))
 
 (defn wrap-clojure-response
-  "wrapper to serialize structures in :body to Clojure native with sane defaults.
-If :hf is set to true, will use *print-dup* for high-fidelity printing ( see https://groups.google.com/d/msg/clojure/5wRBTPNu8qo/1dJbtHX0G-IJ )"
+  "Wrapper to serialize structures in :body to Clojure native with sane defaults.
+If :hf is set to true, will use *print-dup* for high-fidelity printing ( see https://groups.google.com/d/msg/clojure/5wRBTPNu8qo/1dJbtHX0G-IJ ).
+See wrap-format-response for more details."
   [handler & {:keys [predicate encoder type charset hf]
           :or {predicate serializable?
                encoder generate-native-clojure
@@ -88,7 +89,7 @@ If :hf is set to true, will use *print-dup* for high-fidelity printing ( see htt
 (def yaml-accepted? (make-type-accepted-pred #"^(application|text)/(vnd.+)?x-yaml"))
 
 (defn wrap-yaml-response
-  "wrapper to serialize structures in :body to YAML with sane defaults"
+  "Wrapper to serialize structures in :body to YAML with sane defaults. See wrap-format-response for more details."
   [handler & {:keys [predicate encoder type charset]
           :or {predicate serializable?
                encoder yaml/generate-string
@@ -110,7 +111,7 @@ If :hf is set to true, will use *print-dup* for high-fidelity printing ( see htt
    "</pre></div></body></html>"))
 
 (defn wrap-yaml-in-html-response
-  "wrapper to serialize structures in :body to YAML wrapped in HTML to check things out in the browser"
+  "Wrapper to serialize structures in :body to YAML wrapped in HTML to check things out in the browser. See wrap-format-response for more details."
   [handler & {:keys [predicate encoder type charset]
           :or {predicate html-accepted?
                encoder wrap-yaml-in-html
@@ -123,9 +124,9 @@ If :hf is set to true, will use *print-dup* for high-fidelity printing ( see htt
                         :charset charset))
 
 (defn wrap-restful-response
-  "wrapper that tries to do the right thing with the response :body and provide a solid basis for a RESTful API.
+  "Wrapper that tries to do the right thing with the response :body and provide a solid basis for a RESTful API.
 It will serialize to JSON, YAML, Clojure or HTML-wrapped YAML depending on Accept header.
-It takes an optional :default parameter wich is a wrapper fn that is used last as a default (JSON by default)."
+It takes an optional :default parameter wich is a wrapper fn that is used last as a default (JSON by default). See wrap-format-response for more details."
   [handler & {:keys [default] :or {default wrap-json-response}}]
   (-> handler
       (wrap-json-response :predicate json-accepted?)

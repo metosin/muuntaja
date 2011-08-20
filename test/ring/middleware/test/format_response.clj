@@ -6,7 +6,6 @@
             [clj-yaml.core :as yaml])
   (:import [java.io ByteArrayInputStream]))
 
-
 (defn stream [s]
   (ByteArrayInputStream. (.getBytes s "UTF-8")))
 
