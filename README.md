@@ -29,6 +29,7 @@ Your routes should return raw clojure data structures where everything inside ca
 
 These middlewares are mostly lifted from https://github.com/mmcgrana/ring-json-params but generalized for arbitrary decoders. The _wrap-json-params_ is drop-in replacement for ring-json-params. They will decode the params in the request body, put them in a **:body-params** key and merge them in the **:params** key.
 There are three default wrappers:
+
 + _wrap-json-params_
 + _wrap-yaml-params_
 + _wrap-clojure-params_
@@ -40,6 +41,7 @@ There is also a generic _wrap-format-params_ on which the others depend. Each of
 These middlewares will take a raw data structure returned by a route and serialize it in various formats.
 
 There are four default wrappers:
+
 + _wrap-json-response_
 + _wrap-yaml-response_
 + _wrap-yaml-in-html-response_ (responds to **text/html** MIME type and useful to test an API in the browser)
