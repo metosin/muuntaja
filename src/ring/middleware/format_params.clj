@@ -47,7 +47,7 @@
   (wrap-format-params handler :predicate predicate :decoder decoder :charset charset))
 
 (def yaml-request?
-  (make-type-request-pred #"^(application|text)/(vnd[^+]+)?(x-)?yaml"))
+  (make-type-request-pred #"^(application|text)/(vnd.+)?(x-)?yaml"))
 
 (defn wrap-yaml-params
   "Handles body params in YAML format. See wrap-format-params for details."
@@ -58,7 +58,7 @@
   (wrap-format-params handler :predicate predicate :decoder decoder :charset charset))
 
 (def clojure-request?
-  (make-type-request-pred #"^application/(vnd[^+]+)?(x-)?clojure"))
+  (make-type-request-pred #"^application/(vnd.+)?(x-)?clojure"))
 
 (defn wrap-clojure-params
   "Handles body params in Clojure format. See wrap-format-params for details."

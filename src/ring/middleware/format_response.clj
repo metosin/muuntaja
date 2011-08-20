@@ -66,7 +66,7 @@
   (binding [*print-dup* true]
     (pr-str struct)))
 
-(def clojure-accepted? (make-type-accepted-pred #"^application/(vnd.+)?clojure"))
+(def clojure-accepted? (make-type-accepted-pred #"^application/(vnd.+)?(x-)?clojure"))
 
 (defn wrap-clojure-response
   "Wrapper to serialize structures in :body to Clojure native with sane defaults.
@@ -86,7 +86,7 @@ See wrap-format-response for more details."
 
 ;; Functions for yaml
 
-(def yaml-accepted? (make-type-accepted-pred #"^(application|text)/(vnd.+)?x-yaml"))
+(def yaml-accepted? (make-type-accepted-pred #"^(application|text)/(vnd.+)?(x-)?yaml"))
 
 (defn wrap-yaml-response
   "Wrapper to serialize structures in :body to YAML with sane defaults. See wrap-format-response for more details."
