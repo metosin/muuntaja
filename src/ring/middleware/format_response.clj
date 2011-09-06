@@ -17,7 +17,7 @@
   "Predicate that returns a predicate fn checking if Accept request header matches a specified regexp and the response body is serializable."
   [regexp]
   (fn [{:keys [headers] :as request} response]
-    (if-let [#^String type (get headers "Accept")]
+    (if-let [#^String type (get headers "accept")]
       (and (serializable? request response) (not (empty? (re-find regexp type)))))))
 
 (def json-accepted? (make-type-accepted-pred #"^application/(vnd.+)?json"))

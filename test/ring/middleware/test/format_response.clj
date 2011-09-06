@@ -60,7 +60,7 @@
 (deftest format-restful-hashmap
   (let [body {:foo "bar"}]
     (doseq [accept ["application/clojure" "application/json" "application/x-yaml" "text/html"]]
-      (let [req {:body body :headers {"Accept" (str accept "; charset=utf-8")}}
+      (let [req {:body body :headers {"accept" (str accept "; charset=utf-8")}}
             resp (restful-echo req)]
         (is (.contains (get-in resp [:headers "Content-Type"]) accept))
         (is (< 2 (Integer/parseInt (get-in resp [:headers "Content-Length"]))))))
