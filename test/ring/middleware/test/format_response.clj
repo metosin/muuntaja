@@ -2,7 +2,7 @@
   (:use [clojure.test]
         [ring.middleware.format-response]
         [clojure.contrib.io :only [slurp*]])
-  (:require [clj-json.core :as json]
+  (:require [cheshire.core :as json]
             [clj-yaml.core :as yaml])
   (:import [java.io ByteArrayInputStream]))
 

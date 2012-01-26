@@ -1,5 +1,5 @@
 (ns ring.middleware.format-params
-  (:require [clj-json.core :as json]
+  (:require [cheshire.core :as json]
             [clj-yaml.core :as yaml]))
 
 (defn get-charset

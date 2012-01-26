@@ -1,5 +1,5 @@
 (ns ring.middleware.format-response
-  (:require [clj-json.core :as json]
+  (:require [cheshire.core :as json]
             [ring.util.response :as res]
             [clojure.java.io :as io]
             [clj-yaml.core :as yaml])
