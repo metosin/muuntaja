@@ -61,6 +61,16 @@
     (is (= {"id" 3 :foo "bar"} (:params resp)))
     (is (= {:foo "bar"} (:body-params resp)))))
 
+
+(deftest augments-with-clojure-content-prohibit-eval-in-reader
+  (let [req {:content-type "application/clojure; charset=UTF-8"
+             :body (stream "{:foo #=(java.util.Date.)}")
+             :params {"id" 3}}]
+    (try
+      (let [resp (clojure-echo req)]
+        (is false "Eval in reader permits arbitrary code execution."))
+      (catch Exception ignored))))
+
 (def restful-echo
   (wrap-restful-params identity))
 
