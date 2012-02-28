@@ -57,6 +57,11 @@
                    charset get-charset}}]
   (wrap-format-params handler :predicate predicate :decoder decoder :charset charset))
 
+(defn safe-read-string [str]
+  "Parses clojure input using the reader in a safe manner by disabling eval in the reader."
+  (binding [*read-eval* false]
+    (read-string str)))
+
 (def clojure-request?
   (make-type-request-pred #"^application/(vnd.+)?(x-)?clojure"))
 
@@ -64,7 +69,7 @@
   "Handles body params in Clojure format. See wrap-format-params for details."
   [handler & {:keys [predicate decoder charset]
               :or {predicate clojure-request?
-                   decoder read-string
+                   decoder safe-read-string
                    charset get-charset}}]
   (wrap-format-params handler :predicate predicate :decoder decoder :charset charset))
 
