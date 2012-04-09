@@ -27,29 +27,13 @@
              (or (= "*" sub-type)
                  (= (get-in encoder [:enc-type :sub-type]) sub-type))))))
 
-(def sort-by-param
-  (partial sort-by
-           :parameter
-           (fn [a b]
-             (cond (= (nil? a) (nil? b)) 0
-                   (nil? a) 1
-                   :else -1))))
-
-(def sort-by-type
-  (partial sort-by
-           :type
-           (fn [a b]
-             (cond (= (= a "*") (= b "*")) 0
-                   (= a "*") 1
-                   :else -1))))
-
-(def sort-by-sub-type
-  (partial sort-by
-           :sub-type
-           (fn [a b]
-             (cond (= (= a "*") (= b "*")) 0
-                   (= a "*") 1
-                   :else -1))))
+(defn sort-by-check
+  [by check headers]
+  (sort-by by (fn [a b]
+                (cond (= (= a check) (= b check)) 0
+                      (= a check) 1
+                      :else -1))
+           headers))
 
 (defn parse-accept-header
   "Parse Accept headers into a sorted sequence of maps.
@@ -76,9 +60,9 @@
                                (assoc type :q 1.0))
                         :parameter (s/trim (first rest))))))
             (s/split accept-header #","))
-       sort-by-param
-       sort-by-type
-       sort-by-sub-type
+       (sort-by-check :parameter nil)
+       (sort-by-check :type "*")
+       (sort-by-check :sub-type "*")
        (sort-by :q >)))
 
 (defn preferred-encoder
