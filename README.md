@@ -21,7 +21,7 @@ To get automatic deserialization and serialization for all supported formats wit
       (wrap-restful-response)))
 ```
 
-Your routes should return raw clojure data structures where everything inside can be handled by the default encoders (no Java objects or fns mostly). If a route returns a _String_, _File_ or _InputStream_, nothing will be done. If no format can be deduced from the **Accept** header, JSON will be sent back by default. However, if the formats specified by the request **Accept** header is unknown, the middleware will respond with a `406` status instead.
+Your routes should return raw clojure data structures where everything inside can be handled by the default encoders (no Java objects or fns mostly). If a route returns a _String_, _File_ or _InputStream_, nothing will be done. If no format can be deduced from the **Accept** header, JSON will be sent back by default. However, if the formats specified by the request **Accept** header are unknown, the middleware will respond with a `406` status instead.
 
 ## Usage ##
 
