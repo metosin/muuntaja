@@ -47,7 +47,7 @@ There are four default wrappers:
 + _wrap-yaml-in-html-response_ (responds to **text/html** MIME type and useful to test an API in the browser)
 + _wrap-clojure-response_
 
-There is also a generic _wrap-format-response_ on which the others depend. Each of these wrappers take 4 optional args: **:decoder**, **:predicate**, **:type** and **:charset**. See _wrap-format-response_ doc for further details.
+There is also a generic _wrap-format-response_ on which the others depend. Each of these wrappers take 3 optional args: **:encoders**, **:predicate**, and **:charset**. See _wrap-format-response_ doc for further details.
 
 ### Custom formats ###
 

@@ -54,13 +54,78 @@
     (is (.contains (get-in resp [:headers "Content-Type"]) "application/x-yaml"))
     (is (< 2 (Integer/parseInt (get-in resp [:headers "Content-Length"]))))))
 
+(deftest can-encode?-accept-any-type
+  (is (can-encode? {:enc-type {:type "foo" :sub-type "bar"}}
+                   {:type "*" :sub-type "*"})))
+
+(deftest can-encode?-accept-any-sub-type
+  (let [encoder {:enc-type {:type "foo" :sub-type "bar"}}]
+    (is (can-encode? encoder
+                     {:type "foo" :sub-type "*"}))
+    (is (not (can-encode? encoder
+                          {:type "foo" :sub-type "buzz"})))))
+
+(deftest can-encode?-accept-specific-type
+  (let [encoder {:enc-type {:type "foo" :sub-type "bar"}}]
+    (is (can-encode? encoder
+                     {:type "foo" :sub-type "bar"}))
+    (is (not (can-encode? encoder
+                          {:type "foo" :sub-type "buzz"})))))
+
+(deftest orders-values-correctly
+  (let [accept "text/plain, */*, text/plain;level=1, text/*, text/*;q=0.1"]
+    (is (= (parse-accept-header accept)
+           (list {:type "text"
+                  :sub-type "plain"
+                  :parameter "level=1"
+                  :q 1.0}
+                 {:type "text"
+                  :sub-type "plain"
+                  :q 1.0}
+                 {:type "text"
+                  :sub-type "*"
+                  :q 1.0}
+                 {:type "*"
+                  :sub-type "*"
+                  :q 1.0}
+                 {:type "text"
+                  :sub-type "*"
+                  :q 0.1})))))
+
+(deftest gives-preferred-encoder
+  (let [accept [{:type "text"
+                 :sub-type "*"}
+                {:type "application"
+                 :sub-type "json"
+                 :q 0.5}]
+        req {:headers {"accept" accept}}
+        html-encoder {:enc-type {:type "text" :sub-type "html"}}
+        json-encoder {:enc-type {:type "application" :sub-type "json"}}]
+    (is (= (preferred-encoder [json-encoder html-encoder] req)
+           html-encoder))
+    (is (= (preferred-encoder [json-encoder html-encoder] {})
+           json-encoder))
+    (is (nil? (preferred-encoder [{:enc-type {:type "application"
+                                              :sub-type "clojure"}}]
+                                 req)))))
+
 (def restful-echo
   (wrap-restful-response identity))
 
+(deftest format-hashmap-to-preferred
+  (let [ok-accept "application/clojure, application/json;q=0.5"
+        ok-req {:headers {"accept" ok-accept}}]
+    (is (= (get-in (restful-echo ok-req) [:headers "Content-Type"])
+           "application/clojure; charset=utf-8"))
+    (is (= ((restful-echo {:headers {"accept" "foo/bar"}}) :status) 406))))
+
 (deftest format-restful-hashmap
   (let [body {:foo "bar"}]
-    (doseq [accept ["application/clojure" "application/json" "application/x-yaml" "text/html"]]
-      (let [req {:body body :headers {"accept" (str accept "; charset=utf-8")}}
+    (doseq [accept ["application/clojure"
+                    "application/json"
+                    "application/x-yaml"
+                    "text/html"]]
+      (let [req {:body body :headers {"accept" accept}}
             resp (restful-echo req)]
         (is (.contains (get-in resp [:headers "Content-Type"]) accept))
         (is (< 2 (Integer/parseInt (get-in resp [:headers "Content-Length"]))))))
@@ -70,10 +135,13 @@
       (is (< 2 (Integer/parseInt (get-in resp [:headers "Content-Length"])))))))
 
 (def custom-restful-echo
-  (wrap-restful-response identity :default wrap-clojure-response))
+  (wrap-restful-response identity
+                         :default {:encoder (constantly "foobar")
+                                   :enc-type {:type "text"
+                                              :sub-type "foo"}}))
 
 (deftest format-custom-restful-hashmap
-  (let [req {:body {:foo "bar"}}
+  (let [req {:body {:foo "bar"} :headers {"accept" "text/foo"}}
         resp (custom-restful-echo req)]
-    (is (.contains (get-in resp [:headers "Content-Type"]) "application/clojure"))
+    (is (.contains (get-in resp [:headers "Content-Type"]) "text/foo"))
     (is (< 2 (Integer/parseInt (get-in resp [:headers "Content-Length"]))))))
