@@ -4,6 +4,7 @@
             [clojure.java.io :as io]
             [clj-yaml.core :as yaml]
             [clojure.string :as s])
+  (:use [clojure.core.memoize :only [memo-lu]])
   (:import [java.io File InputStream BufferedInputStream]))
 
 (defn serializable?
@@ -35,7 +36,7 @@
                       :else -1))
            headers))
 
-(defn parse-accept-header
+(defn- parse-accept-header*
   "Parse Accept headers into a sorted sequence of maps.
   \"application/json;level=1;q=0.4\"
   => ({:type \"application\" :sub-type \"json\"
@@ -64,6 +65,8 @@
        (sort-by-check :type "*")
        (sort-by-check :sub-type "*")
        (sort-by :q >)))
+
+(def parse-accept-header (memo-lu parse-accept-header* 100))
 
 (defn preferred-encoder
   "Return the encoder that encodes to the most preferred type.
