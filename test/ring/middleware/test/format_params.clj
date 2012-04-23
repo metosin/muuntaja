@@ -1,7 +1,6 @@
 (ns ring.middleware.test.format-params
   (:use [clojure.test]
-        [ring.middleware.format-params]
-        [clojure.contrib.io :only [slurp*]])
+        [ring.middleware.format-params])
   (:require [cheshire.core :as json]
             [clj-yaml.core :as yaml])
   (:import [java.io ByteArrayInputStream]))
@@ -19,7 +18,7 @@
              :body (stream "<xml></xml>")
              :params {"id" 3}}
         resp (json-echo req)]
-    (is (= "<xml></xml>") (slurp* (:body resp)))
+    (is (= "<xml></xml>") (slurp (:body resp)))
     (is (= {"id" 3} (:params resp)))
     (is (nil? (:json-params resp)))))
 

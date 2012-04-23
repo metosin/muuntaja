@@ -2,7 +2,7 @@
   :description "Ring middleware for parsing parameters and emitting
   responses in various formats. See
   https://github.com/ngrunwald/ring-middleware-format"
-  :dependencies [[org.clojure/clojure "1.3.0"]
-                 [ring/ring-core "[0.3.11,)"]
-                 [cheshire "2.0.4"]
-                 [gfrlog/clj-yaml "0.3.0"]])
+  :dependencies [[org.clojure/clojure "1.2.1"]
+                 [ring/ring-core "1.0.2"]
+                 [cheshire "4.0.0"]
+                 [clj-yaml "0.3.1"]])

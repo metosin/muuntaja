@@ -1,7 +1,6 @@
 (ns ring.middleware.test.format-response
   (:use [clojure.test]
-        [ring.middleware.format-response]
-        [clojure.contrib.io :only [slurp*]])
+        [ring.middleware.format-response])
   (:require [cheshire.core :as json]
             [clj-yaml.core :as yaml])
   (:import [java.io ByteArrayInputStream]))
@@ -22,13 +21,13 @@
   (let [body "<xml></xml>"
         req {:body (stream body)}
         resp (json-echo req)]
-    (is (= body (slurp* (:body resp))))))
+    (is (= body (slurp (:body resp))))))
 
 (deftest format-json-hashmap
   (let [body {:foo "bar"}
         req {:body body}
         resp (json-echo req)]
-    (is (= (json/generate-string body) (slurp* (:body resp))))
+    (is (= (json/generate-string body) (slurp (:body resp))))
     (is (.contains (get-in resp [:headers "Content-Type"]) "application/json"))
     (is (< 2 (Integer/parseInt (get-in resp [:headers "Content-Length"]))))))
 
@@ -39,7 +38,7 @@
   (let [body {:foo "bar"}
         req {:body body}
         resp (clojure-echo req)]
-    (is (= body (read-string (slurp* (:body resp)))))
+    (is (= body (read-string (slurp (:body resp)))))
     (is (.contains (get-in resp [:headers "Content-Type"]) "application/clojure"))
     (is (< 2 (Integer/parseInt (get-in resp [:headers "Content-Length"]))))))
 
@@ -50,7 +49,7 @@
   (let [body {:foo "bar"}
         req {:body body}
         resp (yaml-echo req)]
-    (is (= (yaml/generate-string body) (slurp* (:body resp))))
+    (is (= (yaml/generate-string body) (slurp (:body resp))))
     (is (.contains (get-in resp [:headers "Content-Type"]) "application/x-yaml"))
     (is (< 2 (Integer/parseInt (get-in resp [:headers "Content-Length"]))))))
 
