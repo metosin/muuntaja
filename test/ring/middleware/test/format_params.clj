@@ -70,6 +70,22 @@
         (is false "Eval in reader permits arbitrary code execution."))
       (catch Exception ignored))))
 
+(deftest no-body-with-clojure-content-type
+  (let [req {:content-type "application/clojure; charset=UTF-8"
+             :body (stream "")
+             :params {"id" 3}}
+             resp (clojure-echo req)]
+    (is (= {"id" 3} (:params resp)))
+    (is (= nil (:body-params resp)))))
+
+(deftest whitespace-body-with-clojure-content-type
+  (let [req {:content-type "application/clojure; charset=UTF-8"
+             :body (stream "\t  ")
+             :params {"id" 3}}
+             resp (clojure-echo req)]
+    (is (= {"id" 3} (:params resp)))
+    (is (= nil (:body-params resp)))))
+
 (def restful-echo
   (wrap-restful-params identity))
 

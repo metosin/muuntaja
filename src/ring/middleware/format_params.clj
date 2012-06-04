@@ -62,6 +62,12 @@
   (binding [*read-eval* false]
     (read-string str)))
 
+(defn parse-clojure-string [s]
+  "Decode a clojure body. The body is merged into the params, so must be a map or a vector of
+key value pairs. An empty body is safely handled."
+  (when (not (.isEmpty (.trim s)))
+    (safe-read-string s)))
+
 (def clojure-request?
   (make-type-request-pred #"^application/(vnd.+)?(x-)?clojure"))
 
@@ -69,7 +75,7 @@
   "Handles body params in Clojure format. See wrap-format-params for details."
   [handler & {:keys [predicate decoder charset]
               :or {predicate clojure-request?
-                   decoder safe-read-string
+                   decoder parse-clojure-string
                    charset get-charset}}]
   (wrap-format-params handler :predicate predicate :decoder decoder :charset charset))
 
