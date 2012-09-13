@@ -1,14 +1,39 @@
 (ns ring.middleware.format-params
   (:require [cheshire.core :as json]
-            [clj-yaml.core :as yaml]))
+            [clj-yaml.core :as yaml])
+  (:import [com.ibm.icu.text CharsetDetector]))
+
+(defn guess-charset
+  [{:keys [body]}]
+  (try
+    (let [detector (CharsetDetector.)]
+      (.enableInputFilter detector true)
+      (.setText detector body)
+      (let [m (.detect detector)
+            encoding (.getName m)]
+        encoding))
+    (catch Exception _ nil)))
 
 (defn get-charset
-  "Extracts charset from Content-Type header. utf-8 by default."
+  "Extracts charset from Content-Type header."
   [{:keys [content-type] :as req}]
-  (let [default-charset "utf-8"]
-    (if content-type
-      (or (second (re-find #";\s*charset=([^\s;]+)" content-type)) default-charset)
-      default-charset)))
+  (if content-type
+    (second (re-find #";\s*charset=([^\s;]+)" content-type))))
+
+(defn get-or-guess-charset
+  "Tries to guess the encoding if not given in content-type"
+  [req]
+  (or
+   (get-charset req)
+   (guess-charset req)
+   "utf-8"))
+
+(defn get-or-default-charset
+  "Returns utf-8 encoding if not given in content-type"
+  [req]
+  (or
+   (get-charset req)
+   "utf-8"))
 
 (defn make-type-request-pred
   "Predicate that returns a predicate fn checking if Content-Type request header matches a specified regexp and body is set."
@@ -43,7 +68,7 @@
   [handler & {:keys [predicate decoder charset]
               :or {predicate json-request?
                    decoder json/parse-string
-                   charset get-charset}}]
+                   charset get-or-guess-charset}}]
   (wrap-format-params handler :predicate predicate :decoder decoder :charset charset))
 
 (def yaml-request?
@@ -54,7 +79,7 @@
   [handler & {:keys [predicate decoder charset]
               :or {predicate yaml-request?
                    decoder yaml/parse-string
-                   charset get-charset}}]
+                   charset get-or-guess-charset}}]
   (wrap-format-params handler :predicate predicate :decoder decoder :charset charset))
 
 (defn safe-read-string [str]
@@ -76,7 +101,7 @@ key value pairs. An empty body is safely handled."
   [handler & {:keys [predicate decoder charset]
               :or {predicate clojure-request?
                    decoder parse-clojure-string
-                   charset get-charset}}]
+                   charset get-or-guess-charset}}]
   (wrap-format-params handler :predicate predicate :decoder decoder :charset charset))
 
 (defn wrap-restful-params
