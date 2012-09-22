@@ -1,5 +1,5 @@
 (ns ring.middleware.format-params
-  (:require [cheshire.core :as json]
+  (:require [cheshire.custom :as json]
             [clj-yaml.core :as yaml])
   (:import [com.ibm.icu.text CharsetDetector]))
 
