@@ -56,7 +56,8 @@
             fmt-params (decoder bstr)
             req* (assoc req
                    :body-params fmt-params
-                   :params (merge (:params req) fmt-params))]
+                   :params (merge (:params req)
+                                  (when (map? fmt-params) fmt-params)))]
         (handler req*))
       (handler req))))
 

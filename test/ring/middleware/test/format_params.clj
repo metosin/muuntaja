@@ -107,3 +107,11 @@
         resp (restful-echo req)]
     (is (= {"id" 3 :fée "böz"} (:params resp)))
     (is (= {:fée "böz"} (:body-params resp)))))
+
+(deftest test-list-body-request
+  (let [req {:content-type "application/json"
+             :body (ByteArrayInputStream.
+                    (.getBytes "[\"gregor\", \"samsa\"]"))}]
+    ((wrap-json-params
+      (fn [{:keys [body-params]}] (is (= ["gregor" "samsa"] body-params))))
+     req)))
