@@ -1,12 +1,15 @@
 (ns ring.middleware.format-params
   (:require [cheshire.custom :as json]
             [clj-yaml.core :as yaml])
-  (:import [com.ibm.icu.text CharsetDetector]))
+  (:import [com.ibm.icu.text CharsetDetector]
+           [java.io ByteArrayInputStream InputStream]))
+
+(set! *warn-on-reflection* true)
 
 (defn guess-charset
-  [{:keys [body]}]
+  [{:keys [#^bytes body]}]
   (try
-    (let [detector (CharsetDetector.)]
+    (let [#^CharsetDetector detector (CharsetDetector.)]
       (.enableInputFilter detector true)
       (.setText detector body)
       (let [m (.detect detector)
@@ -48,18 +51,20 @@
 :decoder specifies a fn taking the body String as sole argument and giving back a hash-map.
 :charset can be either a string representing a valid charset or a fn taking the req as argument and returning a valid charset."
   [handler & {:keys [predicate decoder charset]}]
-  (fn [req]
-    (if (predicate req)
-      (let [body (:body req)
-            char-enc (if (string? charset) charset (charset req))
-            bstr (slurp body :encoding char-enc)
-            fmt-params (decoder bstr)
-            req* (assoc req
-                   :body-params fmt-params
-                   :params (merge (:params req)
-                                  (when (map? fmt-params) fmt-params)))]
-        (handler req*))
-      (handler req))))
+  (fn [{:keys [#^InputStream body] :as req}]
+    (let [#^bytes buffer (byte-array (.available body))]
+      (.read body buffer)
+      (if (predicate req)
+        (let [body (:body req)
+              #^String char-enc (if (string? charset) charset (charset (assoc req :body buffer)))
+              bstr (String. buffer char-enc)
+              fmt-params (decoder bstr)
+              req* (assoc req
+                     :body-params fmt-params
+                     :params (merge (:params req)
+                                    (when (map? fmt-params) fmt-params)))]
+          (handler req*))
+        (handler (assoc req :body (ByteArrayInputStream. buffer)))))))
 
 (def json-request?
   (make-type-request-pred #"^application/(vnd.+)?json"))
@@ -88,7 +93,7 @@
   (binding [*read-eval* false]
     (read-string str)))
 
-(defn parse-clojure-string [s]
+(defn parse-clojure-string [#^String s]
   "Decode a clojure body. The body is merged into the params, so must be a map or a vector of
 key value pairs. An empty body is safely handled."
   (when (not (.isEmpty (.trim s)))
