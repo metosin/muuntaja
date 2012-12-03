@@ -2,9 +2,7 @@
   (:require [cheshire.custom :as json]
             [clj-yaml.core :as yaml])
   (:import [com.ibm.icu.text CharsetDetector]
-           [java.io ByteArrayInputStream InputStream]))
-
-(set! *warn-on-reflection* true)
+           [java.io ByteArrayInputStream InputStream ByteArrayOutputStream]))
 
 (defn guess-charset
   [{:keys [#^bytes body]}]
@@ -45,6 +43,18 @@
     (if-let [#^String type (:content-type req)]
       (and body (not (empty? (re-find regexp type)))))))
 
+(defn slurp-to-bytes
+  #^bytes
+  [#^InputStream in]
+  (let [buf (byte-array 4096)
+        out (ByteArrayOutputStream.)]
+    (loop []
+      (let [r (.read in buf)]
+        (when (not= r -1)
+          (.write out buf 0 r)
+          (recur))))
+    (.toByteArray out)))
+
 (defn wrap-format-params
     "Wraps a handler such that requests body are deserialized from to the right format, added in a :body-params key and merged in :params. It takes 3 args:
 :predicate is a predicate taking the request as sole argument to test if deserialization should be used.
@@ -52,19 +62,18 @@
 :charset can be either a string representing a valid charset or a fn taking the req as argument and returning a valid charset."
   [handler & {:keys [predicate decoder charset]}]
   (fn [{:keys [#^InputStream body] :as req}]
-    (let [#^bytes buffer (byte-array (.available body))]
-      (.read body buffer)
+    (let [byts (slurp-to-bytes body)]
       (if (predicate req)
         (let [body (:body req)
-              #^String char-enc (if (string? charset) charset (charset (assoc req :body buffer)))
-              bstr (String. buffer char-enc)
+              #^String char-enc (if (string? charset) charset (charset (assoc req :body byts)))
+              bstr (String. byts char-enc)
               fmt-params (decoder bstr)
               req* (assoc req
                      :body-params fmt-params
                      :params (merge (:params req)
                                     (when (map? fmt-params) fmt-params)))]
           (handler req*))
-        (handler (assoc req :body (ByteArrayInputStream. buffer)))))))
+        (handler (assoc req :body (ByteArrayInputStream. byts)))))))
 
 (def json-request?
   (make-type-request-pred #"^application/(vnd.+)?json"))
