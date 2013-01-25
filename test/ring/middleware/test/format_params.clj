@@ -115,3 +115,9 @@
     ((wrap-json-params
       (fn [{:keys [body-params]}] (is (= ["gregor" "samsa"] body-params))))
      req)))
+
+(deftest test-optional-body
+  ((wrap-json-params
+    (fn [request]
+      (is (nil? (:body request)))))
+   {:body nil}))
