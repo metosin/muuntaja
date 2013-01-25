@@ -2,6 +2,14 @@
 
 This is a set of middlewares that can be used to deserialize parameters sent in the :body of requests and serialize a Clojure data structure in the :body of a response to some string representation. It natively handles JSON, YAML, and Clojure but it can easily be extended to other custom formats. It is intended for the creation of RESTful APIs that do the right thing by default but are flexible enough to handle most special cases.
 
+## Installation
+
+`ring-middleware-format` is available as a Maven artifact from [Clojars](http://clojars.org/ring-middleware-format). You can add this in your `project.clj` with leiningen:
+
+```clojure
+[ring-middleware-format "0.2.4"]
+```
+
 ## Summary ##
 
 To get automatic deserialization and serialization for all supported formats with sane defaults regarding headers and charsets, just do this:
