@@ -37,7 +37,8 @@
    "utf-8"))
 
 (defn make-type-request-pred
-  "Predicate that returns a predicate fn checking if Content-Type request header matches a specified regexp and body is set."
+  "Predicate that returns a predicate fn checking if Content-Type
+   request header matches a specified regexp and body is set."
   [regexp]
   (fn [{:keys [body] :as req}]
     (if-let [#^String type (:content-type req)]
@@ -57,10 +58,15 @@
       (.toByteArray out))))
 
 (defn wrap-format-params
-  "Wraps a handler such that requests body are deserialized from to the right format, added in a :body-params key and merged in :params. It takes 3 args:
-:predicate is a predicate taking the request as sole argument to test if deserialization should be used.
-:decoder specifies a fn taking the body String as sole argument and giving back a hash-map.
-:charset can be either a string representing a valid charset or a fn taking the req as argument and returning a valid charset."
+  "Wraps a handler such that requests body are deserialized from to
+   the right format, added in a :body-params key and merged in :params.
+   It takes 3 args:
+      :predicate is a predicate taking the request as sole argument to
+                 test if deserialization should be used.
+      :decoder specifies a fn taking the body String as sole argument and
+               giving back a hash-map.
+      :charset can be either a string representing a valid charset or a fn
+               taking the req as argument and returning a valid charset."
   [handler & {:keys [predicate decoder charset]}]
   (fn [{:keys [#^InputStream body] :as req}]
     (if-let [byts (slurp-to-bytes body)]
@@ -100,13 +106,14 @@
   (wrap-format-params handler :predicate predicate :decoder decoder :charset charset))
 
 (defn safe-read-string [str]
-  "Parses clojure input using the reader in a safe manner by disabling eval in the reader."
+  "Parses clojure input using the reader in a safe manner by disabling eval
+   in the reader."
   (binding [*read-eval* false]
     (read-string str)))
 
 (defn parse-clojure-string [#^String s]
-  "Decode a clojure body. The body is merged into the params, so must be a map or a vector of
-key value pairs. An empty body is safely handled."
+  "Decode a clojure body. The body is merged into the params, so must be a map
+   or a vector of key value pairs. An empty body is safely handled."
   (when (not (.isEmpty (.trim s)))
     (safe-read-string s)))
 
@@ -122,8 +129,9 @@ key value pairs. An empty body is safely handled."
   (wrap-format-params handler :predicate predicate :decoder decoder :charset charset))
 
 (defn wrap-restful-params
-  "Wrapper that tries to do the right thing with the request :body and provide a solid basis for a RESTful API.
-It will deserialize to JSON, YAML or Clojure depending on Content-Type header. See wrap-format-response for more details."
+  "Wrapper that tries to do the right thing with the request :body and provide
+   a solid basis for a RESTful API. It will deserialize to JSON, YAML or Clojure
+   depending on Content-Type header. See wrap-format-response for more details."
   [handler]
   (-> handler
       (wrap-json-params)
