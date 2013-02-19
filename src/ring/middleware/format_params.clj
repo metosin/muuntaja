@@ -57,53 +57,74 @@
             (recur))))
       (.toByteArray out))))
 
+(defn default-handle-error
+  [e _]
+  (throw e))
+
 (defn wrap-format-params
   "Wraps a handler such that requests body are deserialized from to
    the right format, added in a :body-params key and merged in :params.
-   It takes 3 args:
+   It takes 4 args:
       :predicate is a predicate taking the request as sole argument to
                  test if deserialization should be used.
       :decoder specifies a fn taking the body String as sole argument and
                giving back a hash-map.
       :charset can be either a string representing a valid charset or a fn
-               taking the req as argument and returning a valid charset."
-  [handler & {:keys [predicate decoder charset]}]
+               taking the req as argument and returning a valid charset.
+      :handle-error is a fn with a sig [exception request]. Defaults to just
+                    rethrowing the Exception"
+  [handler & {:keys [predicate decoder charset handle-error]}]
   (fn [{:keys [#^InputStream body] :as req}]
-    (if-let [byts (slurp-to-bytes body)]
-      (if (predicate req)
-        (let [body (:body req)
-              #^String char-enc (if (string? charset) charset (charset (assoc req :body byts)))
-              bstr (String. byts char-enc)
-              fmt-params (decoder bstr)
-              req* (assoc req
-                     :body-params fmt-params
-                     :params (merge (:params req)
-                                    (when (map? fmt-params) fmt-params)))]
-          (handler req*))
-        (handler (assoc req :body (ByteArrayInputStream. byts))))
-      (handler req))))
+    (let [mod-req
+          (try
+            (if-let [byts (slurp-to-bytes body)]
+              (if (predicate req)
+                (let [body (:body req)
+                      #^String char-enc (if (string? charset) charset (charset (assoc req :body byts)))
+                      bstr (String. byts char-enc)
+                      fmt-params (decoder bstr)
+                      req* (assoc req
+                             :body-params fmt-params
+                             :params (merge (:params req)
+                                            (when (map? fmt-params) fmt-params)))]
+                  req*)
+                (assoc req :body (ByteArrayInputStream. byts)))
+              req)
+            (catch Exception e
+              (handle-error e req)))]
+      (handler mod-req))))
 
 (def json-request?
   (make-type-request-pred #"^application/(vnd.+)?json"))
 
 (defn wrap-json-params
   "Handles body params in JSON format. See wrap-format-params for details."
-  [handler & {:keys [predicate decoder charset]
+  [handler & {:keys [predicate decoder charset handle-error]
               :or {predicate json-request?
                    decoder json/parse-string
-                   charset get-or-guess-charset}}]
-  (wrap-format-params handler :predicate predicate :decoder decoder :charset charset))
+                   charset get-or-guess-charset
+                   handle-error default-handle-error}}]
+  (wrap-format-params handler
+                      :predicate predicate
+                      :decoder decoder
+                      :charset charset
+                      :handle-error default-handle-error))
 
 (def yaml-request?
   (make-type-request-pred #"^(application|text)/(vnd.+)?(x-)?yaml"))
 
 (defn wrap-yaml-params
   "Handles body params in YAML format. See wrap-format-params for details."
-  [handler & {:keys [predicate decoder charset]
+  [handler & {:keys [predicate decoder charset handle-error]
               :or {predicate yaml-request?
                    decoder yaml/parse-string
-                   charset get-or-guess-charset}}]
-  (wrap-format-params handler :predicate predicate :decoder decoder :charset charset))
+                   charset get-or-guess-charset
+                   handle-error default-handle-error}}]
+  (wrap-format-params handler
+                      :predicate predicate
+                      :decoder decoder
+                      :charset charset
+                      :handle-error handle-error))
 
 (defn safe-read-string [str]
   "Parses clojure input using the reader in a safe manner by disabling eval
@@ -122,18 +143,24 @@
 
 (defn wrap-clojure-params
   "Handles body params in Clojure format. See wrap-format-params for details."
-  [handler & {:keys [predicate decoder charset]
+  [handler & {:keys [predicate decoder charset handle-error]
               :or {predicate clojure-request?
                    decoder parse-clojure-string
-                   charset get-or-guess-charset}}]
-  (wrap-format-params handler :predicate predicate :decoder decoder :charset charset))
+                   charset get-or-guess-charset
+                   handle-error default-handle-error}}]
+  (wrap-format-params handler
+                      :predicate predicate
+                      :decoder decoder
+                      :charset charset
+                      :handle-error handle-error))
 
 (defn wrap-restful-params
   "Wrapper that tries to do the right thing with the request :body and provide
    a solid basis for a RESTful API. It will deserialize to JSON, YAML or Clojure
    depending on Content-Type header. See wrap-format-response for more details."
-  [handler]
+  [handler & {:keys [handle-error]
+              :or {handle-error default-handle-error}}]
   (-> handler
-      (wrap-json-params)
-      (wrap-clojure-params)
-      (wrap-yaml-params)))
+      (wrap-json-params :handle-error handle-error)
+      (wrap-clojure-params :handle-error handle-error)
+      (wrap-yaml-params :handle-error handle-error)))

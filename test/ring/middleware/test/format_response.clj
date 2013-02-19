@@ -111,12 +111,17 @@
 (def restful-echo
   (wrap-restful-response identity))
 
+(def safe-restful-echo
+  (wrap-restful-response identity
+                         :handle-error (fn [_ _ _] {:status 500})))
+
 (deftest format-hashmap-to-preferred
   (let [ok-accept "application/clojure, application/json;q=0.5"
         ok-req {:headers {"accept" ok-accept}}]
     (is (= (get-in (restful-echo ok-req) [:headers "Content-Type"])
            "application/clojure; charset=utf-8"))
-    (is (= ((restful-echo {:headers {"accept" "foo/bar"}}) :status) 406))))
+    (is (thrown? RuntimeException (restful-echo {:headers {"accept" "foo/bar"}})))
+    (is (= 500 (get (safe-restful-echo {:headers {"accept" "foo/bar"}}) :status)))))
 
 (deftest format-restful-hashmap
   (let [body {:foo "bar"}]
