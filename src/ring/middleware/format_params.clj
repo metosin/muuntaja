@@ -58,7 +58,7 @@
       (.toByteArray out))))
 
 (defn default-handle-error
-  [e _]
+  [e _ _]
   (throw e))
 
 (defn wrap-format-params
@@ -71,8 +71,10 @@
                giving back a hash-map.
       :charset can be either a string representing a valid charset or a fn
                taking the req as argument and returning a valid charset.
-      :handle-error is a fn with a sig [exception request]. Defaults to just
-                    rethrowing the Exception"
+      :handle-error is a fn with a sig [exception handler request].
+                    Return (handler obj) to continue working or directly
+                    a map to answer immediately. Defaults to just rethrowing
+                    the Exception"
   [handler & {:keys [predicate decoder charset handle-error]}]
   (fn [{:keys [#^InputStream body] :as req}]
     (let [mod-req
@@ -91,7 +93,7 @@
                 (assoc req :body (ByteArrayInputStream. byts)))
               req)
             (catch Exception e
-              (handle-error e req)))]
+              (handle-error e handler req)))]
       (handler mod-req))))
 
 (def json-request?
