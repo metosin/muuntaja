@@ -4,6 +4,12 @@
              [format-response :as res]]))
 
 (defn wrap-restful-format
+  "Wrapper that tries to do the right thing with the request and
+   response, providing a solid basis for a RESTful API. It will
+   deserialize the request and serialize the response depending on
+   Content-Type and Accept header. Takes a :formats argument which is
+   [:json :edn :yaml :yaml-in-html]. There is also a :json-kw format
+   which uses keywords as keys when deserializing."
   [handler & {:keys [formats]
               :or {formats [:json :edn :yaml :yaml-in-html]}
               :as options}]

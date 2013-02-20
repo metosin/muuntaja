@@ -225,7 +225,8 @@
   "Wrapper that tries to do the right thing with the response :body
   and provide a solid basis for a RESTful API. It will serialize to
   JSON, YAML, Clojure or HTML-wrapped YAML depending on Accept header.
-  See wrap-format-response for more details."
+  See wrap-format-response for more details. Recognized formats are
+  :json, :json-kw, :edn :yaml, :yaml-in-html."
   [handler & {:keys [handle-error formats charset]
               :or {handle-error default-handle-error
                    charset "utf-8"
