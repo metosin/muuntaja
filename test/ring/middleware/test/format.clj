@@ -13,7 +13,7 @@
 
 (def restful-echo-json
   (wrap-restful-format (fn [req] (assoc req :body (vals (:body-params req))))
-                       :format [:json]))
+                       :formats [:json-kw]))
 
 (deftest test-restful-round-trip
   (let [ok-accept "application/edn"
@@ -36,6 +36,7 @@
     (is (= (get-in r-trip [:headers "Content-Type"])
            "application/json; charset=utf-8"))
     (is (= (json/decode (slurp (:body r-trip))) (vals msg)))
-    (is (= (:params r-trip) msg))
-    (is (nil? (:body-params (restful-echo-json {:headers {"accept" "application/edn"}
-                                                :content-type "application/edn"}))))))
+    (is (= (:params r-trip) {:test "ok"}))
+    (is (thrown? RuntimeException (:body-params (restful-echo-json
+                                                 {:headers {"accept" "application/edn"}
+                                                  :content-type "application/edn"}))))))

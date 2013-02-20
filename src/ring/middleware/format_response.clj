@@ -215,32 +215,11 @@
 
 (def format-encoders
   {:json (make-encoder json/generate-string "application/json")
+   :json-kw (make-encoder json/generate-string "application/json")
    :edn (make-encoder generate-native-clojure "application/edn")
    :clojure (make-encoder generate-native-clojure "application/clojure")
    :yaml (make-encoder yaml/generate-string "application/x-yaml")
    :yaml-in-html (make-encoder wrap-yaml-in-html "text/html")})
-
-(defn wrap-restful-response
-  "Wrapper that tries to do the right thing with the response :body
-  and provide a solid basis for a RESTful API. It will serialize to
-  JSON, YAML, Clojure or HTML-wrapped YAML depending on Accept header.
-  See wrap-format-response for more details."
-  [handler & {:keys [handle-error formats charset]
-              :or {handle-error default-handle-error
-                   charset "utf-8"
-                   formats [:json :yaml :edn :clojure :yaml-in-html]}}]
-  (let [encoders (for [format formats
-                       :when format
-                       :let [encoder (if (map? format)
-                                       format
-                                       (get format-encoders (keyword format)))]
-                       :when encoder]
-                   encoder)]
-    (wrap-format-response handler
-                          :predicate serializable?
-                          :encoders encoders
-                          :charset charset
-                          :handle-error handle-error)))
 
 (defn wrap-restful-response
   "Wrapper that tries to do the right thing with the response :body

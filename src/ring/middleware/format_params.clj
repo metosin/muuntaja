@@ -110,6 +110,19 @@
                       :charset charset
                       :handle-error default-handle-error))
 
+(defn wrap-json-kw-params
+  "Handles body params in JSON format. See wrap-format-params for details."
+  [handler & {:keys [predicate decoder charset handle-error]
+              :or {predicate json-request?
+                   decoder json/parse-string
+                   charset get-or-guess-charset
+                   handle-error default-handle-error}}]
+  (wrap-format-params handler
+                      :predicate predicate
+                      :decoder (fn [struct] (decoder struct true))
+                      :charset charset
+                      :handle-error default-handle-error))
+
 (def yaml-request?
   (make-type-request-pred #"^(application|text)/(vnd.+)?(x-)?yaml"))
 
@@ -156,6 +169,7 @@
 
 (def format-wrappers
   {:json wrap-json-params
+   :json-kw wrap-json-kw-params
    :edn wrap-clojure-params
    :yaml wrap-yaml-params})
 
