@@ -117,8 +117,8 @@
           (let [{:keys [encoder enc-type]} (preferred-encoder encoders req)]
             (if (nil? encoder)
               (throw (RuntimeException. "cannot find encoder for response"))
-              (let [char-enc (if (string? charset) charset (charset req))
-                    body-string (encoder body)
+              (let [^String char-enc (if (string? charset) charset (charset req))
+                    ^String body-string (encoder body)
                     body* (.getBytes body-string char-enc)
                     body-length (count body*)]
                 (-> response
