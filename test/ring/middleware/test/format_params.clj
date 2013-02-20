@@ -91,7 +91,7 @@
 
 (def safe-restful-echo
   (wrap-restful-params identity
-                       :handle-error (fn [_ _] {:status 500})))
+                       :handle-error (fn [_ _ _] {:status 500})))
 
 (deftest test-restful-params-wrapper
   (let [req {:content-type "application/clojure; charset=UTF-8"
