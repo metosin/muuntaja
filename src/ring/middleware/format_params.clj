@@ -77,24 +77,22 @@
                     the Exception"
   [handler & {:keys [predicate decoder charset handle-error]}]
   (fn [{:keys [#^InputStream body] :as req}]
-    (let [mod-req
-          (try
-            (if-let [byts (slurp-to-bytes body)]
-              (if (predicate req)
-                (let [body (:body req)
-                      #^String char-enc (if (string? charset) charset (charset (assoc req :body byts)))
-                      bstr (String. byts char-enc)
-                      fmt-params (decoder bstr)
-                      req* (assoc req
-                             :body-params fmt-params
-                             :params (merge (:params req)
-                                            (when (map? fmt-params) fmt-params)))]
-                  req*)
-                (assoc req :body (ByteArrayInputStream. byts)))
-              req)
-            (catch Exception e
-              (handle-error e handler req)))]
-      (handler mod-req))))
+    (try
+      (if-let [byts (slurp-to-bytes body)]
+        (if (predicate req)
+          (let [body (:body req)
+                #^String char-enc (if (string? charset) charset (charset (assoc req :body byts)))
+                bstr (String. byts char-enc)
+                fmt-params (decoder bstr)
+                req* (assoc req
+                       :body-params fmt-params
+                       :params (merge (:params req)
+                                      (when (map? fmt-params) fmt-params)))]
+            (handler req*))
+          (handler (assoc req :body (ByteArrayInputStream. byts))))
+        (handler req))
+      (catch Exception e
+        (handle-error e handler req)))))
 
 (def json-request?
   (make-type-request-pred #"^application/(vnd.+)?json"))
@@ -109,6 +107,19 @@
   (wrap-format-params handler
                       :predicate predicate
                       :decoder decoder
+                      :charset charset
+                      :handle-error default-handle-error))
+
+(defn wrap-json-kw-params
+  "Handles body params in JSON format. See wrap-format-params for details."
+  [handler & {:keys [predicate decoder charset handle-error]
+              :or {predicate json-request?
+                   decoder json/parse-string
+                   charset get-or-guess-charset
+                   handle-error default-handle-error}}]
+  (wrap-format-params handler
+                      :predicate predicate
+                      :decoder (fn [struct] (decoder struct true))
                       :charset charset
                       :handle-error default-handle-error))
 
@@ -141,7 +152,7 @@
     (safe-read-string s)))
 
 (def clojure-request?
-  (make-type-request-pred #"^application/(vnd.+)?(x-)?clojure"))
+  (make-type-request-pred #"^application/(vnd.+)?(x-)?(clojure|edn)"))
 
 (defn wrap-clojure-params
   "Handles body params in Clojure format. See wrap-format-params for details."
@@ -156,13 +167,23 @@
                       :charset charset
                       :handle-error handle-error))
 
+(def format-wrappers
+  {:json wrap-json-params
+   :json-kw wrap-json-kw-params
+   :edn wrap-clojure-params
+   :yaml wrap-yaml-params})
+
 (defn wrap-restful-params
   "Wrapper that tries to do the right thing with the request :body and provide
    a solid basis for a RESTful API. It will deserialize to JSON, YAML or Clojure
    depending on Content-Type header. See wrap-format-response for more details."
-  [handler & {:keys [handle-error]
-              :or {handle-error default-handle-error}}]
-  (-> handler
-      (wrap-json-params :handle-error handle-error)
-      (wrap-clojure-params :handle-error handle-error)
-      (wrap-yaml-params :handle-error handle-error)))
+  [handler & {:keys [handle-error formats]
+              :or {handle-error default-handle-error
+                   formats [:json :edn :yaml]}}]
+  (reduce (fn [h format]
+            (if-let [wrapper (if
+                              (fn? format) format
+                              (format-wrappers (keyword format)))]
+              (wrapper h :handle-error handle-error)
+              h))
+          handler formats))

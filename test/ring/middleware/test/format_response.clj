@@ -39,7 +39,7 @@
         req {:body body}
         resp (clojure-echo req)]
     (is (= body (read-string (slurp (:body resp)))))
-    (is (.contains (get-in resp [:headers "Content-Type"]) "application/clojure"))
+    (is (.contains (get-in resp [:headers "Content-Type"]) "application/edn"))
     (is (< 2 (Integer/parseInt (get-in resp [:headers "Content-Length"]))))))
 
 (def yaml-echo
@@ -105,7 +105,7 @@
     (is (= (preferred-encoder [json-encoder html-encoder] {})
            json-encoder))
     (is (nil? (preferred-encoder [{:enc-type {:type "application"
-                                              :sub-type "clojure"}}]
+                                              :sub-type "edn"}}]
                                  req)))))
 
 (def restful-echo
@@ -116,16 +116,16 @@
                          :handle-error (fn [_ _ _] {:status 500})))
 
 (deftest format-hashmap-to-preferred
-  (let [ok-accept "application/clojure, application/json;q=0.5"
+  (let [ok-accept "application/edn, application/json;q=0.5"
         ok-req {:headers {"accept" ok-accept}}]
     (is (= (get-in (restful-echo ok-req) [:headers "Content-Type"])
-           "application/clojure; charset=utf-8"))
+           "application/edn; charset=utf-8"))
     (is (thrown? RuntimeException (restful-echo {:headers {"accept" "foo/bar"}})))
     (is (= 500 (get (safe-restful-echo {:headers {"accept" "foo/bar"}}) :status)))))
 
 (deftest format-restful-hashmap
   (let [body {:foo "bar"}]
-    (doseq [accept ["application/clojure"
+    (doseq [accept ["application/edn"
                     "application/json"
                     "application/x-yaml"
                     "text/html"]]
@@ -140,9 +140,9 @@
 
 (def custom-restful-echo
   (wrap-restful-response identity
-                         :default {:encoder (constantly "foobar")
-                                   :enc-type {:type "text"
-                                              :sub-type "foo"}}))
+                         :formats [{:encoder (constantly "foobar")
+                                    :enc-type {:type "text"
+                                               :sub-type "foo"}}]))
 
 (deftest format-custom-restful-hashmap
   (let [req {:body {:foo "bar"} :headers {"accept" "text/foo"}}
