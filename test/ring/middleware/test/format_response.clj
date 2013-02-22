@@ -113,14 +113,19 @@
 
 (def safe-restful-echo
   (wrap-restful-response identity
-                         :handle-error (fn [_ _ _] {:status 500})))
+                         :handle-error (fn [_ _ _] {:status 500})
+                         :formats
+                         [(make-encoder (fn [_] (throw (RuntimeException. "Memento mori")))
+                                        "foo/bar")]))
 
 (deftest format-hashmap-to-preferred
   (let [ok-accept "application/edn, application/json;q=0.5"
         ok-req {:headers {"accept" ok-accept}}]
     (is (= (get-in (restful-echo ok-req) [:headers "Content-Type"])
            "application/edn; charset=utf-8"))
-    (is (thrown? RuntimeException (restful-echo {:headers {"accept" "foo/bar"}})))
+    (is (.contains (get-in (restful-echo {:headers {"accept" "foo/bar"}})
+                           [:headers "Content-Type"])
+                   "application/json"))
     (is (= 500 (get (safe-restful-echo {:headers {"accept" "foo/bar"}}) :status)))))
 
 (deftest format-restful-hashmap

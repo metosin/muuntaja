@@ -74,7 +74,7 @@
   found, return nil. If no Accept header is found, return the first
   encoder."
   [encoders req]
-  (if-let [accept (get-in req [:headers "accept"])]
+  (if-let [accept (get-in req [:headers "accept"] (:content-type req))]
     (first (for [accepted-type (if (string? accept)
                                  (parse-accept-header accept)
                                  accept)
@@ -112,18 +112,16 @@
     (let [{:keys [headers body] :as response} (handler req)]
       (try
         (if (predicate req response)
-          (let [{:keys [encoder enc-type]} (preferred-encoder encoders req)]
-            (if (nil? encoder)
-              (throw (RuntimeException. "cannot find encoder for response"))
-              (let [^String char-enc (if (string? charset) charset (charset req))
-                    ^String body-string (encoder body)
-                    body* (.getBytes body-string char-enc)
-                    body-length (count body*)]
-                (-> response
-                    (assoc :body (io/input-stream body*))
-                    (res/content-type (str (enc-type :type) "/" (enc-type :sub-type)
-                                           "; charset=" char-enc))
-                    (res/header "Content-Length" body-length)))))
+          (let [{:keys [encoder enc-type]} (or (preferred-encoder encoders req) (first encoders))]
+            (let [^String char-enc (if (string? charset) charset (charset req))
+                  ^String body-string (encoder body)
+                  body* (.getBytes body-string char-enc)
+                  body-length (count body*)]
+              (-> response
+                  (assoc :body (io/input-stream body*))
+                  (res/content-type (str (enc-type :type) "/" (enc-type :sub-type)
+                                         "; charset=" char-enc))
+                  (res/header "Content-Length" body-length))))
           response)
         (catch Exception e
           (handle-error e req response))))))

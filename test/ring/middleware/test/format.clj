@@ -26,7 +26,10 @@
            "application/edn; charset=utf-8"))
     (is (= (read-string (slurp (:body r-trip))) (vals msg)))
     (is (= (:params r-trip) msg))
-    (is (thrown? RuntimeException (restful-echo {:headers {"accept" "foo/bar"}}))))
+    (is (.contains (get-in (restful-echo {:headers {"accept" "foo/bar"}})
+                           [:headers "Content-Type"])
+                   "application/json"))
+    (is (restful-echo {:headers {"accept" "foo/bar"}})))
   (let [ok-accept "application/json"
         msg {"test" "ok"}
         ok-req {:headers {"accept" ok-accept}
@@ -37,6 +40,8 @@
            "application/json; charset=utf-8"))
     (is (= (json/decode (slurp (:body r-trip))) (vals msg)))
     (is (= (:params r-trip) {:test "ok"}))
-    (is (thrown? RuntimeException (:body-params (restful-echo-json
-                                                 {:headers {"accept" "application/edn"}
-                                                  :content-type "application/edn"}))))))
+    (is (.contains (get-in (restful-echo-json
+                            {:headers {"accept" "application/edn"}
+                             :content-type "application/edn"})
+                           [:headers "Content-Type"])
+                   "application/json"))))

@@ -28,7 +28,7 @@ To get automatic deserialization and serialization for all supported formats wit
 ```
 `wrap-restful-format` accepts an optional `:formats` parameter, which is a list of the formats that should be handled. The first format of the list is also the default serializer used when no other solution can be found. The defaults are:
 ```clojure
-(wrap-restful-format handler :formats [])
+(wrap-restful-format handler :formats [:json :edn :yaml :yaml-in-html])
 ```
 
 The available formats are:
@@ -37,15 +37,15 @@ The available formats are:
   - `:json-kw` JSON with keywodized keys in `:params` and `:body-params`
   - `:yaml` YAML format
   - `:edn` edn (native cljure format)
-  - `:yaml-in-html` yaml in a html page (useful for browser debugging)  
+  - `:yaml-in-html` yaml in a html page (useful for browser debugging)
 
-Your routes should return raw clojure data structures where everything inside can be handled by the default encoders (no Java objects or fns mostly). If a route returns a _String_, _File_ or _InputStream_, nothing will be done. If no format can be deduced from the **Accept** header, the default format will be used (_JSON_ by default). However, if the format specified by the request **Accept** header is unknown, and a clojure structure is returned, the middleware will raise a `RuntimeException` instead.
+Your routes should return raw clojure data structures where everything inside can be handled by the default encoders (no Java objects or fns mostly). If a route returns a _String_, _File_ or _InputStream_, nothing will be done. If no format can be deduced from the **Accept** header or the format specified is unknown, the first format in the vector will be used (_JSON_ by default).
 
 ## Usage ##
 
 ### Detailed Usage
 
-You can separate the params and response middlewares. This allows you to use them separately, or to customize their behaviour, with specific error handling for example. See the wrappers docstrings for more details. 
+You can separate the params and response middlewares. This allows you to use them separately, or to customize their behaviour, with specific error handling for example. See the wrappers docstrings for more details.
 
 ```clojure
 (ns my.app
@@ -104,10 +104,10 @@ For exemple, this will cause all json formatted responses to be encoded in *iso-
 
 This module aims to be both easy to use and easy to extend to new formats. However, it does not try to help with every apect of building a RESTful API, like proper error handling and method dispatching. If that is what you are looking for, you could check the modules which function more like frameworks:
 
-+ liberator
-+ [plugboard](https://github.com/malcolmsparks/plugboard)
++ [Liberator](https://github.com/clojure-liberator/liberator)
++ [Plugboard](https://github.com/malcolmsparks/plugboard)
 + [Clothesline](https://github.com/banjiewen/Clothesline)
-+ [ringfinger](https://github.com/myfreeweb/ringfinger)
++ [Ringfinger](https://github.com/myfreeweb/ringfinger)
 
 ## License ##
 
