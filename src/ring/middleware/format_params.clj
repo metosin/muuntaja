@@ -1,6 +1,7 @@
 (ns ring.middleware.format-params
   (:require [cheshire.custom :as json]
-            [clj-yaml.core :as yaml])
+            [clj-yaml.core :as yaml]
+            [clojure.tools.reader.edn :as edn])
   (:import [com.ibm.icu.text CharsetDetector]
            [java.io ByteArrayInputStream InputStream ByteArrayOutputStream]))
 
@@ -139,17 +140,11 @@
                       :charset charset
                       :handle-error handle-error))
 
-(defn safe-read-string [str]
-  "Parses clojure input using the reader in a safe manner by disabling eval
-   in the reader."
-  (binding [*read-eval* false]
-    (read-string str)))
-
 (defn parse-clojure-string [#^String s]
   "Decode a clojure body. The body is merged into the params, so must be a map
    or a vector of key value pairs. An empty body is safely handled."
-  (when (not (.isEmpty (.trim s)))
-    (safe-read-string s)))
+  (when-not (.isEmpty (.trim s))
+    (edn/read-string s)))
 
 (def clojure-request?
   (make-type-request-pred #"^application/(vnd.+)?(x-)?(clojure|edn)"))
