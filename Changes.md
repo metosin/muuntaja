@@ -15,11 +15,11 @@
     keywords keys in `:params` and `:body-params`
 
 ### Other
-  - Better formatted doctrings (_Anthony Grimes_)
+  - Better formatted doctrings ( _Anthony Grimes_ )
   
 ## 0.2.4
 ### Bugfixes
-  - Allow empty request body as per Ring Spec (_Roman Scherer_)
+  - Allow empty request body as per Ring Spec ( _Roman Scherer_ )
 
 ## 0.2.3
 ### Bugfixes
@@ -32,16 +32,16 @@
 ## 0.2.1
 ### Features
   - Tries to guess character encoding when unspecified
-  - Easier custom json types (_Jeremy W. Sherman_)
+  - Easier custom json types ( _Jeremy W. Sherman_ )
 
 ### Bugfixes
-  - Do not try to merge vectors into :params  (_Ian Eure_)
+  - Do not try to merge vectors into :params  ( _Ian Eure_ )
 
 ## 0.2.0
 ### Features
-  - Chooses format response according to the sort order defined by Accept header (_Jani Rahkola_)
+  - Chooses format response according to the sort order defined by Accept header ( _Jani Rahkola_ )
 
 ### Bugfixes
-  - Properly lowercases header according to Ring spec (_Luke Amdor_)
-  - Safely handles code for clojure format (_Paul M Bauer_)
-  - safely handle empty request bodies (_Philip Aston_)
+  - Properly lowercases header according to Ring spec ( _Luke Amdor_ )
+  - Safely handles code for clojure format ( _Paul M Bauer_ )
+  - safely handle empty request bodies ( _Philip Aston_ )
