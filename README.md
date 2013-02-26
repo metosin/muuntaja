@@ -36,8 +36,8 @@ The available formats are:
   - `:json` JSON with string keys in `:params` and `:body-params`
   - `:json-kw` JSON with keywodized keys in `:params` and `:body-params`
   - `:yaml` YAML format
-  - `:edn` edn (native cljure format). It uses *clojure.tools.edn* and
-    never evals code 
+  - `:yaml-kw` YAML format with keywodized keys in `:params` and `:body-params`
+  - `:edn` edn (native cljure format). It uses *clojure.tools.edn* and never evals code 
   - `:yaml-in-html` yaml in a html page (useful for browser debugging)
 
 Your routes should return raw clojure data structures where everything inside can be handled by the default encoders (no Java objects or fns mostly). If a route returns a _String_, _File_ or _InputStream_, nothing will be done. If no format can be deduced from the **Accept** header or the format specified is unknown, the first format in the vector will be used (_JSON_ by default).

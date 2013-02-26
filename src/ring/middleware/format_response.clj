@@ -217,6 +217,7 @@
    :edn (make-encoder generate-native-clojure "application/edn")
    :clojure (make-encoder generate-native-clojure "application/clojure")
    :yaml (make-encoder yaml/generate-string "application/x-yaml")
+   :yaml-kw (make-encoder yaml/generate-string "application/x-yaml")
    :yaml-in-html (make-encoder wrap-yaml-in-html "text/html")})
 
 (defn wrap-restful-response

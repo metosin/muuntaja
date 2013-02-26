@@ -140,6 +140,20 @@
                       :charset charset
                       :handle-error handle-error))
 
+(defn wrap-yaml-kw-params
+  "Handles body params in YAML format. See wrap-format-params for details."
+  [handler & {:keys [predicate decoder charset handle-error]
+              :or {predicate yaml-request?
+                   decoder yaml/parse-string
+                   charset get-or-guess-charset
+                   handle-error default-handle-error}}]
+  (binding [clj-yaml.core/*keywordize* true]
+    (wrap-format-params handler
+                        :predicate predicate
+                        :decoder decoder
+                        :charset charset
+                        :handle-error handle-error)))
+
 (defn parse-clojure-string [#^String s]
   "Decode a clojure body. The body is merged into the params, so must be a map
    or a vector of key value pairs. An empty body is safely handled."
@@ -166,7 +180,8 @@
   {:json wrap-json-params
    :json-kw wrap-json-kw-params
    :edn wrap-clojure-params
-   :yaml wrap-yaml-params})
+   :yaml wrap-yaml-params
+   :yaml-kw wrap-yaml-kw-params})
 
 (defn wrap-restful-params
   "Wrapper that tries to do the right thing with the request :body and provide
