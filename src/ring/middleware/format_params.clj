@@ -158,7 +158,7 @@
   "Decode a clojure body. The body is merged into the params, so must be a map
    or a vector of key value pairs. An empty body is safely handled."
   (when-not (.isEmpty (.trim s))
-    (edn/read-string s)))
+    (edn/read-string {:readers *data-readers*} s)))
 
 (def clojure-request?
   (make-type-request-pred #"^application/(vnd.+)?(x-)?(clojure|edn)"))
