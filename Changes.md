@@ -1,6 +1,6 @@
 # Changes for ring-middleware-format
 
-## 0.3.0-SNAPSHOT
+## 0.3.0
 ### Breaking Changes
   - `wrap-format-response` encodes the body with the first format
   (`:json` by default) when unable to find an encoder matching the
@@ -14,9 +14,12 @@
   - Added `:json-kw` and `:yaml-kw` formats and wrapper to have
     keywords keys in `:params` and `:body-params`
 
+### Bugfixes
+  - Use readers in `*data-readers*` for *edn* ( _Roman Scherer_ )
+
 ### Other
   - Better formatted doctrings ( _Anthony Grimes_ )
-  
+
 ## 0.2.4
 ### Bugfixes
   - Allow empty request body as per Ring Spec ( _Roman Scherer_ )

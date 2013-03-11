@@ -37,7 +37,7 @@ The available formats are:
   - `:json-kw` JSON with keywodized keys in `:params` and `:body-params`
   - `:yaml` YAML format
   - `:yaml-kw` YAML format with keywodized keys in `:params` and `:body-params`
-  - `:edn` edn (native cljure format). It uses *clojure.tools.edn* and never evals code 
+  - `:edn` edn (native cljure format). It uses *clojure.tools.edn* and never evals code, but uses the custom tags from `*data-readers*` 
   - `:yaml-in-html` yaml in a html page (useful for browser debugging)
 
 Your routes should return raw clojure data structures where everything inside can be handled by the default encoders (no Java objects or fns mostly). If a route returns a _String_, _File_ or _InputStream_, nothing will be done. If no format can be deduced from the **Accept** header or the format specified is unknown, the first format in the vector will be used (_JSON_ by default).
@@ -100,6 +100,10 @@ For exemple, this will cause all json formatted responses to be encoded in *iso-
   (wrap-json-response :charset "ISO-8859-1"))
 ```
 + You can implement the wrapper from scratch by using either or both `wrap-format-params` and `wrap-format-response`. For now, see the docs of each and how the other formats were implemented for help doing this.
+
+## Future Work ##
+
++ Add [MessagePack](http://msgpack.org/) format and support binary payloads. 
 
 ## See Also ##
 

@@ -1,4 +1,4 @@
-(defproject ring-middleware-format "0.3.0-SNAPSHOT"
+(defproject ring-middleware-format "0.3.0"
   :description "Ring middleware for parsing parameters and emitting
   responses in various formats."
   :url "https://github.com/ngrunwald/ring-middleware-format"
@@ -6,7 +6,7 @@
             :url "http://www.eclipse.org/legal/epl-v10.html"
             :distribution :repo
             :comments "same as Clojure"}
-  :dependencies [[org.clojure/clojure "1.4.0"]
+  :dependencies [[org.clojure/clojure "1.5.0"]
                  [org.clojure/core.memoize "0.5.2"]
                  [ring "1.1.8"]
                  [cheshire "5.0.1"]

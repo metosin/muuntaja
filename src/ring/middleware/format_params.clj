@@ -79,18 +79,18 @@
   [handler & {:keys [predicate decoder charset handle-error]}]
   (fn [{:keys [#^InputStream body] :as req}]
     (try
-      (if-let [byts (slurp-to-bytes body)]
-        (if (predicate req)
-          (let [body (:body req)
-                #^String char-enc (if (string? charset) charset (charset (assoc req :body byts)))
-                bstr (String. byts char-enc)
-                fmt-params (decoder bstr)
-                req* (assoc req
-                       :body-params fmt-params
-                       :params (merge (:params req)
-                                      (when (map? fmt-params) fmt-params)))]
-            (handler req*))
-          (handler (assoc req :body (ByteArrayInputStream. byts))))
+      (if (and body (> (.available body) 0) (predicate req))
+        (let [byts (slurp-to-bytes body)
+              body (:body req)
+              #^String char-enc (if (string? charset) charset (charset (assoc req :body byts)))
+              bstr (String. byts char-enc)
+              fmt-params (decoder bstr)
+              req* (assoc req
+                     :body-params fmt-params
+                     :params (merge (:params req)
+                                    (when (map? fmt-params) fmt-params))
+                     :body (ByteArrayInputStream. byts))]
+          (handler req*))
         (handler req))
       (catch Exception e
         (handle-error e handler req)))))
