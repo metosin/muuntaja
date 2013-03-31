@@ -79,7 +79,7 @@
   [handler & {:keys [predicate decoder charset handle-error]}]
   (fn [{:keys [#^InputStream body] :as req}]
     (try
-      (if (and body (> (.available body) 0) (predicate req))
+      (if (and body (predicate req))
         (let [byts (slurp-to-bytes body)
               body (:body req)
               #^String char-enc (if (string? charset) charset (charset (assoc req :body byts)))
