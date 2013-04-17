@@ -133,7 +133,9 @@
   [handler & {:keys [predicate encoder type charset pretty]
               :or {predicate serializable?
                    pretty nil
-                   encoder (fn [s] (json/generate-string s {:pretty pretty}))
+                   encoder (if pretty
+                             (fn [s] (json/generate-string s {:pretty pretty}))
+                             json/generate-string)
                    type "application/json"
                    charset "utf-8"}}]
     (wrap-format-response handler
