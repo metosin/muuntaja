@@ -130,15 +130,16 @@
 (defn wrap-json-response
   "Wrapper to serialize structures in :body to JSON with sane defaults.
   See wrap-format-response for more details."
-  [handler & {:keys [predicate encoder type charset]
+  [handler & {:keys [predicate encoder type charset pretty]
               :or {predicate serializable?
-                   encoder json/generate-string
+                   pretty nil
+                   encoder (fn [s] (json/generate-string s {:pretty pretty}))
                    type "application/json"
                    charset "utf-8"}}]
-  (wrap-format-response handler
-                        :predicate predicate
-                        :encoders [(make-encoder encoder type)]
-                        :charset charset))
+    (wrap-format-response handler
+                          :predicate predicate
+                          :encoders [(make-encoder encoder type)]
+                          :charset charset))
 
 ;; Functions for Clojure native serialization
 
