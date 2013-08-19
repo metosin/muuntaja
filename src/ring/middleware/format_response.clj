@@ -4,7 +4,7 @@
             [clojure.java.io :as io]
             [clj-yaml.core :as yaml]
             [clojure.string :as s])
-  (:use [clojure.core.memoize :only [memo-lu]])
+  (:use [clojure.core.memoize :only [lu]])
   (:import [java.io File InputStream BufferedInputStream]))
 
 (defn serializable?
@@ -64,7 +64,7 @@
        (sort-by-check :sub-type "*")
        (sort-by :q >)))
 
-(def parse-accept-header (memo-lu parse-accept-header* 500))
+(def parse-accept-header (lu parse-accept-header* {} :lu/threshold 500))
 
 (defn preferred-encoder
   "Return the encoder that encodes to the most preferred type.
