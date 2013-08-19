@@ -40,7 +40,14 @@ The available formats are:
   - `:edn` edn (native cljure format). It uses *clojure.tools.edn* and never evals code, but uses the custom tags from `*data-readers*` 
   - `:yaml-in-html` yaml in a html page (useful for browser debugging)
 
-Your routes should return raw clojure data structures where everything inside can be handled by the default encoders (no Java objects or fns mostly). If a route returns a _String_, _File_ or _InputStream_, nothing will be done. If no format can be deduced from the **Accept** header or the format specified is unknown, the first format in the vector will be used (_JSON_ by default).
+Your routes should return raw clojure data structures where everything
+inside can be handled by the default encoders (no Java objects or fns
+mostly). If a route returns a _String_, _File_, _InputStream_ or _nil_, nothing will be done. If no format can be deduced from the **Accept** header or the format specified is unknown, the first format in the vector will be used (_JSON_ by default).
+
+Please note the default JSON and YAML decoder do not keywordize their output keys, if this is the behaviour you want (be careful about keywordizing user input!), you should use something like:
+```clojure
+(wrap-restful-format handler :formats [:json-kw :edn :yaml-kw :yaml-in-html])
+```
 
 ## Usage ##
 
