@@ -130,9 +130,12 @@
 (defn wrap-json-response
   "Wrapper to serialize structures in :body to JSON with sane defaults.
   See wrap-format-response for more details."
-  [handler & {:keys [predicate encoder type charset handle-error]
+  [handler & {:keys [predicate encoder type charset handle-error pretty]
               :or {predicate serializable?
-                   encoder json/generate-string
+                   pretty nil
+                   encoder (if pretty
+                             (fn [s] (json/generate-string s {:pretty pretty}))
+                             json/generate-string)
                    type "application/json"
                    charset "utf-8"
                    handle-error default-handle-error}}]

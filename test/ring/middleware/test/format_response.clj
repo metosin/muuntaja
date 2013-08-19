@@ -31,6 +31,12 @@
     (is (.contains (get-in resp [:headers "Content-Type"]) "application/json"))
     (is (< 2 (Integer/parseInt (get-in resp [:headers "Content-Length"]))))))
 
+(deftest format-json-prettily
+  (let [body {:foo "bar"}
+        req {:body body}
+        resp ((wrap-json-response identity :pretty true) req)]
+    (is (.contains (slurp (:body resp)) "\n "))))
+
 (def clojure-echo
   (wrap-clojure-response identity))
 
