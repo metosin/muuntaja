@@ -80,17 +80,19 @@
   (fn [{:keys [#^InputStream body] :as req}]
     (try
       (if (and body (predicate req))
-        (let [byts (slurp-to-bytes body)
-              body (:body req)
-              #^String char-enc (if (string? charset) charset (charset (assoc req :body byts)))
-              bstr (String. byts char-enc)
-              fmt-params (decoder bstr)
-              req* (assoc req
-                     :body-params fmt-params
-                     :params (merge (:params req)
-                                    (when (map? fmt-params) fmt-params))
-                     :body (ByteArrayInputStream. byts))]
-          (handler req*))
+        (let [byts (slurp-to-bytes body)]
+          (if (> (count byts) 0)
+            (let [body (:body req)
+                  #^String char-enc (if (string? charset) charset (charset (assoc req :body byts)))
+                  bstr (String. byts char-enc)
+                  fmt-params (decoder bstr)
+                  req* (assoc req
+                         :body-params fmt-params
+                         :params (merge (:params req)
+                                        (when (map? fmt-params) fmt-params))
+                         :body (ByteArrayInputStream. byts))]
+              (handler req*))
+            (handler req)))
         (handler req))
       (catch Exception e
         (handle-error e handler req)))))
