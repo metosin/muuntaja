@@ -1,5 +1,17 @@
 # Changes for ring-middleware-format
 
+## 0.3.1 (2013-08-19)
+### Features
+  - Added `:pretty` option to JSON ( _Ian Eure_ )
+
+### Bugfixes
+  - Worked around incompatibility with _org.apache.catalina.connector.CoyoteInputStream_. Should work fine in Immutant now. ( _Roman Scherer_ )
+  - Do not serialize body if entire response is nil ( _Justin Balthrop_ )
+
+### Other
+  - Fallback to looking inside `:headers` if `:content-type` is not defined at the root
+
+
 ## 0.3.0
 ### Breaking Changes
   - `wrap-format-response` encodes the body with the first format
@@ -38,7 +50,7 @@
   - Easier custom json types ( _Jeremy W. Sherman_ )
 
 ### Bugfixes
-  - Do not try to merge vectors into :params  ( _Ian Eure_ )
+  - Do not try to merge vectors into :params ( _Ian Eure_ )
 
 ## 0.2.0
 ### Features

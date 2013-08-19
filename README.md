@@ -7,7 +7,7 @@ This is a set of middlewares that can be used to deserialize parameters sent in 
 `ring-middleware-format` is available as a Maven artifact from [Clojars](http://clojars.org/ring-middleware-format). You can add this in your `project.clj` with leiningen:
 
 ```clojure
-[ring-middleware-format "0.3.0"]
+[ring-middleware-format "0.3.1"]
 ```
 
 ## Summary ##
@@ -42,7 +42,7 @@ The available formats are:
 
 Your routes should return raw clojure data structures where everything
 inside can be handled by the default encoders (no Java objects or fns
-mostly). If a route returns a _String_, _File_, _InputStream_ or _nil_, nothing will be done. If no format can be deduced from the **Accept** header or the format specified is unknown, the first format in the vector will be used (_JSON_ by default).
+mostly). If a route returns a _String_, _File_, _InputStream_ or _nil_, nothing will be done. If no format can be deduced from the **Accept** header or the format specified is unknown, the first format in the vector will be used (JSON by default).
 
 Please note the default JSON and YAML decoder do not keywordize their output keys, if this is the behaviour you want (be careful about keywordizing user input!), you should use something like:
 ```clojure
