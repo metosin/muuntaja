@@ -10,11 +10,12 @@
 (defn serializable?
   "Predicate that returns true whenever the response body is not a
   String, File or InputStream."
-  [_ {:keys [body]}]
-  (not (or
-        (string? body)
-        (instance? File body)
-        (instance? InputStream body))))
+  [_ {:keys [body] :as response}]
+  (when response
+    (not (or
+          (string? body)
+          (instance? File body)
+          (instance? InputStream body)))))
 
 (defn can-encode?
   "Check whether encoder can encode to accepted-type.
