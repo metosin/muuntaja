@@ -37,7 +37,7 @@ The available formats are:
   - `:json-kw` JSON with keywodized keys in `:params` and `:body-params`
   - `:yaml` YAML format
   - `:yaml-kw` YAML format with keywodized keys in `:params` and `:body-params`
-  - `:edn` edn (native cljure format). It uses *clojure.tools.edn* and never evals code, but uses the custom tags from `*data-readers*` 
+  - `:edn` edn (native Clojure format). It uses *clojure.tools.edn* and never evals code, but uses the custom tags from `*data-readers*` 
   - `:yaml-in-html` yaml in a html page (useful for browser debugging)
 
 Your routes should return raw clojure data structures where everything
