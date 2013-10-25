@@ -10,6 +10,6 @@
                  [org.clojure/core.memoize "0.5.6"]
                  [ring "1.2.0"]
                  [cheshire "5.2.0"]
-                 [org.clojure/tools.reader "0.7.6"]
-                 [com.ibm.icu/icu4j "51.2"]
+                 [org.clojure/tools.reader "0.7.10"]
+                 [com.ibm.icu/icu4j "52.1"]
                  [clj-yaml "0.4.0"]])
