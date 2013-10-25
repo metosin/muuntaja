@@ -3,7 +3,10 @@
             [clj-yaml.core :as yaml]
             [clojure.tools.reader.edn :as edn])
   (:import [com.ibm.icu.text CharsetDetector]
-           [java.io ByteArrayInputStream InputStream ByteArrayOutputStream]))
+           [java.io ByteArrayInputStream InputStream ByteArrayOutputStream]
+           [java.nio.charset Charset]))
+
+(def available-charsets (into #{} (.keySet (Charset/availableCharsets))))
 
 (defn guess-charset
   [{:keys [#^bytes body]}]
@@ -13,7 +16,8 @@
       (.setText detector body)
       (let [m (.detect detector)
             encoding (.getName m)]
-        encoding))
+        (if (available-charsets encoding)
+          encoding)))
     (catch Exception _ nil)))
 
 (defn get-charset
