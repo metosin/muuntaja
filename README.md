@@ -7,7 +7,7 @@ This is a set of middlewares that can be used to deserialize parameters sent in 
 `ring-middleware-format` is available as a Maven artifact from [Clojars](http://clojars.org/ring-middleware-format). You can add this in your `project.clj` with leiningen:
 
 ```clojure
-[ring-middleware-format "0.3.1"]
+[ring-middleware-format "0.3.2"]
 ```
 
 ## Summary ##

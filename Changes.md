@@ -1,5 +1,10 @@
 # Changes for ring-middleware-format
 
+## 0.3.2 (2013-10-29)
+### Bugfixes
+  - Removed deprecated usage of cheshire.custom (__Simon Belak__)
+  - Added sanity check to make sure the encoding returned by ICU4J can actually be decoded by the JVM
+
 ## 0.3.1 (2013-08-19)
 ### Features
   - Added `:pretty` option to JSON ( _Ian Eure_ )
