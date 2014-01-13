@@ -1,4 +1,4 @@
-(defproject ring-middleware-format "0.3.2"
+(defproject ring-middleware-format "0.3.3-SNAPSHOT"
   :description "Ring middleware for parsing parameters and emitting
   responses in various formats."
   :url "https://github.com/ngrunwald/ring-middleware-format"
