@@ -8,8 +8,8 @@
             :comments "same as Clojure"}
   :dependencies [[org.clojure/clojure "1.5.1"]
                  [org.clojure/core.memoize "0.5.6"]
-                 [ring "1.2.0"]
-                 [cheshire "5.2.0"]
-                 [org.clojure/tools.reader "0.7.10"]
-                 [com.ibm.icu/icu4j "52.1"]
+                 [ring "1.3.0"]
+                 [cheshire "5.3.1"]
+                 [org.clojure/tools.reader "0.8.5"]
+                 [com.ibm.icu/icu4j "53.1"]
                  [clj-yaml "0.4.0"]])
