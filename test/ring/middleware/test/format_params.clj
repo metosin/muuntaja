@@ -2,8 +2,10 @@
   (:use [clojure.test]
         [ring.middleware.format-params])
   (:require [cheshire.core :as json]
-            [clj-yaml.core :as yaml])
-  (:import [java.io ByteArrayInputStream]))
+            [clj-yaml.core :as yaml]
+            [cognitect.transit :as transit]
+            [clojure.java.io :as io])
+  (:import [java.io ByteArrayInputStream ByteArrayOutputStream]))
 
 (defn stream [s]
   (ByteArrayInputStream. (.getBytes s "UTF-8")))
@@ -85,6 +87,43 @@
              resp (clojure-echo req)]
     (is (= {"id" 3} (:params resp)))
     (is (= nil (:body-params resp)))))
+
+;;;;;;;;;;;;;
+;; Transit ;;
+;;;;;;;;;;;;;
+
+(defn stream-transit
+  [fmt data]
+  (let [out (ByteArrayOutputStream.)
+        wrt (transit/writer out fmt)]
+    (transit/write wrt data)
+    (io/input-stream (.toByteArray out))))
+
+(def transit-json-echo
+  (wrap-transit-json-params identity))
+
+(deftest augments-with-transit-json-content-type
+  (let [req {:content-type "application/transit+json"
+             :body (stream-transit :json {:foo "bar"})
+             :params {"id" 3}}
+             resp (transit-json-echo req)]
+    (is (= {"id" 3 :foo "bar"} (:params resp)))
+    (is (= {:foo "bar"} (:body-params resp)))))
+
+(def transit-msgpack-echo
+  (wrap-transit-msgpack-params identity))
+
+(deftest augments-with-transit-msgpack-content-type
+  (let [req {:content-type "application/transit+msgpack"
+             :body (stream-transit :msgpack {:foo "bar"})
+             :params {"id" 3}}
+             resp (transit-msgpack-echo req)]
+    (is (= {"id" 3 :foo "bar"} (:params resp)))
+    (is (= {:foo "bar"} (:body-params resp)))))
+
+;;;;;;;;;;;;;;;;;;;;
+;; Restful Params ;;
+;;;;;;;;;;;;;;;;;;;;
 
 (def restful-echo
   (wrap-restful-params identity))

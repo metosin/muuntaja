@@ -3,9 +3,11 @@
             [ring.util.response :as res]
             [clojure.java.io :as io]
             [clj-yaml.core :as yaml]
-            [clojure.string :as s])
+            [clojure.string :as s]
+            [cognitect.transit :as transit])
   (:use [clojure.core.memoize :only [lu]])
-  (:import [java.io File InputStream BufferedInputStream]))
+  (:import [java.io File InputStream BufferedInputStream
+            ByteArrayOutputStream]))
 
 (defn serializable?
   "Predicate that returns true whenever the response body is not a
@@ -89,9 +91,12 @@
    f takes a string and returns an encoded string
    type Content-Type of the encoded string
    (make-encoder json/generate-string \"application/json\")"
-  [encoder content-type]
-  {:encoder encoder
-   :enc-type (first (parse-accept-header content-type))})
+  ([encoder content-type binary?]
+     {:encoder encoder
+      :enc-type (first (parse-accept-header content-type))
+      :binary? binary?})
+  ([encoder content-type]
+     (make-encoder encoder content-type false)))
 
 (defn default-handle-error
   [e _ _]
@@ -108,21 +113,28 @@
            (utf-8 is strongly suggested)
   :handle-error is a fn with a sig [exception request response]. Defaults
                 to just rethrowing the Exception"
-  [handler & {:keys [predicate encoders charset handle-error]}]
+  [handler & {:keys [predicate encoders charset binary? handle-error]}]
   (fn [req]
     (let [{:keys [headers body] :as response} (handler req)]
       (try
         (if (predicate req response)
-          (let [{:keys [encoder enc-type]} (or (preferred-encoder encoders req) (first encoders))]
-            (let [^String char-enc (if (string? charset) charset (charset req))
-                  ^String body-string (encoder body)
-                  body* (.getBytes body-string char-enc)
+          (let [{:keys [encoder enc-type binary?]} (or (preferred-encoder encoders req) (first encoders))
+                [body* content-type]
+                (if binary?
+                  (let [body* (encoder body)
+                        ctype (str (enc-type :type) "/" (enc-type :sub-type))]
+                    [body* ctype])
+                  (let [^String char-enc (if (string? charset) charset (charset req))
+                        ^String body-string (encoder body)
+                        body* (.getBytes body-string char-enc)
+                        ctype (str (enc-type :type) "/" (enc-type :sub-type)
+                                   "; charset=" char-enc)]
+                    [body* ctype]))
                   body-length (count body*)]
-              (-> response
-                  (assoc :body (io/input-stream body*))
-                  (res/content-type (str (enc-type :type) "/" (enc-type :sub-type)
-                                         "; charset=" char-enc))
-                  (res/header "Content-Length" body-length))))
+            (-> response
+                (assoc :body (io/input-stream body*))
+                (res/content-type content-type)
+                (res/header "Content-Length" body-length)))
           response)
         (catch Exception e
           (handle-error e req response))))))
@@ -215,6 +227,47 @@
                         :charset charset
                         :handle-error handle-error))
 
+;;;;;;;;;;;;;
+;; Transit ;;
+;;;;;;;;;;;;;
+
+(defn make-transit-encoder
+  [fmt {:keys [verbose] :as options}]
+  (fn [data]
+    (let [out (ByteArrayOutputStream.)
+          full-fmt (if (and (= fmt :json) verbose)
+                     :json-verbose
+                     fmt)
+          wrt (transit/writer out full-fmt options)]
+      (transit/write wrt data)
+      (.toByteArray out))))
+
+(defn wrap-transit-json-response
+  "Wrapper to serialize structures in :body to transit-json with sane defaults.
+  See wrap-format-response for more details."
+  [handler & {:keys [predicate encoder type handle-error options]
+              :or {predicate serializable?
+                   encoder (make-transit-encoder :json options)
+                   type "application/transit+json"
+                   handle-error default-handle-error}}]
+  (wrap-format-response handler
+                        :predicate predicate
+                        :encoders [(make-encoder encoder type :binary)]
+                        :handle-error handle-error))
+
+(defn wrap-transit-msgpack-response
+  "Wrapper to serialize structures in :body to transit-msgpack with sane defaults.
+  See wrap-format-response for more details."
+  [handler & {:keys [predicate encoder type handle-error options]
+              :or {predicate serializable?
+                   encoder (make-transit-encoder :msgpack options)
+                   type "application/transit+msgpack"
+                   handle-error default-handle-error}}]
+  (wrap-format-response handler
+                        :predicate predicate
+                        :encoders [(make-encoder encoder type :binary)]
+                        :handle-error handle-error))
+
 (def format-encoders
   {:json (make-encoder json/generate-string "application/json")
    :json-kw (make-encoder json/generate-string "application/json")
@@ -222,18 +275,23 @@
    :clojure (make-encoder generate-native-clojure "application/clojure")
    :yaml (make-encoder yaml/generate-string "application/x-yaml")
    :yaml-kw (make-encoder yaml/generate-string "application/x-yaml")
-   :yaml-in-html (make-encoder wrap-yaml-in-html "text/html")})
+   :yaml-in-html (make-encoder wrap-yaml-in-html "text/html")
+   :transit-json (make-encoder wrap-transit-json-response
+                               "application/transit+json" :binary)
+   :transit-msgpack (make-encoder wrap-transit-msgpack-response
+                                  "application/transit+msgpack" :binary)})
 
 (defn wrap-restful-response
   "Wrapper that tries to do the right thing with the response :body
   and provide a solid basis for a RESTful API. It will serialize to
   JSON, YAML, Clojure or HTML-wrapped YAML depending on Accept header.
   See wrap-format-response for more details. Recognized formats are
-  :json, :json-kw, :edn :yaml, :yaml-in-html."
+  :json, :json-kw, :edn :yaml, :yaml-in-html, :transit-json,
+  :transit-msgpack."
   [handler & {:keys [handle-error formats charset]
               :or {handle-error default-handle-error
                    charset "utf-8"
-                   formats [:json :yaml :edn :clojure :yaml-in-html]}}]
+                   formats [:json :yaml :edn :clojure :yaml-in-html :transit-json :transit-msgpack]}}]
   (let [encoders (for [format formats
                        :when format
                        :let [encoder (if (map? format)

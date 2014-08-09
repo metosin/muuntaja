@@ -2,7 +2,8 @@
   (:use [clojure.test]
         [ring.middleware.format-response])
   (:require [cheshire.core :as json]
-            [clj-yaml.core :as yaml])
+            [clj-yaml.core :as yaml]
+            [cognitect.transit :as transit])
   (:import [java.io ByteArrayInputStream]))
 
 (defn stream [s]
@@ -58,6 +59,41 @@
     (is (= (yaml/generate-string body) (slurp (:body resp))))
     (is (.contains (get-in resp [:headers "Content-Type"]) "application/x-yaml"))
     (is (< 2 (Integer/parseInt (get-in resp [:headers "Content-Length"]))))))
+
+;;;;;;;;;;;;;
+;; Transit ;;
+;;;;;;;;;;;;;
+
+(defn read-transit
+  [fmt in]
+  (let [rdr (transit/reader in fmt)]
+    (transit/read rdr)))
+
+(def transit-json-echo
+  (wrap-transit-json-response identity))
+
+(deftest format-transit-json-hashmap
+  (let [body {:foo "bar"}
+        req {:body body}
+        resp (transit-json-echo req)]
+    (is (= body (read-transit :json (:body resp))))
+    (is (.contains (get-in resp [:headers "Content-Type"]) "application/transit+json"))
+    (is (< 2 (Integer/parseInt (get-in resp [:headers "Content-Length"]))))))
+
+(def transit-msgpack-echo
+  (wrap-transit-msgpack-response identity))
+
+(deftest format-transit-msgpack-hashmap
+  (let [body {:foo "bar"}
+        req {:body body}
+        resp (transit-msgpack-echo req)]
+    (is (= body (read-transit :msgpack (:body resp))))
+    (is (.contains (get-in resp [:headers "Content-Type"]) "application/transit+msgpack"))
+    (is (< 2 (Integer/parseInt (get-in resp [:headers "Content-Length"]))))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Content-Type parsing ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (deftest can-encode?-accept-any-type
   (is (can-encode? {:enc-type {:type "foo" :sub-type "bar"}}

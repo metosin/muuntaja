@@ -1,7 +1,8 @@
 (ns ring.middleware.format-params
   (:require [cheshire.core :as json]
             [clj-yaml.core :as yaml]
-            [clojure.tools.reader.edn :as edn])
+            [clojure.tools.reader.edn :as edn]
+            [cognitect.transit :as transit])
   (:import [com.ibm.icu.text CharsetDetector]
            [java.io ByteArrayInputStream InputStream ByteArrayOutputStream]
            [java.nio.charset Charset]))
@@ -78,20 +79,24 @@
                giving back a hash-map.
       :charset can be either a string representing a valid charset or a fn
                taking the req as argument and returning a valid charset.
+      :binary if true :charset will be ignored and decoder will receive
+              an InputStream
       :handle-error is a fn with a sig [exception handler request].
                     Return (handler obj) to continue working or directly
                     a map to answer immediately. Defaults to just rethrowing
                     the Exception"
-  [handler & {:keys [predicate decoder charset handle-error]}]
+  [handler & {:keys [predicate decoder charset handle-error binary]}]
   (fn [{:keys [#^InputStream body] :as req}]
     (try
       (if (and body (predicate req))
         (let [byts (slurp-to-bytes body)]
           (if (> (count byts) 0)
-            (let [body (:body req)
-                  #^String char-enc (if (string? charset) charset (charset (assoc req :body byts)))
-                  bstr (String. byts char-enc)
-                  fmt-params (decoder bstr)
+            (let [fmt-params
+                  (if binary
+                    (decoder (ByteArrayInputStream. byts))
+                    (let [#^String char-enc (if (string? charset) charset (charset (assoc req :body byts)))
+                          bstr (String. byts char-enc)]
+                      (decoder bstr)))
                   req* (assoc req
                          :body-params fmt-params
                          :params (merge (:params req)
@@ -184,20 +189,66 @@
                       :charset charset
                       :handle-error handle-error))
 
+(defn make-transit-decoder
+  [fmt opts]
+  (fn [in]
+    (let [rdr (transit/reader in fmt opts)]
+      (transit/read rdr))))
+
+(def transit-json-request?
+  (make-type-request-pred #"^application/(vnd.+)?(x-)?transit(\+json)?"))
+
+(defn wrap-transit-json-params
+  "Handles body params in transit format over json. You can use an :options key to pass
+   a map with :handlers and :default-handler to transit-clj. See wrap-format-params
+   for details."
+  [handler & {:keys [predicate decoder charset binary handle-error options]
+              :or {predicate transit-json-request?
+                   options {}
+                   decoder (make-transit-decoder :json options)
+                   binary true
+                   handle-error default-handle-error}}]
+  (wrap-format-params handler
+                      :predicate predicate
+                      :decoder decoder
+                      :binary binary
+                      :handle-error handle-error))
+
+(def transit-msgpack-request?
+  (make-type-request-pred #"^application/(vnd.+)?(x-)?transit\+msgpack"))
+
+(defn wrap-transit-msgpack-params
+  "Handles body params in transit format over msgpack. You can use an :options key to pass
+   a map with :handlers and :default-handler to transit-clj. See wrap-format-params for details."
+  [handler & {:keys [predicate decoder charset binary handle-error options]
+              :or {predicate transit-msgpack-request?
+                   options {}
+                   decoder (make-transit-decoder :msgpack options)
+                   binary true
+                   handle-error default-handle-error}}]
+  (wrap-format-params handler
+                      :predicate predicate
+                      :decoder decoder
+                      :binary binary
+                      :handle-error handle-error))
+
 (def format-wrappers
   {:json wrap-json-params
    :json-kw wrap-json-kw-params
    :edn wrap-clojure-params
    :yaml wrap-yaml-params
-   :yaml-kw wrap-yaml-kw-params})
+   :yaml-kw wrap-yaml-kw-params
+   :transit-json wrap-transit-json-params
+   :transit-msgpack wrap-transit-msgpack-params})
 
 (defn wrap-restful-params
   "Wrapper that tries to do the right thing with the request :body and provide
-   a solid basis for a RESTful API. It will deserialize to JSON, YAML or Clojure
-   depending on Content-Type header. See wrap-format-response for more details."
+   a solid basis for a RESTful API. It will deserialize to JSON, YAML, transit
+   or Clojure depending on Content-Type header. See wrap-format-response for
+   more details."
   [handler & {:keys [handle-error formats]
               :or {handle-error default-handle-error
-                   formats [:json :edn :yaml]}}]
+                   formats [:json :edn :yaml :transit-mspack :transit-json]}}]
   (reduce (fn [h format]
             (if-let [wrapper (if
                               (fn? format) format
