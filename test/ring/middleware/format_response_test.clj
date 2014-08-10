@@ -38,6 +38,20 @@
         resp ((wrap-json-response identity :pretty true) req)]
     (is (.contains (slurp (:body resp)) "\n "))))
 
+(deftest returns-correct-charset
+  (let [body {:foo "bârçï"}
+        req {:body body :headers {"accept-charset" "utf-16"}}
+        resp ((wrap-json-response identity) req)]
+    (is (.contains (get-in resp [:headers "Content-Type"]) "utf-16"))
+    (is (= 32 (Integer/parseInt (get-in resp [:headers "Content-Length"]))))))
+
+(deftest returns-utf8-by-default
+  (let [body {:foo "bârçï"}
+        req {:body body :headers {"accept-charset" "foo"}}
+        resp ((wrap-json-response identity) req)]
+    (is (.contains (get-in resp [:headers "Content-Type"]) "utf-8"))
+    (is (= 18 (Integer/parseInt (get-in resp [:headers "Content-Length"]))))))
+
 (def clojure-echo
   (wrap-clojure-response identity))
 

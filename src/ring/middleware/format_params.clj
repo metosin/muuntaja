@@ -2,6 +2,7 @@
   (:require [cheshire.core :as json]
             [clj-yaml.core :as yaml]
             [clojure.tools.reader.edn :as edn]
+            [clojure.string :as str]
             [cognitect.transit :as transit])
   (:import [com.ibm.icu.text CharsetDetector]
            [java.io ByteArrayInputStream InputStream ByteArrayOutputStream]
@@ -11,7 +12,7 @@
 
 (def available-charsets
   "Set of recognised charsets by the current JVM"
-  (into #{} (.keySet (Charset/availableCharsets))))
+  (into #{} (map str/lower-case (.keySet (Charset/availableCharsets)))))
 
 (defn ^:no-doc guess-charset
   [{:keys [#^bytes body]}]

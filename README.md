@@ -9,7 +9,7 @@ This is a set of middlewares that can be used to deserialize parameters sent in 
 `ring-middleware-format` is available as a Maven artifact from [Clojars](http://clojars.org/ring-middleware-format). You can add this in your `project.clj` with leiningen:
 
 ```clojure
-[ring-middleware-format "0.4.0"]
+[ring-middleware-format "0.4.0-SNAPSHOT"]
 ```
 
 ## Features ##
@@ -17,6 +17,7 @@ This is a set of middlewares that can be used to deserialize parameters sent in 
  - Ring compatible middleware, works with any web framework build on top of Ring
  - Automatically parses requests and encodes responses according to Content-Type and Accept headers
  - Automatically handles charset detection of requests bodies, even if the charset given by the MIME type is absent or wrong (using ICU)
+ - Varied formats handled out of the box (*JSON*, *YAML*, *EDN*, *Transit over JSON or Msgpack*)
  - Pluggable system makes it easy to add to the standards encoders and decoders custom ones (proprietary format, Protobuf, specific xml, csv, etc.)
 
 ## Summary ##
@@ -135,6 +136,6 @@ This module aims to be both easy to use and easy to extend to new formats. Howev
 
 ## License ##
 
-Copyright (C) 2011, 2012, 2013 Nils Grunwald
+Copyright (C) 2011, 2012, 2013, 2014 Nils Grunwald
 
 Distributed under the Eclipse Public License, the same as Clojure.

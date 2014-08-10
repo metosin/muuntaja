@@ -7,9 +7,14 @@
             [cognitect.transit :as transit])
   (:use [clojure.core.memoize :only [lu]])
   (:import [java.io File InputStream BufferedInputStream
-            ByteArrayOutputStream]))
+            ByteArrayOutputStream]
+           [java.nio.charset Charset]))
 
 (set! *warn-on-reflection* true)
+
+(def available-charsets
+  "Set of recognised charsets by the current JVM"
+  (into #{} (map s/lower-case (.keySet (Charset/availableCharsets)))))
 
 (defn ^:no-doc serializable?
   "Predicate that returns true whenever the response body is not a
@@ -107,6 +112,17 @@
   [e _ _]
   (throw e))
 
+(defn default-charset-extractor
+  "Default charset extractor, which returns either *Accept-Charset*
+   header field or *utf-8*"
+  [request]
+  (if-let [wanted-charset (get-in request [:headers "accept-charset"])]
+    (let [charset (s/lower-case wanted-charset)]
+      (if (available-charsets charset)
+       charset
+       "utf-8"))
+    "utf-8"))
+
 (defn wrap-format-response
   "Wraps a handler such that responses body to requests are formatted to
   the right format. If no *Accept* header is found, use the first encoder.
@@ -157,7 +173,7 @@
                              (fn [s] (json/generate-string s {:pretty pretty}))
                              json/generate-string)
                    type "application/json"
-                   charset "utf-8"
+                   charset default-charset-extractor
                    handle-error default-handle-error}}]
   (wrap-format-response handler
                         :predicate predicate
@@ -186,7 +202,7 @@
               :or {predicate serializable?
                    encoder generate-native-clojure
                    type "application/edn"
-                   charset "utf-8"
+                   charset default-charset-extractor
                    hf false
                    handle-error default-handle-error}}]
   (wrap-format-response handler
@@ -204,7 +220,7 @@
               :or {predicate serializable?
                    encoder yaml/generate-string
                    type "application/x-yaml"
-                   charset "utf-8"
+                   charset default-charset-extractor
                    handle-error default-handle-error}}]
   (wrap-format-response handler
                         :predicate predicate
@@ -227,7 +243,7 @@
               :or {predicate serializable?
                    encoder wrap-yaml-in-html
                    type "text/html"
-                   charset "utf-8"
+                   charset default-charset-extractor
                    handle-error default-handle-error}}]
   (wrap-format-response handler
                         :predicate predicate
@@ -261,6 +277,7 @@
   (wrap-format-response handler
                         :predicate predicate
                         :encoders [(make-encoder encoder type :binary)]
+                        :charset nil
                         :handle-error handle-error))
 
 (defn wrap-transit-msgpack-response
@@ -274,6 +291,7 @@
   (wrap-format-response handler
                         :predicate predicate
                         :encoders [(make-encoder encoder type :binary)]
+                        :charset nil
                         :handle-error handle-error))
 
 (def ^:no-doc format-encoders
@@ -298,7 +316,7 @@
   *:transit-msgpack*."
   [handler & {:keys [handle-error formats charset binary?]
               :or {handle-error default-handle-error
-                   charset "utf-8"
+                   charset default-charset-extractor
                    formats [:json :yaml :edn :clojure :yaml-in-html :transit-json :transit-msgpack]}}]
   (let [encoders (for [format formats
                        :when format

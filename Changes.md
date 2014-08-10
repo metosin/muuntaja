@@ -5,6 +5,9 @@
  - Support for binary encodings
  - Support of Transact format over both JSON and Msgpack
 
+### Bugfixes
+ - Uses *Accept-Charset* header to choose response charset
+ 
 ### Other
  - Easier customizing of error handlers for `format` namespace
 
