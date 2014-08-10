@@ -9,7 +9,9 @@
   (:import [java.io File InputStream BufferedInputStream
             ByteArrayOutputStream]))
 
-(defn serializable?
+(set! *warn-on-reflection* true)
+
+(defn ^:no-doc serializable?
   "Predicate that returns true whenever the response body is not a
   String, File or InputStream."
   [_ {:keys [body] :as response}]
@@ -21,7 +23,7 @@
 
 (defn can-encode?
   "Check whether encoder can encode to accepted-type.
-  Accepted-type should have keys :type and :sub-type with appropriate
+  Accepted-type should have keys *:type* and *:sub-type* with appropriate
   values."
   [{:keys [enc-type] :as encoder} {:keys [type sub-type] :as accepted-type}]
   (or (= "*" type)
@@ -29,7 +31,7 @@
            (or (= "*" sub-type)
                (= (enc-type :sub-type) sub-type)))))
 
-(defn sort-by-check
+(defn ^:no-doc sort-by-check
   [by check headers]
   (sort-by by (fn [a b]
                 (cond (= (= a check) (= b check)) 0
@@ -37,7 +39,7 @@
                       :else -1))
            headers))
 
-(defn- parse-accept-header*
+(defn parse-accept-header*
   "Parse Accept headers into a sorted sequence of maps.
   \"application/json;level=1;q=0.4\"
   => ({:type \"application\" :sub-type \"json\"
@@ -67,14 +69,16 @@
        (sort-by-check :sub-type "*")
        (sort-by :q >)))
 
-(def parse-accept-header (lu parse-accept-header* {} :lu/threshold 500))
+(def parse-accept-header
+  "Memoized form of [[parse-accept-header*]]"
+  (lu parse-accept-header* {} :lu/threshold 500))
 
 (defn preferred-encoder
   "Return the encoder that encodes to the most preferred type.
-  If the Accept header of the request is a string, assume it is
+  If the *Accept* header of the request is a *String*, assume it is
   according to Ring spec. Else assume the header is a sequence of
   accepted types sorted by their preference. If no accepted encoder is
-  found, return nil. If no Accept header is found, return the first
+  found, return *nil*. If no *Accept* header is found, return the first
   encoder."
   [encoders req]
   (if-let [accept (get-in req [:headers "accept"] (:content-type req))]
@@ -87,9 +91,9 @@
     (first encoders)))
 
 (defn make-encoder
-  "Return a encoder map suitable for wrap-format-response.
+  "Return a encoder map suitable for [[wrap-format-response.]]
    f takes a string and returns an encoded string
-   type Content-Type of the encoded string
+   type *Content-Type* of the encoded string
    (make-encoder json/generate-string \"application/json\")"
   ([encoder content-type binary?]
      {:encoder encoder
@@ -99,20 +103,24 @@
      (make-encoder encoder content-type false)))
 
 (defn default-handle-error
+  "Default error handling function used, which rethrows the Exception"
   [e _ _]
   (throw e))
 
 (defn wrap-format-response
   "Wraps a handler such that responses body to requests are formatted to
-  the right format. If no Accept header is found, use the first encoder.
-  :predicate is a predicate taking the request and response as
-             arguments to test if serialization should be used
-  :encoders a sequence of maps given by make-encoder
-  :charset can be either a string representing a valid charset or a fn
-           taking the req as argument and returning a valid charset
-           (utf-8 is strongly suggested)
-  :handle-error is a fn with a sig [exception request response]. Defaults
-                to just rethrowing the Exception"
+  the right format. If no *Accept* header is found, use the first encoder.
+
+ + **:predicate** is a predicate taking the request and response as
+                  arguments to test if serialization should be used
+ + **:encoders** a sequence of maps given by make-encoder
+ + **:charset** can be either a string representing a valid charset or a fn
+                taking the req as argument and returning a valid charset
+                (*utf-8* is strongly suggested)
+ + **:binary?** if true *:charset* will be ignored and decoder will receive
+               an *InputStream*
+ + **:handle-error** is a fn with a sig [exception request response]. Defaults
+                     to just rethrowing the Exception"
   [handler & {:keys [predicate encoders charset binary? handle-error]}]
   (fn [req]
     (let [{:keys [headers body] :as response} (handler req)]
@@ -140,8 +148,8 @@
           (handle-error e req response))))))
 
 (defn wrap-json-response
-  "Wrapper to serialize structures in :body to JSON with sane defaults.
-  See wrap-format-response for more details."
+  "Wrapper to serialize structures in *:body* to JSON with sane defaults.
+  See [[wrap-format-response]] for more details."
   [handler & {:keys [predicate encoder type charset handle-error pretty]
               :or {predicate serializable?
                    pretty nil
@@ -159,21 +167,21 @@
 
 ;; Functions for Clojure native serialization
 
-(defn- generate-native-clojure
+(defn ^:no-doc generate-native-clojure
   [struct]
   (pr-str struct))
 
-(defn- generate-hf-clojure
+(defn ^:no-doc generate-hf-clojure
   [struct]
   (binding [*print-dup* true]
     (pr-str struct)))
 
 (defn wrap-clojure-response
-  "Wrapper to serialize structures in :body to Clojure native with sane defaults.
-  If :hf is set to true, will use *print-dup* for high-fidelity
+  "Wrapper to serialize structures in *:body* to Clojure native with sane defaults.
+  If *:hf* is set to true, will use *print-dup* for high-fidelity
   printing ( see
-  https://groups.google.com/d/msg/clojure/5wRBTPNu8qo/1dJbtHX0G-IJ ).
-  See wrap-format-response for more details."
+  [here](https://groups.google.com/d/msg/clojure/5wRBTPNu8qo/1dJbtHX0G-IJ) ).
+  See [[wrap-format-response]] for more details."
   [handler & {:keys [predicate encoder type charset hf handle-error]
               :or {predicate serializable?
                    encoder generate-native-clojure
@@ -190,8 +198,8 @@
                         :handle-error handle-error))
 
 (defn wrap-yaml-response
-  "Wrapper to serialize structures in :body to YAML with sane
-  defaults. See wrap-format-response for more details."
+  "Wrapper to serialize structures in *:body* to YAML with sane
+  defaults. See [[wrap-format-response]] for more details."
   [handler & {:keys [predicate encoder type charset handle-error]
               :or {predicate serializable?
                    encoder yaml/generate-string
@@ -204,7 +212,7 @@
                         :charset charset
                         :handle-error handle-error))
 
-(defn- wrap-yaml-in-html
+(defn ^:no-doc wrap-yaml-in-html
   [body]
   (str
    "<html>\n<head></head>\n<body><div><pre>\n"
@@ -212,8 +220,8 @@
    "</pre></div></body></html>"))
 
 (defn wrap-yaml-in-html-response
-  "Wrapper to serialize structures in :body to YAML wrapped in HTML to
-  check things out in the browser. See wrap-format-response for more
+  "Wrapper to serialize structures in *:body* to YAML wrapped in HTML to
+  check things out in the browser. See [[wrap-format-response]] for more
   details."
   [handler & {:keys [predicate encoder type charset handle-error]
               :or {predicate serializable?
@@ -231,7 +239,7 @@
 ;; Transit ;;
 ;;;;;;;;;;;;;
 
-(defn make-transit-encoder
+(defn ^:no-doc make-transit-encoder
   [fmt {:keys [verbose] :as options}]
   (fn [data]
     (let [out (ByteArrayOutputStream.)
@@ -243,8 +251,8 @@
       (.toByteArray out))))
 
 (defn wrap-transit-json-response
-  "Wrapper to serialize structures in :body to transit-json with sane defaults.
-  See wrap-format-response for more details."
+  "Wrapper to serialize structures in *:body* to transit over **JSON** with sane defaults.
+  See [[wrap-format-response]] for more details."
   [handler & {:keys [predicate encoder type handle-error options]
               :or {predicate serializable?
                    encoder (make-transit-encoder :json options)
@@ -256,8 +264,8 @@
                         :handle-error handle-error))
 
 (defn wrap-transit-msgpack-response
-  "Wrapper to serialize structures in :body to transit-msgpack with sane defaults.
-  See wrap-format-response for more details."
+  "Wrapper to serialize structures in *:body* to transit over **msgpack** with sane defaults.
+  See [[wrap-format-response]] for more details."
   [handler & {:keys [predicate encoder type handle-error options]
               :or {predicate serializable?
                    encoder (make-transit-encoder :msgpack options)
@@ -268,7 +276,7 @@
                         :encoders [(make-encoder encoder type :binary)]
                         :handle-error handle-error))
 
-(def format-encoders
+(def ^:no-doc format-encoders
   {:json (make-encoder json/generate-string "application/json")
    :json-kw (make-encoder json/generate-string "application/json")
    :edn (make-encoder generate-native-clojure "application/edn")
@@ -282,13 +290,13 @@
                                   "application/transit+msgpack" :binary)})
 
 (defn wrap-restful-response
-  "Wrapper that tries to do the right thing with the response :body
+  "Wrapper that tries to do the right thing with the response *:body*
   and provide a solid basis for a RESTful API. It will serialize to
-  JSON, YAML, Clojure or HTML-wrapped YAML depending on Accept header.
+  JSON, YAML, Clojure, Transit or HTML-wrapped YAML depending on Accept header.
   See wrap-format-response for more details. Recognized formats are
-  :json, :json-kw, :edn :yaml, :yaml-in-html, :transit-json,
-  :transit-msgpack."
-  [handler & {:keys [handle-error formats charset]
+  *:json*, *:json-kw*, *:edn* *:yaml*, *:yaml-in-html*, *:transit-json*,
+  *:transit-msgpack*."
+  [handler & {:keys [handle-error formats charset binary?]
               :or {handle-error default-handle-error
                    charset "utf-8"
                    formats [:json :yaml :edn :clojure :yaml-in-html :transit-json :transit-msgpack]}}]
@@ -302,5 +310,6 @@
     (wrap-format-response handler
                           :predicate serializable?
                           :encoders encoders
+                          :binary? binary?
                           :charset charset
                           :handle-error handle-error)))
