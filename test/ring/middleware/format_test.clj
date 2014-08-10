@@ -1,4 +1,4 @@
-(ns ring.middleware.test.format
+(ns ring.middleware.format-test
   (:use [clojure.test]
         [ring.middleware.format])
   (:require [cheshire.core :as json]
