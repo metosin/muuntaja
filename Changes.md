@@ -1,5 +1,13 @@
 # Changes for ring-middleware-format
 
+## 0.4.0
+### Features
+ - Support for binary encodings
+ - Support of Transact format over both JSON and Msgpack
+
+### Other
+ - Easier customizing of error handlers for `format` namespace
+
 ## 0.3.2 (2013-10-29)
 ### Bugfixes
   - Removed deprecated usage of cheshire.custom (__Simon Belak__)

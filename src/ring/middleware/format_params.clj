@@ -204,7 +204,7 @@
       (transit/read rdr))))
 
 (def ^:no-doc transit-json-request?
-  (make-type-request-pred #"^application/(vnd.+)?(x-)?transit(\+json)?"))
+  (make-type-request-pred #"^application/(vnd.+)?(x-)?transit\+json"))
 
 (defn wrap-transit-json-params
   "Handles body params in transit format over **JSON**. You can use an *:options* key to pass
