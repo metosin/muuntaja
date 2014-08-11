@@ -1,6 +1,7 @@
 (defproject ring-middleware-format "0.4.0-SNAPSHOT"
   :description "Ring middleware for parsing parameters and emitting
-  responses in various formats."
+  responses in various formats (mainly JSON, YAML and Transit out of
+  the box)"
   :url "https://github.com/ngrunwald/ring-middleware-format"
   :license {:name "Eclipse Public License - v 1.0"
             :url "http://www.eclipse.org/legal/epl-v10.html"

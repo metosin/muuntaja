@@ -6,19 +6,24 @@ This is a set of middlewares that can be used to deserialize parameters sent in 
 
 ## Installation ##
 
-`ring-middleware-format` is available as a Maven artifact from [Clojars](http://clojars.org/ring-middleware-format). You can add this in your `project.clj` with leiningen:
+Latest stable version:
 
-```clojure
-[ring-middleware-format "0.4.0-SNAPSHOT"]
-```
+[![Clojars Project](http://clojars.org/ring-middleware-format/latest-version.svg)](http://clojars.org/ring-middleware-format)
+
+Add this to your dependencies in `project.clj`.
 
 ## Features ##
 
  - Ring compatible middleware, works with any web framework build on top of Ring
  - Automatically parses requests and encodes responses according to Content-Type and Accept headers
  - Automatically handles charset detection of requests bodies, even if the charset given by the MIME type is absent or wrong (using ICU)
+ - Automatically selects and uses the right charset for the response according to the request header
  - Varied formats handled out of the box (*JSON*, *YAML*, *EDN*, *Transit over JSON or Msgpack*)
  - Pluggable system makes it easy to add to the standards encoders and decoders custom ones (proprietary format, Protobuf, specific xml, csv, etc.)
+
+## API Documentation ##
+
+Full [API documentation](http://ngrunwald.github.com/ring-middleware-format) is available.
 
 ## Summary ##
 
@@ -26,14 +31,10 @@ To get automatic deserialization and serialization for all supported formats wit
 
 ```clojure
 (ns my.app
-  (:use [ring.middleware.format])
-  (:require [compojure.handler :as handler]))
-
-(defroutes main-routes
-  ...)
+  (:require [ring.middleware.format :refer [wrap-restful-format]))
 
 (def app
-  (-> (handler/api main-routes)
+  (-> handler
       (wrap-restful-format)))
 ```
 `wrap-restful-format` accepts an optional `:formats` parameter, which is a list of the formats that should be handled. The first format of the list is also the default serializer used when no other solution can be found. The defaults are:
@@ -61,6 +62,8 @@ Please note the default JSON and YAML decoder do not keywordize their output key
 (wrap-restful-format handler :formats [:json-kw :edn :yaml-kw :yaml-in-html :transit-json :transit-msgpack])
 ```
 
+See also [wrap-restful-format](http://ngrunwald.github.com/ring-middleware-format/ring.middleware.format.html#var-wrap-restful-format) docstring for help on customizing error handling.
+
 ## Usage ##
 
 ### Detailed Usage ###
@@ -69,15 +72,11 @@ You can separate the params and response middlewares. This allows you to use the
 
 ```clojure
 (ns my.app
-  (:use [ring.middleware.format-params :only [wrap-restful-params]]
-        [ring.middleware.format-response :only [wrap-restful-response]])
-  (:require [compojure.handler :as handler]))
-
-(defroutes main-routes
-  ...)
+  (:require [ring.middleware.format-params :refer [wrap-restful-params]]
+            [ring.middleware.format-response :refer [wrap-restful-response]]))
 
 (def app
-  (-> (handler/api main-routes)
+  (-> handler
       (wrap-restful-params)
       (wrap-restful-response)))
 ```
@@ -94,7 +93,7 @@ There are six default wrappers:
 + `wrap-transit-json-params`
 + `wrap-transit-msgpack-params`
 
-There is also a generic `wrap-format-params` on which the others depend. Each of these wrappers take 3 optional args: `:decoder`, `:predicate` and `:charset`. See `wrap-format-params` docstring for further details.
+There is also a generic `wrap-format-params` on which the others depend. Each of these wrappers take 4 optional args: `:decoder`, `:predicate`, `:binary?` and `:charset`. See `wrap-format-params` docstring for further details.
 
 ### Response Format Middleware ###
 
@@ -109,7 +108,7 @@ There are six default wrappers:
 + `wrap-transit-json-params`
 + `wrap-transit-msgpack-params`
 
-There is also a generic `wrap-format-response` on which the others depend. Each of these wrappers take 3 optional args: `:encoders`, `:predicate`, and `:charset`. See `wrap-format-response` docstring for further details.
+There is also a generic `wrap-format-response` on which the others depend. Each of these wrappers take 4 optional args: `:encoders`, `:predicate`, `binary?` and `:charset`. See `wrap-format-response` docstring for further details.
 
 ### Custom formats ###
 
