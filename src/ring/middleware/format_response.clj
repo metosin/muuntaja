@@ -96,6 +96,7 @@
     (first encoders)))
 
 (defn parse-charset-accepted
+  "Parses an *accept-charset* string to a list of [*charset* *quality-score*]"
   [v]
   (let [segments (s/split v #",")
         choices (for [segment segments
@@ -109,6 +110,7 @@
     choices))
 
 (defn preferred-charset
+  "Returns an acceptable choice from a list of [*charset* *quality-score*]"
   [charsets]
   (or
    (->> (sort-by second charsets)
@@ -134,13 +136,23 @@
   [e _ _]
   (throw e))
 
+(defn choose-charset*
+  "Returns an useful charset from the accept-charset string.
+   Defaults to utf-8"
+  [accept-charset]
+  (let [possible-charsets (parse-charset-accepted accept-charset)]
+      (preferred-charset possible-charsets)))
+
+(def choose-charset
+  "Memoized form of [[choose-charset*]]"
+  (lu choose-charset* {} :lu/threshold 500))
+
 (defn default-charset-extractor
   "Default charset extractor, which returns either *Accept-Charset*
    header field or *utf-8*"
   [request]
-  (if-let [wanted-charset (get-in request [:headers "accept-charset"])]
-    (let [possible-charsets (parse-charset-accepted wanted-charset)]
-      (preferred-charset possible-charsets))
+  (if-let [accept-charset (get-in request [:headers "accept-charset"])]
+    (choose-charset accept-charset)
     "utf-8"))
 
 (defn wrap-format-response
