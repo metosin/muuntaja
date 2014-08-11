@@ -1,4 +1,4 @@
-(defproject ring-middleware-format "0.4.0"
+(defproject ring-middleware-format "0.4.1-SNAPSHOT"
   :description "Ring middleware for parsing parameters and emitting
   responses in various formats (mainly JSON, YAML and Transit out of
   the box)"
@@ -16,6 +16,6 @@
                  [clj-yaml "0.4.0"]
                  [com.cognitect/transit-clj "0.8.247"]]
   :plugins [[codox "0.8.10"]]
-  :codox {:src-dir-uri "http://github.com/ngrunwald/ring-middleware-format/blob/release-0.4.0/"
+  :codox {:src-dir-uri "http://github.com/ngrunwald/ring-middleware-format/blob/master/"
           :src-linenum-anchor-prefix "L"
           :defaults {:doc/format :markdown}})
