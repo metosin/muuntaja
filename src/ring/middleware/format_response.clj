@@ -95,6 +95,28 @@
              encoder))
     (first encoders)))
 
+(defn parse-charset-accepted
+  [v]
+  (let [segments (s/split v #",")
+        choices (for [segment segments
+                      :when (not (empty? segment))
+                      :let [[_ charset qs] (re-find #"([^;]+)(?:;\s*q\s*=\s*([0-9\.]+))?" segment)]
+                      :when charset
+                      :let [qscore (try
+                                     (Double/parseDouble (s/trim qs))
+                                     (catch Exception e 1))]]
+                  [(s/trim charset) qscore])]
+    choices))
+
+(defn preferred-charset
+  [charsets]
+  (or
+   (->> (sort-by second charsets)
+        (filter (comp available-charsets first))
+        (first)
+        (first))
+   "utf-8"))
+
 (defn make-encoder
   "Return a encoder map suitable for [[wrap-format-response.]]
    f takes a string and returns an encoded string
@@ -117,10 +139,8 @@
    header field or *utf-8*"
   [request]
   (if-let [wanted-charset (get-in request [:headers "accept-charset"])]
-    (let [charset (s/lower-case wanted-charset)]
-      (if (available-charsets charset)
-       charset
-       "utf-8"))
+    (let [possible-charsets (parse-charset-accepted wanted-charset)]
+      (preferred-charset possible-charsets))
     "utf-8"))
 
 (defn wrap-format-response

@@ -40,7 +40,7 @@
 
 (deftest returns-correct-charset
   (let [body {:foo "bârçï"}
-        req {:body body :headers {"accept-charset" "utf-16"}}
+        req {:body body :headers {"accept-charset" "utf8; q=0.8 , utf-16"}}
         resp ((wrap-json-response identity) req)]
     (is (.contains (get-in resp [:headers "Content-Type"]) "utf-16"))
     (is (= 32 (Integer/parseInt (get-in resp [:headers "Content-Length"]))))))
