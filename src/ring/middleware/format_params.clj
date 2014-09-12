@@ -128,7 +128,7 @@
                       :predicate predicate
                       :decoder decoder
                       :charset charset
-                      :handle-error default-handle-error))
+                      :handle-error handle-error))
 
 (defn wrap-json-kw-params
   "Handles body params in JSON format. Parses map keys as keywords.
@@ -142,7 +142,7 @@
                       :predicate predicate
                       :decoder (fn [struct] (decoder struct true))
                       :charset charset
-                      :handle-error default-handle-error))
+                      :handle-error handle-error))
 
 (def ^:no-doc yaml-request?
   (make-type-request-pred #"^(application|text)/(vnd.+)?(x-)?yaml"))
