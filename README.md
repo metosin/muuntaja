@@ -31,7 +31,7 @@ To get automatic deserialization and serialization for all supported formats wit
 
 ```clojure
 (ns my.app
-  (:require [ring.middleware.format :refer [wrap-restful-format]))
+  (:require [ring.middleware.format :refer [wrap-restful-format]]))
 
 (def app
   (-> handler
