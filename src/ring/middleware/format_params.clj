@@ -214,12 +214,11 @@
   [handler & {:keys [predicate decoder charset binary? handle-error options]
               :or {predicate transit-json-request?
                    options {}
-                   decoder (make-transit-decoder :json options)
                    binary? true
                    handle-error default-handle-error}}]
   (wrap-format-params handler
                       :predicate predicate
-                      :decoder decoder
+                      :decoder (or decoder (make-transit-decoder :json options))
                       :binary? binary?
                       :handle-error handle-error))
 
@@ -232,12 +231,11 @@
   [handler & {:keys [predicate decoder charset binary? handle-error options]
               :or {predicate transit-msgpack-request?
                    options {}
-                   decoder (make-transit-decoder :msgpack options)
                    binary? true
                    handle-error default-handle-error}}]
   (wrap-format-params handler
                       :predicate predicate
-                      :decoder decoder
+                      :decoder (or decoder (make-transit-decoder :msgpack options))
                       :binary? binary?
                       :handle-error handle-error))
 

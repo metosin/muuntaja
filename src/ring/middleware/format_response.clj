@@ -201,17 +201,19 @@
   [handler & {:keys [predicate encoder type charset handle-error pretty]
               :or {predicate serializable?
                    pretty nil
-                   encoder (if pretty
-                             (fn [s] (json/generate-string s {:pretty pretty}))
-                             json/generate-string)
                    type "application/json"
                    charset default-charset-extractor
                    handle-error default-handle-error}}]
-  (wrap-format-response handler
-                        :predicate predicate
-                        :encoders [(make-encoder encoder type)]
-                        :charset charset
-                        :handle-error handle-error))
+  (let [encoder (or
+                  encoder
+                  (if pretty
+                    (fn [s] (json/generate-string s {:pretty pretty}))
+                    json/generate-string))]
+    (wrap-format-response handler
+                          :predicate predicate
+                          :encoders [(make-encoder encoder type)]
+                          :charset charset
+                          :handle-error handle-error)))
 
 ;; Functions for Clojure native serialization
 
@@ -303,28 +305,28 @@
   See [[wrap-format-response]] for more details."
   [handler & {:keys [predicate encoder type handle-error options]
               :or {predicate serializable?
-                   encoder (make-transit-encoder :json options)
                    type "application/transit+json"
                    handle-error default-handle-error}}]
-  (wrap-format-response handler
-                        :predicate predicate
-                        :encoders [(make-encoder encoder type :binary)]
-                        :charset nil
-                        :handle-error handle-error))
+  (let [encoder (or encoder (make-transit-encoder :json options))]
+    (wrap-format-response handler
+                          :predicate predicate
+                          :encoders [(make-encoder encoder type :binary)]
+                          :charset nil
+                          :handle-error handle-error)))
 
 (defn wrap-transit-msgpack-response
   "Wrapper to serialize structures in *:body* to transit over **msgpack** with sane defaults.
   See [[wrap-format-response]] for more details."
   [handler & {:keys [predicate encoder type handle-error options]
               :or {predicate serializable?
-                   encoder (make-transit-encoder :msgpack options)
                    type "application/transit+msgpack"
                    handle-error default-handle-error}}]
-  (wrap-format-response handler
-                        :predicate predicate
-                        :encoders [(make-encoder encoder type :binary)]
-                        :charset nil
-                        :handle-error handle-error))
+  (let [encoder (or encoder (make-transit-encoder :msgpack options))]
+    (wrap-format-response handler
+                          :predicate predicate
+                          :encoders [(make-encoder encoder type :binary)]
+                          :charset nil
+                          :handle-error handle-error)))
 
 (def ^:no-doc format-encoders
   {:json (make-encoder json/generate-string "application/json")
