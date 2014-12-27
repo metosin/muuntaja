@@ -226,3 +226,14 @@
     (is (= "application/json; charset=utf-8" (get-in resp [:headers "Content-Type"])))
     (is (= "0" (get-in resp [:headers "Content-Length"])))
     (is (nil? (:body resp)))))
+
+(def restful-echo-pred
+  (wrap-restful-response identity :predicate (fn [_ resp]
+                                               (::serializable? resp))))
+
+(deftest custom-predicate
+  (let [req {:body {:foo "bar"}}
+        resp-non-serialized (restful-echo-pred (assoc req ::serializable? false))
+        resp-serialized     (restful-echo-pred (assoc req ::serializable? true))]
+    (is (map? (:body resp-non-serialized)))
+    (is (instance? java.io.BufferedInputStream (:body resp-serialized)))))

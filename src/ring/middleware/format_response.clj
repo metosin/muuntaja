@@ -348,8 +348,9 @@
   See wrap-format-response for more details. Recognized formats are
   *:json*, *:json-kw*, *:edn* *:yaml*, *:yaml-in-html*, *:transit-json*,
   *:transit-msgpack*."
-  [handler & {:keys [handle-error formats charset binary?]
+  [handler & {:keys [predicate handle-error formats charset binary?]
               :or {handle-error default-handle-error
+                   predicate serializable?
                    charset default-charset-extractor
                    formats [:json :yaml :edn :clojure :yaml-in-html :transit-json :transit-msgpack]}}]
   (let [encoders (for [format formats
@@ -360,7 +361,7 @@
                        :when encoder]
                    encoder)]
     (wrap-format-response handler
-                          :predicate serializable?
+                          :predicate predicate
                           :encoders encoders
                           :binary? binary?
                           :charset charset
