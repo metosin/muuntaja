@@ -253,13 +253,13 @@
    a solid basis for a RESTful API. It will deserialize to *JSON*, *YAML*, *Transit*
    or *Clojure* depending on Content-Type header. See [[wrap-format-params]] for
    more details."
-  [handler & {:keys [handle-error formats]
+  [handler & {:keys [handle-error formats format-options]
               :or {handle-error default-handle-error
                    formats [:json :edn :yaml :transit-msgpack :transit-json]}}]
   (reduce (fn [h format]
             (if-let [wrapper (if
                               (fn? format) format
                               (format-wrappers (keyword format)))]
-              (wrapper h :handle-error handle-error)
+              (wrapper h :handle-error handle-error :options (get format-options format))
               h))
           handler formats))

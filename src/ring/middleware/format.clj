@@ -16,12 +16,11 @@
    or the response encoding with *:response-error-handler*. See
    [[ring.middleware.format-params/wrap-format-params]] and
    [[ring.middleware.format-response/wrap-format-response]] for details"
-  [handler & {:keys [formats response-error-handler request-error-handler]
+  [handler & {:keys [formats response-error-handler request-error-handler response-opts params-opts]
               :or {formats [:json :edn :yaml :yaml-in-html
                             :transit-msgpack :transit-json]
                    response-error-handler res/default-handle-error
-                   request-error-handler par/default-handle-error}
-              :as options}]
+                   request-error-handler par/default-handle-error}}]
   (-> handler
-      (par/wrap-restful-params :formats formats :handle-error request-error-handler)
-      (res/wrap-restful-response :formats formats :handle-error response-error-handler)))
+      (par/wrap-restful-params :formats formats :handle-error request-error-handler :format-options params-opts)
+      (res/wrap-restful-response :formats formats :handle-error response-error-handler :format-options response-opts)))
