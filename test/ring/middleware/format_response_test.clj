@@ -182,7 +182,11 @@
     (is (.contains (get-in (restful-echo {:headers {"accept" "foo/bar"}})
                            [:headers "Content-Type"])
                    "application/json"))
-    (is (= 500 (get (safe-restful-echo {:headers {"accept" "foo/bar"}}) :status)))))
+    (is (= 500 (get (safe-restful-echo {:status 200
+                                        :headers {"accept" "foo/bar"}
+                                        ; a non serializable, non-nil body is required, otherwise
+                                        ; teh response is passed through unchanged
+                                        :body {}}) :status)))))
 
 (deftest format-restful-hashmap
   (let [body {:foo "bar"}]
@@ -212,3 +216,12 @@
         resp (custom-restful-echo req)]
     (is (.contains (get-in resp [:headers "Content-Type"]) "text/foo"))
     (is (< 2 (Integer/parseInt (get-in resp [:headers "Content-Length"]))))))
+
+(deftest nil-body-handling
+  (let [req {:body {:headers {"accept" "application/json"}}}
+        handler (-> (constantly {:status 200
+                              :headers {}})
+                 wrap-restful-response)
+        resp (handler req)]
+    (is (= "application/json; charset=utf-8" (get-in resp [:headers "Content-Type"])))
+    (is (nil? (:body resp)))))

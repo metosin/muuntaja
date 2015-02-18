@@ -181,14 +181,14 @@
                         ctype (str (enc-type :type) "/" (enc-type :sub-type))]
                     [body* ctype])
                   (let [^String char-enc (if (string? charset) charset (charset req))
-                        ^String body-string (encoder body)
+                        ^String body-string (if (nil? body) "" (encoder body))
                         body* (.getBytes body-string char-enc)
                         ctype (str (enc-type :type) "/" (enc-type :sub-type)
                                    "; charset=" char-enc)]
                     [body* ctype]))
                   body-length (count body*)]
             (-> response
-                (assoc :body (io/input-stream body*))
+                (assoc :body (if (pos? body-length) (io/input-stream body*) nil))
                 (res/content-type content-type)
                 (res/header "Content-Length" body-length)))
           response)
