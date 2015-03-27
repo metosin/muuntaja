@@ -189,6 +189,8 @@
     (doseq [accept ["application/edn"
                     "application/json"
                     "application/x-yaml"
+                    "application/transit+json"
+                    "application/transit+msgpack"
                     "text/html"]]
       (let [req {:body body :headers {"accept" accept}}
             resp (restful-echo req)]

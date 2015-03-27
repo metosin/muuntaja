@@ -334,9 +334,9 @@
    :yaml (make-encoder yaml/generate-string "application/x-yaml")
    :yaml-kw (make-encoder yaml/generate-string "application/x-yaml")
    :yaml-in-html (make-encoder wrap-yaml-in-html "text/html")
-   :transit-json (make-encoder wrap-transit-json-response
+   :transit-json (make-encoder (make-transit-encoder :json {})
                                "application/transit+json" :binary)
-   :transit-msgpack (make-encoder wrap-transit-msgpack-response
+   :transit-msgpack (make-encoder (make-transit-encoder :msgpack {})
                                   "application/transit+msgpack" :binary)})
 
 (defn wrap-restful-response
