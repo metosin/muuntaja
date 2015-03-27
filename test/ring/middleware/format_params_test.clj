@@ -165,3 +165,15 @@
     (fn [request]
       (is (nil? (:body request)))))
    {:body nil}))
+
+(deftest test-custom-handle-error
+  (are [format content-type body]
+    (let [req {:body body
+               :content-type content-type}
+          resp ((wrap-restful-params identity
+                                     :formats [format]
+                                     :handle-error (constantly {:status 999}))
+                req)]
+      (= 999 (:status resp)))
+    :json "application/json" "{:a 1}"
+    :edn "application/edn" "{\"a\": 1}"))
