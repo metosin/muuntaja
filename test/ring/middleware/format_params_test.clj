@@ -20,7 +20,7 @@
              :body (stream "<xml></xml>")
              :params {"id" 3}}
         resp (json-echo req)]
-    (is (= "<xml></xml>") (slurp (:body resp)))
+    (is (= "<xml></xml>" (slurp (:body resp))))
     (is (= {"id" 3} (:params resp)))
     (is (nil? (:json-params resp)))))
 
