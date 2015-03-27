@@ -1,6 +1,18 @@
 # Changes for ring-middleware-format
 
-## 0.4.0
+## 0.5.0 (2015-03-27)
+### Breaking Changes
+ - Allow nil to be returned as empty body with correct Content-Type instead of serialized (__Howard M. Lewis Ship__ and __curious-attempt-bunny__)
+
+### Bugfixes
+ - Fix transact format middleware (__Deraen__)
+ - Actually used given error-handler in wrap-json-params (__aykuznetsova__)
+ - Fix a potential bug using an unsupported feature of Clojure destructuring (__Michael Blume__)
+
+### Other
+ - Typo and test fixes (__Chris McDevitt__, __Wei Hsu__ and __ducky427__)
+
+## 0.4.0 (2014-08-13)
 ### Features
  - Support for binary encodings
  - Support of Transact format over both JSON and Msgpack
