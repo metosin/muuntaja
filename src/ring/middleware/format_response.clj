@@ -127,7 +127,9 @@
   ([encoder content-type binary?]
      {:encoder encoder
       :enc-type (first (parse-accept-header content-type))
-      :binary? binary?})
+      :binary? binary?
+      ;; Include content-type to allow later introspection of encoders.
+      :content-type content-type})
   ([encoder content-type]
      (make-encoder encoder content-type false)))
 
