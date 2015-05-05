@@ -252,7 +252,9 @@
   "Wrapper that tries to do the right thing with the request :body and provide
    a solid basis for a RESTful API. It will deserialize to *JSON*, *YAML*, *Transit*
    or *Clojure* depending on Content-Type header. See [[wrap-format-params]] for
-   more details."
+   more details.
+   Options to specific format decoders can be passed in using *:format-options*
+   option. If should be map of format keyword to options map."
   [handler & {:keys [handle-error formats format-options]
               :or {handle-error default-handle-error
                    formats [:json :edn :yaml :transit-msgpack :transit-json]}}]

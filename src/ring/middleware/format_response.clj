@@ -354,7 +354,9 @@
   JSON, YAML, Clojure, Transit or HTML-wrapped YAML depending on Accept header.
   See wrap-format-response for more details. Recognized formats are
   *:json*, *:json-kw*, *:edn* *:yaml*, *:yaml-in-html*, *:transit-json*,
-  *:transit-msgpack*."
+  *:transit-msgpack*.
+  Options to specific encoders can be passed in using *:format-options*
+  option. If is a map from format keyword to options map."
   [handler & {:keys [predicate handle-error formats charset binary? format-options]
               :or {handle-error default-handle-error
                    predicate serializable?
