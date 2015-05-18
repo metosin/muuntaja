@@ -105,8 +105,8 @@ There are six default wrappers:
 + `wrap-yaml-response`
 + `wrap-yaml-in-html-response` (responds to **text/html** MIME type and useful to test an API in the browser)
 + `wrap-clojure-response`
-+ `wrap-transit-json-params`
-+ `wrap-transit-msgpack-params`
++ `wrap-transit-json-response`
++ `wrap-transit-msgpack-response`
 
 There is also a generic `wrap-format-response` on which the others depend. Each of these wrappers take 4 optional args: `:encoders`, `:predicate`, `binary?` and `:charset`. See `wrap-format-response` docstring for further details.
 
