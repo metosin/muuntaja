@@ -12,8 +12,10 @@
                  [ring "1.3.2"]
                  [cheshire "5.4.0"]
                  [org.clojure/tools.reader "0.8.16"]
+                 [com.google.guava/guava "18.0"]
                  [com.ibm.icu/icu4j "54.1"]
                  [clj-yaml "0.4.0"]
+                 [clojure-msgpack "1.1.0"]
                  [com.cognitect/transit-clj "0.8.269"]]
   :plugins [[codox "0.8.11"]]
   :codox {:src-dir-uri "http://github.com/ngrunwald/ring-middleware-format/blob/master/"
