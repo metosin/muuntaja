@@ -3,8 +3,10 @@
         [ring.middleware.format-response])
   (:require [cheshire.core :as json]
             [clj-yaml.core :as yaml]
-            [cognitect.transit :as transit])
-  (:import [java.io ByteArrayInputStream]))
+            [clojure.walk :refer [stringify-keys keywordize-keys]]
+            [cognitect.transit :as transit]
+            [msgpack.core :as msgpack])
+  (:import [java.io ByteArrayInputStream InputStream ByteArrayOutputStream]))
 
 (defn stream [s]
   (ByteArrayInputStream. (.getBytes s "UTF-8")))
@@ -51,6 +53,30 @@
         resp ((wrap-json-response identity) req)]
     (is (.contains (get-in resp [:headers "Content-Type"]) "utf-8"))
     (is (= 18 (Integer/parseInt (get-in resp [:headers "Content-Length"]))))))
+
+(def msgpack-echo
+  (wrap-msgpack-response identity))
+
+(defn ^:no-doc slurp-to-bytes
+  #^bytes
+  [#^InputStream in]
+  (if in
+    (let [buf (byte-array 4096)
+          out (ByteArrayOutputStream.)]
+      (loop []
+        (let [r (.read in buf)]
+          (when (not= r -1)
+            (.write out buf 0 r)
+            (recur))))
+      (.toByteArray out))))
+
+(deftest format-msgpack-hashmap
+  (let [body {:foo "bar"}
+        req {:body body}
+        resp (msgpack-echo req)]
+    (is (= body (keywordize-keys (msgpack/unpack (slurp-to-bytes (:body resp))))))
+    (is (.contains (get-in resp [:headers "Content-Type"]) "application/msgpack"))
+    (is (< 2 (Integer/parseInt (get-in resp [:headers "Content-Length"]))))))
 
 (def clojure-echo
   (wrap-clojure-response identity))
@@ -192,6 +218,7 @@
   (let [body {:foo "bar"}]
     (doseq [accept ["application/edn"
                     "application/json"
+                    "application/msgpack"
                     "application/x-yaml"
                     "application/transit+json"
                     "application/transit+msgpack"

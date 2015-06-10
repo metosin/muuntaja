@@ -3,7 +3,9 @@
             [clj-yaml.core :as yaml]
             [clojure.tools.reader.edn :as edn]
             [clojure.string :as str]
-            [cognitect.transit :as transit])
+            [clojure.walk :refer [stringify-keys keywordize-keys]]
+            [cognitect.transit :as transit]
+            [msgpack.core :as msgpack])
   (:import [com.ibm.icu.text CharsetDetector]
            [java.io ByteArrayInputStream InputStream ByteArrayOutputStream]
            [java.nio.charset Charset]))
@@ -144,6 +146,23 @@
                       :charset charset
                       :handle-error handle-error))
 
+(def ^:no-doc msgpack-request?
+  (make-type-request-pred #"^application/(vnd.+)?(x-)?msgpack"))
+
+(defn wrap-msgpack-params
+  "Handles body params in **msgpack** format.
+   See [[wrap-format-params]] for details."
+  [handler & {:keys [predicate decoder charset binary? handle-error]
+              :or {predicate msgpack-request?
+                   decoder #(keywordize-keys (msgpack/unpack (slurp-to-bytes %)))
+                   binary? true
+                   handle-error default-handle-error}}]
+  (wrap-format-params handler
+                      :predicate predicate
+                      :decoder decoder
+                      :binary? binary?
+                      :handle-error handle-error))
+
 (def ^:no-doc yaml-request?
   (make-type-request-pred #"^(application|text)/(vnd.+)?(x-)?yaml"))
 
@@ -243,6 +262,7 @@
   {:json wrap-json-params
    :json-kw wrap-json-kw-params
    :edn wrap-clojure-params
+   :msgpack wrap-msgpack-params
    :yaml wrap-yaml-params
    :yaml-kw wrap-yaml-kw-params
    :transit-json wrap-transit-json-params
@@ -255,7 +275,7 @@
    more details."
   [handler & {:keys [handle-error formats]
               :or {handle-error default-handle-error
-                   formats [:json :edn :yaml :transit-msgpack :transit-json]}}]
+                   formats [:json :edn :msgpack :yaml :transit-msgpack :transit-json]}}]
   (reduce (fn [h format]
             (if-let [wrapper (if
                               (fn? format) format
