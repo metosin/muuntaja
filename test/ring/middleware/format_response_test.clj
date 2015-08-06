@@ -226,3 +226,37 @@
     (is (= "application/json; charset=utf-8" (get-in resp [:headers "Content-Type"])))
     (is (= "0" (get-in resp [:headers "Content-Length"])))
     (is (nil? (:body resp)))))
+
+(def restful-echo-pred
+  (wrap-restful-response identity :predicate (fn [_ resp]
+                                               (::serializable? resp))))
+
+(deftest custom-predicate
+  (let [req {:body {:foo "bar"}}
+        resp-non-serialized (restful-echo-pred (assoc req ::serializable? false))
+        resp-serialized     (restful-echo-pred (assoc req ::serializable? true))]
+    (is (map? (:body resp-non-serialized)))
+    (is (instance? java.io.BufferedInputStream (:body resp-serialized)))))
+
+;;
+;; Transit options
+;;
+
+(defrecord Point [x y])
+
+(def writers
+  {Point (transit/write-handler (constantly "Point") (fn [p] [(:x p) (:y p)]))})
+
+(def custom-transit-echo
+  (wrap-transit-json-response identity :options {:handlers writers}))
+
+(def custom-restful-transit-echo
+  (wrap-restful-response identity :format-options {:transit-json {:handlers writers}}))
+
+(def transit-resp {:body (Point. 1 2)})
+
+(deftest write-custom-transit
+  (is (= "[\"~#Point\",[1,2]]"
+         (slurp (:body (custom-transit-echo transit-resp)))))
+  (is (= "[\"~#Point\",[1,2]]"
+         (slurp (:body (custom-restful-transit-echo (assoc transit-resp :headers {"accept" "application/transit+json"})))))))

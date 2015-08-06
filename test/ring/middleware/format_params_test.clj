@@ -177,3 +177,34 @@
       (= 999 (:status resp)))
     :json "application/json" "{:a 1}"
     :edn "application/edn" "{\"a\": 1}"))
+
+;;
+;; Transit options
+;;
+
+(defrecord Point [x y])
+
+(def readers
+  {"Point" (transit/read-handler (fn [[x y]] (Point. x y)))})
+
+(def custom-transit-json-echo
+  (wrap-transit-json-params identity :options {:handlers readers}))
+
+(def custom-restful-transit-json-echo
+  (wrap-restful-params identity :format-options {:transit-json {:handlers readers}}))
+
+(def transit-body "[\"^ \", \"~:p\", [\"~#Point\",[1,2]]]")
+
+(deftest read-custom-transit
+  (testing "wrap-transit-json-params, transit options"
+    (let [parsed-req (custom-transit-json-echo {:content-type "application/transit+json"
+                                                :body (stream transit-body)})]
+      (is (= {:p (Point. 1 2)}
+             (:params parsed-req)
+             (:body-params parsed-req)))))
+  (testing "wrap-restful-params, transit options"
+    (let [req (custom-restful-transit-json-echo {:content-type "application/transit+json"
+                                                 :body (stream transit-body)})]
+      (is (= {:p (Point. 1 2)}
+             (:params req)
+             (:body-params req))))))

@@ -18,4 +18,6 @@
   :plugins [[codox "0.8.11"]]
   :codox {:src-dir-uri "http://github.com/ngrunwald/ring-middleware-format/blob/master/"
           :src-linenum-anchor-prefix "L"
-          :defaults {:doc/format :markdown}})
+          :defaults {:doc/format :markdown}}
+  :profiles {:1.7 {:dependencies [[org.clojure/clojure "1.7.0-beta2"]]}}
+  :aliases {"all" ["with-profile" "dev:dev,1.7"]})
