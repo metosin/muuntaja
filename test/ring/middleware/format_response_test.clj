@@ -74,6 +74,12 @@
     (is (.contains (get-in resp [:headers "Content-Type"]) "application/x-yaml"))
     (is (< 2 (Integer/parseInt (get-in resp [:headers "Content-Length"]))))))
 
+(deftest html-escape-yaml-in-html
+  (let [req {:body {:foo "<bar>"}}
+        resp ((wrap-yaml-in-html-response identity) req)
+        body (slurp (:body resp))]
+    (is (= "<html>\n<head></head>\n<body><div><pre>\n{foo: &lt;bar&gt;}\n</pre></div></body></html>" body))))
+
 ;;;;;;;;;;;;;
 ;; Transit ;;
 ;;;;;;;;;;;;;

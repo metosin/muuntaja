@@ -264,11 +264,18 @@
                         :charset charset
                         :handle-error handle-error))
 
+(defn- escape-html [s]
+  (s/escape s {\& "&amp;"
+               \< "&lt;"
+               \> "&gt;"
+               \" "&quot;"
+               \' "&apos;"}))
+
 (defn ^:no-doc wrap-yaml-in-html
   [body]
   (str
    "<html>\n<head></head>\n<body><div><pre>\n"
-   (yaml/generate-string body)
+   (escape-html (yaml/generate-string body))
    "</pre></div></body></html>"))
 
 (defn wrap-yaml-in-html-response
