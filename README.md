@@ -1,6 +1,4 @@
-# ring-middleware-format #
-
-[![Continuous Integration status](https://secure.travis-ci.org/ngrunwald/ring-middleware-format.png)](http://travis-ci.org/ngrunwald/ring-middleware-format)
+# ring-middleware-format [![Continuous Integration status](https://secure.travis-ci.org/ngrunwald/ring-middleware-format.png)](http://travis-ci.org/ngrunwald/ring-middleware-format) [![Dependencies Status](http://jarkeeper.com/ngrunwald/ring-middleware-format/status.png)](http://jarkeeper.com/ngrunwald/ring-middleware-format)
 
 This is a set of middlewares that can be used to deserialize parameters sent in the :body of requests and serialize a Clojure data structure in the :body of a response to some string or binary representation. It natively handles JSON, YAML, Transit over JSON or Msgpack and Clojure (edn) but it can easily be extended to other custom formats, both string and binary. It is intended for the creation of RESTful APIs that do the right thing by default but are flexible enough to handle most special cases.
 
