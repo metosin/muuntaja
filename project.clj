@@ -1,4 +1,4 @@
-(defproject ring-middleware-format "0.6.0"
+(defproject ring-middleware-format "0.6.1-SNAPSHOT"
   :description "Ring middleware for parsing parameters and emitting
   responses in various formats (mainly JSON, YAML and Transit out of
   the box)"
