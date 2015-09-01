@@ -14,15 +14,15 @@
    the default serialization format (*:json* by default). You can also
    specify error-handlers for the params parsing with *:request-error-handler*
    or the response encoding with *:response-error-handler*.
-   Format options can be passed to responding middlewares using *:response-opts*
-   and *:params-opts*.
+   Format options can be passed to responding middlewares using *:response-options*
+   and *:params-options*.
    See [[ring.middleware.format-params/wrap-format-params]] and
    [[ring.middleware.format-response/wrap-format-response]] for details"
-  [handler & {:keys [formats response-error-handler request-error-handler response-opts params-opts]
+  [handler & {:keys [formats response-error-handler request-error-handler response-options params-options]
               :or {formats [:json :edn :yaml :yaml-in-html
                             :transit-msgpack :transit-json]
                    response-error-handler res/default-handle-error
                    request-error-handler par/default-handle-error}}]
   (-> handler
-      (par/wrap-restful-params :formats formats :handle-error request-error-handler :format-options params-opts)
-      (res/wrap-restful-response :formats formats :handle-error response-error-handler :format-options response-opts)))
+      (par/wrap-restful-params :formats formats :handle-error request-error-handler :format-options params-options)
+      (res/wrap-restful-response :formats formats :handle-error response-error-handler :format-options response-options)))
