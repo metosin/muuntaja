@@ -1,5 +1,14 @@
 # Changes for ring-middleware-format
 
+## 0.6.0 (2015-09-01)
+
+- Merged most of changes for Metosin fork:
+    - Add missing `:predicate` option to `wrap-restful-response` middlewares.
+    - Support per format (Transit) options in `wrap-restful` middlewares:
+        - Added `:format-options` to `wrap-restful-response` and `wrap-restful-params`
+        - Added `:response-options` and `:params-options` to `wrap-restful-format`
+- Escape HTML chars in YAML HTML
+
 ## 0.5.0 (2015-03-27)
 ### Breaking Changes
  - Allow nil to be returned as empty body with correct Content-Type instead of serialized (__Howard M. Lewis Ship__ and __curious-attempt-bunny__)
