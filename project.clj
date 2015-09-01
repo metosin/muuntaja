@@ -7,8 +7,7 @@
             :url "http://www.eclipse.org/legal/epl-v10.html"
             :distribution :repo
             :comments "same as Clojure"}
-  :dependencies [[org.clojure/clojure "1.6.0"]
-                 [org.clojure/core.memoize "0.5.7"]
+  :dependencies [[org.clojure/core.memoize "0.5.7"]
                  [ring "1.3.2"]
                  [cheshire "5.4.0"]
                  [org.clojure/tools.reader "0.8.16"]
@@ -19,5 +18,6 @@
   :codox {:src-dir-uri "http://github.com/ngrunwald/ring-middleware-format/blob/master/"
           :src-linenum-anchor-prefix "L"
           :defaults {:doc/format :markdown}}
-  :profiles {:1.7 {:dependencies [[org.clojure/clojure "1.7.0-beta2"]]}}
-  :aliases {"all" ["with-profile" "dev:dev,1.7"]})
+  :profiles {:dev {:dependencies [[org.clojure/clojure "1.7.0"]]}
+             :1.6 {:dependencies [[org.clojure/clojure "1.6.0"]]}}
+  :aliases {"all" ["with-profile" "dev:dev,1.6"]})
