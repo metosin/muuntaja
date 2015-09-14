@@ -43,9 +43,9 @@ To get automatic deserialization and serialization for all supported formats wit
 The available formats are:
 
   - `:json` JSON with string keys in `:params` and `:body-params`
-  - `:json-kw` JSON with keywodized keys in `:params` and `:body-params`
+  - `:json-kw` JSON with keywordized keys in `:params` and `:body-params`
   - `:yaml` YAML format
-  - `:yaml-kw` YAML format with keywodized keys in `:params` and `:body-params`
+  - `:yaml-kw` YAML format with keywordized keys in `:params` and `:body-params`
   - `:edn` edn (native Clojure format). It uses *clojure.tools.edn* and never evals code, but uses the custom tags from `*data-readers*` 
   - `:yaml-in-html` yaml in a html page (useful for browser debugging)
   - `:transit-json` Transit over JSON format
