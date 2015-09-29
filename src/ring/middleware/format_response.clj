@@ -251,12 +251,18 @@
                         :charset charset
                         :handle-error handle-error))
 
+(defn encode-msgpack [body]
+  (with-open [out-stream (ByteArrayOutputStream.)]
+    (let [data-out (java.io.DataOutputStream. out-stream)]
+      (msgpack/pack-stream (stringify-keys body) data-out))
+    (.toByteArray out-stream)))
+
 (defn wrap-msgpack-response
   "Wrapper to serialize structures in *:body* to **msgpack** with sane
   defaults. See [[wrap-format-response]] for more details."
   [handler & {:keys [predicate binary? encoder type charset handle-error]
               :or {predicate serializable?
-                   encoder #(msgpack/pack (stringify-keys %))
+                   encoder encode-msgpack
                    type "application/msgpack"
                    binary? true
                    handle-error default-handle-error}}]
@@ -359,7 +365,7 @@
   {:json (make-encoder json/generate-string "application/json")
    :json-kw (make-encoder json/generate-string "application/json")
    :edn (make-encoder generate-native-clojure "application/edn")
-   :msgpack (make-encoder #(msgpack/pack (stringify-keys %)) "application/msgpack" :binary)
+   :msgpack (make-encoder encode-msgpack "application/msgpack" :binary)
    :clojure (make-encoder generate-native-clojure "application/clojure")
    :yaml (make-encoder yaml/generate-string "application/x-yaml")
    :yaml-kw (make-encoder yaml/generate-string "application/x-yaml")

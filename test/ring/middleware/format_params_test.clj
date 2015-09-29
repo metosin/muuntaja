@@ -62,6 +62,17 @@
              :body (ByteArrayInputStream. (msgpack/pack (stringify-keys {:foo "bar"})))
              :params {"id" 3}}
              resp (msgpack-echo req)]
+    (is (= {"id" 3 "foo" "bar"} (:params resp)))
+    (is (= {"foo" "bar"} (:body-params resp)))))
+
+(def msgpack-kw-echo
+  (wrap-msgpack-kw-params identity))
+
+(deftest augments-with-msgpack-kw-content-type
+  (let [req {:content-type "application/msgpack"
+             :body (ByteArrayInputStream. (msgpack/pack (stringify-keys {:foo "bar"})))
+             :params {"id" 3}}
+             resp (msgpack-kw-echo req)]
     (is (= {"id" 3 :foo "bar"} (:params resp)))
     (is (= {:foo "bar"} (:body-params resp)))))
 

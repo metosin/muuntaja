@@ -154,6 +154,20 @@
    See [[wrap-format-params]] for details."
   [handler & {:keys [predicate decoder charset binary? handle-error]
               :or {predicate msgpack-request?
+                   decoder #(msgpack/unpack (slurp-to-bytes %))
+                   binary? true
+                   handle-error default-handle-error}}]
+  (wrap-format-params handler
+                      :predicate predicate
+                      :decoder decoder
+                      :binary? binary?
+                      :handle-error handle-error))
+
+(defn wrap-msgpack-kw-params
+  "Handles body params in **msgpack** format.  Parses map keys as keywords.
+   See [[wrap-format-params]] for details."
+  [handler & {:keys [predicate decoder charset binary? handle-error]
+              :or {predicate msgpack-request?
                    decoder #(keywordize-keys (msgpack/unpack (slurp-to-bytes %)))
                    binary? true
                    handle-error default-handle-error}}]
