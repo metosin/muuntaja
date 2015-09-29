@@ -277,6 +277,7 @@
    :json-kw wrap-json-kw-params
    :edn wrap-clojure-params
    :msgpack wrap-msgpack-params
+   :msgpack-kw wrap-msgpack-kw-params
    :yaml wrap-yaml-params
    :yaml-kw wrap-yaml-kw-params
    :transit-json wrap-transit-json-params
