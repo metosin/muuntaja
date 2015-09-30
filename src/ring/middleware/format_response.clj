@@ -4,7 +4,7 @@
             [clojure.java.io :as io]
             [clj-yaml.core :as yaml]
             [clojure.string :as s]
-            [clojure.walk :refer [stringify-keys keywordize-keys]]
+            [clojure.walk :refer [stringify-keys]]
             [cognitect.transit :as transit]
             [msgpack.core :as msgpack])
   (:use [clojure.core.memoize :only [lu]])

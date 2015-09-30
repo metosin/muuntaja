@@ -3,7 +3,7 @@
             [clj-yaml.core :as yaml]
             [clojure.tools.reader.edn :as edn]
             [clojure.string :as str]
-            [clojure.walk :refer [stringify-keys keywordize-keys]]
+            [clojure.walk :refer [keywordize-keys]]
             [cognitect.transit :as transit]
             [msgpack.core :as msgpack])
   (:import [com.ibm.icu.text CharsetDetector]
