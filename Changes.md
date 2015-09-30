@@ -1,5 +1,25 @@
 # Changes for ring-middleware-format
 
+## x.x.x (2015-xx-xx)
+
+- Updated deps:
+```
+[ring "1.4.0"] is available but we use "1.3.2"
+[cheshire "5.5.0"] is available but we use "5.4.0"
+[org.clojure/tools.reader "0.9.2"] is available but we use "0.8.16"
+[com.ibm.icu/icu4j "55.1"] is available but we use "54.1"
+[com.cognitect/transit-clj "0.8.281"] is available but we use "0.8.269"
+```
+
+## 0.6.0 (2015-09-01)
+
+- Merged most of changes from Metosin fork:
+    - Added missing `:predicate` option to `wrap-restful-response` middleware.
+    - Support per format (Transit) options in `wrap-restful` middlewares:
+        - Added `:format-options` to `wrap-restful-response` and `wrap-restful-params`
+        - Added `:response-options` and `:params-options` to `wrap-restful-format`
+- Escape HTML chars in YAML HTML
+
 ## 0.5.0 (2015-03-27)
 ### Breaking Changes
  - Allow nil to be returned as empty body with correct Content-Type instead of serialized (__Howard M. Lewis Ship__ and __curious-attempt-bunny__)

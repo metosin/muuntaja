@@ -1,6 +1,4 @@
-# ring-middleware-format #
-
-[![Continuous Integration status](https://secure.travis-ci.org/ngrunwald/ring-middleware-format.png)](http://travis-ci.org/ngrunwald/ring-middleware-format)
+# ring-middleware-format [![Continuous Integration status](https://secure.travis-ci.org/ngrunwald/ring-middleware-format.png)](http://travis-ci.org/ngrunwald/ring-middleware-format) [![Dependencies Status](http://jarkeeper.com/ngrunwald/ring-middleware-format/status.png)](http://jarkeeper.com/ngrunwald/ring-middleware-format)
 
 This is a set of middlewares that can be used to deserialize parameters sent in the :body of requests and serialize a Clojure data structure in the :body of a response to some string or binary representation. It natively handles JSON, YAML, Transit over JSON or Msgpack and Clojure (edn) but it can easily be extended to other custom formats, both string and binary. It is intended for the creation of RESTful APIs that do the right thing by default but are flexible enough to handle most special cases.
 
@@ -45,9 +43,9 @@ To get automatic deserialization and serialization for all supported formats wit
 The available formats are:
 
   - `:json` JSON with string keys in `:params` and `:body-params`
-  - `:json-kw` JSON with keywodized keys in `:params` and `:body-params`
+  - `:json-kw` JSON with keywordized keys in `:params` and `:body-params`
   - `:yaml` YAML format
-  - `:yaml-kw` YAML format with keywodized keys in `:params` and `:body-params`
+  - `:yaml-kw` YAML format with keywordized keys in `:params` and `:body-params`
   - `:edn` edn (native Clojure format). It uses *clojure.tools.edn* and never evals code, but uses the custom tags from `*data-readers*` 
   - `:yaml-in-html` yaml in a html page (useful for browser debugging)
   - `:transit-json` Transit over JSON format
@@ -105,8 +103,8 @@ There are six default wrappers:
 + `wrap-yaml-response`
 + `wrap-yaml-in-html-response` (responds to **text/html** MIME type and useful to test an API in the browser)
 + `wrap-clojure-response`
-+ `wrap-transit-json-params`
-+ `wrap-transit-msgpack-params`
++ `wrap-transit-json-response`
++ `wrap-transit-msgpack-response`
 
 There is also a generic `wrap-format-response` on which the others depend. Each of these wrappers take 4 optional args: `:encoders`, `:predicate`, `binary?` and `:charset`. See `wrap-format-response` docstring for further details.
 

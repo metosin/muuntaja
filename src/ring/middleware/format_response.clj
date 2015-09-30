@@ -129,7 +129,9 @@
   ([encoder content-type binary?]
      {:encoder encoder
       :enc-type (first (parse-accept-header content-type))
-      :binary? binary?})
+      :binary? binary?
+      ;; Include content-type to allow later introspection of encoders.
+      :content-type content-type})
   ([encoder content-type]
      (make-encoder encoder content-type false)))
 
@@ -280,11 +282,18 @@
                         :charset charset
                         :handle-error handle-error))
 
+(defn- escape-html [s]
+  (s/escape s {\& "&amp;"
+               \< "&lt;"
+               \> "&gt;"
+               \" "&quot;"
+               \' "&apos;"}))
+
 (defn ^:no-doc wrap-yaml-in-html
   [body]
   (str
    "<html>\n<head></head>\n<body><div><pre>\n"
-   (yaml/generate-string body)
+   (escape-html (yaml/generate-string body))
    "</pre></div></body></html>"))
 
 (defn wrap-yaml-in-html-response
@@ -355,10 +364,15 @@
    :yaml (make-encoder yaml/generate-string "application/x-yaml")
    :yaml-kw (make-encoder yaml/generate-string "application/x-yaml")
    :yaml-in-html (make-encoder wrap-yaml-in-html "text/html")
-   :transit-json (make-encoder (make-transit-encoder :json {})
-                               "application/transit+json" :binary)
-   :transit-msgpack (make-encoder (make-transit-encoder :msgpack {})
-                                  "application/transit+msgpack" :binary)})
+   :transit-json (assoc (make-encoder nil "application/transit+json" :binary)
+                   :encoder-fn #(make-transit-encoder :json %))
+   :transit-msgpack (assoc (make-encoder nil "application/transit+msgpack" :binary)
+                      :encoder-fn #(make-transit-encoder :msgpack %))})
+
+(defn init-encoder [encoder opts]
+  (if-let [init (:encoder-fn encoder)]
+    (assoc encoder :encoder (init opts))
+    encoder))
 
 (defn wrap-restful-response
   "Wrapper that tries to do the right thing with the response *:body*
@@ -366,20 +380,23 @@
   JSON, YAML, Clojure, Transit or HTML-wrapped YAML depending on Accept header.
   See wrap-format-response for more details. Recognized formats are
   *:json*, *:json-kw*, *:edn* *:yaml*, *:yaml-in-html*, *:transit-json*,
-  *:transit-msgpack*."
-  [handler & {:keys [handle-error formats charset binary?]
+  *:transit-msgpack*.
+  Options to specific encoders can be passed in using *:format-options*
+  option. If is a map from format keyword to options map."
+  [handler & {:keys [predicate handle-error formats charset binary? format-options]
               :or {handle-error default-handle-error
+                   predicate serializable?
                    charset default-charset-extractor
                    formats [:json :yaml :edn :msgpack :clojure :yaml-in-html :transit-json :transit-msgpack]}}]
   (let [encoders (for [format formats
                        :when format
                        :let [encoder (if (map? format)
                                        format
-                                       (get format-encoders (keyword format)))]
+                                       (init-encoder (get format-encoders (keyword format)) (get format-options (keyword format))))]
                        :when encoder]
                    encoder)]
     (wrap-format-response handler
-                          :predicate serializable?
+                          :predicate predicate
                           :encoders encoders
                           :binary? binary?
                           :charset charset
