@@ -273,6 +273,9 @@
                         :charset nil
                         :handle-error handle-error))
 
+(defn encode-msgpack-kw [body]
+  (encode-msgpack (stringify-keys body)))
+
 (defn wrap-yaml-response
   "Wrapper to serialize structures in *:body* to YAML with sane
   defaults. See [[wrap-format-response]] for more details."
@@ -366,6 +369,7 @@
    :json-kw (make-encoder json/generate-string "application/json")
    :edn (make-encoder generate-native-clojure "application/edn")
    :msgpack (make-encoder encode-msgpack "application/msgpack" :binary)
+   :msgpack-kw (make-encoder encode-msgpack-kw "application/msgpack" :binary)
    :clojure (make-encoder generate-native-clojure "application/clojure")
    :yaml (make-encoder yaml/generate-string "application/x-yaml")
    :yaml-kw (make-encoder yaml/generate-string "application/x-yaml")

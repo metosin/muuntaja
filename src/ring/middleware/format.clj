@@ -8,7 +8,7 @@
    response, providing a solid basis for a RESTful API. It will
    deserialize the request and serialize the response depending on
    *Content-Type* and *Accept* header. Takes a :formats argument which is
-   *[:json :edn :msgpack :yaml :yaml-in-html :transit-msgpack :transit-json]*
+   *[:json :edn :msgpack :msgpack-kw :yaml :yaml-in-html :transit-msgpack :transit-json]*
    by default. There is also a *:json-kw* and *:yaml-kw* formats which
    use keywords as keys when deserializing. The first format is also
    the default serialization format (*:json* by default). You can also
@@ -19,7 +19,7 @@
    See [[ring.middleware.format-params/wrap-format-params]] and
    [[ring.middleware.format-response/wrap-format-response]] for details"
   [handler & {:keys [formats response-error-handler request-error-handler response-options params-options]
-              :or {formats [:json :edn :msgpack :yaml :yaml-in-html
+              :or {formats [:json :edn :msgpack :msgpack-kw :yaml :yaml-in-html
                             :transit-msgpack :transit-json]
                    response-error-handler res/default-handle-error
                    request-error-handler par/default-handle-error}}]
