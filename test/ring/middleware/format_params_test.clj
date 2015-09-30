@@ -7,8 +7,7 @@
             [clojure.java.io :as io]
             [clojure.walk :refer [stringify-keys keywordize-keys]]
             [msgpack.core :as msgpack])
-  (:import [java.io ByteArrayInputStream ByteArrayOutputStream])
-  (:import [com.google.common.io ByteStreams]))
+  (:import [java.io ByteArrayInputStream ByteArrayOutputStream]))
 
 (defn stream [s]
   (ByteArrayInputStream. (.getBytes s "UTF-8")))
