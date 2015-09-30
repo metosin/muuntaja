@@ -149,12 +149,17 @@
 (def ^:no-doc msgpack-request?
   (make-type-request-pred #"^application/(vnd.+)?(x-)?msgpack"))
 
+(defn decode-msgpack [body]
+  (with-open [i (clojure.java.io/input-stream (slurp-to-bytes body))]
+    (let [data-input (java.io.DataInputStream. i)]
+      (msgpack/unpack-stream data-input))))
+
 (defn wrap-msgpack-params
   "Handles body params in **msgpack** format.
    See [[wrap-format-params]] for details."
   [handler & {:keys [predicate decoder charset binary? handle-error]
               :or {predicate msgpack-request?
-                   decoder #(msgpack/unpack (slurp-to-bytes %))
+                   decoder decode-msgpack
                    binary? true
                    handle-error default-handle-error}}]
   (wrap-format-params handler
@@ -168,7 +173,7 @@
    See [[wrap-format-params]] for details."
   [handler & {:keys [predicate decoder charset binary? handle-error]
               :or {predicate msgpack-request?
-                   decoder #(keywordize-keys (msgpack/unpack (slurp-to-bytes %)))
+                   decoder #(keywordize-keys (decode-msgpack %))
                    binary? true
                    handle-error default-handle-error}}]
   (wrap-format-params handler
