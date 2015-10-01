@@ -176,6 +176,7 @@
   [handler & {:keys [predicate encoders charset binary? handle-error]}]
   (fn [req]
     (let [handle-error (or handle-error default-handle-error)
+          predicate (or predicate serializable?)
           {:keys [headers body] :as response} (handler req)]
       (try
         (if (predicate req response)
@@ -204,8 +205,7 @@
   "Wrapper to serialize structures in *:body* to JSON with sane defaults.
   See [[wrap-format-response]] for more details."
   [handler & {:keys [predicate encoder type charset handle-error pretty]
-              :or {predicate serializable?
-                   pretty nil
+              :or {pretty nil
                    type "application/json"
                    charset default-charset-extractor}}]
   (let [encoder (or
@@ -237,8 +237,7 @@
   [here](https://groups.google.com/d/msg/clojure/5wRBTPNu8qo/1dJbtHX0G-IJ) ).
   See [[wrap-format-response]] for more details."
   [handler & {:keys [predicate encoder type charset hf handle-error]
-              :or {predicate serializable?
-                   encoder generate-native-clojure
+              :or {encoder generate-native-clojure
                    type "application/edn"
                    charset default-charset-extractor
                    hf false}}]
@@ -260,8 +259,7 @@
   "Wrapper to serialize structures in *:body* to **msgpack** with sane
   defaults. See [[wrap-format-response]] for more details."
   [handler & {:keys [predicate binary? encoder type charset handle-error]
-              :or {predicate serializable?
-                   encoder encode-msgpack
+              :or {encoder encode-msgpack
                    type "application/msgpack"
                    binary? true}}]
   (wrap-format-response handler
@@ -278,8 +276,7 @@
   "Wrapper to serialize structures in *:body* to YAML with sane
   defaults. See [[wrap-format-response]] for more details."
   [handler & {:keys [predicate encoder type charset handle-error]
-              :or {predicate serializable?
-                   encoder yaml/generate-string
+              :or {encoder yaml/generate-string
                    type "application/x-yaml"
                    charset default-charset-extractor}}]
   (wrap-format-response handler
@@ -307,8 +304,7 @@
   check things out in the browser. See [[wrap-format-response]] for more
   details."
   [handler & {:keys [predicate encoder type charset handle-error]
-              :or {predicate serializable?
-                   encoder wrap-yaml-in-html
+              :or {encoder wrap-yaml-in-html
                    type "text/html"
                    charset default-charset-extractor}}]
   (wrap-format-response handler
@@ -336,8 +332,7 @@
   "Wrapper to serialize structures in *:body* to transit over **JSON** with sane defaults.
   See [[wrap-format-response]] for more details."
   [handler & {:keys [predicate encoder type handle-error options]
-              :or {predicate serializable?
-                   type "application/transit+json"}}]
+              :or {type "application/transit+json"}}]
   (let [encoder (or encoder (make-transit-encoder :json options))]
     (wrap-format-response handler
                           :predicate predicate
@@ -349,8 +344,7 @@
   "Wrapper to serialize structures in *:body* to transit over **msgpack** with sane defaults.
   See [[wrap-format-response]] for more details."
   [handler & {:keys [predicate encoder type handle-error options]
-              :or {predicate serializable?
-                   type "application/transit+msgpack"}}]
+              :or {type "application/transit+msgpack"}}]
   (let [encoder (or encoder (make-transit-encoder :msgpack options))]
     (wrap-format-response handler
                           :predicate predicate
@@ -388,8 +382,7 @@
   Options to specific encoders can be passed in using *:format-options*
   option. If is a map from format keyword to options map."
   [handler & {:keys [predicate handle-error formats charset binary? format-options]
-              :or {predicate serializable?
-                   charset default-charset-extractor
+              :or {charset default-charset-extractor
                    formats [:json :yaml :edn :msgpack :clojure :yaml-in-html :transit-json :transit-msgpack]}}]
   (let [encoders (for [format formats
                        :when format
