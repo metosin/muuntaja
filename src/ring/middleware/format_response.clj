@@ -362,6 +362,7 @@
   option. If is a map from format keyword to options map."
   [handler & args]
   (let [{:keys [formats charset binary? format-options] :as options} (impl/extract-options args)
+        common-options (dissoc options :formats :format-options)
         encoders (for [format (or formats default-formats)
                        :when format
                        :let [encoder (if (map? format)
@@ -370,6 +371,6 @@
                        :when encoder]
                    encoder)]
     (wrap-format-response handler
-                          (assoc options
+                          (assoc common-options
                                  :encoders encoders
                                  :binary? binary?))))

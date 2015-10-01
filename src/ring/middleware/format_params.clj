@@ -265,11 +265,12 @@
    Options to specific format decoders can be passed in using *:format-options*
    option. If should be map of format keyword to options map."
   [handler & args]
-  (let [{:keys [formats format-options] :as options} (impl/extract-options args)]
+  (let [{:keys [formats format-options] :as options} (impl/extract-options args)
+        common-options (dissoc options :formats :format-options)]
     (reduce (fn [h format]
               (if-let [wrapper (if
                                  (fn? format) format
                                  (format-wrappers (keyword format)))]
-                (wrapper h (assoc options :options (get format-options format)))
+                (wrapper h (assoc common-options :options (get format-options format)))
                 h))
             handler (or formats default-formats))))
