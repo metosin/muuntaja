@@ -122,27 +122,22 @@
 
 (defn wrap-json-params
   "Handles body params in JSON format. See [[wrap-format-params]] for details."
-  [handler & {:keys [predicate decoder charset handle-error]
-              :or {predicate json-request?
-                   decoder json/parse-string
-                   charset get-or-guess-charset}}]
+  [handler & {:keys [predicate decoder charset handle-error]}]
   (wrap-format-params handler
-                      :predicate predicate
-                      :decoder decoder
-                      :charset charset
+                      :predicate (or predicate json-request?)
+                      :decoder (or decoder json/parse-string)
+                      :charset (or charset get-or-guess-charset)
                       :handle-error handle-error))
 
 (defn wrap-json-kw-params
   "Handles body params in JSON format. Parses map keys as keywords.
    See [[wrap-format-params]] for details."
-  [handler & {:keys [predicate decoder charset handle-error]
-              :or {predicate json-request?
-                   decoder json/parse-string
-                   charset get-or-guess-charset}}]
+  [handler & {:keys [predicate decoder charset handle-error]}]
   (wrap-format-params handler
-                      :predicate predicate
-                      :decoder (fn [struct] (decoder struct true))
-                      :charset charset
+                      :predicate (or predicate json-request?)
+                      :decoder (let [decoder (or decoder json/parse-string)]
+                                 (fn [struct] (decoder struct true)))
+                      :charset (or charset get-or-guess-charset)
                       :handle-error handle-error))
 
 (def ^:no-doc msgpack-request?
@@ -156,27 +151,21 @@
 (defn wrap-msgpack-params
   "Handles body params in **msgpack** format.
    See [[wrap-format-params]] for details."
-  [handler & {:keys [predicate decoder charset binary? handle-error]
-              :or {predicate msgpack-request?
-                   decoder decode-msgpack
-                   binary? true}}]
+  [handler & {:keys [predicate decoder charset binary? handle-error]}]
   (wrap-format-params handler
-                      :predicate predicate
-                      :decoder decoder
-                      :binary? binary?
+                      :predicate (or predicate msgpack-request?)
+                      :decoder (or decoder decode-msgpack)
+                      :binary? (if (nil? binary?) true binary?)
                       :handle-error handle-error))
 
 (defn wrap-msgpack-kw-params
   "Handles body params in **msgpack** format.  Parses map keys as keywords.
    See [[wrap-format-params]] for details."
-  [handler & {:keys [predicate decoder charset binary? handle-error]
-              :or {predicate msgpack-request?
-                   decoder #(keywordize-keys (decode-msgpack %))
-                   binary? true}}]
+  [handler & {:keys [predicate decoder charset binary? handle-error]}]
   (wrap-format-params handler
-                      :predicate predicate
-                      :decoder decoder
-                      :binary? binary?
+                      :predicate (or predicate msgpack-request?)
+                      :decoder (or decoder #(keywordize-keys (decode-msgpack %)))
+                      :binary? (if (nil? binary?) true binary?)
                       :handle-error handle-error))
 
 (def ^:no-doc yaml-request?
@@ -184,28 +173,22 @@
 
 (defn wrap-yaml-params
   "Handles body params in YAML format. See [[wrap-format-params]] for details."
-  [handler & {:keys [predicate decoder charset handle-error]
-              :or {predicate yaml-request?
-                   decoder yaml/parse-string
-                   charset get-or-guess-charset}}]
+  [handler & {:keys [predicate decoder charset handle-error]}]
   (wrap-format-params handler
-                      :predicate predicate
-                      :decoder decoder
-                      :charset charset
+                      :predicate (or predicate yaml-request?)
+                      :decoder (or decoder yaml/parse-string)
+                      :charset (or charset get-or-guess-charset)
                       :handle-error handle-error))
 
 (defn wrap-yaml-kw-params
   "Handles body params in YAML format. Parses map keys as keywords.
    See [[wrap-format-params]] for details."
-  [handler & {:keys [predicate decoder charset handle-error]
-              :or {predicate yaml-request?
-                   decoder yaml/parse-string
-                   charset get-or-guess-charset}}]
+  [handler & {:keys [predicate decoder charset handle-error]}]
   (binding [clj-yaml.core/*keywordize* true]
     (wrap-format-params handler
-                        :predicate predicate
-                        :decoder decoder
-                        :charset charset
+                        :predicate (or predicate yaml-request?)
+                        :decoder (or decoder yaml/parse-string)
+                        :charset (or charset get-or-guess-charset)
                         :handle-error handle-error)))
 
 (defn parse-clojure-string
@@ -220,14 +203,11 @@
 
 (defn wrap-clojure-params
   "Handles body params in Clojure (*edn*) format. See [[wrap-format-params]] for details."
-  [handler & {:keys [predicate decoder charset handle-error]
-              :or {predicate clojure-request?
-                   decoder parse-clojure-string
-                   charset get-or-guess-charset}}]
+  [handler & {:keys [predicate decoder charset handle-error]}]
   (wrap-format-params handler
-                      :predicate predicate
-                      :decoder decoder
-                      :charset charset
+                      :predicate (or predicate clojure-request?)
+                      :decoder (or decoder parse-clojure-string)
+                      :charset (or charset get-or-guess-charset)
                       :handle-error handle-error))
 
 (defn ^:no-doc make-transit-decoder
@@ -243,14 +223,11 @@
   "Handles body params in transit format over **JSON**. You can use an *:options* key to pass
    a map with *:handlers* and *:default-handler* to transit-clj. See [[wrap-format-params]]
    for details."
-  [handler & {:keys [predicate decoder charset binary? handle-error options]
-              :or {predicate transit-json-request?
-                   options {}
-                   binary? true}}]
+  [handler & {:keys [predicate decoder charset binary? handle-error options]}]
   (wrap-format-params handler
-                      :predicate predicate
+                      :predicate (or predicate transit-json-request?)
                       :decoder (or decoder (make-transit-decoder :json options))
-                      :binary? binary?
+                      :binary? (if (nil? binary?) true binary?)
                       :handle-error handle-error))
 
 (def ^:no-doc transit-msgpack-request?
@@ -259,14 +236,11 @@
 (defn wrap-transit-msgpack-params
   "Handles body params in transit format over **msgpack**. You can use an *:options* key to pass
    a map with *:handlers* and *:default-handler* to transit-clj. See [[wrap-format-params]] for details."
-  [handler & {:keys [predicate decoder charset binary? handle-error options]
-              :or {predicate transit-msgpack-request?
-                   options {}
-                   binary? true}}]
+  [handler & {:keys [predicate decoder charset binary? handle-error options]}]
   (wrap-format-params handler
-                      :predicate predicate
+                      :predicate (or predicate transit-msgpack-request?)
                       :decoder (or decoder (make-transit-decoder :msgpack options))
-                      :binary? binary?
+                      :binary? (if (nil? binary?) true binary?)
                       :handle-error handle-error))
 
 (def ^:no-doc format-wrappers
@@ -280,6 +254,8 @@
    :transit-json wrap-transit-json-params
    :transit-msgpack wrap-transit-msgpack-params})
 
+(def default-formats [:json :edn :msgpack :yaml :transit-msgpack :transit-json])
+
 (defn wrap-restful-params
   "Wrapper that tries to do the right thing with the request :body and provide
    a solid basis for a RESTful API. It will deserialize to *JSON*, *YAML*, *Transit*
@@ -287,12 +263,11 @@
    more details.
    Options to specific format decoders can be passed in using *:format-options*
    option. If should be map of format keyword to options map."
-  [handler & {:keys [handle-error formats format-options]
-              :or {formats [:json :edn :msgpack :yaml :transit-msgpack :transit-json]}}]
+  [handler & {:keys [handle-error formats format-options]}]
   (reduce (fn [h format]
             (if-let [wrapper (if
                               (fn? format) format
                               (format-wrappers (keyword format)))]
               (wrapper h :handle-error handle-error :options (get format-options format))
               h))
-          handler formats))
+          handler (or formats default-formats)))
