@@ -123,23 +123,28 @@
 (def ^:no-doc json-request?
   (make-type-request-pred #"^application/(vnd.+)?json"))
 
+(defn make-json-decoder [{:keys [key-fn array-coerce-fn]}]
+  (cond
+    array-coerce-fn (fn [s] (json/parse-string s key-fn array-coerce-fn))
+    key-fn          (fn [s] (json/parse-string s key-fn))
+    :else           (fn [s] (json/parse-string s))))
+
 (defn wrap-json-params
   "Handles body params in JSON format. See [[wrap-format-params]] for details."
   [handler & args]
-  (let [{:keys [predicate decoder] :as options} (impl/extract-options args)]
-    (wrap-format-params handler (assoc options
+  (let [{:keys [predicate decoder options] :as opts} (impl/extract-options args)]
+    (wrap-format-params handler (assoc opts
                                        :predicate (or predicate json-request?)
-                                       :decoder (or decoder json/parse-string)))))
+                                       :decoder (or decoder (make-json-decoder options))))))
 
 (defn wrap-json-kw-params
   "Handles body params in JSON format. Parses map keys as keywords.
    See [[wrap-format-params]] for details."
   [handler & args]
-  (let [{:keys [predicate decoder] :as options} (impl/extract-options args)]
-    (wrap-format-params handler (assoc options
+  (let [{:keys [predicate decoder options] :as opts} (impl/extract-options args)]
+    (wrap-format-params handler (assoc opts
                                        :predicate (or predicate json-request?)
-                                       :decoder (let [decoder (or decoder json/parse-string)]
-                                                  (fn [struct] (decoder struct true)))))))
+                                       :decoder (or decoder (make-json-decoder (assoc options :key-fn true)))))))
 
 (def ^:no-doc msgpack-request?
   (make-type-request-pred #"^application/(vnd.+)?(x-)?msgpack"))

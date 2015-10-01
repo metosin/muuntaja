@@ -6,7 +6,8 @@
             [cognitect.transit :as transit]
             [clojure.java.io :as io]
             [clojure.walk :refer [stringify-keys keywordize-keys]]
-            [msgpack.core :as msgpack])
+            [msgpack.core :as msgpack]
+            [clojure.string :as string])
   (:import [java.io ByteArrayInputStream ByteArrayOutputStream]))
 
 (defn stream [s]
@@ -41,6 +42,19 @@
         resp (json-echo req)]
     (is (= {"id" 3 "foo" "bar"} (:params resp)))
     (is (= {"foo" "bar"} (:body-params resp)))))
+
+(defn key-fn [s]
+  (-> s (string/replace #"_" "-") keyword))
+
+(deftest json-options-test
+  (is (= {:foo-bar "bar"}
+         (:body-params ((wrap-json-params identity {:options {:key-fn key-fn}})
+                        {:content-type "application/json"
+                         :body (stream "{\"foo_bar\":\"bar\"}")}))))
+  (is (= {:foo-bar "bar"}
+         (:body-params ((wrap-restful-params identity {:format-options {:json {:key-fn key-fn}}})
+                        {:content-type "application/json"
+                         :body (stream "{\"foo_bar\":\"bar\"}")})))))
 
 (def yaml-echo
   (wrap-yaml-params identity))
