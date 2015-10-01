@@ -94,27 +94,28 @@
                      request or directly a map to answer immediately. Defaults
                      to just rethrowing the Exception"
   [handler & {:keys [predicate decoder charset handle-error binary?]}]
-  (fn [{:keys [#^InputStream body] :as req}]
-    (try
-      (if (and body (predicate req))
-        (let [byts (slurp-to-bytes body)]
-          (if (> (count byts) 0)
-            (let [fmt-params
-                  (if binary?
-                    (decoder (ByteArrayInputStream. byts))
-                    (let [#^String char-enc (if (string? charset) charset (charset (assoc req :body byts)))
-                          bstr (String. byts char-enc)]
-                      (decoder bstr)))
-                  req* (assoc req
-                         :body-params fmt-params
-                         :params (merge (:params req)
-                                        (when (map? fmt-params) fmt-params))
-                         :body (ByteArrayInputStream. byts))]
-              (handler req*))
-            (handler req)))
-        (handler req))
-      (catch Exception e
-        (handle-error e handler req)))))
+  (let [handle-error (or handle-error default-handle-error)]
+    (fn [{:keys [#^InputStream body] :as req}]
+      (try
+        (if (and body (predicate req))
+          (let [byts (slurp-to-bytes body)]
+            (if (> (count byts) 0)
+              (let [fmt-params
+                    (if binary?
+                      (decoder (ByteArrayInputStream. byts))
+                      (let [#^String char-enc (if (string? charset) charset (charset (assoc req :body byts)))
+                            bstr (String. byts char-enc)]
+                        (decoder bstr)))
+                    req* (assoc req
+                                :body-params fmt-params
+                                :params (merge (:params req)
+                                               (when (map? fmt-params) fmt-params))
+                                :body (ByteArrayInputStream. byts))]
+                (handler req*))
+              (handler req)))
+          (handler req))
+        (catch Exception e
+          (handle-error e handler req))))))
 
 (def ^:no-doc json-request?
   (make-type-request-pred #"^application/(vnd.+)?json"))
@@ -124,8 +125,7 @@
   [handler & {:keys [predicate decoder charset handle-error]
               :or {predicate json-request?
                    decoder json/parse-string
-                   charset get-or-guess-charset
-                   handle-error default-handle-error}}]
+                   charset get-or-guess-charset}}]
   (wrap-format-params handler
                       :predicate predicate
                       :decoder decoder
@@ -138,8 +138,7 @@
   [handler & {:keys [predicate decoder charset handle-error]
               :or {predicate json-request?
                    decoder json/parse-string
-                   charset get-or-guess-charset
-                   handle-error default-handle-error}}]
+                   charset get-or-guess-charset}}]
   (wrap-format-params handler
                       :predicate predicate
                       :decoder (fn [struct] (decoder struct true))
@@ -160,8 +159,7 @@
   [handler & {:keys [predicate decoder charset binary? handle-error]
               :or {predicate msgpack-request?
                    decoder decode-msgpack
-                   binary? true
-                   handle-error default-handle-error}}]
+                   binary? true}}]
   (wrap-format-params handler
                       :predicate predicate
                       :decoder decoder
@@ -174,8 +172,7 @@
   [handler & {:keys [predicate decoder charset binary? handle-error]
               :or {predicate msgpack-request?
                    decoder #(keywordize-keys (decode-msgpack %))
-                   binary? true
-                   handle-error default-handle-error}}]
+                   binary? true}}]
   (wrap-format-params handler
                       :predicate predicate
                       :decoder decoder
@@ -190,8 +187,7 @@
   [handler & {:keys [predicate decoder charset handle-error]
               :or {predicate yaml-request?
                    decoder yaml/parse-string
-                   charset get-or-guess-charset
-                   handle-error default-handle-error}}]
+                   charset get-or-guess-charset}}]
   (wrap-format-params handler
                       :predicate predicate
                       :decoder decoder
@@ -204,8 +200,7 @@
   [handler & {:keys [predicate decoder charset handle-error]
               :or {predicate yaml-request?
                    decoder yaml/parse-string
-                   charset get-or-guess-charset
-                   handle-error default-handle-error}}]
+                   charset get-or-guess-charset}}]
   (binding [clj-yaml.core/*keywordize* true]
     (wrap-format-params handler
                         :predicate predicate
@@ -228,8 +223,7 @@
   [handler & {:keys [predicate decoder charset handle-error]
               :or {predicate clojure-request?
                    decoder parse-clojure-string
-                   charset get-or-guess-charset
-                   handle-error default-handle-error}}]
+                   charset get-or-guess-charset}}]
   (wrap-format-params handler
                       :predicate predicate
                       :decoder decoder
@@ -252,8 +246,7 @@
   [handler & {:keys [predicate decoder charset binary? handle-error options]
               :or {predicate transit-json-request?
                    options {}
-                   binary? true
-                   handle-error default-handle-error}}]
+                   binary? true}}]
   (wrap-format-params handler
                       :predicate predicate
                       :decoder (or decoder (make-transit-decoder :json options))
@@ -269,8 +262,7 @@
   [handler & {:keys [predicate decoder charset binary? handle-error options]
               :or {predicate transit-msgpack-request?
                    options {}
-                   binary? true
-                   handle-error default-handle-error}}]
+                   binary? true}}]
   (wrap-format-params handler
                       :predicate predicate
                       :decoder (or decoder (make-transit-decoder :msgpack options))
@@ -296,8 +288,7 @@
    Options to specific format decoders can be passed in using *:format-options*
    option. If should be map of format keyword to options map."
   [handler & {:keys [handle-error formats format-options]
-              :or {handle-error default-handle-error
-                   formats [:json :edn :msgpack :yaml :transit-msgpack :transit-json]}}]
+              :or {formats [:json :edn :msgpack :yaml :transit-msgpack :transit-json]}}]
   (reduce (fn [h format]
             (if-let [wrapper (if
                               (fn? format) format
