@@ -2,6 +2,11 @@
 
 ## x.x.x (2015-xx-xx)
 
+- Support providing options as map instead of keyword arguments
+    - Options-map: `(wrap-format {:response-options ...})`
+    - Key arguments: `(wrap-format :response-options ...)`
+    - In future keyword argument support could be deprecated and eventually removed
+- Add support for msgpack
 - Updated deps:
 ```
 [ring "1.4.0"] is available but we use "1.3.2"
