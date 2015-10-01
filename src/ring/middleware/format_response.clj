@@ -214,7 +214,7 @@
    See [[wrap-format-response]] for more details."
   [handler & args]
   (let [{:keys [encoder type pretty options] :as opts} (impl/extract-options args)
-        encoder (or encoder (make-json-endocer pretty options))]
+        encoder (or encoder (make-json-encoder pretty options))]
     (wrap-format-response handler (assoc opts :encoders [(make-encoder encoder (or type "application/json"))]))))
 
 ;; Functions for Clojure native serialization
@@ -331,7 +331,7 @@
   {:json (assoc (make-encoder nil "application/json")
                 :encoder-fn #(make-json-encoder false %))
    :json-kw (assoc (make-encoder nil "application/json")
-                   :encoder-fn #(make-json-encoder true %))
+                   :encoder-fn #(make-json-encoder false %))
    :edn (make-encoder generate-native-clojure "application/edn")
    :msgpack (make-encoder encode-msgpack "application/msgpack" :binary)
    :msgpack-kw (make-encoder encode-msgpack-kw "application/msgpack" :binary)
