@@ -1,6 +1,6 @@
 # ring-middleware-format [![Continuous Integration status](https://secure.travis-ci.org/ngrunwald/ring-middleware-format.png)](http://travis-ci.org/ngrunwald/ring-middleware-format) [![Dependencies Status](http://jarkeeper.com/ngrunwald/ring-middleware-format/status.png)](http://jarkeeper.com/ngrunwald/ring-middleware-format)
 
-This is a set of middlewares that can be used to deserialize parameters sent in the :body of requests and serialize a Clojure data structure in the :body of a response to some string or binary representation. It natively handles JSON, YAML, Transit over JSON or Msgpack and Clojure (edn) but it can easily be extended to other custom formats, both string and binary. It is intended for the creation of RESTful APIs that do the right thing by default but are flexible enough to handle most special cases.
+This is a set of middlewares that can be used to deserialize parameters sent in the :body of requests and serialize a Clojure data structure in the :body of a response to some string or binary representation. It natively handles JSON, MessagePack, YAML, Transit over JSON or Msgpack and Clojure (edn) but it can easily be extended to other custom formats, both string and binary. It is intended for the creation of RESTful APIs that do the right thing by default but are flexible enough to handle most special cases.
 
 ## Installation ##
 
@@ -16,7 +16,7 @@ Add this to your dependencies in `project.clj`.
  - Automatically parses requests and encodes responses according to Content-Type and Accept headers
  - Automatically handles charset detection of requests bodies, even if the charset given by the MIME type is absent or wrong (using ICU)
  - Automatically selects and uses the right charset for the response according to the request header
- - Varied formats handled out of the box (*JSON*, *YAML*, *EDN*, *Transit over JSON or Msgpack*)
+ - Varied formats handled out of the box (*JSON*, *MessagePack*, *YAML*, *EDN*, *Transit over JSON or Msgpack*)
  - Pluggable system makes it easy to add to the standards encoders and decoders custom ones (proprietary format, Protobuf, specific xml, csv, etc.)
 
 ## API Documentation ##
