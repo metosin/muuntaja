@@ -156,6 +156,9 @@
   (wrap-restful-params identity
                        :handle-error (fn [_ _ _] {:status 500})))
 
+(def safe-restful-echo-opts-map
+  (wrap-restful-params identity {:handle-error (fn [_ _ _] {:status 500})}))
+
 (deftest test-restful-params-wrapper
   (let [req {:content-type "application/clojure; charset=UTF-8"
              :body (stream "{:foo \"bar\"}")
@@ -163,7 +166,8 @@
              resp (restful-echo req)]
     (is (= {"id" 3 :foo "bar"} (:params resp)))
     (is (= {:foo "bar"} (:body-params resp)))
-    (is (= 500 (get (safe-restful-echo (assoc req :body (stream "{:foo \"bar}"))) :status)))))
+    (is (= 500 (get (safe-restful-echo (assoc req :body (stream "{:foo \"bar}"))) :status)))
+    (is (= 500 (get (safe-restful-echo-opts-map (assoc req :body (stream "{:foo \"bar}"))) :status)))))
 
 (defn stream-iso [s]
   (ByteArrayInputStream. (.getBytes s "ISO-8859-1")))

@@ -206,6 +206,13 @@
                          [(make-encoder (fn [_] (throw (RuntimeException. "Memento mori")))
                                         "foo/bar")]))
 
+(def safe-restful-echo-opts-map
+  (wrap-restful-response identity
+                         {:handle-error (fn [_ _ _] {:status 500})
+                          :formats
+                          [(make-encoder (fn [_] (throw (RuntimeException. "Memento mori")))
+                                         "foo/bar")]}))
+
 (deftest format-hashmap-to-preferred
   (let [ok-accept "application/edn, application/json;q=0.5"
         ok-req {:headers {"accept" ok-accept}}]
@@ -218,7 +225,10 @@
                                         :headers {"accept" "foo/bar"}
                                         ; a non serializable, non-nil body is required, otherwise
                                         ; the response is passed through unchanged
-                                        :body {}}) :status)))))
+                                        :body {}}) :status)))
+    (is (= 500 (get (safe-restful-echo-opts-map {:status 200
+                                                 :headers {"accept" "foo/bar"}
+                                                 :body {}}) :status)))))
 
 (deftest format-restful-hashmap
   (let [body {:foo "bar"}]

@@ -11,6 +11,9 @@
 (def restful-echo
   (wrap-restful-format (fn [req] (assoc req :body (vals (:body-params req))))))
 
+(def restful-echo-opts-map
+  (wrap-restful-format (fn [req] (assoc req :body (vals (:body-params req))))))
+
 (def restful-echo-json
   (wrap-restful-format (fn [req] (assoc req :body (vals (:body-params req))))
                        :formats [:json-kw]))
@@ -55,4 +58,18 @@
                 :content-type ok-accept
                 :body (stream (yaml/generate-string msg))}
         r-trip (restful-echo-yaml ok-req)]
-    (is (= (:params r-trip) {:test "ok"}))))
+    (is (= (:params r-trip) {:test "ok"})))
+  (let [ok-accept "application/edn"
+        msg {:test :ok}
+        ok-req {:headers {"accept" ok-accept}
+                :content-type ok-accept
+                :body (stream (pr-str msg))}
+        r-trip (restful-echo-opts-map ok-req)]
+    (is (= (get-in r-trip [:headers "Content-Type"])
+           "application/edn; charset=utf-8"))
+    (is (= (read-string (slurp (:body r-trip))) (vals msg)))
+    (is (= (:params r-trip) msg))
+    (is (.contains (get-in (restful-echo-opts-map {:headers {"accept" "foo/bar"}})
+                           [:headers "Content-Type"])
+                   "application/json"))
+    (is (restful-echo-opts-map {:headers {"accept" "foo/bar"}}))))
