@@ -2,6 +2,7 @@
 
 ## x.x.x (2015-xx-xx)
 
+- Add support for providing options to cheshire `parse-string` and `generate-string`
 - Support providing options as map instead of keyword arguments
     - Options-map: `(wrap-format {:response-options ...})`
     - Key arguments: `(wrap-format :response-options ...)`
