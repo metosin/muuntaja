@@ -37,13 +37,15 @@ To get automatic deserialization and serialization for all supported formats wit
 ```
 `wrap-restful-format` accepts an optional `:formats` parameter, which is a list of the formats that should be handled. The first format of the list is also the default serializer used when no other solution can be found. The defaults are:
 ```clojure
-(wrap-restful-format handler :formats [:json :edn :yaml :yaml-in-html :transit-json :transit-msgpack])
+(wrap-restful-format handler :formats [:json :edn :msgpack :msgpack-kw :yaml :yaml-in-html :transit-json :transit-msgpack])
 ```
 
 The available formats are:
 
   - `:json` JSON with string keys in `:params` and `:body-params`
   - `:json-kw` JSON with keywordized keys in `:params` and `:body-params`
+  - `:msgpack` [MessagePack format](http://msgpack.org) with string keys.
+  - `:msgpack-kw` [MessagePack format](http://msgpack.org) with kwywordized keys.
   - `:yaml` YAML format
   - `:yaml-kw` YAML format with keywordized keys in `:params` and `:body-params`
   - `:edn` edn (native Clojure format). It uses *clojure.tools.edn* and never evals code, but uses the custom tags from `*data-readers*` 
@@ -55,9 +57,9 @@ Your routes should return raw clojure data structures where everything
 inside can be handled by the default encoders (no Java objects or fns
 mostly). If a route returns a _String_, _File_, _InputStream_ or _nil_, nothing will be done. If no format can be deduced from the **Accept** header or the format specified is unknown, the first format in the vector will be used (JSON by default).
 
-Please note the default JSON and YAML decoder do not keywordize their output keys, if this is the behaviour you want (be careful about keywordizing user input!), you should use something like:
+Please note the default JSON, MessagePack, and YAML decoder do not keywordize their output keys, if this is the behaviour you want (be careful about keywordizing user input!), you should use something like:
 ```clojure
-(wrap-restful-format handler :formats [:json-kw :edn :yaml-kw :yaml-in-html :transit-json :transit-msgpack])
+(wrap-restful-format handler :formats [:json-kw :edn :msgpack-kw :yaml-kw :yaml-in-html :transit-json :transit-msgpack])
 ```
 
 See also [wrap-restful-format](http://ngrunwald.github.com/ring-middleware-format/ring.middleware.format.html#var-wrap-restful-format) docstring for help on customizing error handling.
@@ -122,8 +124,6 @@ For exemple, this will cause all json formatted responses to be encoded in *iso-
 + You can implement the wrapper from scratch by using either or both `wrap-format-params` and `wrap-format-response`. For now, see the docs of each and how the other formats were implemented for help doing this.
 
 ## Future Work ##
-
-+ Add [MessagePack](http://msgpack.org/) raw format.
 
 ## See Also ##
 
