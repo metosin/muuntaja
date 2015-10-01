@@ -1,6 +1,6 @@
 # ring-middleware-format [![Continuous Integration status](https://secure.travis-ci.org/ngrunwald/ring-middleware-format.png)](http://travis-ci.org/ngrunwald/ring-middleware-format) [![Dependencies Status](http://jarkeeper.com/ngrunwald/ring-middleware-format/status.png)](http://jarkeeper.com/ngrunwald/ring-middleware-format)
 
-This is a set of middlewares that can be used to deserialize parameters sent in the :body of requests and serialize a Clojure data structure in the :body of a response to some string or binary representation. It natively handles JSON, YAML, Transit over JSON or Msgpack and Clojure (edn) but it can easily be extended to other custom formats, both string and binary. It is intended for the creation of RESTful APIs that do the right thing by default but are flexible enough to handle most special cases.
+This is a set of middlewares that can be used to deserialize parameters sent in the :body of requests and serialize a Clojure data structure in the :body of a response to some string or binary representation. It natively handles JSON, MessagePack, YAML, Transit over JSON or Msgpack and Clojure (edn) but it can easily be extended to other custom formats, both string and binary. It is intended for the creation of RESTful APIs that do the right thing by default but are flexible enough to handle most special cases.
 
 ## Installation ##
 
@@ -16,7 +16,7 @@ Add this to your dependencies in `project.clj`.
  - Automatically parses requests and encodes responses according to Content-Type and Accept headers
  - Automatically handles charset detection of requests bodies, even if the charset given by the MIME type is absent or wrong (using ICU)
  - Automatically selects and uses the right charset for the response according to the request header
- - Varied formats handled out of the box (*JSON*, *YAML*, *EDN*, *Transit over JSON or Msgpack*)
+ - Varied formats handled out of the box (*JSON*, *MessagePack*, *YAML*, *EDN*, *Transit over JSON or Msgpack*)
  - Pluggable system makes it easy to add to the standards encoders and decoders custom ones (proprietary format, Protobuf, specific xml, csv, etc.)
 
 ## API Documentation ##
@@ -37,13 +37,15 @@ To get automatic deserialization and serialization for all supported formats wit
 ```
 `wrap-restful-format` accepts an optional `:formats` parameter, which is a list of the formats that should be handled. The first format of the list is also the default serializer used when no other solution can be found. The defaults are:
 ```clojure
-(wrap-restful-format handler :formats [:json :edn :yaml :yaml-in-html :transit-json :transit-msgpack])
+(wrap-restful-format handler :formats [:json :edn :msgpack :msgpack-kw :yaml :yaml-in-html :transit-json :transit-msgpack])
 ```
 
 The available formats are:
 
   - `:json` JSON with string keys in `:params` and `:body-params`
   - `:json-kw` JSON with keywordized keys in `:params` and `:body-params`
+  - `:msgpack` [MessagePack format](http://msgpack.org) with string keys.
+  - `:msgpack-kw` [MessagePack format](http://msgpack.org) with kwywordized keys.
   - `:yaml` YAML format
   - `:yaml-kw` YAML format with keywordized keys in `:params` and `:body-params`
   - `:edn` edn (native Clojure format). It uses *clojure.tools.edn* and never evals code, but uses the custom tags from `*data-readers*` 
@@ -55,9 +57,9 @@ Your routes should return raw clojure data structures where everything
 inside can be handled by the default encoders (no Java objects or fns
 mostly). If a route returns a _String_, _File_, _InputStream_ or _nil_, nothing will be done. If no format can be deduced from the **Accept** header or the format specified is unknown, the first format in the vector will be used (JSON by default).
 
-Please note the default JSON and YAML decoder do not keywordize their output keys, if this is the behaviour you want (be careful about keywordizing user input!), you should use something like:
+Please note the default JSON, MessagePack, and YAML decoder do not keywordize their output keys, if this is the behaviour you want (be careful about keywordizing user input!), you should use something like:
 ```clojure
-(wrap-restful-format handler :formats [:json-kw :edn :yaml-kw :yaml-in-html :transit-json :transit-msgpack])
+(wrap-restful-format handler :formats [:json-kw :edn :msgpack-kw :yaml-kw :yaml-in-html :transit-json :transit-msgpack])
 ```
 
 See also [wrap-restful-format](http://ngrunwald.github.com/ring-middleware-format/ring.middleware.format.html#var-wrap-restful-format) docstring for help on customizing error handling.
@@ -122,8 +124,6 @@ For exemple, this will cause all json formatted responses to be encoded in *iso-
 + You can implement the wrapper from scratch by using either or both `wrap-format-params` and `wrap-format-response`. For now, see the docs of each and how the other formats were implemented for help doing this.
 
 ## Future Work ##
-
-+ Add [MessagePack](http://msgpack.org/) raw format.
 
 ## See Also ##
 
