@@ -4,7 +4,9 @@
             [clojure.java.io :as io]
             [clj-yaml.core :as yaml]
             [clojure.string :as s]
-            [cognitect.transit :as transit])
+            [clojure.walk :refer [stringify-keys]]
+            [cognitect.transit :as transit]
+            [msgpack.core :as msgpack])
   (:use [clojure.core.memoize :only [lu]])
   (:import [java.io File InputStream BufferedInputStream
             ByteArrayOutputStream]
@@ -249,6 +251,31 @@
                         :charset charset
                         :handle-error handle-error))
 
+(defn encode-msgpack [body]
+  (with-open [out-stream (ByteArrayOutputStream.)]
+    (let [data-out (java.io.DataOutputStream. out-stream)]
+      (msgpack/pack-stream (stringify-keys body) data-out))
+    (.toByteArray out-stream)))
+
+(defn wrap-msgpack-response
+  "Wrapper to serialize structures in *:body* to **msgpack** with sane
+  defaults. See [[wrap-format-response]] for more details."
+  [handler & {:keys [predicate binary? encoder type charset handle-error]
+              :or {predicate serializable?
+                   encoder encode-msgpack
+                   type "application/msgpack"
+                   binary? true
+                   handle-error default-handle-error}}]
+  (wrap-format-response handler
+                        :predicate predicate
+                        :encoders [(make-encoder encoder type :binary)]
+                        :binary? binary?
+                        :charset nil
+                        :handle-error handle-error))
+
+(defn encode-msgpack-kw [body]
+  (encode-msgpack (stringify-keys body)))
+
 (defn wrap-yaml-response
   "Wrapper to serialize structures in *:body* to YAML with sane
   defaults. See [[wrap-format-response]] for more details."
@@ -341,6 +368,8 @@
   {:json (make-encoder json/generate-string "application/json")
    :json-kw (make-encoder json/generate-string "application/json")
    :edn (make-encoder generate-native-clojure "application/edn")
+   :msgpack (make-encoder encode-msgpack "application/msgpack" :binary)
+   :msgpack-kw (make-encoder encode-msgpack-kw "application/msgpack" :binary)
    :clojure (make-encoder generate-native-clojure "application/clojure")
    :yaml (make-encoder yaml/generate-string "application/x-yaml")
    :yaml-kw (make-encoder yaml/generate-string "application/x-yaml")
@@ -368,7 +397,7 @@
               :or {handle-error default-handle-error
                    predicate serializable?
                    charset default-charset-extractor
-                   formats [:json :yaml :edn :clojure :yaml-in-html :transit-json :transit-msgpack]}}]
+                   formats [:json :yaml :edn :msgpack :clojure :yaml-in-html :transit-json :transit-msgpack]}}]
   (let [encoders (for [format formats
                        :when format
                        :let [encoder (if (map? format)
