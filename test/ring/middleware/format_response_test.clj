@@ -5,7 +5,8 @@
             [clj-yaml.core :as yaml]
             [clojure.walk :refer [stringify-keys keywordize-keys]]
             [cognitect.transit :as transit]
-            [msgpack.core :as msgpack])
+            [msgpack.core :as msgpack]
+            [clojure.string :as string])
   (:import [java.io ByteArrayInputStream InputStream ByteArrayOutputStream]))
 
 (defn stream [s]
@@ -53,6 +54,16 @@
         resp ((wrap-json-response identity) req)]
     (is (.contains (get-in resp [:headers "Content-Type"]) "utf-8"))
     (is (= 18 (Integer/parseInt (get-in resp [:headers "Content-Length"]))))))
+
+(deftest format-json-options
+  (let [body {:foo-bar "bar"}
+        req {:body body}
+        resp ((wrap-json-response identity {:options {:key-fn (comp string/upper-case name)}}) req)
+        resp2 ((wrap-restful-response identity {:format-options {:json {:key-fn (comp string/upper-case name)}}}) req)]
+    (is (= "{\"FOO-BAR\":\"bar\"}"
+           (slurp (:body resp))))
+    (is (= "{\"FOO-BAR\":\"bar\"}"
+           (slurp (:body resp2))))))
 
 (def msgpack-echo
   (wrap-msgpack-response identity))

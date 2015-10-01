@@ -204,17 +204,18 @@
           (catch Exception e
             (handle-error e req response)))))))
 
+(defn make-json-encoder [pretty options]
+  (let [opts (assoc options :pretty pretty)]
+    (fn [s]
+      (json/generate-string s opts))))
+
 (defn wrap-json-response
   "Wrapper to serialize structures in *:body* to JSON with sane defaults.
    See [[wrap-format-response]] for more details."
   [handler & args]
-  (let [{:keys [encoder type pretty] :as options} (impl/extract-options args)
-        encoder (or
-                  encoder
-                  (if pretty
-                    (fn [s] (json/generate-string s {:pretty pretty}))
-                    json/generate-string))]
-    (wrap-format-response handler (assoc options :encoders [(make-encoder encoder (or type "application/json"))]))))
+  (let [{:keys [encoder type pretty options] :as opts} (impl/extract-options args)
+        encoder (or encoder (make-json-endocer pretty options))]
+    (wrap-format-response handler (assoc opts :encoders [(make-encoder encoder (or type "application/json"))]))))
 
 ;; Functions for Clojure native serialization
 
@@ -327,8 +328,10 @@
                                          :charset nil))))
 
 (def ^:no-doc format-encoders
-  {:json (make-encoder json/generate-string "application/json")
-   :json-kw (make-encoder json/generate-string "application/json")
+  {:json (assoc (make-encoder nil "application/json")
+                :encoder-fn #(make-json-encoder false %))
+   :json-kw (assoc (make-encoder nil "application/json")
+                   :encoder-fn #(make-json-encoder true %))
    :edn (make-encoder generate-native-clojure "application/edn")
    :msgpack (make-encoder encode-msgpack "application/msgpack" :binary)
    :msgpack-kw (make-encoder encode-msgpack-kw "application/msgpack" :binary)
