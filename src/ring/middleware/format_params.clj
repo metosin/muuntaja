@@ -190,10 +190,9 @@
    See [[wrap-format-params]] for details."
   [handler & args]
   (let [{:keys [predicate decoder] :as options} (impl/extract-options args)]
-    (binding [clj-yaml.core/*keywordize* true]
-      (wrap-format-params handler (assoc options
-                                         :predicate (or predicate yaml-request?)
-                                         :decoder (or decoder yaml/parse-string))))))
+    (wrap-format-params handler (assoc options
+                                       :predicate (or predicate yaml-request?)
+                                       :decoder (or decoder yaml/parse-string)))))
 
 (defn parse-clojure-string
   "Decode a clojure body. The body is merged into the params, so must be a map
