@@ -10,7 +10,7 @@
   :dependencies [[org.clojure/core.memoize "0.5.7"]
                  [ring/ring-core "1.4.0"]
                  [cheshire "5.5.0"]
-                 [org.clojure/tools.reader "0.9.2"]
+                 [org.clojure/tools.reader "0.10.0-alpha3"]
                  [com.ibm.icu/icu4j "55.1"]
                  [circleci/clj-yaml "0.5.3"]
                  [clojure-msgpack "1.1.1"]
