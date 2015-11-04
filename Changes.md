@@ -2,7 +2,6 @@
 
 ## 0.7.0 (2015-xx-xx)
 
-- **BREAKING**: Dropped Java 1.6 support
 - Add support for providing options to cheshire `parse-string` and `generate-string`
 - Support providing options as map instead of keyword arguments
     - Options-map: `(wrap-format {:response-options ...})`
