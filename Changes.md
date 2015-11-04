@@ -46,7 +46,7 @@
 
 ### Bugfixes
  - Uses *Accept-Charset* header to choose response charset
- 
+
 ### Other
  - Easier customizing of error handlers for `format` namespace
 
@@ -72,7 +72,7 @@
   - `wrap-format-response` encodes the body with the first format
   (`:json` by default) when unable to find an encoder matching the
   request instead of returning **306** HTTP error code
-  
+
 ### Features
   - Added custom error handling
   - Added a `ring.middleware.format` namespace for simplified usage
@@ -94,7 +94,7 @@
 ## 0.2.3
 ### Bugfixes
   - Fixed bug with long request bodies when guessing character encoding
-  
+
 ## 0.2.2
 ### Bugfixes
   - Fixed bug with character encoding guessing
