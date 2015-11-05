@@ -2,13 +2,13 @@
 
 ## 0.7.0 (2015-xx-xx)
 
-- Add support for providing options to cheshire `parse-string` and `generate-string`
-- Support providing options as map instead of keyword arguments
+- Add support for providing options to Cheshire `parse-string` and `generate-string`
+- Add support providing options as map instead of keyword arguments
     - Options-map: `(wrap-format {:response-options ...})`
-    - Key arguments: `(wrap-format :response-options ...)`
+    - Keyword arguments: `(wrap-format :response-options ...)`
     - In future keyword argument support could be deprecated and eventually removed
-- Add support for msgpack
-- Depends on `ring/ring-core` instead of catch-all packaage `ring`
+- Add support for Msgpack
+- Depends on `ring/ring-core` instead of catch-all package `ring`
 - Replaced `clj-yaml` with maintained fork: [circleci/clj-yaml](https://github.com/circleci/clj-yaml)
 - Updated deps:
 ```
