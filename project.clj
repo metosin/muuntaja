@@ -15,9 +15,8 @@
                  [circleci/clj-yaml "0.5.5"]
                  [clojure-msgpack "1.1.1"]
                  [com.cognitect/transit-clj "0.8.281"]]
-  :plugins [[codox "0.8.11"]]
-  :codox {:src-dir-uri "http://github.com/ngrunwald/ring-middleware-format/blob/master/"
-          :src-linenum-anchor-prefix "L"
+  :plugins [[lein-codox "0.9.0"]]
+  :codox {:src-uri "http://github.com/ngrunwald/ring-middleware-format/blob/master/{filepath}#L{line}"
           :defaults {:doc/format :markdown}}
   :profiles {:dev {:dependencies [[org.clojure/clojure "1.7.0"]]}
              :1.6 {:dependencies [[org.clojure/clojure "1.6.0"]]}}

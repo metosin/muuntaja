@@ -28,7 +28,7 @@ else
 fi
 
 mkdir -p doc
-lein doc
+lein codox
 cd doc
 git add --all
 git commit -m "Build docs from ${rev}."
