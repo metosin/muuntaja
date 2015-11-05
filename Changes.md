@@ -8,13 +8,15 @@
     - Key arguments: `(wrap-format :response-options ...)`
     - In future keyword argument support could be deprecated and eventually removed
 - Add support for msgpack
+- Depends on `ring/ring-core` instead of catch-all packaage `ring`
+- Replaced `clj-yaml` with maintained fork: [circleci/clj-yaml](https://github.com/circleci/clj-yaml)
 - Updated deps:
 ```
 [ring "1.4.0"] is available but we use "1.3.2"
 [cheshire "5.5.0"] is available but we use "5.4.0"
-[org.clojure/tools.reader "0.9.2"] is available but we use "0.8.16"
-[com.ibm.icu/icu4j "55.1"] is available but we use "54.1"
-[com.cognitect/transit-clj "0.8.281"] is available but we use "0.8.269"
+[org.clojure/tools.reader "0.10.0"] is available but we use "0.8.16"
+[com.ibm.icu/icu4j "56.1"] is available but we use "54.1"
+[com.cognitect/transit-clj "0.8.285"] is available but we use "0.8.269"
 ```
 
 ## 0.6.0 (2015-09-01)

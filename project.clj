@@ -10,11 +10,11 @@
   :dependencies [[org.clojure/core.memoize "0.5.7"]
                  [ring/ring-core "1.4.0"]
                  [cheshire "5.5.0"]
-                 [org.clojure/tools.reader "0.9.2"]
-                 [com.ibm.icu/icu4j "55.1"]
+                 [org.clojure/tools.reader "0.10.0"]
+                 [com.ibm.icu/icu4j "56.1"]
                  [circleci/clj-yaml "0.5.5"]
-                 [clojure-msgpack "1.1.1"]
-                 [com.cognitect/transit-clj "0.8.281"]]
+                 [clojure-msgpack "1.1.2"]
+                 [com.cognitect/transit-clj "0.8.285"]]
   :plugins [[lein-codox "0.9.0"]]
   :codox {:src-uri "http://github.com/ngrunwald/ring-middleware-format/blob/master/{filepath}#L{line}"
           :defaults {:doc/format :markdown}}
