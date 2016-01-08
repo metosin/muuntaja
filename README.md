@@ -133,6 +133,7 @@ This module aims to be both easy to use and easy to extend to new formats. Howev
 
 ## License ##
 
-Copyright (C) 2011, 2012, 2013, 2014 Nils Grunwald
+Copyright &copy; 2011, 2012, 2013, 2014 Nils Grunwald<br>
+Copyright &copy; 2015, 2016 Juho Teperi
 
 Distributed under the Eclipse Public License, the same as Clojure.
