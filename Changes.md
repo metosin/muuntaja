@@ -1,5 +1,9 @@
 # Changes for ring-middleware-format
 
+## Unreleased
+
+- Fix [#56](https://github.com/ngrunwald/ring-middleware-format/issues/56) use `:key-fn` in `wrap-json-kw-params`
+
 ## 0.7.0 (2015-11-05)
 
 **[compare](https://github.com/ngrunwald/ring-middleware-format/compare/release-0.6.0...0.7.0)**
