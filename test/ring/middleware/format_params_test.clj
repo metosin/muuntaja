@@ -52,6 +52,10 @@
                         {:content-type "application/json"
                          :body (stream "{\"foo_bar\":\"bar\"}")}))))
   (is (= {:foo-bar "bar"}
+         (:body-params ((wrap-json-kw-params identity {:options {:key-fn key-fn}})
+                        {:content-type "application/json"
+                         :body (stream "{\"foo_bar\":\"bar\"}")}))))
+  (is (= {:foo-bar "bar"}
          (:body-params ((wrap-restful-params identity {:format-options {:json {:key-fn key-fn}}})
                         {:content-type "application/json"
                          :body (stream "{\"foo_bar\":\"bar\"}")})))))

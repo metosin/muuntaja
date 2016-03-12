@@ -144,7 +144,7 @@
   (let [{:keys [predicate decoder options] :as opts} (impl/extract-options args)]
     (wrap-format-params handler (assoc opts
                                        :predicate (or predicate json-request?)
-                                       :decoder (or decoder (make-json-decoder (assoc options :key-fn true)))))))
+                                       :decoder (or decoder (make-json-decoder (merge {:key-fn true} options)))))))
 
 (def ^:no-doc msgpack-request?
   (make-type-request-pred #"^application/(vnd.+)?(x-)?msgpack"))
