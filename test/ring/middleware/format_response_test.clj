@@ -292,6 +292,18 @@
     (is (map? (:body resp-non-serialized)))
     (is (instance? java.io.BufferedInputStream (:body resp-serialized)))))
 
+(def custom-encoder (make-encoder (make-json-encoder false nil) "application/vnd.mixradio.something+json"))
+
+(def custom-content-type
+  (wrap-restful-response (fn [req]
+                           {:status 200
+                            :body {:foo "bar"}})
+                         {:formats [custom-encoder :json-kw]}))
+
+(deftest custom-content-type-test
+  (let [resp (custom-content-type {:body {:foo "bar"} :headers {"accept" "application/vnd.mixradio.something+json"}})]
+    (is (= "application/vnd.mixradio.something+json; charset=utf-8" (get-in resp [:headers "Content-Type"])))))
+
 ;;
 ;; Transit options
 ;;
