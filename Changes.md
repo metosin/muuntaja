@@ -1,6 +1,8 @@
 # Changes for ring-middleware-format
 
-## 0.7.0 (2015-xx-xx)
+## 0.7.0 (2015-11-05)
+
+**[compare](https://github.com/ngrunwald/ring-middleware-format/compare/release-0.6.0...0.7.0)**
 
 - Add support for providing options to Cheshire `parse-string` and `generate-string`
 - Add support providing options as map instead of keyword arguments
