@@ -38,7 +38,7 @@
 (deftest format-json-prettily
   (let [body {:foo "bar"}
         req {:body body}
-        resp ((wrap-restful-response identity :formats [json-pretty]) req)]
+        resp ((wrap-restful-response identity {:formats [json-pretty]}) req)]
     (is (.contains (slurp (:body resp)) "\n "))))
 
 (deftest returns-correct-charset
@@ -63,7 +63,7 @@
            (slurp (:body resp2))))))
 
 (def msgpack-echo
-  (wrap-restful-response identity :formats [:msgpack]))
+  (wrap-restful-response identity {:formats [:msgpack]}))
 
 (defn ^:no-doc slurp-to-bytes
   #^bytes
@@ -87,7 +87,7 @@
     (is (< 2 (Integer/parseInt (get-in resp [:headers "Content-Length"]))))))
 
 (def clojure-echo
-  (wrap-restful-response identity :formats [:edn]))
+  (wrap-restful-response identity {:formats [:edn]}))
 
 (deftest format-clojure-hashmap
   (let [body {:foo "bar"}
@@ -98,7 +98,7 @@
     (is (< 2 (Integer/parseInt (get-in resp [:headers "Content-Length"]))))))
 
 (def yaml-echo
-  (wrap-restful-response identity :formats [:yaml]))
+  (wrap-restful-response identity {:formats [:yaml]}))
 
 (deftest format-yaml-hashmap
   (let [body {:foo "bar"}
@@ -110,7 +110,7 @@
 
 (deftest html-escape-yaml-in-html
   (let [req {:body {:foo "<bar>"}}
-        resp ((wrap-restful-response identity :formats [:yaml-in-html]) req)
+        resp ((wrap-restful-response identity {:formats [:yaml-in-html]}) req)
         body (slurp (:body resp))]
     (is (= "<html>\n<head></head>\n<body><div><pre>\n{foo: &lt;bar&gt;}\n</pre></div></body></html>" body))))
 
@@ -124,7 +124,7 @@
     (transit/read rdr)))
 
 (def transit-json-echo
-  (wrap-restful-response identity :formats [:transit-json]))
+  (wrap-restful-response identity {:formats [:transit-json]}))
 
 (deftest format-transit-json-hashmap
   (let [body {:foo "bar"}
@@ -135,7 +135,7 @@
     (is (< 2 (Integer/parseInt (get-in resp [:headers "Content-Length"]))))))
 
 (def transit-msgpack-echo
-  (wrap-restful-response identity :formats [:transit-msgpack]))
+  (wrap-restful-response identity {:formats [:transit-msgpack]}))
 
 (deftest format-transit-msgpack-hashmap
   (let [body {:foo "bar"}
@@ -207,13 +207,6 @@
 (def restful-echo
   (wrap-restful-response identity))
 
-(def safe-restful-echo
-  (wrap-restful-response identity
-                         :handle-error (fn [_ _ _] {:status 500})
-                         :formats
-                         [(make-encoder (fn [_] (throw (RuntimeException. "Memento mori")))
-                                        "foo/bar")]))
-
 (def safe-restful-echo-opts-map
   (wrap-restful-response identity
                          {:handle-error (fn [_ _ _] {:status 500})
@@ -229,11 +222,6 @@
     (is (.contains (get-in (restful-echo {:headers {"accept" "foo/bar"}})
                            [:headers "Content-Type"])
                    "application/json"))
-    (is (= 500 (get (safe-restful-echo {:status 200
-                                        :headers {"accept" "foo/bar"}
-                                        ; a non serializable, non-nil body is required, otherwise
-                                        ; the response is passed through unchanged
-                                        :body {}}) :status)))
     (is (= 500 (get (safe-restful-echo-opts-map {:status 200
                                                  :headers {"accept" "foo/bar"}
                                                  :body {}}) :status)))))
@@ -257,10 +245,11 @@
       (is (< 2 (Integer/parseInt (get-in resp [:headers "Content-Length"])))))))
 
 (def custom-restful-echo
-  (wrap-restful-response identity
-                         :formats [{:encoder (constantly "foobar")
-                                    :enc-type {:type "text"
-                                               :sub-type "foo"}}]))
+  (wrap-restful-response
+    identity
+    {:formats [{:encoder (constantly "foobar")
+                :enc-type {:type "text"
+                           :sub-type "foo"}}]}))
 
 (deftest format-custom-restful-hashmap
   (let [req {:body {:foo "bar"} :headers {"accept" "text/foo"}}
@@ -279,8 +268,8 @@
     (is (nil? (:body resp)))))
 
 (def restful-echo-pred
-  (wrap-restful-response identity :predicate (fn [_ resp]
-                                               (::serializable? resp))))
+  (wrap-restful-response identity {:predicate (fn [_ resp]
+                                                (::serializable? resp))}))
 
 (deftest custom-predicate
   (let [req {:body {:foo "bar"}}
@@ -311,10 +300,10 @@
   {Point (transit/write-handler (constantly "Point") (fn [p] [(:x p) (:y p)]))})
 
 (def custom-transit-echo
-  (wrap-restful-response identity :formats [:transit-json] :format-options {:transit-json {:handlers writers}}))
+  (wrap-restful-response identity {:formats [:transit-json] :format-options {:transit-json {:handlers writers}}}))
 
 (def custom-restful-transit-echo
-  (wrap-restful-response identity :format-options {:transit-json {:handlers writers}}))
+  (wrap-restful-response identity {:format-options {:transit-json {:handlers writers}}}))
 
 (def transit-resp {:body (Point. 1 2)})
 

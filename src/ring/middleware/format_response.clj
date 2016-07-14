@@ -10,7 +10,7 @@
             [msgpack.core :as msgpack])
   (:use [clojure.core.memoize :only [lu]])
   (:import [java.io File InputStream
-            ByteArrayOutputStream]
+                    ByteArrayOutputStream]
            [java.nio.charset Charset]))
 
 (set! *warn-on-reflection* true)
@@ -25,9 +25,9 @@
   [_ {:keys [body] :as response}]
   (when response
     (not (or
-          (string? body)
-          (instance? File body)
-          (instance? InputStream body)))))
+           (string? body)
+           (instance? File body)
+           (instance? InputStream body)))))
 
 (defn can-encode?
   "Check whether encoder can encode to accepted-type.
@@ -60,15 +60,15 @@
                 (cond (nil? rest)
                       (assoc type :q 1.0)
                       (= (first (s/triml (first rest)))
-                         \q) ;no media-range params
+                         \q)                                ;no media-range params
                       (assoc type :q
-                             (Double/parseDouble
-                              (second (s/split (first rest) #"="))))
+                                  (Double/parseDouble
+                                    (second (s/split (first rest) #"="))))
                       :else
                       (assoc (if-let [q-val (second rest)]
                                (assoc type :q
-                                      (Double/parseDouble
-                                       (second (s/split q-val #"="))))
+                                           (Double/parseDouble
+                                             (second (s/split q-val #"="))))
                                (assoc type :q 1.0))
                         :parameter (s/trim (first rest))))))
             (s/split accept-header #","))
@@ -116,11 +116,11 @@
   "Returns an acceptable choice from a list of [*charset* *quality-score*]"
   [charsets]
   (or
-   (->> (sort-by second charsets)
-        (filter (comp available-charsets first))
-        (first)
-        (first))
-   "utf-8"))
+    (->> (sort-by second charsets)
+         (filter (comp available-charsets first))
+         (first)
+         (first))
+    "utf-8"))
 
 (defn make-encoder
   "Return a encoder map suitable for [[wrap-format-response.]]
@@ -128,13 +128,13 @@
    type *Content-Type* of the encoded string
    (make-encoder json/generate-string \"application/json\")"
   ([encoder content-type binary?]
-     {:encoder encoder
-      :enc-type (first (parse-accept-header content-type))
-      :binary? binary?
-      ;; Include content-type to allow later introspection of encoders.
-      :content-type content-type})
+   {:encoder encoder
+    :enc-type (first (parse-accept-header content-type))
+    :binary? binary?
+    ;; Include content-type to allow later introspection of encoders.
+    :content-type content-type})
   ([encoder content-type]
-     (make-encoder encoder content-type false)))
+   (make-encoder encoder content-type false)))
 
 (defn default-handle-error
   "Default error handling function used, which rethrows the Exception"
@@ -146,7 +146,7 @@
    Defaults to utf-8"
   [accept-charset]
   (let [possible-charsets (parse-charset-accepted accept-charset)]
-      (preferred-charset possible-charsets)))
+    (preferred-charset possible-charsets)))
 
 (def choose-charset
   "Memoized form of [[choose-charset*]]"
@@ -235,9 +235,9 @@
 (defn ^:no-doc wrap-yaml-in-html
   [body]
   (str
-   "<html>\n<head></head>\n<body><div><pre>\n"
-   (escape-html (yaml/generate-string body))
-   "</pre></div></body></html>"))
+    "<html>\n<head></head>\n<body><div><pre>\n"
+    (escape-html (yaml/generate-string body))
+    "</pre></div></body></html>"))
 
 ;;;;;;;;;;;;;
 ;; Transit ;;
@@ -256,9 +256,9 @@
 
 (def ^:no-doc format-encoders
   {:json (assoc (make-encoder nil "application/json")
-                :encoder-fn #(make-json-encoder false %))
+           :encoder-fn #(make-json-encoder false %))
    :json-kw (assoc (make-encoder nil "application/json")
-                   :encoder-fn #(make-json-encoder false %))
+              :encoder-fn #(make-json-encoder false %))
    :edn (make-encoder generate-native-clojure "application/edn")
    :msgpack (make-encoder encode-msgpack "application/msgpack" :binary)
    :msgpack-kw (make-encoder encode-msgpack-kw "application/msgpack" :binary)
@@ -283,6 +283,10 @@
 
 (def default-formats [:json :yaml :edn :msgpack :clojure :yaml-in-html :transit-json :transit-msgpack])
 
+;;
+;; Public api
+;;
+
 (defn wrap-restful-response
   "Wrapper that tries to do the right thing with the response *:body*
   and provide a solid basis for a RESTful API. It will serialize to
@@ -292,19 +296,20 @@
   *:transit-msgpack*.
   Options to specific encoders can be passed in using *:format-options*
   option. If is a map from format keyword to options map."
-  [handler & args]
-  (let [{:keys [formats charset binary? format-options] :as options} (impl/extract-options args)
-        common-options (dissoc options :formats :format-options)
-        encoders (for [format (or formats default-formats)
-                       :when format
-                       :let [encoder (if (map? format)
-                                       format
-                                       (init-encoder
-                                         (get format-encoders format)
-                                         (get format-options format)))]
-                       :when encoder]
-                   encoder)]
-    (wrap-format-response handler
-                          (assoc common-options
-                                 :encoders encoders
-                                 :binary? binary?))))
+  ([handler]
+   (wrap-restful-response handler {}))
+  ([handler {:keys [formats binary? format-options] :as options}]
+   (let [common-options (dissoc options :formats :format-options)
+         encoders (for [format (or formats default-formats)
+                        :when format
+                        :let [encoder (if (map? format)
+                                        format
+                                        (init-encoder
+                                          (get format-encoders format)
+                                          (get format-options format)))]
+                        :when encoder]
+                    encoder)]
+     (wrap-format-response handler
+                           (assoc common-options
+                             :encoders encoders
+                             :binary? binary?)))))
