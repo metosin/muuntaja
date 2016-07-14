@@ -9,7 +9,7 @@
             [cognitect.transit :as transit]
             [msgpack.core :as msgpack])
   (:use [clojure.core.memoize :only [lu]])
-  (:import [java.io File InputStream BufferedInputStream
+  (:import [java.io File InputStream
             ByteArrayOutputStream]
            [java.nio.charset Charset]))
 
@@ -209,37 +209,11 @@
     (fn [s]
       (json/generate-string s opts))))
 
-(defn wrap-json-response
-  "Wrapper to serialize structures in *:body* to JSON with sane defaults.
-   See [[wrap-format-response]] for more details."
-  [handler & args]
-  (let [{:keys [encoder type pretty options] :as opts} (impl/extract-options args)
-        encoder (or encoder (make-json-encoder pretty options))]
-    (wrap-format-response handler (assoc opts :encoders [(make-encoder encoder (or type "application/json"))]))))
-
 ;; Functions for Clojure native serialization
 
 (defn ^:no-doc generate-native-clojure
   [struct]
   (pr-str struct))
-
-(defn ^:no-doc generate-hf-clojure
-  [struct]
-  (binding [*print-dup* true]
-    (pr-str struct)))
-
-(defn wrap-clojure-response
-  "Wrapper to serialize structures in *:body* to Clojure native with sane defaults.
-  If *:hf* is set to true, will use *print-dup* for high-fidelity
-  printing ( see
-  [here](https://groups.google.com/d/msg/clojure/5wRBTPNu8qo/1dJbtHX0G-IJ) ).
-  See [[wrap-format-response]] for more details."
-  [handler & args]
-  (let [{:keys [encoder type hf] :as options} (impl/extract-options args)]
-    (wrap-format-response handler
-      (assoc options :encoders [(make-encoder
-                                  (if hf generate-hf-clojure (or encoder generate-native-clojure))
-                                  (or type "application/edn"))]))))
 
 (defn encode-msgpack [body]
   (with-open [out-stream (ByteArrayOutputStream.)]
@@ -247,26 +221,9 @@
       (msgpack/pack-stream (stringify-keys body) data-out))
     (.toByteArray out-stream)))
 
-(defn wrap-msgpack-response
-  "Wrapper to serialize structures in *:body* to **msgpack** with sane
-  defaults. See [[wrap-format-response]] for more details."
-  [handler & args]
-  (let [{:keys [binary? encoder type] :as options} (impl/extract-options args)]
-    (wrap-format-response handler (assoc options
-                                         :encoders [(make-encoder (or encoder encode-msgpack) (or type "application/msgpack") :binary)]
-                                         :binary? (if (nil? binary?) true binary?)))))
-
 (defn encode-msgpack-kw [body]
   (encode-msgpack (stringify-keys body)))
 
-(defn wrap-yaml-response
-  "Wrapper to serialize structures in *:body* to YAML with sane
-  defaults. See [[wrap-format-response]] for more details."
-  [handler & args]
-  (let [{:keys [predicate encoder type charset] :as options} (impl/extract-options args)]
-    (wrap-format-response handler (assoc options
-                                         :encoders [(make-encoder (or encoder yaml/generate-string) (or type "application/x-yaml"))]
-                                         :charset (or charset default-charset-extractor)))))
 
 (defn- escape-html [s]
   (s/escape s {\& "&amp;"
@@ -282,16 +239,6 @@
    (escape-html (yaml/generate-string body))
    "</pre></div></body></html>"))
 
-(defn wrap-yaml-in-html-response
-  "Wrapper to serialize structures in *:body* to YAML wrapped in HTML to
-  check things out in the browser. See [[wrap-format-response]] for more
-  details."
-  [handler & args]
-  (let [{:keys [predicate encoder type charset handle-error] :as options} (impl/extract-options args)]
-    (wrap-format-response handler (assoc options
-                                         :encoders [(make-encoder (or encoder wrap-yaml-in-html) (or type "text/html"))]
-                                         :charset (or charset default-charset-extractor)))))
-
 ;;;;;;;;;;;;;
 ;; Transit ;;
 ;;;;;;;;;;;;;
@@ -306,26 +253,6 @@
           wrt (transit/writer out full-fmt options)]
       (transit/write wrt data)
       (.toByteArray out))))
-
-(defn wrap-transit-json-response
-  "Wrapper to serialize structures in *:body* to transit over **JSON** with sane defaults.
-  See [[wrap-format-response]] for more details."
-  [handler & args]
-  (let [{:keys [encoder type options] :as opts} (impl/extract-options args)
-        encoder (or encoder (make-transit-encoder :json options))]
-    (wrap-format-response handler (assoc opts
-                                         :encoders [(make-encoder encoder (or type "application/transit+json") :binary)]
-                                         :charset nil))))
-
-(defn wrap-transit-msgpack-response
-  "Wrapper to serialize structures in *:body* to transit over **msgpack** with sane defaults.
-  See [[wrap-format-response]] for more details."
-  [handler & args]
-  (let [{:keys [encoder type options] :as opts} (impl/extract-options args)
-        encoder (or encoder (make-transit-encoder :msgpack options))]
-    (wrap-format-response handler (assoc opts
-                                         :encoders [(make-encoder encoder (or type "application/transit+msgpack") :binary)]
-                                         :charset nil))))
 
 (def ^:no-doc format-encoders
   {:json (assoc (make-encoder nil "application/json")
@@ -349,6 +276,11 @@
     (assoc encoder :encoder (init opts))
     encoder))
 
+(def json-pretty (init-encoder
+                   (assoc (make-encoder nil "application/json")
+                     :encoder-fn #(make-json-encoder true %))
+                   {}))
+
 (def default-formats [:json :yaml :edn :msgpack :clojure :yaml-in-html :transit-json :transit-msgpack])
 
 (defn wrap-restful-response
@@ -367,7 +299,9 @@
                        :when format
                        :let [encoder (if (map? format)
                                        format
-                                       (init-encoder (get format-encoders (keyword format)) (get format-options (keyword format))))]
+                                       (init-encoder
+                                         (get format-encoders format)
+                                         (get format-options format)))]
                        :when encoder]
                    encoder)]
     (wrap-format-response handler

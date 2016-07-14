@@ -12,25 +12,25 @@
 (defn stream [s]
   (ByteArrayInputStream. (.getBytes s "UTF-8")))
 
-(def json-echo
-  (wrap-json-response identity))
+(def restfull-echo
+  (wrap-restful-response identity))
 
 (deftest noop-with-string
   (let [body "<xml></xml>"
         req {:body body}
-        resp (json-echo req)]
+        resp (restfull-echo req)]
     (is (= body (:body resp)))))
 
 (deftest noop-with-stream
   (let [body "<xml></xml>"
         req {:body (stream body)}
-        resp (json-echo req)]
+        resp (restfull-echo req)]
     (is (= body (slurp (:body resp))))))
 
 (deftest format-json-hashmap
   (let [body {:foo "bar"}
         req {:body body}
-        resp (json-echo req)]
+        resp (restfull-echo req)]
     (is (= (json/generate-string body) (slurp (:body resp))))
     (is (.contains (get-in resp [:headers "Content-Type"]) "application/json"))
     (is (< 2 (Integer/parseInt (get-in resp [:headers "Content-Length"]))))))
@@ -38,35 +38,32 @@
 (deftest format-json-prettily
   (let [body {:foo "bar"}
         req {:body body}
-        resp ((wrap-json-response identity :pretty true) req)]
+        resp ((wrap-restful-response identity :formats [json-pretty]) req)]
     (is (.contains (slurp (:body resp)) "\n "))))
 
 (deftest returns-correct-charset
   (let [body {:foo "bârçï"}
         req {:body body :headers {"accept-charset" "utf8; q=0.8 , utf-16"}}
-        resp ((wrap-json-response identity) req)]
+        resp ((wrap-restful-response identity) req)]
     (is (.contains (get-in resp [:headers "Content-Type"]) "utf-16"))
     (is (= 32 (Integer/parseInt (get-in resp [:headers "Content-Length"]))))))
 
 (deftest returns-utf8-by-default
   (let [body {:foo "bârçï"}
         req {:body body :headers {"accept-charset" "foo"}}
-        resp ((wrap-json-response identity) req)]
+        resp ((wrap-restful-response identity) req)]
     (is (.contains (get-in resp [:headers "Content-Type"]) "utf-8"))
     (is (= 18 (Integer/parseInt (get-in resp [:headers "Content-Length"]))))))
 
 (deftest format-json-options
   (let [body {:foo-bar "bar"}
         req {:body body}
-        resp ((wrap-json-response identity {:options {:key-fn (comp string/upper-case name)}}) req)
         resp2 ((wrap-restful-response identity {:format-options {:json {:key-fn (comp string/upper-case name)}}}) req)]
-    (is (= "{\"FOO-BAR\":\"bar\"}"
-           (slurp (:body resp))))
     (is (= "{\"FOO-BAR\":\"bar\"}"
            (slurp (:body resp2))))))
 
 (def msgpack-echo
-  (wrap-msgpack-response identity))
+  (wrap-restful-response identity :formats [:msgpack]))
 
 (defn ^:no-doc slurp-to-bytes
   #^bytes
@@ -90,7 +87,7 @@
     (is (< 2 (Integer/parseInt (get-in resp [:headers "Content-Length"]))))))
 
 (def clojure-echo
-  (wrap-clojure-response identity))
+  (wrap-restful-response identity :formats [:edn]))
 
 (deftest format-clojure-hashmap
   (let [body {:foo "bar"}
@@ -101,7 +98,7 @@
     (is (< 2 (Integer/parseInt (get-in resp [:headers "Content-Length"]))))))
 
 (def yaml-echo
-  (wrap-yaml-response identity))
+  (wrap-restful-response identity :formats [:yaml]))
 
 (deftest format-yaml-hashmap
   (let [body {:foo "bar"}
@@ -113,7 +110,7 @@
 
 (deftest html-escape-yaml-in-html
   (let [req {:body {:foo "<bar>"}}
-        resp ((wrap-yaml-in-html-response identity) req)
+        resp ((wrap-restful-response identity :formats [:yaml-in-html]) req)
         body (slurp (:body resp))]
     (is (= "<html>\n<head></head>\n<body><div><pre>\n{foo: &lt;bar&gt;}\n</pre></div></body></html>" body))))
 
@@ -127,7 +124,7 @@
     (transit/read rdr)))
 
 (def transit-json-echo
-  (wrap-transit-json-response identity))
+  (wrap-restful-response identity :formats [:transit-json]))
 
 (deftest format-transit-json-hashmap
   (let [body {:foo "bar"}
@@ -138,7 +135,7 @@
     (is (< 2 (Integer/parseInt (get-in resp [:headers "Content-Length"]))))))
 
 (def transit-msgpack-echo
-  (wrap-transit-msgpack-response identity))
+  (wrap-restful-response identity :formats [:transit-msgpack]))
 
 (deftest format-transit-msgpack-hashmap
   (let [body {:foo "bar"}
@@ -274,8 +271,8 @@
 (deftest nil-body-handling
   (let [req {:body {:headers {"accept" "application/json"}}}
         handler (-> (constantly {:status 200
-                              :headers {}})
-                 wrap-restful-response)
+                                 :headers {}})
+                    wrap-restful-response)
         resp (handler req)]
     (is (= "application/json; charset=utf-8" (get-in resp [:headers "Content-Type"])))
     (is (= "0" (get-in resp [:headers "Content-Length"])))
@@ -288,7 +285,7 @@
 (deftest custom-predicate
   (let [req {:body {:foo "bar"}}
         resp-non-serialized (restful-echo-pred (assoc req ::serializable? false))
-        resp-serialized     (restful-echo-pred (assoc req ::serializable? true))]
+        resp-serialized (restful-echo-pred (assoc req ::serializable? true))]
     (is (map? (:body resp-non-serialized)))
     (is (instance? java.io.BufferedInputStream (:body resp-serialized)))))
 
@@ -314,7 +311,7 @@
   {Point (transit/write-handler (constantly "Point") (fn [p] [(:x p) (:y p)]))})
 
 (def custom-transit-echo
-  (wrap-transit-json-response identity :options {:handlers writers}))
+  (wrap-restful-response identity :formats [:transit-json] :format-options {:transit-json {:handlers writers}}))
 
 (def custom-restful-transit-echo
   (wrap-restful-response identity :format-options {:transit-json {:handlers writers}}))
