@@ -1,7 +1,6 @@
 (ns ring.middleware.format
   (:require [ring.middleware.format-params :as par]
-            [ring.middleware.format-response :as res]
-            [ring.middleware.format.impl :as impl]))
+            [ring.middleware.format-response :as res]))
 
 (def default-formats [:json :edn :msgpack :msgpack-kw :yaml :yaml-in-html :transit-msgpack :transit-json])
 
@@ -20,9 +19,10 @@
    and *:params-options*.
    See [[ring.middleware.format-params/wrap-format-params]] and
    [[ring.middleware.format-response/wrap-format-response]] for details"
-  [handler & args]
-  (let [{:keys [response-error-handler request-error-handler response-options params-options] :as options} (impl/extract-options args)
-        common-options (dissoc options :response-error-handler :request-error-handler :response-options :params-options)]
-    (-> handler
-        (par/wrap-restful-params (assoc common-options :handle-error request-error-handler :format-options params-options))
-        (res/wrap-restful-response (assoc common-options :handle-error response-error-handler :format-options response-options)))))
+  ([handler]
+    (wrap-restful-format handler {}))
+  ([handler {:keys [response-error-handler request-error-handler response-options params-options] :as options}]
+   (let [common-options (dissoc options :response-error-handler :request-error-handler :response-options :params-options)]
+     (-> handler
+         (par/wrap-restful-params (assoc common-options :handle-error request-error-handler :format-options params-options))
+         (res/wrap-restful-response (assoc common-options :handle-error response-error-handler :format-options response-options))))))
