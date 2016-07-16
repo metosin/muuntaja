@@ -174,20 +174,26 @@
 (def ^:no-doc yaml-request?
   (make-type-request-pred #"^(application|text)/(vnd.+)?(x-)?yaml"))
 
+(defn make-yaml-decoder [options]
+  (let [options-args (mapcat identity options)]
+    (fn [s] (apply yaml/parse-string s options-args))))
+
 (defn wrap-yaml-params
   "Handles body params in YAML format. See [[wrap-format-params]] for details."
-  [handler {:keys [predicate decoder] :as options}]
-  (wrap-format-params handler (assoc options
+  [handler {:keys [predicate decoder options] :as opts}]
+  (wrap-format-params handler (assoc opts
                                 :predicate (or predicate yaml-request?)
-                                :decoder (or decoder yaml/parse-string))))
+                                :decoder (or decoder
+                                             (make-yaml-decoder (merge options {:keywords false}))))))
 
 (defn wrap-yaml-kw-params
   "Handles body params in YAML format. Parses map keys as keywords.
    See [[wrap-format-params]] for details."
-  [handler {:keys [predicate decoder] :as options}]
-  (wrap-format-params handler (assoc options
+  [handler {:keys [predicate decoder options] :as opts}]
+  (wrap-format-params handler (assoc opts
                                 :predicate (or predicate yaml-request?)
-                                :decoder (or decoder yaml/parse-string))))
+                                :decoder (or decoder
+                                             (make-yaml-decoder options)))))
 
 (defn parse-clojure-string
   "Decode a clojure body. The body is merged into the params, so must be a map

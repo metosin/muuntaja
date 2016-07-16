@@ -66,6 +66,17 @@
              :body (stream "foo: bar")
              :params {"id" 3}}
              resp (yaml-echo req)]
+    (is (= {"id" 3 "foo" "bar"} (:params resp)))
+    (is (= {"foo" "bar"} (:body-params resp)))))
+
+(def yaml-kw-echo
+  (wrap-restful-params identity {:formats [:yaml-kw]}))
+
+(deftest augments-with-yaml-kw-content-type
+  (let [req {:content-type "application/x-yaml; charset=UTF-8"
+             :body (stream "foo: bar")
+             :params {"id" 3}}
+        resp (yaml-kw-echo req)]
     (is (= {"id" 3 :foo "bar"} (:params resp)))
     (is (= {:foo "bar"} (:body-params resp)))))
 
