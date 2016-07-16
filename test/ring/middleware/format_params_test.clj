@@ -46,17 +46,14 @@
 
 (deftest json-options-test
   (is (= {:foo-bar "bar"}
-         (:body-params ((wrap-json-params identity {:options {:key-fn key-fn}})
-                        {:content-type "application/json"
-                         :body (stream "{\"foo_bar\":\"bar\"}")}))))
-  (is (= {:foo-bar "bar"}
-         (:body-params ((wrap-json-kw-params identity {:options {:key-fn key-fn}})
-                        {:content-type "application/json"
-                         :body (stream "{\"foo_bar\":\"bar\"}")}))))
+         (:body-params ((wrap-restful-params identity {:formats [:json-kw]
+                                                       :format-options {:json-kw {:key-fn key-fn}}})
+                         {:content-type "application/json"
+                          :body (stream "{\"foo_bar\":\"bar\"}")}))))
   (is (= {:foo-bar "bar"}
          (:body-params ((wrap-restful-params identity {:format-options {:json {:key-fn key-fn}}})
-                        {:content-type "application/json"
-                         :body (stream "{\"foo_bar\":\"bar\"}")})))))
+                         {:content-type "application/json"
+                          :body (stream "{\"foo_bar\":\"bar\"}")})))))
 
 (def yaml-echo
   (wrap-restful-params identity {:formats [:yaml]}))
@@ -65,7 +62,7 @@
   (let [req {:content-type "application/x-yaml; charset=UTF-8"
              :body (stream "foo: bar")
              :params {"id" 3}}
-             resp (yaml-echo req)]
+        resp (yaml-echo req)]
     (is (= {"id" 3 "foo" "bar"} (:params resp)))
     (is (= {"foo" "bar"} (:body-params resp)))))
 
@@ -87,7 +84,7 @@
   (let [req {:content-type "application/msgpack"
              :body (ByteArrayInputStream. (msgpack/pack (stringify-keys {:foo "bar"})))
              :params {"id" 3}}
-             resp (msgpack-echo req)]
+        resp (msgpack-echo req)]
     (is (= {"id" 3 "foo" "bar"} (:params resp)))
     (is (= {"foo" "bar"} (:body-params resp)))))
 
@@ -98,7 +95,7 @@
   (let [req {:content-type "application/msgpack"
              :body (ByteArrayInputStream. (msgpack/pack (stringify-keys {:foo "bar"})))
              :params {"id" 3}}
-             resp (msgpack-kw-echo req)]
+        resp (msgpack-kw-echo req)]
     (is (= {"id" 3 :foo "bar"} (:params resp)))
     (is (= {:foo "bar"} (:body-params resp)))))
 
@@ -109,7 +106,7 @@
   (let [req {:content-type "application/clojure; charset=UTF-8"
              :body (stream "{:foo \"bar\"}")
              :params {"id" 3}}
-             resp (clojure-echo req)]
+        resp (clojure-echo req)]
     (is (= {"id" 3 :foo "bar"} (:params resp)))
     (is (= {:foo "bar"} (:body-params resp)))))
 
@@ -127,7 +124,7 @@
   (let [req {:content-type "application/clojure; charset=UTF-8"
              :body (stream "")
              :params {"id" 3}}
-             resp (clojure-echo req)]
+        resp (clojure-echo req)]
     (is (= {"id" 3} (:params resp)))
     (is (= nil (:body-params resp)))))
 
@@ -135,7 +132,7 @@
   (let [req {:content-type "application/clojure; charset=UTF-8"
              :body (stream "\t  ")
              :params {"id" 3}}
-             resp (clojure-echo req)]
+        resp (clojure-echo req)]
     (is (= {"id" 3} (:params resp)))
     (is (= nil (:body-params resp)))))
 
@@ -157,7 +154,7 @@
   (let [req {:content-type "application/transit+json"
              :body (stream-transit :json {:foo "bar"})
              :params {"id" 3}}
-             resp (transit-json-echo req)]
+        resp (transit-json-echo req)]
     (is (= {"id" 3 :foo "bar"} (:params resp)))
     (is (= {:foo "bar"} (:body-params resp)))))
 
@@ -168,7 +165,7 @@
   (let [req {:content-type "application/transit+msgpack"
              :body (stream-transit :msgpack {:foo "bar"})
              :params {"id" 3}}
-             resp (transit-msgpack-echo req)]
+        resp (transit-msgpack-echo req)]
     (is (= {"id" 3 :foo "bar"} (:params resp)))
     (is (= {:foo "bar"} (:body-params resp)))))
 
@@ -187,7 +184,7 @@
   (let [req {:content-type "application/clojure; charset=UTF-8"
              :body (stream "{:foo \"bar\"}")
              :params {"id" 3}}
-             resp (restful-echo req)]
+        resp (restful-echo req)]
     (is (= {"id" 3 :foo "bar"} (:params resp)))
     (is (= {:foo "bar"} (:body-params resp)))
     (is (= 500 (get (safe-restful-echo (assoc req :body (stream "{:foo \"bar}"))) :status)))))
@@ -206,18 +203,18 @@
 (deftest test-list-body-request
   (let [req {:content-type "application/json"
              :body (ByteArrayInputStream.
-                    (.getBytes "[\"gregor\", \"samsa\"]"))}]
-    ((wrap-json-params
-      (fn [{:keys [body-params]}] (is (= ["gregor" "samsa"] body-params)))
-      {})
-     req)))
+                     (.getBytes "[\"gregor\", \"samsa\"]"))}]
+    ((wrap-restful-params
+       (fn [{:keys [body-params]}] (is (= ["gregor" "samsa"] body-params)))
+       {:formats [:json]})
+      req)))
 
 (deftest test-optional-body
-  ((wrap-json-params
-    (fn [request]
-      (is (nil? (:body request))))
-    {})
-   {:body nil}))
+  ((wrap-restful-params
+     (fn [request]
+       (is (nil? (:body request))))
+     {:formats [:json]})
+    {:body nil}))
 
 (deftest test-custom-handle-error
   (are [format content-type body]
@@ -227,7 +224,7 @@
                   identity
                   {:formats [format]
                    :handle-error (constantly {:status 999})})
-                req)]
+                 req)]
       (= 999 (:status resp)))
     :json "application/json" "{:a 1}"
     :edn "application/edn" "{\"a\": 1}"))
