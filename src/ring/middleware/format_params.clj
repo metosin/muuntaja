@@ -220,9 +220,9 @@
   "Handles body params in transit format over **JSON**. You can use an *:options* key to pass
    a map with *:handlers* and *:default-handler* to transit-clj. See [[wrap-format-params]]
    for details."
-  [handler {:keys [predicate decoder binary? options]}]
+  [handler {:keys [predicate decoder binary? options] :as opts}]
   (wrap-format-params handler
-                      (assoc options
+                      (assoc opts
                         :predicate (or predicate transit-json-request?)
                         :decoder (or decoder (make-transit-decoder :json options))
                         :binary? (if (nil? binary?) true binary?))))
@@ -233,9 +233,9 @@
 (defn wrap-transit-msgpack-params
   "Handles body params in transit format over **msgpack**. You can use an *:options* key to pass
    a map with *:handlers* and *:default-handler* to transit-clj. See [[wrap-format-params]] for details."
-  [handler {:keys [predicate decoder binary? options]}]
+  [handler {:keys [predicate decoder binary? options] :as opts}]
   (wrap-format-params handler
-                      (assoc options
+                      (assoc opts
                         :predicate (or predicate transit-msgpack-request?)
                         :decoder (or decoder (make-transit-decoder :msgpack options))
                         :binary? (if (nil? binary?) true binary?))))
