@@ -1,9 +1,7 @@
 (ns ring.middleware.format-params-test
   (:use [clojure.test]
         [ring.middleware.format-params])
-  (:require [cheshire.core :as json]
-            [clj-yaml.core :as yaml]
-            [cognitect.transit :as transit]
+  (:require [cognitect.transit :as transit]
             [clojure.java.io :as io]
             [clojure.walk :refer [stringify-keys keywordize-keys]]
             [msgpack.core :as msgpack]
@@ -14,7 +12,7 @@
   (ByteArrayInputStream. (.getBytes s "UTF-8")))
 
 (def json-echo
-  (wrap-json-params identity))
+  (wrap-restful-params identity {:formats [:json]}))
 
 ;; stolen from ring-json-params to confirm compatibility
 
@@ -61,7 +59,7 @@
                          :body (stream "{\"foo_bar\":\"bar\"}")})))))
 
 (def yaml-echo
-  (wrap-yaml-params identity))
+  (wrap-restful-params identity {:formats [:yaml]}))
 
 (deftest augments-with-yaml-content-type
   (let [req {:content-type "application/x-yaml; charset=UTF-8"
@@ -72,7 +70,7 @@
     (is (= {:foo "bar"} (:body-params resp)))))
 
 (def msgpack-echo
-  (wrap-msgpack-params identity))
+  (wrap-restful-params identity {:formats [:msgpack]}))
 
 (deftest augments-with-msgpack-content-type
   (let [req {:content-type "application/msgpack"
@@ -83,7 +81,7 @@
     (is (= {"foo" "bar"} (:body-params resp)))))
 
 (def msgpack-kw-echo
-  (wrap-msgpack-kw-params identity))
+  (wrap-restful-params identity {:formats [:msgpack-kw]}))
 
 (deftest augments-with-msgpack-kw-content-type
   (let [req {:content-type "application/msgpack"
@@ -94,7 +92,7 @@
     (is (= {:foo "bar"} (:body-params resp)))))
 
 (def clojure-echo
-  (wrap-clojure-params identity))
+  (wrap-restful-params identity {:formats [:edn]}))
 
 (deftest augments-with-clojure-content-type
   (let [req {:content-type "application/clojure; charset=UTF-8"
@@ -110,8 +108,8 @@
              :body (stream "{:foo #=(java.util.Date.)}")
              :params {"id" 3}}]
     (try
-      (let [resp (clojure-echo req)]
-        (is false "Eval in reader permits arbitrary code execution."))
+      (clojure-echo req)
+      (is false "Eval in reader permits arbitrary code execution.")
       (catch Exception ignored))))
 
 (deftest no-body-with-clojure-content-type
@@ -142,7 +140,7 @@
     (io/input-stream (.toByteArray out))))
 
 (def transit-json-echo
-  (wrap-transit-json-params identity))
+  (wrap-restful-params identity {:formats [:transit-json]}))
 
 (deftest augments-with-transit-json-content-type
   (let [req {:content-type "application/transit+json"
@@ -153,7 +151,7 @@
     (is (= {:foo "bar"} (:body-params resp)))))
 
 (def transit-msgpack-echo
-  (wrap-transit-msgpack-params identity))
+  (wrap-restful-params identity {:formats [:transit-msgpack]}))
 
 (deftest augments-with-transit-msgpack-content-type
   (let [req {:content-type "application/transit+msgpack"
@@ -172,10 +170,7 @@
 
 (def safe-restful-echo
   (wrap-restful-params identity
-                       :handle-error (fn [_ _ _] {:status 500})))
-
-(def safe-restful-echo-opts-map
-  (wrap-restful-params identity {:handle-error (fn [_ _ _] {:status 500})}))
+                       {:handle-error (fn [_ _ _] {:status 500})}))
 
 (deftest test-restful-params-wrapper
   (let [req {:content-type "application/clojure; charset=UTF-8"
@@ -184,8 +179,7 @@
              resp (restful-echo req)]
     (is (= {"id" 3 :foo "bar"} (:params resp)))
     (is (= {:foo "bar"} (:body-params resp)))
-    (is (= 500 (get (safe-restful-echo (assoc req :body (stream "{:foo \"bar}"))) :status)))
-    (is (= 500 (get (safe-restful-echo-opts-map (assoc req :body (stream "{:foo \"bar}"))) :status)))))
+    (is (= 500 (get (safe-restful-echo (assoc req :body (stream "{:foo \"bar}"))) :status)))))
 
 (defn stream-iso [s]
   (ByteArrayInputStream. (.getBytes s "ISO-8859-1")))
@@ -203,22 +197,25 @@
              :body (ByteArrayInputStream.
                     (.getBytes "[\"gregor\", \"samsa\"]"))}]
     ((wrap-json-params
-      (fn [{:keys [body-params]}] (is (= ["gregor" "samsa"] body-params))))
+      (fn [{:keys [body-params]}] (is (= ["gregor" "samsa"] body-params)))
+      {})
      req)))
 
 (deftest test-optional-body
   ((wrap-json-params
     (fn [request]
-      (is (nil? (:body request)))))
+      (is (nil? (:body request))))
+    {})
    {:body nil}))
 
 (deftest test-custom-handle-error
   (are [format content-type body]
     (let [req {:body body
                :content-type content-type}
-          resp ((wrap-restful-params identity
-                                     :formats [format]
-                                     :handle-error (constantly {:status 999}))
+          resp ((wrap-restful-params
+                  identity
+                  {:formats [format]
+                   :handle-error (constantly {:status 999})})
                 req)]
       (= 999 (:status resp)))
     :json "application/json" "{:a 1}"
@@ -233,21 +230,12 @@
 (def readers
   {"Point" (transit/read-handler (fn [[x y]] (Point. x y)))})
 
-(def custom-transit-json-echo
-  (wrap-transit-json-params identity :options {:handlers readers}))
-
 (def custom-restful-transit-json-echo
-  (wrap-restful-params identity :format-options {:transit-json {:handlers readers}}))
+  (wrap-restful-params identity {:format-options {:transit-json {:handlers readers}}}))
 
 (def transit-body "[\"^ \", \"~:p\", [\"~#Point\",[1,2]]]")
 
 (deftest read-custom-transit
-  (testing "wrap-transit-json-params, transit options"
-    (let [parsed-req (custom-transit-json-echo {:content-type "application/transit+json"
-                                                :body (stream transit-body)})]
-      (is (= {:p (Point. 1 2)}
-             (:params parsed-req)
-             (:body-params parsed-req)))))
   (testing "wrap-restful-params, transit options"
     (let [req (custom-restful-transit-json-echo {:content-type "application/transit+json"
                                                  :body (stream transit-body)})]

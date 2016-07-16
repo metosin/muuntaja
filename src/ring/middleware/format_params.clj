@@ -30,7 +30,7 @@
     (catch Exception _ nil)))
 
 (defn ^:no-doc get-charset
-  [{:keys [content-type] :as req}]
+  [{:keys [content-type]}]
   (if content-type
     (second (re-find #";\s*charset=([^\s;]+)" content-type))))
 
@@ -39,15 +39,15 @@
   it if not given in *Content-Type*. Defaults to *utf-8*"
   [req]
   (or
-   (get-charset req)
-   (guess-charset req)
-   "utf-8"))
+    (get-charset req)
+    (guess-charset req)
+    "utf-8"))
 
 (defn ^:no-doc get-or-default-charset
   [req]
   (or
-   (get-charset req)
-   "utf-8"))
+    (get-charset req)
+    "utf-8"))
 
 (defn make-type-request-pred
   "Function that returns a predicate fn checking if *Content-Type*
@@ -95,7 +95,7 @@
                      request or directly a map to answer immediately. Defaults
                      to just rethrowing the Exception"
   [handler & args]
-  (let [{:keys [predicate decoder charset handle-error binary?] :as options} (impl/extract-options args)
+  (let [{:keys [predicate decoder charset handle-error binary?]} (impl/extract-options args)
         charset (or charset get-or-guess-charset)
         handle-error (or handle-error default-handle-error)]
     (fn [{:keys [#^InputStream body] :as req}]
@@ -103,17 +103,18 @@
         (if (and body (predicate req))
           (let [byts (slurp-to-bytes body)]
             (if (> (count byts) 0)
-              (let [fmt-params
-                    (if binary?
-                      (decoder (ByteArrayInputStream. byts))
-                      (let [#^String char-enc (if (string? charset) charset (charset (assoc req :body byts)))
-                            bstr (String. byts char-enc)]
-                        (decoder bstr)))
+              (let [fmt-params (if binary?
+                                 (decoder (ByteArrayInputStream. byts))
+                                 (let [#^String char-enc (if (string? charset)
+                                                           charset
+                                                           (charset (assoc req :body byts)))
+                                       bstr (String. byts char-enc)]
+                                   (decoder bstr)))
                     req* (assoc req
-                                :body-params fmt-params
-                                :params (merge (:params req)
-                                               (when (map? fmt-params) fmt-params))
-                                :body (ByteArrayInputStream. byts))]
+                           :body-params fmt-params
+                           :params (merge (:params req)
+                                          (when (map? fmt-params) fmt-params))
+                           :body (ByteArrayInputStream. byts))]
                 (handler req*))
               (handler req)))
           (handler req))
@@ -126,25 +127,23 @@
 (defn make-json-decoder [{:keys [key-fn array-coerce-fn]}]
   (cond
     array-coerce-fn (fn [s] (json/parse-string s key-fn array-coerce-fn))
-    key-fn          (fn [s] (json/parse-string s key-fn))
-    :else           (fn [s] (json/parse-string s))))
+    key-fn (fn [s] (json/parse-string s key-fn))
+    :else (fn [s] (json/parse-string s))))
 
 (defn wrap-json-params
   "Handles body params in JSON format. See [[wrap-format-params]] for details."
-  [handler & args]
-  (let [{:keys [predicate decoder options] :as opts} (impl/extract-options args)]
-    (wrap-format-params handler (assoc opts
-                                       :predicate (or predicate json-request?)
-                                       :decoder (or decoder (make-json-decoder options))))))
+  [handler {:keys [predicate decoder options] :as opts}]
+  (wrap-format-params handler (assoc opts
+                                :predicate (or predicate json-request?)
+                                :decoder (or decoder (make-json-decoder options)))))
 
 (defn wrap-json-kw-params
   "Handles body params in JSON format. Parses map keys as keywords.
    See [[wrap-format-params]] for details."
-  [handler & args]
-  (let [{:keys [predicate decoder options] :as opts} (impl/extract-options args)]
-    (wrap-format-params handler (assoc opts
-                                       :predicate (or predicate json-request?)
-                                       :decoder (or decoder (make-json-decoder (merge {:key-fn true} options)))))))
+  [handler {:keys [predicate decoder options] :as opts}]
+  (wrap-format-params handler (assoc opts
+                                :predicate (or predicate json-request?)
+                                :decoder (or decoder (make-json-decoder (merge {:key-fn true} options))))))
 
 (def ^:no-doc msgpack-request?
   (make-type-request-pred #"^application/(vnd.+)?(x-)?msgpack"))
@@ -157,42 +156,38 @@
 (defn wrap-msgpack-params
   "Handles body params in **msgpack** format.
    See [[wrap-format-params]] for details."
-  [handler & args]
-  (let [{:keys [predicate decoder binary?] :as options} (impl/extract-options args)]
-    (wrap-format-params handler
-                        (assoc options :predicate (or predicate msgpack-request?)
-                               :decoder (or decoder decode-msgpack)
-                               :binary? (if (nil? binary?) true binary?)))))
+  [handler {:keys [predicate decoder binary?] :as options}]
+  (wrap-format-params handler
+                      (assoc options :predicate (or predicate msgpack-request?)
+                                     :decoder (or decoder decode-msgpack)
+                                     :binary? (if (nil? binary?) true binary?))))
 
 (defn wrap-msgpack-kw-params
   "Handles body params in **msgpack** format.  Parses map keys as keywords.
    See [[wrap-format-params]] for details."
-  [handler & args]
-  (let [{:keys [predicate decoder binary?] :as options} (impl/extract-options args)]
-    (wrap-format-params handler (assoc options
-                                       :predicate (or predicate msgpack-request?)
-                                       :decoder (or decoder #(keywordize-keys (decode-msgpack %)))
-                                       :binary? (if (nil? binary?) true binary?)))))
+  [handler {:keys [predicate decoder binary?] :as options}]
+  (wrap-format-params handler (assoc options
+                                :predicate (or predicate msgpack-request?)
+                                :decoder (or decoder #(keywordize-keys (decode-msgpack %)))
+                                :binary? (if (nil? binary?) true binary?))))
 
 (def ^:no-doc yaml-request?
   (make-type-request-pred #"^(application|text)/(vnd.+)?(x-)?yaml"))
 
 (defn wrap-yaml-params
   "Handles body params in YAML format. See [[wrap-format-params]] for details."
-  [handler & args]
-  (let [{:keys [predicate decoder] :as options} (impl/extract-options args)]
-    (wrap-format-params handler (assoc options
-                                       :predicate (or predicate yaml-request?)
-                                       :decoder (or decoder yaml/parse-string)))))
+  [handler {:keys [predicate decoder] :as options}]
+  (wrap-format-params handler (assoc options
+                                :predicate (or predicate yaml-request?)
+                                :decoder (or decoder yaml/parse-string))))
 
 (defn wrap-yaml-kw-params
   "Handles body params in YAML format. Parses map keys as keywords.
    See [[wrap-format-params]] for details."
-  [handler & args]
-  (let [{:keys [predicate decoder] :as options} (impl/extract-options args)]
-    (wrap-format-params handler (assoc options
-                                       :predicate (or predicate yaml-request?)
-                                       :decoder (or decoder yaml/parse-string)))))
+  [handler {:keys [predicate decoder] :as options}]
+  (wrap-format-params handler (assoc options
+                                :predicate (or predicate yaml-request?)
+                                :decoder (or decoder yaml/parse-string))))
 
 (defn parse-clojure-string
   "Decode a clojure body. The body is merged into the params, so must be a map
@@ -206,12 +201,11 @@
 
 (defn wrap-clojure-params
   "Handles body params in Clojure (*edn*) format. See [[wrap-format-params]] for details."
-  [handler & args]
-  (let [{:keys [predicate decoder] :as options} (impl/extract-options args)]
-    (wrap-format-params handler
-                        (assoc options
-                               :predicate (or predicate clojure-request?)
-                               :decoder (or decoder parse-clojure-string)))))
+  [handler {:keys [predicate decoder] :as options}]
+  (wrap-format-params handler
+                      (assoc options
+                        :predicate (or predicate clojure-request?)
+                        :decoder (or decoder parse-clojure-string))))
 
 (defn ^:no-doc make-transit-decoder
   [fmt opts]
@@ -226,13 +220,12 @@
   "Handles body params in transit format over **JSON**. You can use an *:options* key to pass
    a map with *:handlers* and *:default-handler* to transit-clj. See [[wrap-format-params]]
    for details."
-  [handler & args]
-  (let [{:keys [predicate decoder binary? options] :as options} (impl/extract-options args)]
-    (wrap-format-params handler
-                        (assoc options
-                               :predicate (or predicate transit-json-request?)
-                               :decoder (or decoder (make-transit-decoder :json options))
-                               :binary? (if (nil? binary?) true binary?)))))
+  [handler {:keys [predicate decoder binary? options]}]
+  (wrap-format-params handler
+                      (assoc options
+                        :predicate (or predicate transit-json-request?)
+                        :decoder (or decoder (make-transit-decoder :json options))
+                        :binary? (if (nil? binary?) true binary?))))
 
 (def ^:no-doc transit-msgpack-request?
   (make-type-request-pred #"^application/(vnd.+)?(x-)?transit\+msgpack"))
@@ -240,13 +233,12 @@
 (defn wrap-transit-msgpack-params
   "Handles body params in transit format over **msgpack**. You can use an *:options* key to pass
    a map with *:handlers* and *:default-handler* to transit-clj. See [[wrap-format-params]] for details."
-  [handler & args]
-  (let [{:keys [predicate decoder binary? options] :as options} (impl/extract-options args)]
-    (wrap-format-params handler
-                        (assoc options
-                               :predicate (or predicate transit-msgpack-request?)
-                               :decoder (or decoder (make-transit-decoder :msgpack options))
-                               :binary? (if (nil? binary?) true binary?)))))
+  [handler {:keys [predicate decoder binary? options]}]
+  (wrap-format-params handler
+                      (assoc options
+                        :predicate (or predicate transit-msgpack-request?)
+                        :decoder (or decoder (make-transit-decoder :msgpack options))
+                        :binary? (if (nil? binary?) true binary?))))
 
 (def ^:no-doc format-wrappers
   {:json wrap-json-params
@@ -268,13 +260,14 @@
    more details.
    Options to specific format decoders can be passed in using *:format-options*
    option. If should be map of format keyword to options map."
-  [handler & args]
-  (let [{:keys [formats format-options] :as options} (impl/extract-options args)
-        common-options (dissoc options :formats :format-options)]
-    (reduce (fn [h format]
-              (if-let [wrapper (if
-                                 (fn? format) format
-                                 (format-wrappers (keyword format)))]
-                (wrapper h (assoc common-options :options (get format-options format)))
-                h))
-            handler (or formats default-formats))))
+  ([handler]
+   (wrap-restful-params handler {}))
+  ([handler {:keys [formats format-options] :as options}]
+   (let [common-options (dissoc options :formats :format-options)]
+     (reduce (fn [h format]
+               (if-let [wrapper (if (fn? format)
+                                  format
+                                  (format-wrappers (keyword format)))]
+                 (wrapper h (assoc common-options :options (get format-options format)))
+                 h))
+             handler (or formats default-formats)))))
