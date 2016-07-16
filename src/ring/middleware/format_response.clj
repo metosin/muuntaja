@@ -86,8 +86,7 @@
   If the *Accept* header of the request is a *String*, assume it is
   according to Ring spec. Else assume the header is a sequence of
   accepted types sorted by their preference. If no accepted encoder is
-  found, return *nil*. If no *Accept* header is found, return the first
-  encoder."
+  found or no *Accept* header is found, return *nil*."
   [encoders req]
   (if-let [accept (get-in req [:headers "accept"] (:content-type req))]
     (first (for [accepted-type (if (string? accept)
@@ -95,8 +94,7 @@
                                  accept)
                  encoder encoders
                  :when (can-encode? encoder accepted-type)]
-             encoder))
-    (first encoders)))
+             encoder))))
 
 (defn parse-charset-accepted
   "Parses an *accept-charset* string to a list of [*charset* *quality-score*]"
@@ -170,31 +168,27 @@
  + **:charset** can be either a string representing a valid charset or a fn
                 taking the req as argument and returning a valid charset
                 (*utf-8* is strongly suggested)
- + **:binary?** if true *:charset* will be ignored and decoder will receive
-               an *InputStream*
  + **:handle-error** is a fn with a sig [exception request response]. Defaults
                      to just rethrowing the Exception"
-  [handler & args]
-  (let [{:keys [predicate encoders charset binary? handle-error]} (impl/extract-options args)
-        charset (or charset default-charset-extractor)
+  [handler {:keys [predicate encoders charset handle-error]}]
+  (let [charset (or charset default-charset-extractor)
         handle-error (or handle-error default-handle-error)
         predicate (or predicate serializable?)]
-    (fn [req]
-      (let [{:keys [headers body] :as response} (handler req)]
+    (fn [request]
+      (let [{:keys [body] :as response} (handler request)]
         (try
-          (if (predicate req response)
-            (let [{:keys [encoder enc-type binary?]} (or (preferred-encoder encoders req) (first encoders))
-                  [body* content-type]
-                  (if binary?
-                    (let [body* (encoder body)
-                          ctype (str (enc-type :type) "/" (enc-type :sub-type))]
-                      [body* ctype])
-                    (let [^String char-enc (if (string? charset) charset (charset req))
-                          ^String body-string (if (nil? body) "" (encoder body))
-                          body* (.getBytes body-string char-enc)
-                          ctype (str (enc-type :type) "/" (enc-type :sub-type)
-                                     "; charset=" char-enc)]
-                      [body* ctype]))
+          (if (predicate request response)
+            (let [{:keys [encoder enc-type binary?]} (or (preferred-encoder encoders request) (first encoders))
+                  [body* content-type] (if binary?
+                                         (let [body* (encoder body)
+                                               ctype (str (enc-type :type) "/" (enc-type :sub-type))]
+                                           [body* ctype])
+                                         (let [^String char-enc (if (string? charset) charset (charset request))
+                                               ^String body-string (if (nil? body) "" (encoder body))
+                                               body* (.getBytes body-string char-enc)
+                                               ctype (str (enc-type :type) "/" (enc-type :sub-type)
+                                                          "; charset=" char-enc)]
+                                           [body* ctype]))
                   body-length (count body*)]
               (-> response
                   (assoc :body (if (pos? body-length) (io/input-stream body*) nil))
@@ -202,7 +196,7 @@
                   (res/header "Content-Length" body-length)))
             response)
           (catch Exception e
-            (handle-error e req response)))))))
+            (handle-error e request response)))))))
 
 (defn make-json-encoder [pretty options]
   (let [opts (assoc options :pretty pretty)]
@@ -298,7 +292,7 @@
   option. If is a map from format keyword to options map."
   ([handler]
    (wrap-restful-response handler {}))
-  ([handler {:keys [formats binary? format-options] :as options}]
+  ([handler {:keys [formats format-options] :as options}]
    (let [common-options (dissoc options :formats :format-options)
          encoders (for [format (or formats default-formats)
                         :when format
@@ -311,5 +305,4 @@
                     encoder)]
      (wrap-format-response handler
                            (assoc common-options
-                             :encoders encoders
-                             :binary? binary?)))))
+                             :encoders encoders)))))

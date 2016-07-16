@@ -198,8 +198,7 @@
         json-encoder {:enc-type {:type "application" :sub-type "json"}}]
     (is (= (preferred-encoder [json-encoder html-encoder] req)
            html-encoder))
-    (is (= (preferred-encoder [json-encoder html-encoder] {})
-           json-encoder))
+    (is (nil? (preferred-encoder [json-encoder html-encoder] {})))
     (is (nil? (preferred-encoder [{:enc-type {:type "application"
                                               :sub-type "edn"}}]
                                  req)))))
