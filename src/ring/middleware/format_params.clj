@@ -76,49 +76,6 @@
   [e _ _]
   (throw e))
 
-(defn wrap-format-params
-  "Wraps a handler such that requests body are deserialized from to
-   the right format, added in a *:body-params* key and merged in *:params*.
-   It takes 4 args:
-
- + **:predicate** is a predicate taking the request as sole argument to
-                  test if deserialization should be used.
- + **:decoder** specifies a fn taking the body String as sole argument and
-                giving back a hash-map.
- + **:charset** can be either a string representing a valid charset or a fn
-                taking the req as argument and returning a valid charset.
- + **:binary?** if true *:charset* will be ignored and decoder will receive
-               an *InputStream*
- + **:handle-error** is a fn with a sig [exception handler request].
-                     Return (handler obj) to continue executing a modified
-                     request or directly a map to answer immediately. Defaults
-                     to just rethrowing the Exception"
-  [handler {:keys [predicate decoder charset handle-error binary?]}]
-  (let [charset (or charset get-or-guess-charset)
-        handle-error (or handle-error default-handle-error)]
-    (fn [{:keys [#^InputStream body] :as req}]
-      (try
-        (if (and body (predicate req))
-          (let [byts (slurp-to-bytes body)]
-            (if (> (count byts) 0)
-              (let [fmt-params (if binary?
-                                 (decoder (ByteArrayInputStream. byts))
-                                 (let [#^String char-enc (if (string? charset)
-                                                           charset
-                                                           (charset (assoc req :body byts)))
-                                       bstr (String. byts char-enc)]
-                                   (decoder bstr)))
-                    req* (assoc req
-                           :body-params fmt-params
-                           :params (merge (:params req)
-                                          (when (map? fmt-params) fmt-params))
-                           :body (ByteArrayInputStream. byts))]
-                (handler req*))
-              (handler req)))
-          (handler req))
-        (catch Exception e
-          (handle-error e handler req))))))
-
 (def ^:no-doc json-request?
   (make-type-request-pred #"^application/(vnd.+)?json"))
 
@@ -172,7 +129,7 @@
     nil
     adapters))
 
-(defn wrap-format-params2
+(defn wrap-format-params
   "Wraps a handler such that requests body are deserialized from to
    the right format, added in a *:body-params* key and merged in *:params*.
    It takes n args:
@@ -260,8 +217,4 @@
                                                                     decoder))))]
                           :when adapter]
                       adapter))]
-     (wrap-format-params2 handler (assoc common-options :adapters adapters))
-     #_(reduce
-         (fn [handler adapter]
-           (wrap-format-params handler (merge common-options adapter)))
-         handler adapters))))
+     (wrap-format-params handler (assoc common-options :adapters adapters)))))

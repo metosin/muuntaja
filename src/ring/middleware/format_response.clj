@@ -293,7 +293,8 @@
    (wrap-restful-response handler {}))
   ([handler {:keys [formats format-options] :as options}]
    (let [common-options (dissoc options :formats :format-options)
-         encoders (for [format (or formats default-formats)
+         encoders (doall
+                    (for [format (or formats default-formats)
                         :when format
                         :let [encoder (if (map? format)
                                         format
@@ -301,7 +302,7 @@
                                           (get format-encoders format)
                                           (get format-options format)))]
                         :when encoder]
-                    encoder)]
+                      encoder))]
      (wrap-format-response handler
                            (assoc common-options
                              :encoders encoders)))))
