@@ -18,7 +18,10 @@
   :plugins [[lein-codox "0.9.4"]]
   :codox {:src-uri "http://github.com/ngrunwald/ring-middleware-format/blob/master/{filepath}#L{line}"
           :defaults {:doc/format :markdown}}
-  :profiles {:dev {:dependencies [[org.clojure/clojure "1.8.0"]]}
+  :profiles {:dev {:dependencies [[org.clojure/clojure "1.8.0"]
+                                  [criterium "0.4.4"]]}
              :1.6 {:dependencies [[org.clojure/clojure "1.6.0"]]}
-             :1.7 {:dependencies [[org.clojure/clojure "1.7.0"]]}}
-  :aliases {"all" ["with-profile" "dev:dev,1.6:dev,1.7"]})
+             :1.7 {:dependencies [[org.clojure/clojure "1.7.0"]]}
+             :perf {:jvm-opts ^:replace []}}
+  :aliases {"all" ["with-profile" "dev:dev,1.6:dev,1.7"]
+            "perf" ["with-profile" "default,dev,perf"]})
