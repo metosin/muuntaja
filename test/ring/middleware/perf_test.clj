@@ -2,7 +2,10 @@
   (:require [criterium.core :as cc]
             [cheshire.core :as json]
             [ring.middleware.format :as rmf]
-            [clojure.java.io :as io]))
+            [ring.middleware.format-params :as rmfp]
+            [ring.middleware.format-response :as rmfr]
+            [clojure.java.io :as io])
+  (:import [java.io ByteArrayInputStream]))
 
 ;;
 ;; start repl with `lein perf repl`
@@ -19,6 +22,8 @@
 ;; Memory:                16 GB
 ;;
 
+(set! *warn-on-reflection* true)
+
 (defn title [s]
   (println
     (str "\n\u001B[35m"
@@ -27,45 +32,132 @@
          (apply str (repeat (+ 6 (count s)) "#"))
          "\u001B[0m\n")))
 
-(defn post-json* [app json]
+(defn json-bytes [data]
+  (.getBytes ^String (json/generate-string data)))
+
+(defn post-body->stream [app datab]
   (->
     (app {:uri "/any"
           :request-method :post
           :content-type "application/json"
-          :body (io/input-stream (.getBytes json))})
+          :body (ByteArrayInputStream. datab)})
+    :body
+    slurp))
+
+(defn post-body->data [app datab]
+  (->
+    (app {:uri "/any"
+          :request-method :post
+          :content-type "application/json"
+          :body (ByteArrayInputStream. datab)})
+    :body))
+
+(defn post-params->stream [app data]
+  (->
+    (app {:uri "/any"
+          :request-method :post
+          :content-type "application/json"
+          :body-params data})
     :body
     slurp))
 
 (defn parse [s] (json/parse-string s true))
 
-(defn bench []
-  (let [app (rmf/wrap-restful-format
-              (fn [_] {:status 200 :body {:ping "pong"}}))
-        data (json/generate-string {:kikka "kukka"})
-        call #(post-json* app data)]
+(def +data+ {:kikka "kukka"})
+(def +data-bytes+ (json-bytes +data+))
+(def +handler+ (fn [{data :body-params}] {:status 200 :body data}))
 
-    (title "2-way JSON")
-    (assert (= {:ping "pong"} (parse (call))))
+;;
+;; naive
+;;
+
+(defn naive []
+
+  ; 7.6µs => 4.6µs
+  (let [app ((fn [handler]
+               (fn [request]
+                 (handler (assoc request :body-params (json/parse-string (slurp (:body request)) true)))))
+              +handler+)
+        call #(post-body->data app +data-bytes+)]
+
+    (title "NAIVE JSON request")
+    (assert (= +data+ (call)))
     (cc/bench (call)))
 
-  ; 33µs =>
+  ; 5.4µs => 4.6µs
+  (let [app ((fn [handler]
+               (fn [request]
+                 (update
+                   (handler request)
+                   :body
+                   #(ByteArrayInputStream. (json-bytes %)))))
+              +handler+)
+        call #(post-params->stream app +data+)]
 
-  )
+    (title "NAIVE JSON response")
+    (assert (= +data+ (parse (call))))
+    (cc/bench (call)))
+
+  ; 12.5µs => 9.4µs
+  (let [app ((fn [handler]
+               (fn [request]
+                 (update
+                   (handler (assoc request :body-params (json/parse-string (slurp (:body request)) true)))
+                   :body
+                   #(ByteArrayInputStream. (json-bytes %)))))
+              +handler+)
+        call #(post-body->stream app +data-bytes+)]
+
+    (title "NAIVE JSON request & response")
+    (assert (= +data+ (parse (call))))
+    (cc/bench (call)))
+
+  ; 9.0µs
+  (let [app (fn [request] {:status 200 :body (-> request :body slurp (json/parse-string true) json-bytes (ByteArrayInputStream.))})
+        call #(post-body->stream app +data-bytes+)]
+
+    (title "SUPER NAIVE JSON request & response")
+    (assert (= +data+ (parse (call))))
+    (cc/bench (call))))
+
+;;
+;; Real
+;;
+
+(defn wrap-restful-params []
+  ; 12.1µs =>
+  (let [app (rmfp/wrap-restful-params +handler+ {:formats [:json-kw]})
+        call #(post-body->data app +data-bytes+)]
+
+    (title "JSON request")
+    (assert (= +data+ (call)))
+    (cc/bench (call))))
+
+(defn wrap-restful-response []
+  ; 12.6µs =>
+  (let [app (rmfr/wrap-restful-response +handler+ {:formats [:json-kw]})
+        call #(post-params->stream app +data+)]
+
+    (title "JSON response")
+    (assert (= +data+ (parse (call))))
+    (cc/bench (call))))
+
+(defn wrap-restful-format []
+  ; 25.7µs =>
+  (let [app (rmf/wrap-restful-format +handler+ {:formats [:json-kw]})
+        call #(post-body->stream app +data-bytes+)]
+
+    (title "JSON request & response")
+    (assert (= +data+ (parse (call))))
+    (cc/bench (call))))
+
+(defn restful []
+  (wrap-restful-format)
+  (wrap-restful-params)
+  (wrap-restful-response))
 
 (comment
-  (bench))
-
-;[ring.middleware.format_params$eval34317$fn__34318 invoke "format_params.clj" 269]
-;[ring.middleware.format_params$wrap_format_params2$fn__34233 invoke "format_params.clj" 209]
-;[ring.middleware.format_params$eval34317 invokeStatic "format_params.clj" 269]
-;[ring.middleware.format_params$eval34317 invoke "format_params.clj" 269]
-
-;[ring.middleware.format_params$eval34429$fn__34430 invoke "format_params.clj" 269]
-;[ring.middleware.format_params$wrap_format_params$fn__34361 invoke "format_params.clj" 118]
-;[ring.middleware.format_params$wrap_format_params$fn__34361 invoke "format_params.clj" 118]
-;[ring.middleware.format_params$wrap_format_params$fn__34361 invoke "format_params.clj" 118]
-;[ring.middleware.format_params$wrap_format_params$fn__34361 invoke "format_params.clj" 118]
-;[ring.middleware.format_params$wrap_format_params$fn__34361 invoke "format_params.clj" 118]
-;[ring.middleware.format_params$wrap_format_params$fn__34361 invoke "format_params.clj" 118]
-;[ring.middleware.format_params$eval34429 invokeStatic "format_params.clj" 269]
-;[ring.middleware.format_params$eval34429 invoke "format_params.clj" 269]
+  (wrap-restful-format)
+  (wrap-restful-params)
+  (wrap-restful-response)
+  (naive))
