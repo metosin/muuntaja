@@ -295,13 +295,13 @@
    (let [common-options (dissoc options :formats :format-options)
          encoders (doall
                     (for [format (or formats default-formats)
-                        :when format
-                        :let [encoder (if (map? format)
-                                        format
-                                        (init-encoder
-                                          (get format-encoders format)
-                                          (get format-options format)))]
-                        :when encoder]
+                          :when format
+                          :let [encoder (if (map? format)
+                                          format
+                                          (init-encoder
+                                            (get format-encoders format)
+                                            (get format-options format)))]
+                          :when encoder]
                       encoder))]
      (wrap-format-response handler
                            (assoc common-options
