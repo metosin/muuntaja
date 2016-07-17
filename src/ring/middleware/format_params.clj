@@ -165,6 +165,51 @@
 (def ^:no-doc transit-msgpack-request?
   (make-type-request-pred #"^application/(vnd.+)?(x-)?transit\+msgpack"))
 
+(defn select-adapter [adapters request]
+  (reduce
+    (fn [_ {:keys [predicate] :as adapter}]
+      (if (predicate request) (reduced adapter)))
+    nil
+    adapters))
+
+(defn wrap-format-params2
+  "Wraps a handler such that requests body are deserialized from to
+   the right format, added in a *:body-params* key and merged in *:params*.
+   It takes n args:
+
+ + **:adapters**  a sequence of adapters\n.
+ + **:charset** can be either a string representing a valid charset or a fn
+                taking the req as argument and returning a valid charset.
+ + **:handle-error** is a fn with a sig [exception handler request].
+                     Return (handler obj) to continue executing a modified
+                     request or directly a map to answer immediately. Defaults
+                     to just rethrowing the Exception"
+  [handler {:keys [adapters charset handle-error]}]
+  (let [charset (or charset get-or-guess-charset)
+        handle-error (or handle-error default-handle-error)]
+    (fn [{:keys [#^InputStream body] :as req}]
+      (try
+        (if-let [{:keys [decoder binary?]} (if body (select-adapter adapters req))]
+          (let [byts (slurp-to-bytes body)]
+            (if (> (count byts) 0)
+              (let [fmt-params (if binary?
+                                 (decoder (ByteArrayInputStream. byts))
+                                 (let [#^String char-enc (if (string? charset)
+                                                           charset
+                                                           (charset (assoc req :body byts)))
+                                       bstr (String. byts char-enc)]
+                                   (decoder bstr)))
+                    req* (assoc req
+                           :body-params fmt-params
+                           :params (merge (:params req)
+                                          (when (map? fmt-params) fmt-params))
+                           :body (ByteArrayInputStream. byts))]
+                (handler req*))
+              (handler req)))
+          (handler req))
+        (catch Exception e
+          (handle-error e handler req))))))
+
 (def ^:no-doc format-adapters
   {:json {:predicate json-request?
           :decoder [make-json-decoder]}
@@ -202,19 +247,21 @@
    (wrap-restful-params handler {}))
   ([handler {:keys [formats format-options] :as options}]
    (let [common-options (dissoc options :formats :format-options)
-         adapters (for [format (or formats default-formats)
-                        :when format
-                        :let [adapter (if-let [data (if (map? format)
-                                                      format
-                                                      (get format-adapters format))]
-                                        (update data :decoder (fn [decoder]
-                                                                (if (vector? decoder)
-                                                                  (let [[f opts] decoder]
-                                                                    (f (merge opts (get format-options format))))
-                                                                  decoder))))]
-                        :when adapter]
-                    (merge common-options adapter))]
-     (reduce
-       (fn [handler adapter]
-         (wrap-format-params handler adapter))
-       handler adapters))))
+         adapters (doall
+                    (for [format (or formats default-formats)
+                          :when format
+                          :let [adapter (if-let [data (if (map? format)
+                                                        format
+                                                        (get format-adapters format))]
+                                          (update data :decoder (fn [decoder]
+                                                                  (if (vector? decoder)
+                                                                    (let [[f opts] decoder]
+                                                                      (f (merge opts (get format-options format))))
+                                                                    decoder))))]
+                          :when adapter]
+                      adapter))]
+     (wrap-format-params2 handler (assoc common-options :adapters adapters))
+     #_(reduce
+         (fn [handler adapter]
+           (wrap-format-params handler (merge common-options adapter)))
+         handler adapters))))
