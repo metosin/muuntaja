@@ -32,7 +32,7 @@
   "Check whether encoder can encode to accepted-type.
   Accepted-type should have keys *:type* and *:sub-type* with appropriate
   values."
-  [{:keys [enc-type] :as encoder} {:keys [type sub-type] :as accepted-type}]
+  [{:keys [enc-type]} {:keys [type sub-type]}]
   (or (= "*" type)
       (and (= (:type enc-type) type)
            (or (= "*" sub-type)
@@ -80,20 +80,25 @@
   "Memoized form of [[parse-accept-header*]]"
   (lu parse-accept-header* {} :lu/threshold 500))
 
+(defn- accept-maps [request]
+  (if-let [accept (get (get request :headers) "accept" (:content-type request))]
+    (if (string? accept)
+      (parse-accept-header accept)
+      accept)))
+
 (defn preferred-encoder
   "Return the encoder that encodes to the most preferred type.
   If the *Accept* header of the request is a *String*, assume it is
   according to Ring spec. Else assume the header is a sequence of
   accepted types sorted by their preference. If no accepted encoder is
   found or no *Accept* header is found, return *nil*."
-  [encoders req]
-  (if-let [accept (get-in req [:headers "accept"] (:content-type req))]
-    (first (for [accepted-type (if (string? accept)
-                                 (parse-accept-header accept)
-                                 accept)
-                 encoder encoders
-                 :when (can-encode? encoder accepted-type)]
-             encoder))))
+  [encoders request]
+  (some->> (accept-maps request)
+           (reduce
+             (fn [_ accepted-type]
+               (if-let [encoder (some #(if (can-encode? % accepted-type) %) encoders)]
+                 (reduced encoder)))
+             nil)))
 
 (defn parse-charset-accepted
   "Parses an *accept-charset* string to a list of [*charset* *quality-score*]"
@@ -280,6 +285,18 @@
 ;; Public api
 ;;
 
+(defn ->encoders [{:keys [formats format-options]}]
+  (doall
+    (for [format (or formats default-formats)
+          :when format
+          :let [encoder (if (map? format)
+                          format
+                          (init-encoder
+                            (get format-encoders format)
+                            (get format-options format)))]
+          :when encoder]
+      encoder)))
+
 (defn wrap-restful-response
   "Wrapper that tries to do the right thing with the response *:body*
   and provide a solid basis for a RESTful API. It will serialize to
@@ -291,18 +308,9 @@
   option. If is a map from format keyword to options map."
   ([handler]
    (wrap-restful-response handler {}))
-  ([handler {:keys [formats format-options] :as options}]
-   (let [common-options (dissoc options :formats :format-options)
-         encoders (doall
-                    (for [format (or formats default-formats)
-                          :when format
-                          :let [encoder (if (map? format)
-                                          format
-                                          (init-encoder
-                                            (get format-encoders format)
-                                            (get format-options format)))]
-                          :when encoder]
-                      encoder))]
-     (wrap-format-response handler
-                           (assoc common-options
-                             :encoders encoders)))))
+  ([handler options]
+   (wrap-format-response
+     handler
+     (-> options
+         (assoc :encoders (->encoders options))
+         (dissoc :format :format-options)))))
