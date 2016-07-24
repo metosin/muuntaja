@@ -196,6 +196,20 @@
 (def default-options {:charset "utf-8"
                       :formats default-formats})
 
+(defn ->adapters [{:keys [formats format-options adapters]}]
+  (doall
+    (for [format (keep identity formats)
+          :let [adapter (if-let [data (if (map? format)
+                                        format
+                                        (get adapters format))]
+                          (update data :decoder (fn [decoder]
+                                                  (if (vector? decoder)
+                                                    (let [[f opts] decoder]
+                                                      (f (merge opts (get format-options format))))
+                                                    decoder))))]
+          :when adapter]
+      adapter)))
+
 (defn wrap-restful-params
   "Wrapper that tries to do the right thing with the request :body and provide
    a solid basis for a RESTful API. It will deserialize to *JSON*, *YAML*, *Transit*
@@ -206,19 +220,9 @@
   ([handler]
    (wrap-restful-params handler {}))
   ([handler options]
-   (let [{:keys [formats format-options] :as options} (merge default-options options)
-         common-options (dissoc options :formats :format-options)
-         adapters (doall
-                    (for [format formats
-                          :when format
-                          :let [adapter (if-let [data (if (map? format)
-                                                        format
-                                                        (get format-adapters format))]
-                                          (update data :decoder (fn [decoder]
-                                                                  (if (vector? decoder)
-                                                                    (let [[f opts] decoder]
-                                                                      (f (merge opts (get format-options format))))
-                                                                    decoder))))]
-                          :when adapter]
-                      adapter))]
-     (wrap-format-params handler (assoc common-options :adapters adapters)))))
+   (let [options (merge default-options options)]
+     (wrap-format-params
+       handler
+       (-> options
+           (assoc :adapters (->adapters options))
+           (dissoc :formats :format-options))))))
