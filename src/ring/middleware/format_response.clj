@@ -6,8 +6,8 @@
             [clojure.string :as s]
             [clojure.walk :refer [stringify-keys]]
             [cognitect.transit :as transit]
-            [msgpack.core :as msgpack])
-  (:use [clojure.core.memoize :only [lu]])
+            [msgpack.core :as msgpack]
+            [clojure.core.memoize :as memoize])
   (:import [java.io File InputStream
                     ByteArrayOutputStream]
            [java.nio.charset Charset]))
@@ -78,7 +78,7 @@
 
 (def parse-accept-header
   "Memoized form of [[parse-accept-header*]]"
-  (lu parse-accept-header* {} :lu/threshold 500))
+  (memoize/fifo parse-accept-header* :fifo/threshold 500))
 
 (defn- accept-maps [request]
   (if-let [accept (get (get request :headers) "accept" (:content-type request))]
@@ -152,7 +152,7 @@
 
 (def choose-charset
   "Memoized form of [[choose-charset*]]"
-  (lu choose-charset* {} :lu/threshold 500))
+  (memoize/fifo choose-charset* {} :fifo/threshold 500))
 
 (defn default-charset-extractor
   "Default charset extractor, which returns either *Accept-Charset*
