@@ -252,6 +252,26 @@
       (transit/write wrt data)
       (.toByteArray out))))
 
+(defn init-encoder [encoder opts]
+  (if-let [init (:encoder-fn encoder)]
+    (assoc encoder :encoder (init opts))
+    encoder))
+
+(defn ->encoders [{:keys [encoders formats format-options]}]
+  (doall
+    (for [format (keep identity formats)
+          :let [encoder (if (map? format)
+                          format
+                          (init-encoder
+                            (get encoders format)
+                            (get format-options format)))]
+          :when encoder]
+      encoder)))
+
+;;
+;; Public api
+;;
+
 (def ^:no-doc format-encoders
   {:json (assoc (make-encoder nil "application/json")
            :encoder-fn #(make-json-encoder false %))
@@ -269,11 +289,6 @@
    :transit-msgpack (assoc (make-encoder nil "application/transit+msgpack" :binary)
                       :encoder-fn #(make-transit-encoder :msgpack %))})
 
-(defn init-encoder [encoder opts]
-  (if-let [init (:encoder-fn encoder)]
-    (assoc encoder :encoder (init opts))
-    encoder))
-
 (def json-pretty (init-encoder
                    (assoc (make-encoder nil "application/json")
                      :encoder-fn #(make-json-encoder true %))
@@ -281,21 +296,9 @@
 
 (def default-formats [:json :yaml :edn :msgpack :clojure :yaml-in-html :transit-json :transit-msgpack])
 
-;;
-;; Public api
-;;
-
-(defn ->encoders [{:keys [formats format-options]}]
-  (doall
-    (for [format (or formats default-formats)
-          :when format
-          :let [encoder (if (map? format)
-                          format
-                          (init-encoder
-                            (get format-encoders format)
-                            (get format-options format)))]
-          :when encoder]
-      encoder)))
+(def default-options {:charset "utf-8"
+                      :formats default-formats
+                      :encoders format-encoders})
 
 (defn wrap-restful-response
   "Wrapper that tries to do the right thing with the response *:body*
@@ -309,8 +312,9 @@
   ([handler]
    (wrap-restful-response handler {}))
   ([handler options]
-   (wrap-format-response
-     handler
-     (-> options
-         (assoc :encoders (->encoders options))
-         (dissoc :format :format-options)))))
+   (let [options (merge default-options options)]
+     (wrap-format-response
+       handler
+       (-> options
+           (assoc :encoders (->encoders options))
+           (dissoc :format :format-options))))))

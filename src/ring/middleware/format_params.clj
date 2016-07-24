@@ -79,7 +79,7 @@
 (def ^:no-doc json-request?
   (make-type-request-pred #"^application/(vnd.+)?json"))
 
-(defn make-json-decoder [{:keys [key-fn array-coerce-fn] :as o}]
+(defn make-json-decoder [{:keys [key-fn array-coerce-fn]}]
   (cond
     array-coerce-fn (fn [s] (json/parse-string s key-fn array-coerce-fn))
     key-fn (fn [s] (json/parse-string s key-fn))
@@ -193,6 +193,9 @@
 
 (def default-formats [:json :edn :msgpack :yaml :transit-msgpack :transit-json])
 
+(def default-options {:charset "utf-8"
+                      :formats default-formats})
+
 (defn wrap-restful-params
   "Wrapper that tries to do the right thing with the request :body and provide
    a solid basis for a RESTful API. It will deserialize to *JSON*, *YAML*, *Transit*
@@ -202,10 +205,11 @@
    option. If should be map of format keyword to options map."
   ([handler]
    (wrap-restful-params handler {}))
-  ([handler {:keys [formats format-options] :as options}]
-   (let [common-options (dissoc options :formats :format-options)
+  ([handler options]
+   (let [{:keys [formats format-options] :as options} (merge default-options options)
+         common-options (dissoc options :formats :format-options)
          adapters (doall
-                    (for [format (or formats default-formats)
+                    (for [format formats
                           :when format
                           :let [adapter (if-let [data (if (map? format)
                                                         format
