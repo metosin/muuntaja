@@ -125,8 +125,8 @@
 ;;
 
 (defn wrap-restful-params []
-  ; 12.1µs =>
-  (let [app (rmfp/wrap-restful-params +handler+ {:formats [:json-kw]})
+  ; 10.7µs =>
+  (let [app (rmfp/wrap-restful-params +handler+ {:formats [:json-kw :edn :msgpack-kw :yaml-kw :transit-msgpack :transit-json]})
         call #(post-body->data app +data-bytes+)]
 
     (title "JSON request")
@@ -134,8 +134,8 @@
     (cc/bench (call))))
 
 (defn wrap-restful-response []
-  ; 12.6µs =>
-  (let [app (rmfr/wrap-restful-response +handler+ {:formats [:json-kw]})
+  ; 14.5µs =>
+  (let [app (rmfr/wrap-restful-response +handler+ {:formats [:json-kw :edn :msgpack-kw :yaml-kw :transit-msgpack :transit-json]})
         call #(post-params->stream app +data+)]
 
     (title "JSON response")
@@ -143,8 +143,8 @@
     (cc/bench (call))))
 
 (defn wrap-restful-format []
-  ; 25.7µs =>
-  (let [app (rmf/wrap-restful-format +handler+ {:formats [:json-kw]})
+  ; 28.7µs =>
+  (let [app (rmf/wrap-restful-format +handler+ {:formats [:json-kw :edn :msgpack-kw :yaml-kw :transit-msgpack :transit-json]})
         call #(post-body->stream app +data-bytes+)]
 
     (title "JSON request & response")
