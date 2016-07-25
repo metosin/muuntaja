@@ -308,9 +308,9 @@
                       :handle-error default-handle-error
                       :predicate serializable?})
 
-(defn wrap-restful-response
+(defn wrap-api-response
   "Wrapper that tries to do the right thing with the response *:body*
-  and provide a solid basis for a RESTful API. It will serialize to
+  and provide a solid basis for a HTTP API. It will serialize to
   JSON, YAML, Clojure, Transit or HTML-wrapped YAML depending on Accept header.
   See wrap-format-response for more details. Recognized formats are
   *:json*, *:json-kw*, *:edn* *:yaml*, *:yaml-in-html*, *:transit-json*,
@@ -318,7 +318,7 @@
   Options to specific encoders can be passed in using *:format-options*
   option. If is a map from format keyword to options map."
   ([handler]
-   (wrap-restful-response handler {}))
+   (wrap-api-response handler {}))
   ([handler options]
    (let [options (merge default-options options)]
      (wrap-format-response

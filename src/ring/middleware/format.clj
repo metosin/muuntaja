@@ -4,9 +4,9 @@
 
 (def default-formats [:json :edn :msgpack :msgpack-kw :yaml :yaml-in-html :transit-msgpack :transit-json])
 
-(defn wrap-restful-format
+(defn wrap-api-format
   "Wrapper that tries to do the right thing with the request and
-   response, providing a solid basis for a RESTful API. It will
+   response, providing a solid basis for a HTTP API. It will
    deserialize the request and serialize the response depending on
    *Content-Type* and *Accept* header. Takes a :formats argument which is
    *[:json :edn :msgpack :msgpack-kw :yaml :yaml-in-html :transit-msgpack :transit-json]*
@@ -20,9 +20,9 @@
    See [[ring.middleware.format-params/wrap-format-params]] and
    [[ring.middleware.format-response/wrap-format-response]] for details"
   ([handler]
-    (wrap-restful-format handler {}))
+   (wrap-api-format handler {}))
   ([handler {:keys [response-error-handler request-error-handler response-options params-options] :as options}]
    (let [common-options (dissoc options :response-error-handler :request-error-handler :response-options :params-options)]
      (-> handler
-         (par/wrap-restful-params (assoc common-options :handle-error request-error-handler :format-options params-options))
-         (res/wrap-restful-response (assoc common-options :handle-error response-error-handler :format-options response-options))))))
+         (par/wrap-api-params (assoc common-options :handle-error request-error-handler :format-options params-options))
+         (res/wrap-api-response (assoc common-options :handle-error response-error-handler :format-options response-options))))))

@@ -123,48 +123,55 @@
 ;; Real
 ;;
 
-(defn wrap-restful-params []
+(defn wrap-api-params []
   ; 10.7µs
   ;  8.9µs (-17%), cleanup
   ;  3.2µs (-64%), charset default (-70%)
-  (let [app (rmfp/wrap-restful-params +handler+ {:formats [:json-kw :edn :msgpack-kw :yaml-kw :transit-msgpack :transit-json]})
+  (let [app (rmfp/wrap-api-params +handler+ {:formats [:json-kw :edn :msgpack-kw :yaml-kw :transit-msgpack :transit-json]})
         call #(post-body->data app +data-bytes+)]
 
     (title "JSON request")
     (assert (= +data+ (call)))
     (cc/bench (call))))
 
-(defn wrap-restful-response []
+(defn wrap-api-response []
   ; 14.5µs
   ; 12.2µs (-16%), cleanup
   ; 12.2µs (-0%), charset default
   ;  8.2µs (-26%), lu => fifo (-43%)
-  (let [app (rmfr/wrap-restful-response +handler+ {:formats [:json-kw :edn :msgpack-kw :yaml-kw :transit-msgpack :transit-json]})
+  (let [app (rmfr/wrap-api-response +handler+ {:formats [:json-kw :edn :msgpack-kw :yaml-kw :transit-msgpack :transit-json]})
         call #(post-params->stream app +data+)]
 
     (title "JSON response")
     (assert (= +data+ (parse (call))))
     (cc/bench (call))))
 
-(defn wrap-restful-format []
+(defn wrap-api-format []
   ; 28.7µs
   ; 25.3µs (-12%), cleanup
   ; 17.3µs (-32%), charset default
   ; 11,9µs (-31%), lu => fifo (-58%)
-  (let [app (rmf/wrap-restful-format +handler+ {:formats [:json-kw :edn :msgpack-kw :yaml-kw :transit-msgpack :transit-json]})
+  (let [app (rmf/wrap-api-format +handler+ {:formats [:json-kw :edn :msgpack-kw :yaml-kw :transit-msgpack :transit-json]})
         call #(post-body->stream app +data-bytes+)]
 
     (title "JSON request & response")
     (assert (= +data+ (parse (call))))
     (cc/bench (call))))
 
-(defn restful []
-  (wrap-restful-format)
-  (wrap-restful-params)
-  (wrap-restful-response))
+(defn api []
+  (wrap-api-format)
+  (wrap-api-params)
+  (wrap-api-response))
 
 (comment
-  (wrap-restful-format)
-  (wrap-restful-params)
-  (wrap-restful-response)
+  (wrap-api-format)
+  (wrap-api-params)
+  (wrap-api-response)
   (naive))
+
+(let [app (rmfr/wrap-api-response +handler+ {:formats [:json-kw :edn :msgpack-kw :yaml-kw :transit-msgpack :transit-json]})
+      call #(post-params->stream app +data+)]
+
+  (title "JSON response")
+  (assert (= +data+ (parse (call))))
+  (println (call)))

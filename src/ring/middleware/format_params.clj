@@ -212,15 +212,15 @@
 (def default-options {:charset "utf-8"
                       :formats [:json :edn :msgpack :yaml :transit-msgpack :transit-json]})
 
-(defn wrap-restful-params
+(defn wrap-api-params
   "Wrapper that tries to do the right thing with the request :body and provide
-   a solid basis for a RESTful API. It will deserialize to *JSON*, *YAML*, *Transit*
+   a solid basis for a HTTP API. It will deserialize to *JSON*, *YAML*, *Transit*
    or *Clojure* depending on Content-Type header. See [[wrap-format-params]] for
    more details.
    Options to specific format decoders can be passed in using *:format-options*
    option. If should be map of format keyword to options map."
   ([handler]
-   (wrap-restful-params handler {}))
+   (wrap-api-params handler {}))
   ([handler options]
    (let [options (merge default-options options)]
      (wrap-format-params

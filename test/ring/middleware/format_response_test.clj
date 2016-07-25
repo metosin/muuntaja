@@ -12,25 +12,25 @@
 (defn stream [s]
   (ByteArrayInputStream. (.getBytes s "UTF-8")))
 
-(def restfull-echo
-  (wrap-restful-response identity))
+(def api-echo
+  (wrap-api-response identity))
 
 (deftest noop-with-string
   (let [body "<xml></xml>"
         req {:body body}
-        resp (restfull-echo req)]
+        resp (api-echo req)]
     (is (= body (:body resp)))))
 
 (deftest noop-with-stream
   (let [body "<xml></xml>"
         req {:body (stream body)}
-        resp (restfull-echo req)]
+        resp (api-echo req)]
     (is (= body (slurp (:body resp))))))
 
 (deftest format-json-hashmap
   (let [body {:foo "bar"}
         req {:body body}
-        resp (restfull-echo req)]
+        resp (api-echo req)]
     (is (= (json/generate-string body) (slurp (:body resp))))
     (is (.contains (get-in resp [:headers "Content-Type"]) "application/json"))
     (is (< 2 (Integer/parseInt (get-in resp [:headers "Content-Length"]))))))
@@ -38,32 +38,32 @@
 (deftest format-json-prettily
   (let [body {:foo "bar"}
         req {:body body}
-        resp ((wrap-restful-response identity {:formats [json-pretty]}) req)]
+        resp ((wrap-api-response identity {:formats [json-pretty]}) req)]
     (is (.contains (slurp (:body resp)) "\n "))))
 
 (deftest returns-correct-charset
   (let [body {:foo "bârçï"}
         req {:body body :headers {"accept-charset" "utf8; q=0.8 , utf-16"}}
-        resp ((wrap-restful-response identity) req)]
+        resp ((wrap-api-response identity) req)]
     (is (.contains (get-in resp [:headers "Content-Type"]) "utf-16"))
     (is (= 32 (Integer/parseInt (get-in resp [:headers "Content-Length"]))))))
 
 (deftest returns-utf8-by-default
   (let [body {:foo "bârçï"}
         req {:body body :headers {"accept-charset" "foo"}}
-        resp ((wrap-restful-response identity) req)]
+        resp ((wrap-api-response identity) req)]
     (is (.contains (get-in resp [:headers "Content-Type"]) "utf-8"))
     (is (= 18 (Integer/parseInt (get-in resp [:headers "Content-Length"]))))))
 
 (deftest format-json-options
   (let [body {:foo-bar "bar"}
         req {:body body}
-        resp2 ((wrap-restful-response identity {:format-options {:json {:key-fn (comp string/upper-case name)}}}) req)]
+        resp2 ((wrap-api-response identity {:format-options {:json {:key-fn (comp string/upper-case name)}}}) req)]
     (is (= "{\"FOO-BAR\":\"bar\"}"
            (slurp (:body resp2))))))
 
 (def msgpack-echo
-  (wrap-restful-response identity {:formats [:msgpack]}))
+  (wrap-api-response identity {:formats [:msgpack]}))
 
 (defn ^:no-doc slurp-to-bytes
   #^bytes
@@ -87,7 +87,7 @@
     (is (< 2 (Integer/parseInt (get-in resp [:headers "Content-Length"]))))))
 
 (def clojure-echo
-  (wrap-restful-response identity {:formats [:edn]}))
+  (wrap-api-response identity {:formats [:edn]}))
 
 (deftest format-clojure-hashmap
   (let [body {:foo "bar"}
@@ -98,7 +98,7 @@
     (is (< 2 (Integer/parseInt (get-in resp [:headers "Content-Length"]))))))
 
 (def yaml-echo
-  (wrap-restful-response identity {:formats [:yaml]}))
+  (wrap-api-response identity {:formats [:yaml]}))
 
 (deftest format-yaml-hashmap
   (let [body {:foo "bar"}
@@ -110,7 +110,7 @@
 
 (deftest html-escape-yaml-in-html
   (let [req {:body {:foo "<bar>"}}
-        resp ((wrap-restful-response identity {:formats [:yaml-in-html]}) req)
+        resp ((wrap-api-response identity {:formats [:yaml-in-html]}) req)
         body (slurp (:body resp))]
     (is (= "<html>\n<head></head>\n<body><div><pre>\n{foo: &lt;bar&gt;}\n</pre></div></body></html>" body))))
 
@@ -124,7 +124,7 @@
     (transit/read rdr)))
 
 (def transit-json-echo
-  (wrap-restful-response identity {:formats [:transit-json]}))
+  (wrap-api-response identity {:formats [:transit-json]}))
 
 (deftest format-transit-json-hashmap
   (let [body {:foo "bar"}
@@ -135,7 +135,7 @@
     (is (< 2 (Integer/parseInt (get-in resp [:headers "Content-Length"]))))))
 
 (def transit-msgpack-echo
-  (wrap-restful-response identity {:formats [:transit-msgpack]}))
+  (wrap-api-response identity {:formats [:transit-msgpack]}))
 
 (deftest format-transit-msgpack-hashmap
   (let [body {:foo "bar"}
@@ -203,29 +203,29 @@
                                               :sub-type "edn"}}]
                                  req)))))
 
-(def restful-echo
-  (wrap-restful-response identity))
+(def api-echo
+  (wrap-api-response identity))
 
-(def safe-restful-echo-opts-map
-  (wrap-restful-response identity
-                         {:handle-error (fn [_ _ _] {:status 500})
-                          :formats
-                          [(make-encoder (fn [_] (throw (RuntimeException. "Memento mori")))
-                                         "foo/bar")]}))
+(def safe-api-echo-opts-map
+  (wrap-api-response identity
+                     {:handle-error (fn [_ _ _] {:status 500})
+                      :formats
+                      [(make-encoder (fn [_] (throw (RuntimeException. "Memento mori")))
+                                     "foo/bar")]}))
 
 (deftest format-hashmap-to-preferred
   (let [ok-accept "application/edn, application/json;q=0.5"
         ok-req {:headers {"accept" ok-accept}}]
-    (is (= (get-in (restful-echo ok-req) [:headers "Content-Type"])
+    (is (= (get-in (api-echo ok-req) [:headers "Content-Type"])
            "application/edn; charset=utf-8"))
-    (is (.contains (get-in (restful-echo {:headers {"accept" "foo/bar"}})
+    (is (.contains (get-in (api-echo {:headers {"accept" "foo/bar"}})
                            [:headers "Content-Type"])
                    "application/json"))
-    (is (= 500 (get (safe-restful-echo-opts-map {:status 200
-                                                 :headers {"accept" "foo/bar"}
-                                                 :body {}}) :status)))))
+    (is (= 500 (get (safe-api-echo-opts-map {:status 200
+                                             :headers {"accept" "foo/bar"}
+                                             :body {}}) :status)))))
 
-(deftest format-restful-hashmap
+(deftest format-api-hashmap
   (let [body {:foo "bar"}]
     (doseq [accept ["application/edn"
                     "application/json"
@@ -235,24 +235,24 @@
                     "application/transit+msgpack"
                     "text/html"]]
       (let [req {:body body :headers {"accept" accept}}
-            resp (restful-echo req)]
+            resp (api-echo req)]
         (is (.contains (get-in resp [:headers "Content-Type"]) accept))
         (is (< 2 (Integer/parseInt (get-in resp [:headers "Content-Length"]))))))
     (let [req {:body body}
-          resp (restful-echo req)]
+          resp (api-echo req)]
       (is (.contains (get-in resp [:headers "Content-Type"]) "application/json"))
       (is (< 2 (Integer/parseInt (get-in resp [:headers "Content-Length"])))))))
 
-(def custom-restful-echo
-  (wrap-restful-response
+(def custom-api-echo
+  (wrap-api-response
     identity
     {:formats [{:encoder (constantly "foobar")
                 :enc-type {:type "text"
                            :sub-type "foo"}}]}))
 
-(deftest format-custom-restful-hashmap
+(deftest format-custom-api-hashmap
   (let [req {:body {:foo "bar"} :headers {"accept" "text/foo"}}
-        resp (custom-restful-echo req)]
+        resp (custom-api-echo req)]
     (is (.contains (get-in resp [:headers "Content-Type"]) "text/foo"))
     (is (< 2 (Integer/parseInt (get-in resp [:headers "Content-Length"]))))))
 
@@ -260,30 +260,30 @@
   (let [req {:body {:headers {"accept" "application/json"}}}
         handler (-> (constantly {:status 200
                                  :headers {}})
-                    wrap-restful-response)
+                    wrap-api-response)
         resp (handler req)]
     (is (= "application/json; charset=utf-8" (get-in resp [:headers "Content-Type"])))
     (is (= "0" (get-in resp [:headers "Content-Length"])))
     (is (nil? (:body resp)))))
 
-(def restful-echo-pred
-  (wrap-restful-response identity {:predicate (fn [_ resp]
-                                                (::serializable? resp))}))
+(def api-echo-pred
+  (wrap-api-response identity {:predicate (fn [_ resp]
+                                            (::serializable? resp))}))
 
 (deftest custom-predicate
   (let [req {:body {:foo "bar"}}
-        resp-non-serialized (restful-echo-pred (assoc req ::serializable? false))
-        resp-serialized (restful-echo-pred (assoc req ::serializable? true))]
+        resp-non-serialized (api-echo-pred (assoc req ::serializable? false))
+        resp-serialized (api-echo-pred (assoc req ::serializable? true))]
     (is (map? (:body resp-non-serialized)))
     (is (instance? java.io.BufferedInputStream (:body resp-serialized)))))
 
 (def custom-encoder (make-encoder (make-json-encoder false nil) "application/vnd.mixradio.something+json"))
 
 (def custom-content-type
-  (wrap-restful-response (fn [req]
-                           {:status 200
-                            :body {:foo "bar"}})
-                         {:formats [custom-encoder :json-kw]}))
+  (wrap-api-response (fn [req]
+                       {:status 200
+                        :body {:foo "bar"}})
+                     {:formats [custom-encoder :json-kw]}))
 
 (deftest custom-content-type-test
   (let [resp (custom-content-type {:body {:foo "bar"} :headers {"accept" "application/vnd.mixradio.something+json"}})]
@@ -299,10 +299,10 @@
   {Point (transit/write-handler (constantly "Point") (fn [p] [(:x p) (:y p)]))})
 
 (def custom-transit-echo
-  (wrap-restful-response identity {:formats [:transit-json] :format-options {:transit-json {:handlers writers}}}))
+  (wrap-api-response identity {:formats [:transit-json] :format-options {:transit-json {:handlers writers}}}))
 
-(def custom-restful-transit-echo
-  (wrap-restful-response identity {:format-options {:transit-json {:handlers writers}}}))
+(def custom-api-transit-echo
+  (wrap-api-response identity {:format-options {:transit-json {:handlers writers}}}))
 
 (def transit-resp {:body (Point. 1 2)})
 
@@ -310,4 +310,4 @@
   (is (= "[\"~#Point\",[1,2]]"
          (slurp (:body (custom-transit-echo transit-resp)))))
   (is (= "[\"~#Point\",[1,2]]"
-         (slurp (:body (custom-restful-transit-echo (assoc transit-resp :headers {"accept" "application/transit+json"})))))))
+         (slurp (:body (custom-api-transit-echo (assoc transit-resp :headers {"accept" "application/transit+json"})))))))
