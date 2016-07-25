@@ -278,7 +278,7 @@
    :transit-json {:content-type "application/transit+json"
                   :encoder [(partial make-transit-encoder :json)]
                   :binary? true}
-   :transit-msgpack {:content-type "application/transit+json"
+   :transit-msgpack {:content-type "application/transit+msgpack"
                      :encoder [(partial make-transit-encoder :msgpack)]
                      :binary? true}})
 
