@@ -196,12 +196,12 @@
 (def default-options {:charset "utf-8"
                       :formats default-formats})
 
-(defn ->adapters [{:keys [formats format-options adapters]}]
+(defn ->adapters [{:keys [formats format-options]}]
   (doall
     (for [format (keep identity formats)
           :let [adapter (if-let [data (if (map? format)
                                         format
-                                        (get adapters format))]
+                                        (get format-adapters format))]
                           (update data :decoder (fn [decoder]
                                                   (if (vector? decoder)
                                                     (let [[f opts] decoder]

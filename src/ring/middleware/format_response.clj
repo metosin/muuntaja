@@ -38,6 +38,9 @@
            (or (= "*" sub-type)
                (= (enc-type :sub-type) sub-type)))))
 
+(defn encoder-can-encode [type encoder]
+  (if (can-encode? encoder type) encoder))
+
 (defn ^:no-doc sort-by-check
   [by check headers]
   (sort-by by (fn [a b]
@@ -86,19 +89,21 @@
       (parse-accept-header accept)
       accept)))
 
-(defn preferred-encoder
+(defn preferred-adapter
   "Return the encoder that encodes to the most preferred type.
   If the *Accept* header of the request is a *String*, assume it is
   according to Ring spec. Else assume the header is a sequence of
   accepted types sorted by their preference. If no accepted encoder is
-  found or no *Accept* header is found, return *nil*."
-  [encoders request]
-  (some->> (accept-maps request)
-           (reduce
-             (fn [_ accepted-type]
-               (if-let [encoder (some #(if (can-encode? % accepted-type) %) encoders)]
-                 (reduced encoder)))
-             nil)))
+  found or no *Accept* header is found, return first encoder."
+  [adapters request]
+  (or
+    (if-let [accept (accept-maps request)]
+      (some
+        (fn [type]
+          (if-let [adapter (some (partial encoder-can-encode type) adapters)]
+            adapter))
+        accept))
+    (first adapters)))
 
 (defn parse-charset-accepted
   "Parses an *accept-charset* string to a list of [*charset* *quality-score*]"
@@ -168,7 +173,7 @@
 
  + **:predicate** is a predicate taking the request and response as
                   arguments to test if serialization should be used
- + **:encoders** a sequence of maps given by make-encoder
+ + **:adapters** a sequence of maps given by make-encoder
  + **:charset** can be either a string representing a valid charset or a fn
                 taking the req as argument and returning a valid charset
                 (*utf-8* is strongly suggested)
@@ -257,7 +262,7 @@
     (assoc encoder :encoder (init opts))
     encoder))
 
-(defn ->encoders [{:keys [encoders formats format-options]}]
+(defn ->adapters [{:keys [encoders formats format-options]}]
   (doall
     (for [format (keep identity formats)
           :let [encoder (if (map? format)
@@ -272,7 +277,7 @@
 ;; Public api
 ;;
 
-(def ^:no-doc format-encoders
+(def ^:no-doc format-adapters
   {:json (assoc (make-encoder nil "application/json")
            :encoder-fn #(make-json-encoder false %))
    :json-kw (assoc (make-encoder nil "application/json")
@@ -289,6 +294,17 @@
    :transit-msgpack (assoc (make-encoder nil "application/transit+msgpack" :binary)
                       :encoder-fn #(make-transit-encoder :msgpack %))})
 
+(defn ->adapters [{:keys [formats format-options]}]
+  (doall
+    (for [format (keep identity formats)
+          :let [adapter (if (map? format)
+                          format
+                          (init-encoder
+                            (get format-adapters format)
+                            (get format-options format)))]
+          :when adapter]
+      adapter)))
+
 (def json-pretty (init-encoder
                    (assoc (make-encoder nil "application/json")
                      :encoder-fn #(make-json-encoder true %))
@@ -298,7 +314,8 @@
 
 (def default-options {:charset "utf-8"
                       :formats default-formats
-                      :encoders format-encoders})
+                      :handle-error default-handle-error
+                      :predicate serializable?})
 
 (defn wrap-restful-response
   "Wrapper that tries to do the right thing with the response *:body*
@@ -316,5 +333,5 @@
      (wrap-format-response
        handler
        (-> options
-           (assoc :encoders (->encoders options))
+           (assoc :adapters (->adapters options))
            (dissoc :format :format-options))))))

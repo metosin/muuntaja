@@ -196,10 +196,10 @@
         req {:headers {"accept" accept}}
         html-encoder {:enc-type {:type "text" :sub-type "html"}}
         json-encoder {:enc-type {:type "application" :sub-type "json"}}]
-    (is (= (preferred-encoder [json-encoder html-encoder] req)
+    (is (= (preferred-adapter [json-encoder html-encoder] req)
            html-encoder))
-    (is (nil? (preferred-encoder [json-encoder html-encoder] {})))
-    (is (nil? (preferred-encoder [{:enc-type {:type "application"
+    (is (nil? (preferred-adapter [json-encoder html-encoder] {})))
+    (is (nil? (preferred-adapter [{:enc-type {:type "application"
                                               :sub-type "edn"}}]
                                  req)))))
 
