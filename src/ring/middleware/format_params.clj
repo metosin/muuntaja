@@ -201,13 +201,18 @@
    the right format, added in a *:body-params* key and merged in *:params*.
    It takes n args:
 
-   **:adapters**     a sequence of adapters.
-   **:charset**      can be either a string representing a valid charset or a fn
-                     taking the req as argument and returning a valid charset.
-   **:handle-error** is a fn with a sig [exception handler request].
-                     Return (handler obj) to continue executing a modified
-                     request or directly a map to answer immediately. Defaults
-                     to just rethrowing the Exception"
+   **:formats**        sequence of either adapter names (keywords) or adapter maps.
+
+   **:format-options** map of adapter names => options map to configure the
+                       defined adapters.
+
+   **:charset**        can be either a string representing a valid charset or a fn
+                       taking the req as argument and returning a valid charset.
+
+   **:handle-error**   is a fn with a sig [exception handler request].
+                       Return (handler obj) to continue executing a modified
+                       request or directly a map to answer immediately. Defaults
+                       to just rethrowing the Exception"
   ([handler]
    (wrap-api-params handler {}))
   ([handler options]
@@ -219,3 +224,4 @@
          (handler (format-request request options))
          (catch Exception e
            (handle-error e handler request)))))))
+

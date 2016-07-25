@@ -285,10 +285,11 @@
 (def json-pretty {:content-type "application/json"
                   :encoder [make-json-encoder {:pretty true}]})
 
-(def default-options {:charset "utf-8"
-                      :formats [:json :yaml :edn :msgpack :clojure :yaml-in-html :transit-json :transit-msgpack]
-                      :handle-error default-handle-error
-                      :predicate serializable?})
+(def default-options {:formats [:json :yaml :edn :msgpack :clojure :yaml-in-html :transit-json :transit-msgpack]
+                      :format-options {}
+                      :predicate serializable?
+                      :charset "utf-8"
+                      :handle-error default-handle-error})
 
 (defn wrap-api-response
   "Wrapper that tries to do the right thing with the response *:body*
@@ -303,14 +304,19 @@
   Wraps a handler such that responses body to requests are formatted to
   the right format. If no *Accept* header is found, use the first encoder.
 
- + **:predicate** is a predicate taking the request and response as
-                  arguments to test if serialization should be used
- + **:adapters** a sequence of maps given by make-encoder
- + **:charset** can be either a string representing a valid charset or a fn
-                taking the req as argument and returning a valid charset
-                (*utf-8* is strongly suggested)
- + **:handle-error** is a fn with a sig [exception request response]. Defaults
-                     to just rethrowing the Exception"
+  **:formats**        sequence of either adapter names (keywords) or adapter maps.
+
+  **:format-options** map of adapter names => options map to configure the
+                      defined adapters.
+
+  **:predicate**      is a predicate taking the request and response as
+                      arguments to test if serialization should be used.
+
+  **:charset**        can be either a string representing a valid charset or a fn
+                      taking the req as argument and returning a valid charset.
+
+  **:handle-error**   fn of [exception request response] => Any. Defaults
+                      to just rethrowing the Exception."
   ([handler]
    (wrap-api-response handler {}))
   ([handler options]
