@@ -167,6 +167,24 @@
         (catch Exception e
           (handle-error e handler req))))))
 
+(defn ->adapters [adapters {:keys [formats format-options]}]
+  (->> formats
+       (keep identity)
+       (mapv (fn [format]
+               (if-let [data (if (map? format)
+                               format
+                               (get adapters format))]
+                 (update data :decoder (fn [decoder]
+                                         (if (vector? decoder)
+                                           (let [[f opts] decoder]
+                                             (f (merge opts (get format-options format))))
+                                           decoder))))))
+       (keep identity)))
+
+;;
+;; Public API
+;;
+
 (def ^:no-doc format-adapters
   {:json {:predicate json-request?
           :decoder [make-json-decoder]}
@@ -191,24 +209,8 @@
                      :decoder [(partial make-transit-decoder :msgpack)]
                      :binary? true}})
 
-(def default-formats [:json :edn :msgpack :yaml :transit-msgpack :transit-json])
-
 (def default-options {:charset "utf-8"
-                      :formats default-formats})
-
-(defn ->adapters [{:keys [formats format-options]}]
-  (->> formats
-       (keep identity)
-       (mapv (fn [format]
-               (if-let [data (if (map? format)
-                               format
-                               (get format-adapters format))]
-                 (update data :decoder (fn [decoder]
-                                         (if (vector? decoder)
-                                           (let [[f opts] decoder]
-                                             (f (merge opts (get format-options format))))
-                                           decoder))))))
-       (keep identity)))
+                      :formats [:json :edn :msgpack :yaml :transit-msgpack :transit-json]})
 
 (defn wrap-restful-params
   "Wrapper that tries to do the right thing with the request :body and provide
@@ -224,5 +226,5 @@
      (wrap-format-params
        handler
        (-> options
-           (assoc :adapters (->adapters options))
+           (assoc :adapters (->adapters format-adapters options))
            (dissoc :formats :format-options))))))

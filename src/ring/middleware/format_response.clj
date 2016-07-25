@@ -253,6 +253,21 @@
       (transit/write wrt data)
       (.toByteArray out))))
 
+(defn ->adapters [adapters {:keys [formats format-options]}]
+  (->> formats
+       (keep identity)
+       (mapv (fn [format]
+               (if-let [data (if (map? format)
+                               format
+                               (get adapters format))]
+                 (-> data
+                     (assoc :enc-type (first (parse-accept-header (:content-type data))))
+                     (update :encoder (fn [encoder]
+                                        (if (vector? encoder)
+                                          (let [[f opts] encoder]
+                                            (f (merge opts (get format-options format))))
+                                          encoder)))))))
+       (keep identity)))
 ;;
 ;; Public api
 ;;
@@ -285,29 +300,11 @@
                      :encoder [(partial make-transit-encoder :msgpack)]
                      :binary? true}})
 
-(defn ->adapters [{:keys [formats format-options]}]
-  (->> formats
-       (keep identity)
-       (mapv (fn [format]
-               (if-let [data (if (map? format)
-                               format
-                               (get format-adapters format))]
-                 (-> data
-                     (assoc :enc-type (first (parse-accept-header (:content-type data))))
-                     (update :encoder (fn [encoder]
-                                        (if (vector? encoder)
-                                          (let [[f opts] encoder]
-                                            (f (merge opts (get format-options format))))
-                                          encoder)))))))
-       (keep identity)))
-
 (def json-pretty {:content-type "application/json"
                   :encoder [make-json-encoder {:pretty true}]})
 
-(def default-formats [:json :yaml :edn :msgpack :clojure :yaml-in-html :transit-json :transit-msgpack])
-
 (def default-options {:charset "utf-8"
-                      :formats default-formats
+                      :formats [:json :yaml :edn :msgpack :clojure :yaml-in-html :transit-json :transit-msgpack]
                       :handle-error default-handle-error
                       :predicate serializable?})
 
@@ -327,5 +324,5 @@
      (wrap-format-response
        handler
        (-> options
-           (assoc :adapters (->adapters options))
+           (assoc :adapters (->adapters format-adapters options))
            (dissoc :format :format-options))))))
