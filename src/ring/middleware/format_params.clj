@@ -123,43 +123,25 @@
     nil
     adapters))
 
-(defn wrap-format-params
-  "Wraps a handler such that requests body are deserialized from to
-   the right format, added in a *:body-params* key and merged in *:params*.
-   It takes n args:
-
- + **:adapters**  a sequence of adapters\n.
- + **:charset** can be either a string representing a valid charset or a fn
-                taking the req as argument and returning a valid charset.
- + **:handle-error** is a fn with a sig [exception handler request].
-                     Return (handler obj) to continue executing a modified
-                     request or directly a map to answer immediately. Defaults
-                     to just rethrowing the Exception"
-  [handler {:keys [adapters charset handle-error]}]
-  (let [charset (or charset get-or-guess-charset)
-        handle-error (or handle-error default-handle-error)]
-    (fn [{:keys [#^InputStream body] :as req}]
-      (try
-        (if-let [{:keys [decoder binary?]} (if body (select-adapter adapters req))]
-          (let [byts (slurp-to-bytes body)]
-            (if (> (count byts) 0)
-              (let [fmt-params (if binary?
-                                 (decoder (ByteArrayInputStream. byts))
-                                 (let [#^String char-enc (if (string? charset)
-                                                           charset
-                                                           (charset (assoc req :body byts)))
-                                       bstr (String. byts char-enc)]
-                                   (decoder bstr)))
-                    req* (assoc req
-                           :body-params fmt-params
-                           :params (merge (:params req)
-                                          (when (map? fmt-params) fmt-params))
-                           :body (ByteArrayInputStream. byts))]
-                (handler req*))
-              (handler req)))
-          (handler req))
-        (catch Exception e
-          (handle-error e handler req))))))
+(defn format-request [{:keys [#^InputStream body] :as req} {:keys [adapters charset]}]
+  (or
+    (if-let [{:keys [decoder binary?]} (if body (select-adapter adapters req))]
+      (let [byts (slurp-to-bytes body)]
+        (if (> (count byts) 0)
+          (let [fmt-params (if binary?
+                             (decoder (ByteArrayInputStream. byts))
+                             (let [#^String char-enc (if (string? charset)
+                                                       charset
+                                                       (charset (assoc req :body byts)))
+                                   bstr (String. byts char-enc)]
+                               (decoder bstr)))
+                req* (assoc req
+                       :body-params fmt-params
+                       :params (merge (:params req)
+                                      (when (map? fmt-params) fmt-params))
+                       :body (ByteArrayInputStream. byts))]
+            req*))))
+    req))
 
 (defn ->adapters [adapters {:keys [formats format-options]}]
   (->> formats
@@ -204,21 +186,35 @@
                      :binary? true}})
 
 (def default-options {:charset "utf-8"
-                      :formats [:json :edn :msgpack :yaml :transit-msgpack :transit-json]})
+                      :formats [:json :edn :msgpack :yaml :transit-msgpack :transit-json]
+                      :handle-error default-handle-error})
 
 (defn wrap-api-params
   "Wrapper that tries to do the right thing with the request :body and provide
    a solid basis for a HTTP API. It will deserialize to *JSON*, *YAML*, *Transit*
-   or *Clojure* depending on Content-Type header. See [[wrap-format-params]] for
-   more details.
+   or *Clojure* depending on Content-Type header.
    Options to specific format decoders can be passed in using *:format-options*
-   option. If should be map of format keyword to options map."
+   option. If should be map of format keyword to options map.
+
+   Wraps a handler such that requests body are deserialized from to
+   the right format, added in a *:body-params* key and merged in *:params*.
+   It takes n args:
+
+   **:adapters**     a sequence of adapters.
+   **:charset**      can be either a string representing a valid charset or a fn
+                     taking the req as argument and returning a valid charset.
+   **:handle-error** is a fn with a sig [exception handler request].
+                     Return (handler obj) to continue executing a modified
+                     request or directly a map to answer immediately. Defaults
+                     to just rethrowing the Exception"
   ([handler]
    (wrap-api-params handler {}))
   ([handler options]
-   (let [options (merge default-options options)]
-     (wrap-format-params
-       handler
-       (-> options
-           (assoc :adapters (->adapters format-adapters options))
-           (dissoc :formats :format-options))))))
+   (let [options (merge default-options options)
+         adapters (->adapters format-adapters options)
+         {:keys [handle-error] :as options} (assoc options :adapters adapters)]
+     (fn [request]
+       (try
+         (handler (format-request request options))
+         (catch Exception e
+           (handle-error e handler request)))))))
