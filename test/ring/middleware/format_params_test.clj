@@ -192,13 +192,14 @@
 (defn stream-iso [s]
   (ByteArrayInputStream. (.getBytes s "ISO-8859-1")))
 
-(deftest test-different-params-charset
-  (let [req {:content-type "application/clojure; charset=ISO-8859-1"
-             :body (stream-iso "{:fée \"böz\"}")
-             :params {"id" 3}}
-        resp (api-echo req)]
-    (is (= {"id" 3 :fée "böz"} (:params resp)))
-    (is (= {:fée "böz"} (:body-params resp)))))
+(comment
+  (deftest test-different-params-charset
+    (let [req {:content-type "application/clojure; charset=ISO-8859-1"
+               :body (stream-iso "{:fée \"böz\"}")
+               :params {"id" 3}}
+          resp (api-echo req)]
+      (is (= {"id" 3 :fée "böz"} (:params resp)))
+      (is (= {:fée "böz"} (:body-params resp))))))
 
 (deftest test-list-body-request
   (let [req {:content-type "application/json"
