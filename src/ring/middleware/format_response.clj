@@ -18,7 +18,7 @@
   "Set of recognised charsets by the current JVM"
   (into #{} (map s/lower-case (.keySet (Charset/availableCharsets)))))
 
-(defn ^:no-doc serializable?
+(defn- serializable?
   "Predicate that returns true whenever the response body is not a
   String, File or InputStream."
   [_ {:keys [body] :as response}]
@@ -28,7 +28,7 @@
            (instance? File body)
            (instance? InputStream body)))))
 
-(defn can-encode?
+(defn- can-encode?
   "Check whether encoder can encode to accepted-type.
   Accepted-type should have keys *:type* and *:sub-type* with appropriate
   values."
@@ -38,10 +38,10 @@
            (or (= "*" sub-type)
                (= (enc-type :sub-type) sub-type)))))
 
-(defn encoder-can-encode [type encoder]
+(defn- encoder-can-encode [type encoder]
   (if (can-encode? encoder type) encoder))
 
-(defn ^:no-doc sort-by-check
+(defn- sort-by-check
   [by check headers]
   (sort-by by (fn [a b]
                 (cond (= (= a check) (= b check)) 0
@@ -49,7 +49,7 @@
                       :else -1))
            headers))
 
-(defn parse-accept-header*
+(defn- parse-accept-header*
   "Parse Accept headers into a sorted sequence of maps.
   \"application/json;level=1;q=0.4\"
   => ({:type \"application\" :sub-type \"json\"
@@ -79,7 +79,7 @@
        (sort-by-check :sub-type "*")
        (sort-by :q >)))
 
-(def parse-accept-header
+(def ^:private parse-accept-header
   "Memoized form of [[parse-accept-header*]]"
   (memoize/fifo parse-accept-header* :fifo/threshold 500))
 
@@ -89,7 +89,7 @@
       (parse-accept-header accept)
       accept)))
 
-(defn preferred-adapter
+(defn- preferred-adapter
   "Return the encoder that encodes to the most preferred type.
   If the *Accept* header of the request is a *String*, assume it is
   according to Ring spec. Else assume the header is a sequence of
@@ -105,7 +105,7 @@
         accept))
     (first adapters)))
 
-(defn parse-charset-accepted
+(defn- parse-charset-accepted
   "Parses an *accept-charset* string to a list of [*charset* *quality-score*]"
   [v]
   (let [segments (s/split v #",")
@@ -119,7 +119,7 @@
                   [(s/trim charset) qscore])]
     choices))
 
-(defn preferred-charset
+(defn- preferred-charset
   "Returns an acceptable choice from a list of [*charset* *quality-score*]"
   [charsets]
   (or
@@ -129,33 +129,19 @@
          (first))
     "utf-8"))
 
-(defn make-encoder
-  "Return a encoder map suitable for [[wrap-format-response.]]
-   f takes a string and returns an encoded string
-   type *Content-Type* of the encoded string
-   (make-encoder json/generate-string \"application/json\")"
-  ([encoder content-type binary?]
-   {:encoder encoder
-    :enc-type (first (parse-accept-header content-type))
-    :binary? binary?
-    ;; Include content-type to allow later introspection of encoders.
-    :content-type content-type})
-  ([encoder content-type]
-   (make-encoder encoder content-type false)))
-
 (defn default-handle-error
   "Default error handling function used, which rethrows the Exception"
   [e _ _]
   (throw e))
 
-(defn choose-charset*
+(defn- choose-charset*
   "Returns an useful charset from the accept-charset string.
    Defaults to utf-8"
   [accept-charset]
   (let [possible-charsets (parse-charset-accepted accept-charset)]
     (preferred-charset possible-charsets)))
 
-(def choose-charset
+(def ^:private choose-charset
   "Memoized form of [[choose-charset*]]"
   (memoize/fifo choose-charset* {} :fifo/threshold 500))
 
@@ -166,6 +152,77 @@
   (if-let [accept-charset (get-in request [:headers "accept-charset"])]
     (choose-charset accept-charset)
     "utf-8"))
+
+;; JSON
+
+(defn make-json-encoder [options]
+  (fn [s]
+    (json/generate-string s options)))
+
+;; EDN
+
+(defn encode-edn
+  [struct]
+  (pr-str struct))
+
+;; MSGPACK
+
+(defn encode-msgpack [body]
+  (with-open [out-stream (ByteArrayOutputStream.)]
+    (let [data-out (java.io.DataOutputStream. out-stream)]
+      (msgpack/pack-stream (stringify-keys body) data-out))
+    (.toByteArray out-stream)))
+
+(defn encode-msgpack-kw [body]
+  (encode-msgpack (stringify-keys body)))
+
+;; YAML
+
+(defn encode-yaml [body]
+  (yaml/generate-string body))
+
+(defn- escape-html [s]
+  (s/escape s {\& "&amp;"
+               \< "&lt;"
+               \> "&gt;"
+               \" "&quot;"
+               \' "&apos;"}))
+
+(defn encode-yaml-in-html
+  [body]
+  (str
+    "<html>\n<head></head>\n<body><div><pre>\n"
+    (escape-html (yaml/generate-string body))
+    "</pre></div></body></html>"))
+
+;; Transit
+
+(defn make-transit-encoder
+  [fmt {:keys [verbose] :as options}]
+  (fn [data]
+    (let [out (ByteArrayOutputStream.)
+          full-fmt (if (and (= fmt :json) verbose)
+                     :json-verbose
+                     fmt)
+          wrt (transit/writer out full-fmt options)]
+      (transit/write wrt data)
+      (.toByteArray out))))
+
+(defn- ->adapters [adapters {:keys [formats format-options]}]
+  (->> formats
+       (keep identity)
+       (mapv (fn [format]
+               (if-let [data (if (map? format)
+                               format
+                               (get adapters format))]
+                 (-> data
+                     (assoc :enc-type (first (parse-accept-header (:content-type data))))
+                     (update :encoder (fn [encoder]
+                                        (if (vector? encoder)
+                                          (let [[f opts] encoder]
+                                            (f (merge opts (get format-options format))))
+                                          encoder)))))))
+       (keep identity)))
 
 (defn wrap-format-response
   [handler {:keys [predicate adapters charset handle-error]}]
@@ -193,81 +250,17 @@
         (catch Exception e
           (handle-error e request response))))))
 
-(defn make-json-encoder [options]
-  (fn [s]
-    (json/generate-string s options)))
-
-;; Functions for Clojure native serialization
-
-(defn ^:no-doc generate-native-clojure
-  [struct]
-  (pr-str struct))
-
-(defn encode-msgpack [body]
-  (with-open [out-stream (ByteArrayOutputStream.)]
-    (let [data-out (java.io.DataOutputStream. out-stream)]
-      (msgpack/pack-stream (stringify-keys body) data-out))
-    (.toByteArray out-stream)))
-
-(defn encode-msgpack-kw [body]
-  (encode-msgpack (stringify-keys body)))
-
-
-(defn- escape-html [s]
-  (s/escape s {\& "&amp;"
-               \< "&lt;"
-               \> "&gt;"
-               \" "&quot;"
-               \' "&apos;"}))
-
-(defn ^:no-doc wrap-yaml-in-html
-  [body]
-  (str
-    "<html>\n<head></head>\n<body><div><pre>\n"
-    (escape-html (yaml/generate-string body))
-    "</pre></div></body></html>"))
-
-;;;;;;;;;;;;;
-;; Transit ;;
-;;;;;;;;;;;;;
-
-(defn ^:no-doc make-transit-encoder
-  [fmt {:keys [verbose] :as options}]
-  (fn [data]
-    (let [out (ByteArrayOutputStream.)
-          full-fmt (if (and (= fmt :json) verbose)
-                     :json-verbose
-                     fmt)
-          wrt (transit/writer out full-fmt options)]
-      (transit/write wrt data)
-      (.toByteArray out))))
-
-(defn ->adapters [adapters {:keys [formats format-options]}]
-  (->> formats
-       (keep identity)
-       (mapv (fn [format]
-               (if-let [data (if (map? format)
-                               format
-                               (get adapters format))]
-                 (-> data
-                     (assoc :enc-type (first (parse-accept-header (:content-type data))))
-                     (update :encoder (fn [encoder]
-                                        (if (vector? encoder)
-                                          (let [[f opts] encoder]
-                                            (f (merge opts (get format-options format))))
-                                          encoder)))))))
-       (keep identity)))
 ;;
 ;; Public api
 ;;
 
-(def ^:no-doc format-adapters
+(def format-adapters
   {:json {:content-type "application/json"
           :encoder [make-json-encoder]}
    :json-kw {:content-type "application/json"
              :encoder [make-json-encoder]}
    :edn {:content-type "application/edn"
-         :encoder generate-native-clojure}
+         :encoder encode-edn}
    :msgpack {:content-type "application/msgpack"
              :encoder encode-msgpack
              :binary? true}
@@ -275,13 +268,13 @@
                 :encoder encode-msgpack-kw
                 :binary? true}
    :clojure {:content-type "application/clojure"
-             :encoder generate-native-clojure}
+             :encoder encode-edn}
    :yaml {:content-type "application/x-yaml"
-          :encoder yaml/generate-string}
+          :encoder encode-yaml}
    :yaml-kw {:content-type "application/x-yaml"
-             :encoder yaml/generate-string}
+             :encoder encode-yaml}
    :yaml-in-html {:content-type "text/html"
-                  :encoder wrap-yaml-in-html}
+                  :encoder encode-yaml-in-html}
    :transit-json {:content-type "application/transit+json"
                   :encoder [(partial make-transit-encoder :json)]
                   :binary? true}
