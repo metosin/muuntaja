@@ -39,6 +39,7 @@
     (app {:uri "/any"
           :request-method :post
           :content-type "application/json"
+          :headers {"Accept" "application/json"}
           :body (ByteArrayInputStream. datab)})
     :body
     slurp))
@@ -48,6 +49,7 @@
     (app {:uri "/any"
           :request-method :post
           :content-type "application/json"
+          :headers {"Accept" "application/json"}
           :body (ByteArrayInputStream. datab)})
     :body))
 
@@ -56,6 +58,7 @@
     (app {:uri "/any"
           :request-method :post
           :content-type "application/json"
+          :headers {"Accept" "application/json"}
           :body-params data})
     :body
     slurp))
@@ -167,4 +170,5 @@
   (wrap-api-format)
   (wrap-api-params)
   (wrap-api-response)
+  (api)
   (naive))
