@@ -318,8 +318,8 @@
   ([handler]
    (wrap-api-response handler {}))
   ([handler options]
-   (let [options (merge default-options options)
-         adapters (->adapters format-adapters options)
-         options (assoc options :adapters adapters)]
+   (let [options (as-> options $
+                       (merge default-options $)
+                       (assoc $ :adapters (->adapters format-adapters $)))]
      (fn [request]
        (format-response request (handler request) options)))))
