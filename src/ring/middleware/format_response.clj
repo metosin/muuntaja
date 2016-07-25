@@ -254,58 +254,56 @@
       (transit/write wrt data)
       (.toByteArray out))))
 
-(defn init-encoder [encoder opts]
-  (if-let [init (:encoder-fn encoder)]
-    (assoc encoder :encoder (init opts))
-    encoder))
-
-(defn ->adapters [{:keys [encoders formats format-options]}]
-  (doall
-    (for [format (keep identity formats)
-          :let [encoder (if (map? format)
-                          format
-                          (init-encoder
-                            (get encoders format)
-                            (get format-options format)))]
-          :when encoder]
-      encoder)))
-
 ;;
 ;; Public api
 ;;
 
 (def ^:no-doc format-adapters
-  {:json (assoc (make-encoder nil "application/json")
-           :encoder-fn #(make-json-encoder false %))
-   :json-kw (assoc (make-encoder nil "application/json")
-              :encoder-fn #(make-json-encoder false %))
-   :edn (make-encoder generate-native-clojure "application/edn")
-   :msgpack (make-encoder encode-msgpack "application/msgpack" :binary)
-   :msgpack-kw (make-encoder encode-msgpack-kw "application/msgpack" :binary)
-   :clojure (make-encoder generate-native-clojure "application/clojure")
-   :yaml (make-encoder yaml/generate-string "application/x-yaml")
-   :yaml-kw (make-encoder yaml/generate-string "application/x-yaml")
-   :yaml-in-html (make-encoder wrap-yaml-in-html "text/html")
-   :transit-json (assoc (make-encoder nil "application/transit+json" :binary)
-                   :encoder-fn #(make-transit-encoder :json %))
-   :transit-msgpack (assoc (make-encoder nil "application/transit+msgpack" :binary)
-                      :encoder-fn #(make-transit-encoder :msgpack %))})
+  {:json {:content-type "application/json"
+          :encoder [(partial make-json-encoder false)]}
+   :json-kw {:content-type "application/json"
+             :encoder [(partial make-json-encoder false)]}
+   :edn {:content-type "application/edn"
+         :encoder generate-native-clojure}
+   :msgpack {:content-type "application/msgpack"
+             :encoder encode-msgpack
+             :binary? true}
+   :msgpack-kw {:content-type "application/msgpack"
+                :encoder encode-msgpack-kw
+                :binary? true}
+   :clojure {:content-type "application/clojure"
+             :encoder generate-native-clojure}
+   :yaml {:content-type "application/x-yaml"
+          :encoder yaml/generate-string}
+   :yaml-kw {:content-type "application/x-yaml"
+             :encoder yaml/generate-string}
+   :yaml-in-html {:content-type "text/html"
+                  :encoder wrap-yaml-in-html}
+   :transit-json {:content-type "application/transit+json"
+                  :encoder [(partial make-transit-encoder :json)]
+                  :binary? true}
+   :transit-msgpack {:content-type "application/transit+json"
+                     :encoder [(partial make-transit-encoder :msgpack)]
+                     :binary? true}})
 
 (defn ->adapters [{:keys [formats format-options]}]
-  (doall
-    (for [format (keep identity formats)
-          :let [adapter (if (map? format)
-                          format
-                          (init-encoder
-                            (get format-adapters format)
-                            (get format-options format)))]
-          :when adapter]
-      adapter)))
+  (->> formats
+       (keep identity)
+       (mapv (fn [format]
+               (if-let [data (if (map? format)
+                               format
+                               (get format-adapters format))]
+                 (-> data
+                     (assoc :enc-type (first (parse-accept-header (:content-type data))))
+                     (update :encoder (fn [encoder]
+                                        (if (vector? encoder)
+                                          (let [[f opts] encoder]
+                                            (f (merge opts (get format-options format))))
+                                          encoder)))))))
+       (keep identity)))
 
-(def json-pretty (init-encoder
-                   (assoc (make-encoder nil "application/json")
-                     :encoder-fn #(make-json-encoder true %))
-                   {}))
+(def json-pretty {:content-type "application/json"
+                  :encoder [(partial make-json-encoder true)]})
 
 (def default-formats [:json :yaml :edn :msgpack :clojure :yaml-in-html :transit-json :transit-msgpack])
 
