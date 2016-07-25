@@ -42,12 +42,6 @@
     (guess-charset req)
     "utf-8"))
 
-(defn ^:no-doc get-or-default-charset
-  [req]
-  (or
-    (get-charset req)
-    "utf-8"))
-
 (defn make-type-request-pred
   "Function that returns a predicate fn checking if *Content-Type*
    request header matches a specified regexp and body is set."
