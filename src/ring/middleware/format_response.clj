@@ -224,32 +224,6 @@
                                           encoder)))))))
        (keep identity)))
 
-(defn wrap-format-response
-  [handler {:keys [predicate adapters charset handle-error]}]
-  (fn [request]
-    (let [{:keys [body] :as response} (handler request)]
-      (try
-        (if (predicate request response)
-          (let [{:keys [encoder enc-type binary?]} (preferred-adapter adapters request)
-                [body* content-type] (if binary?
-                                       (let [body* (encoder body)
-                                             ctype (str (enc-type :type) "/" (enc-type :sub-type))]
-                                         [body* ctype])
-                                       (let [^String char-enc (if (string? charset) charset (charset request))
-                                             ^String body-string (if (nil? body) "" (encoder body))
-                                             body* (.getBytes body-string char-enc)
-                                             ctype (str (enc-type :type) "/" (enc-type :sub-type)
-                                                        "; charset=" char-enc)]
-                                         [body* ctype]))
-                body-length (count body*)]
-            (-> response
-                (assoc :body (if (pos? body-length) (io/input-stream body*) nil))
-                (res/content-type content-type)
-                (res/header "Content-Length" body-length)))
-          response)
-        (catch Exception e
-          (handle-error e request response))))))
-
 ;;
 ;; Public api
 ;;
@@ -290,6 +264,32 @@
                       :predicate serializable?
                       :charset "utf-8"
                       :handle-error default-handle-error})
+
+(defn wrap-format-response
+  [handler {:keys [predicate adapters charset handle-error]}]
+  (fn [request]
+    (let [{:keys [body] :as response} (handler request)]
+      (try
+        (if (predicate request response)
+          (let [{:keys [encoder enc-type binary?]} (preferred-adapter adapters request)
+                [body* content-type] (if binary?
+                                       (let [body* (encoder body)
+                                             ctype (str (enc-type :type) "/" (enc-type :sub-type))]
+                                         [body* ctype])
+                                       (let [^String char-enc (if (string? charset) charset (charset request))
+                                             ^String body-string (if (nil? body) "" (encoder body))
+                                             body* (.getBytes body-string char-enc)
+                                             ctype (str (enc-type :type) "/" (enc-type :sub-type)
+                                                        "; charset=" char-enc)]
+                                         [body* ctype]))
+                body-length (count body*)]
+            (-> response
+                (assoc :body (if (pos? body-length) (io/input-stream body*) nil))
+                (res/content-type content-type)
+                (res/header "Content-Length" body-length)))
+          response)
+        (catch Exception e
+          (handle-error e request response))))))
 
 (defn wrap-api-response
   "Wrapper that tries to do the right thing with the response *:body*
