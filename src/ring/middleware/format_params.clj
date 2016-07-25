@@ -197,18 +197,18 @@
                       :formats default-formats})
 
 (defn ->adapters [{:keys [formats format-options]}]
-  (doall
-    (for [format (keep identity formats)
-          :let [adapter (if-let [data (if (map? format)
-                                        format
-                                        (get format-adapters format))]
-                          (update data :decoder (fn [decoder]
-                                                  (if (vector? decoder)
-                                                    (let [[f opts] decoder]
-                                                      (f (merge opts (get format-options format))))
-                                                    decoder))))]
-          :when adapter]
-      adapter)))
+  (->> formats
+       (keep identity)
+       (mapv (fn [format]
+               (if-let [data (if (map? format)
+                               format
+                               (get format-adapters format))]
+                 (update data :decoder (fn [decoder]
+                                         (if (vector? decoder)
+                                           (let [[f opts] decoder]
+                                             (f (merge opts (get format-options format))))
+                                           decoder))))))
+       (keep identity)))
 
 (defn wrap-restful-params
   "Wrapper that tries to do the right thing with the request :body and provide
