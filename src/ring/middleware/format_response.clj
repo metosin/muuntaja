@@ -179,33 +179,30 @@
                 (*utf-8* is strongly suggested)
  + **:handle-error** is a fn with a sig [exception request response]. Defaults
                      to just rethrowing the Exception"
-  [handler {:keys [predicate encoders charset handle-error]}]
-  (let [charset (or charset default-charset-extractor)
-        handle-error (or handle-error default-handle-error)
-        predicate (or predicate serializable?)]
-    (fn [request]
-      (let [{:keys [body] :as response} (handler request)]
-        (try
-          (if (predicate request response)
-            (let [{:keys [encoder enc-type binary?]} (or (preferred-encoder encoders request) (first encoders))
-                  [body* content-type] (if binary?
-                                         (let [body* (encoder body)
-                                               ctype (str (enc-type :type) "/" (enc-type :sub-type))]
-                                           [body* ctype])
-                                         (let [^String char-enc (if (string? charset) charset (charset request))
-                                               ^String body-string (if (nil? body) "" (encoder body))
-                                               body* (.getBytes body-string char-enc)
-                                               ctype (str (enc-type :type) "/" (enc-type :sub-type)
-                                                          "; charset=" char-enc)]
-                                           [body* ctype]))
-                  body-length (count body*)]
-              (-> response
-                  (assoc :body (if (pos? body-length) (io/input-stream body*) nil))
-                  (res/content-type content-type)
-                  (res/header "Content-Length" body-length)))
-            response)
-          (catch Exception e
-            (handle-error e request response)))))))
+  [handler {:keys [predicate adapters charset handle-error]}]
+  (fn [request]
+    (let [{:keys [body] :as response} (handler request)]
+      (try
+        (if (predicate request response)
+          (let [{:keys [encoder enc-type binary?]} (preferred-adapter adapters request)
+                [body* content-type] (if binary?
+                                       (let [body* (encoder body)
+                                             ctype (str (enc-type :type) "/" (enc-type :sub-type))]
+                                         [body* ctype])
+                                       (let [^String char-enc (if (string? charset) charset (charset request))
+                                             ^String body-string (if (nil? body) "" (encoder body))
+                                             body* (.getBytes body-string char-enc)
+                                             ctype (str (enc-type :type) "/" (enc-type :sub-type)
+                                                        "; charset=" char-enc)]
+                                         [body* ctype]))
+                body-length (count body*)]
+            (-> response
+                (assoc :body (if (pos? body-length) (io/input-stream body*) nil))
+                (res/content-type content-type)
+                (res/header "Content-Length" body-length)))
+          response)
+        (catch Exception e
+          (handle-error e request response))))))
 
 (defn make-json-encoder [pretty options]
   (let [opts (assoc options :pretty pretty)]
