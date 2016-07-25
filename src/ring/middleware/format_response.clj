@@ -168,17 +168,6 @@
     "utf-8"))
 
 (defn wrap-format-response
-  "Wraps a handler such that responses body to requests are formatted to
-  the right format. If no *Accept* header is found, use the first encoder.
-
- + **:predicate** is a predicate taking the request and response as
-                  arguments to test if serialization should be used
- + **:adapters** a sequence of maps given by make-encoder
- + **:charset** can be either a string representing a valid charset or a fn
-                taking the req as argument and returning a valid charset
-                (*utf-8* is strongly suggested)
- + **:handle-error** is a fn with a sig [exception request response]. Defaults
-                     to just rethrowing the Exception"
   [handler {:keys [predicate adapters charset handle-error]}]
   (fn [request]
     (let [{:keys [body] :as response} (handler request)]
@@ -316,7 +305,19 @@
   *:json*, *:json-kw*, *:edn* *:yaml*, *:yaml-in-html*, *:transit-json*,
   *:transit-msgpack*.
   Options to specific encoders can be passed in using *:format-options*
-  option. If is a map from format keyword to options map."
+  option. If is a map from format keyword to options map.
+
+  Wraps a handler such that responses body to requests are formatted to
+  the right format. If no *Accept* header is found, use the first encoder.
+
+ + **:predicate** is a predicate taking the request and response as
+                  arguments to test if serialization should be used
+ + **:adapters** a sequence of maps given by make-encoder
+ + **:charset** can be either a string representing a valid charset or a fn
+                taking the req as argument and returning a valid charset
+                (*utf-8* is strongly suggested)
+ + **:handle-error** is a fn with a sig [exception request response]. Defaults
+                     to just rethrowing the Exception"
   ([handler]
    (wrap-api-response handler {}))
   ([handler options]

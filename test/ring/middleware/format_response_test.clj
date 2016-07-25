@@ -66,8 +66,8 @@
   (wrap-api-response identity {:formats [:msgpack]}))
 
 (defn ^:no-doc slurp-to-bytes
-  #^bytes
-  [#^InputStream in]
+  ^bytes
+  [^InputStream in]
   (if in
     (let [buf (byte-array 4096)
           out (ByteArrayOutputStream.)]

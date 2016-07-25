@@ -12,14 +12,14 @@
 
 (set! *warn-on-reflection* true)
 
-(def available-charsets
+(def ^:private available-charsets
   "Set of recognised charsets by the current JVM"
   (into #{} (map str/lower-case (.keySet (Charset/availableCharsets)))))
 
-(defn ^:no-doc guess-charset
-  [{:keys [#^bytes body]}]
+(defn- guess-charset
+  [{:keys [^bytes body]}]
   (try
-    (let [#^CharsetDetector detector (CharsetDetector.)]
+    (let [^CharsetDetector detector (CharsetDetector.)]
       (.enableInputFilter detector true)
       (.setText detector body)
       (let [m (.detect detector)
@@ -28,7 +28,7 @@
           encoding)))
     (catch Exception _ nil)))
 
-(defn ^:no-doc get-charset
+(defn- get-charset
   [{:keys [content-type]}]
   (if content-type
     (second (re-find #";\s*charset=([^\s;]+)" content-type))))
@@ -42,19 +42,19 @@
     (guess-charset req)
     "utf-8"))
 
-(defn make-type-request-pred
+(defn- make-type-request-pred
   "Function that returns a predicate fn checking if *Content-Type*
    request header matches a specified regexp and body is set."
   [regexp]
   (fn [{:keys [body] :as req}]
-    (if-let [#^String type (get req :content-type
-                                (get-in req [:headers "Content-Type"]
-                                        (get-in req [:headers "content-type"])))]
+    (if-let [^String type (get req :content-type
+                               (get-in req [:headers "Content-Type"]
+                                       (get-in req [:headers "content-type"])))]
       (and body (not (empty? (re-find regexp type)))))))
 
-(defn ^:no-doc slurp-to-bytes
-  #^bytes
-  [#^InputStream in]
+(defn- slurp-to-bytes
+  ^bytes
+  [^InputStream in]
   (if in
     (let [buf (byte-array 4096)
           out (ByteArrayOutputStream.)]
@@ -97,7 +97,7 @@
 (defn parse-clojure-string
   "Decode a clojure body. The body is merged into the params, so must be a map
    or a vector of key value pairs. An empty body is safely handled."
-  [#^String s]
+  [^String s]
   (when-not (.isEmpty (.trim s))
     (edn/read-string {:readers *data-readers*} s)))
 
@@ -122,26 +122,6 @@
       (if (predicate request) (reduced adapter)))
     nil
     adapters))
-
-(defn format-request [{:keys [#^InputStream body] :as req} {:keys [adapters charset]}]
-  (or
-    (if-let [{:keys [decoder binary?]} (if body (select-adapter adapters req))]
-      (let [byts (slurp-to-bytes body)]
-        (if (> (count byts) 0)
-          (let [fmt-params (if binary?
-                             (decoder (ByteArrayInputStream. byts))
-                             (let [#^String char-enc (if (string? charset)
-                                                       charset
-                                                       (charset (assoc req :body byts)))
-                                   bstr (String. byts char-enc)]
-                               (decoder bstr)))
-                req* (assoc req
-                       :body-params fmt-params
-                       :params (merge (:params req)
-                                      (when (map? fmt-params) fmt-params))
-                       :body (ByteArrayInputStream. byts))]
-            req*))))
-    req))
 
 (defn ->adapters [adapters {:keys [formats format-options]}]
   (->> formats
@@ -189,10 +169,31 @@
                       :formats [:json :edn :msgpack :yaml :transit-msgpack :transit-json]
                       :handle-error default-handle-error})
 
+(defn format-request
+  "TODO"
+  [{:keys [^InputStream body] :as request} {:keys [adapters charset]}]
+  (or
+    (if-let [{:keys [decoder binary?]} (if body (select-adapter adapters request))]
+      (let [byts (slurp-to-bytes body)]
+        (if (> (count byts) 0)
+          (let [body-params (if binary?
+                              (decoder (ByteArrayInputStream. byts))
+                              (let [^String char-enc (if (string? charset)
+                                                       charset
+                                                       (charset (assoc request :body byts)))
+                                    bstr (String. byts char-enc)]
+                                (decoder bstr)))]
+            (assoc request
+              :body-params body-params
+              :params (merge (:params request)
+                             (when (map? body-params) body-params))
+              :body (ByteArrayInputStream. byts))))))
+    request))
+
 (defn wrap-api-params
   "Wrapper that tries to do the right thing with the request :body and provide
    a solid basis for a HTTP API. It will deserialize to *JSON*, *YAML*, *Transit*
-   or *Clojure* depending on Content-Type header.
+   , *Messagepack* or *EDN* depending on Content-Type header.
    Options to specific format decoders can be passed in using *:format-options*
    option. If should be map of format keyword to options map.
 
