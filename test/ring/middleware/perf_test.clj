@@ -168,10 +168,3 @@
   (wrap-api-params)
   (wrap-api-response)
   (naive))
-
-(let [app (rmfr/wrap-api-response +handler+ {:formats [:json-kw :edn :msgpack-kw :yaml-kw :transit-msgpack :transit-json]})
-      call #(post-params->stream app +data+)]
-
-  (title "JSON response")
-  (assert (= +data+ (parse (call))))
-  (println (call)))
