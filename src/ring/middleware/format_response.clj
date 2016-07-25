@@ -265,31 +265,29 @@
                       :charset "utf-8"
                       :handle-error default-handle-error})
 
-(defn wrap-format-response
-  [handler {:keys [predicate adapters charset handle-error]}]
-  (fn [request]
-    (let [{:keys [body] :as response} (handler request)]
-      (try
-        (if (predicate request response)
-          (let [{:keys [encoder enc-type binary?]} (preferred-adapter adapters request)
-                [body* content-type] (if binary?
-                                       (let [body* (encoder body)
-                                             ctype (str (enc-type :type) "/" (enc-type :sub-type))]
-                                         [body* ctype])
-                                       (let [^String char-enc (if (string? charset) charset (charset request))
-                                             ^String body-string (if (nil? body) "" (encoder body))
-                                             body* (.getBytes body-string char-enc)
-                                             ctype (str (enc-type :type) "/" (enc-type :sub-type)
-                                                        "; charset=" char-enc)]
-                                         [body* ctype]))
-                body-length (count body*)]
-            (-> response
-                (assoc :body (if (pos? body-length) (io/input-stream body*) nil))
-                (res/content-type content-type)
-                (res/header "Content-Length" body-length)))
-          response)
-        (catch Exception e
-          (handle-error e request response))))))
+(defn format-response
+  [request {:keys [body] :as response} {:keys [predicate adapters charset handle-error]}]
+  (try
+    (if (predicate request response)
+      (let [{:keys [encoder enc-type binary?]} (preferred-adapter adapters request)
+            [body* content-type] (if binary?
+                                   (let [body* (encoder body)
+                                         ctype (str (enc-type :type) "/" (enc-type :sub-type))]
+                                     [body* ctype])
+                                   (let [^String char-enc (if (string? charset) charset (charset request))
+                                         ^String body-string (if (nil? body) "" (encoder body))
+                                         body* (.getBytes body-string char-enc)
+                                         ctype (str (enc-type :type) "/" (enc-type :sub-type)
+                                                    "; charset=" char-enc)]
+                                     [body* ctype]))
+            body-length (count body*)]
+        (-> response
+            (assoc :body (if (pos? body-length) (io/input-stream body*) nil))
+            (res/content-type content-type)
+            (res/header "Content-Length" body-length)))
+      response)
+    (catch Exception e
+      (handle-error e request response))))
 
 (defn wrap-api-response
   "Wrapper that tries to do the right thing with the response *:body*
@@ -320,9 +318,8 @@
   ([handler]
    (wrap-api-response handler {}))
   ([handler options]
-   (let [options (merge default-options options)]
-     (wrap-format-response
-       handler
-       (-> options
-           (assoc :adapters (->adapters format-adapters options))
-           (dissoc :format :format-options))))))
+   (let [options (merge default-options options)
+         adapters (->adapters format-adapters options)
+         options (assoc options :adapters adapters)]
+     (fn [request]
+       (format-response request (handler request) options)))))

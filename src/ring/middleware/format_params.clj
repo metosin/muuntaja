@@ -170,25 +170,27 @@
                       :handle-error default-handle-error})
 
 (defn format-request
-  "TODO"
-  [{:keys [^InputStream body] :as request} {:keys [adapters charset]}]
-  (or
-    (if-let [{:keys [decoder binary?]} (if body (select-adapter adapters request))]
-      (let [byts (slurp-to-bytes body)]
-        (if (> (count byts) 0)
-          (let [body-params (if binary?
-                              (decoder (ByteArrayInputStream. byts))
-                              (let [^String char-enc (if (string? charset)
-                                                       charset
-                                                       (charset (assoc request :body byts)))
-                                    bstr (String. byts char-enc)]
-                                (decoder bstr)))]
-            (assoc request
-              :body-params body-params
-              :params (merge (:params request)
-                             (when (map? body-params) body-params))
-              :body (ByteArrayInputStream. byts))))))
-    request))
+  [{:keys [^InputStream body] :as request} {:keys [adapters charset handle-error]}]
+  (try
+    (or
+      (if-let [{:keys [decoder binary?]} (if body (select-adapter adapters request))]
+        (let [byts (slurp-to-bytes body)]
+          (if (> (count byts) 0)
+            (let [body-params (if binary?
+                                (decoder (ByteArrayInputStream. byts))
+                                (let [^String char-enc (if (string? charset)
+                                                         charset
+                                                         (charset (assoc request :body byts)))
+                                      bstr (String. byts char-enc)]
+                                  (decoder bstr)))]
+              (assoc request
+                :body-params body-params
+                :params (merge (:params request)
+                               (when (map? body-params) body-params))
+                :body (ByteArrayInputStream. byts))))))
+      request)
+    (catch Exception e
+      (handle-error e request nil))))
 
 (defn wrap-api-params
   "Wrapper that tries to do the right thing with the request :body and provide
@@ -209,7 +211,7 @@
    **:charset**        can be either a string representing a valid charset or a fn
                        taking the req as argument and returning a valid charset.
 
-   **:handle-error**   is a fn with a sig [exception handler request].
+   **:handle-error**   is a fn with a sig [exception request response].
                        Return (handler obj) to continue executing a modified
                        request or directly a map to answer immediately. Defaults
                        to just rethrowing the Exception"
@@ -218,10 +220,7 @@
   ([handler options]
    (let [options (merge default-options options)
          adapters (->adapters format-adapters options)
-         {:keys [handle-error] :as options} (assoc options :adapters adapters)]
+         options (assoc options :adapters adapters)]
      (fn [request]
-       (try
-         (handler (format-request request options))
-         (catch Exception e
-           (handle-error e handler request)))))))
+       (handler (format-request request options))))))
 
