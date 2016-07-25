@@ -204,10 +204,9 @@
         (catch Exception e
           (handle-error e request response))))))
 
-(defn make-json-encoder [pretty options]
-  (let [opts (assoc options :pretty pretty)]
-    (fn [s]
-      (json/generate-string s opts))))
+(defn make-json-encoder [options]
+  (fn [s]
+    (json/generate-string s options)))
 
 ;; Functions for Clojure native serialization
 
@@ -260,9 +259,9 @@
 
 (def ^:no-doc format-adapters
   {:json {:content-type "application/json"
-          :encoder [(partial make-json-encoder false)]}
+          :encoder [make-json-encoder]}
    :json-kw {:content-type "application/json"
-             :encoder [(partial make-json-encoder false)]}
+             :encoder [make-json-encoder]}
    :edn {:content-type "application/edn"
          :encoder generate-native-clojure}
    :msgpack {:content-type "application/msgpack"
@@ -303,7 +302,7 @@
        (keep identity)))
 
 (def json-pretty {:content-type "application/json"
-                  :encoder [(partial make-json-encoder true)]})
+                  :encoder [make-json-encoder {:pretty true}]})
 
 (def default-formats [:json :yaml :edn :msgpack :clojure :yaml-in-html :transit-json :transit-msgpack])
 
