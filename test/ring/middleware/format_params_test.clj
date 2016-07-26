@@ -1,7 +1,7 @@
 (ns ring.middleware.format-params-test
-  (:use [clojure.test]
-        [ring.middleware.format-params])
-  (:require [cognitect.transit :as transit]
+  (:require [clojure.test :refer :all]
+            [ring.middleware.format-params :refer :all]
+            [cognitect.transit :as transit]
             [clojure.java.io :as io]
             [clojure.walk :refer [stringify-keys keywordize-keys]]
             [msgpack.core :as msgpack]
@@ -136,9 +136,7 @@
     (is (= {"id" 3} (:params resp)))
     (is (= nil (:body-params resp)))))
 
-;;;;;;;;;;;;;
-;; Transit ;;
-;;;;;;;;;;;;;
+;; Transit
 
 (defn stream-transit
   [fmt data]
@@ -169,9 +167,7 @@
     (is (= {"id" 3 :foo "bar"} (:params resp)))
     (is (= {:foo "bar"} (:body-params resp)))))
 
-;;;;;;;;;;;;;;;;;
-;; HTTP Params ;;
-;;;;;;;;;;;;;;;;;
+;; HTTP Params
 
 (def api-echo
   (wrap-api-params identity))
@@ -205,7 +201,7 @@
     (let [req {:content-type "application/clojure; charset=ISO-8859-1"
                :body (stream-iso "{:fée \"böz\"}")
                :params {"id" 3}}
-          app (wrap-api-params identity {:charset get-or-guess-charset})
+          app (wrap-api-params identity {:charset resolve-request-charset})
           resp (app req)]
       (is (= {"id" 3 :fée "böz"} (:params resp)))
       (is (= {:fée "böz"} (:body-params resp))))))
@@ -239,9 +235,7 @@
     :json "application/json" "{:a 1}"
     :edn "application/edn" "{\"a\": 1}"))
 
-;;
 ;; Transit options
-;;
 
 (defrecord Point [x y])
 

@@ -94,16 +94,14 @@
   If the *Accept* header of the request is a *String*, assume it is
   according to Ring spec. Else assume the header is a sequence of
   accepted types sorted by their preference. If no accepted encoder is
-  found or no *Accept* header is found, return first encoder."
+  found or no *Accept* header is found, return *nil*."
   [adapters request]
-  (or
-    (if-let [accept (accept-maps request)]
-      (some
-        (fn [type]
-          (if-let [adapter (some (partial encoder-can-encode type) adapters)]
-            adapter))
-        accept))
-    (first adapters)))
+  (if-let [accept (accept-maps request)]
+    (some
+      (fn [type]
+        (if-let [adapter (some (partial encoder-can-encode type) adapters)]
+          adapter))
+      accept)))
 
 (defn- parse-charset-accepted
   "Parses an *accept-charset* string to a list of [*charset* *quality-score*]"
@@ -145,7 +143,7 @@
   "Memoized form of [[choose-charset*]]"
   (memoize/fifo choose-charset* {} :fifo/threshold 500))
 
-(defn default-charset-extractor
+(defn resolve-response-charset
   "Default charset extractor, which returns either *Accept-Charset*
    header field or *utf-8*"
   [request]
@@ -269,7 +267,8 @@
   [request {:keys [body] :as response} {:keys [predicate adapters charset handle-error]}]
   (try
     (if (predicate request response)
-      (let [{:keys [encoder enc-type binary?]} (preferred-adapter adapters request)
+      (let [{:keys [encoder enc-type binary?]} (or (preferred-adapter adapters request)
+                                                   (first adapters))
             [body* content-type] (if binary?
                                    (let [body* (encoder body)
                                          ctype (str (enc-type :type) "/" (enc-type :sub-type))]

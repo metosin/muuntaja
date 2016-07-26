@@ -33,7 +33,7 @@
   (if content-type
     (second (re-find #";\s*charset=([^\s;]+)" content-type))))
 
-(defn get-or-guess-charset
+(defn resolve-request-charset
   "Tries to get the request encoding from the header or guess
   it if not given in *Content-Type*. Defaults to *utf-8*"
   [req]
