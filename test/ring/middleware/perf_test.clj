@@ -3,8 +3,7 @@
             [cheshire.core :as json]
             [ring.middleware.format :as rmf]
             [ring.middleware.format-params :as rmfp]
-            [ring.middleware.format-response :as rmfr]
-            [clojure.java.io :as io])
+            [ring.middleware.format-response :as rmfr])
   (:import [java.io ByteArrayInputStream]))
 
 ;;
