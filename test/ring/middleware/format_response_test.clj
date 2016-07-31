@@ -7,7 +7,7 @@
             [cognitect.transit :as transit]
             [msgpack.core :as msgpack]
             [clojure.string :as string])
-  (:import [java.io ByteArrayInputStream InputStream ByteArrayOutputStream]))
+  (:import [java.io ByteArrayInputStream InputStream ByteArrayOutputStream BufferedInputStream]))
 
 (defn stream [s]
   (ByteArrayInputStream. (.getBytes s "UTF-8")))
@@ -51,7 +51,7 @@
   (testing "with fixed charset"
     (let [body {:foo "bârçï"}
           req {:body body :headers {"accept-charset" "utf8; q=0.8 , utf-16"}}
-          resp ((rmfr/wrap-api-response identity {:charset resolve-response-charset}) req)]
+          resp ((rmfr/wrap-api-response identity {:charset rmfr/resolve-response-charset}) req)]
       (is (.contains (get-in resp [:headers "Content-Type"]) "utf-16"))
       (is (= 32 (Integer/parseInt (get-in resp [:headers "Content-Length"])))))))
 
@@ -273,11 +273,11 @@
         resp-non-serialized (api-echo-pred (assoc req ::serializable? false))
         resp-serialized (api-echo-pred (assoc req ::serializable? true))]
     (is (map? (:body resp-non-serialized)))
-    (is (instance? java.io.BufferedInputStream (:body resp-serialized)))))
+    (is (instance? BufferedInputStream (:body resp-serialized)))))
 
 (def custom-encoder
   {:content-type "application/vnd.mixradio.something+json"
-   :encoder [make-json-encoder]})
+   :encoder [rmfr/make-json-encoder]})
 
 (def custom-content-type
   (rmfr/wrap-api-response (fn [_]
