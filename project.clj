@@ -1,4 +1,4 @@
-(defproject ring-middleware-format "0.7.1-SNAPSHOT"
+(defproject ikitommi/ring-middleware-format "0.8.0-SNAPSHOT"
   :description "Ring middleware for parsing parameters and emitting
   responses in various formats (mainly JSON, YAML and Transit out of
   the box)"
