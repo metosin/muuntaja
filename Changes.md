@@ -1,5 +1,19 @@
 # Changes for ring-middleware-format
 
+## REWRITE
+
+- Lot's of changes, some breaking. Rename lib, start with 0.1.0.
+
+- update deps:
+```clj
+[org.clojure/core.memoize "0.5.9"] is available but we use "0.5.8"
+[ring/ring-core "1.5.0"] is available but we use "1.4.0"
+[cheshire "5.6.3"] is available but we use "5.5.0"
+[com.ibm.icu/icu4j "57.1"] is available but we use "56.1"
+[clojure-msgpack "1.2.0"] is available but we use "1.1.2"
+[com.cognitect/transit-clj "0.8.288"] is available but we use "0.8.285"
+```
+
 ## Unreleased
 
 - Fix [#56](https://github.com/ngrunwald/ring-middleware-format/issues/56) use `:key-fn` in `wrap-json-kw-params`

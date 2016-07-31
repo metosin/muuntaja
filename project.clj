@@ -7,15 +7,15 @@
             :url "http://www.eclipse.org/legal/epl-v10.html"
             :distribution :repo
             :comments "same as Clojure"}
-  :dependencies [[org.clojure/core.memoize "0.5.8"]
-                 [ring/ring-core "1.4.0"]
-                 [cheshire "5.5.0"]
+  :dependencies [[org.clojure/core.memoize "0.5.9"]
+                 [ring/ring-core "1.5.0"]
+                 [cheshire "5.6.3"]
                  [org.clojure/tools.reader "0.10.0"]
-                 [com.ibm.icu/icu4j "56.1"]
+                 [com.ibm.icu/icu4j "57.1"]
                  [circleci/clj-yaml "0.5.5"]
-                 [clojure-msgpack "1.1.2"]
-                 [com.cognitect/transit-clj "0.8.285"]]
-  :plugins [[lein-codox "0.9.4"]]
+                 [clojure-msgpack "1.2.0"]
+                 [com.cognitect/transit-clj "0.8.288"]]
+  :plugins [[lein-codox "0.9.5"]]
   :codox {:src-uri "http://github.com/ngrunwald/ring-middleware-format/blob/master/{filepath}#L{line}"
           :defaults {:doc/format :markdown}}
   :profiles {:dev {:dependencies [[org.clojure/clojure "1.8.0"]
