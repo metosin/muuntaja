@@ -1,6 +1,6 @@
 # TODO: rewrite
 
-# ring-middleware-format [![Continuous Integration status](https://secure.travis-ci.org/ngrunwald/ring-middleware-format.png)](http://travis-ci.org/ngrunwald/ring-middleware-format) [![Dependencies Status](http://jarkeeper.com/ngrunwald/ring-middleware-format/status.svg)](http://jarkeeper.com/ngrunwald/ring-middleware-format)
+# ring-middleware-format [![Continuous Integration status](https://secure.travis-ci.org/ikitommi/ring-middleware-format.png)](http://travis-ci.org/ikitommi/ring-middleware-format) [![Dependencies Status](http://jarkeeper.com/ikitommi/ring-middleware-format/status.svg)](http://jarkeeper.com/ikitommi/ring-middleware-format)
 
 This is a set of middlewares that can be used to deserialize parameters sent in the :body of requests and serialize a Clojure data structure in the :body of a response to some string or binary representation. It natively handles JSON, MessagePack, YAML, Transit over JSON or Msgpack and Clojure (edn) but it can easily be extended to other custom formats, both string and binary. It is intended for the creation of RESTful APIs that do the right thing by default but are flexible enough to handle most special cases.
 
@@ -8,7 +8,7 @@ This is a set of middlewares that can be used to deserialize parameters sent in 
 
 Latest stable version:
 
-[![Clojars Project](http://clojars.org/ring-middleware-format/latest-version.svg)](http://clojars.org/ring-middleware-format)
+[![Clojars Project](http://clojars.org/ikitommi/ring-middleware-format/latest-version.svg)](http://clojars.org/ikitommi/ring-middleware-format)
 
 Add this to your dependencies in `project.clj`.
 
@@ -23,7 +23,7 @@ Add this to your dependencies in `project.clj`.
 
 ## API Documentation ##
 
-Full [API documentation](http://ngrunwald.github.com/ring-middleware-format) is available.
+Full [API documentation](http://ikitommi.github.com/ring-middleware-format) is available.
 
 ## Summary ##
 
@@ -64,7 +64,7 @@ Please note the default JSON, MessagePack, and YAML decoder do not keywordize th
 (wrap-restful-format handler :formats [:json-kw :edn :msgpack-kw :yaml-kw :yaml-in-html :transit-json :transit-msgpack])
 ```
 
-See also [wrap-restful-format](http://ngrunwald.github.com/ring-middleware-format/ring.middleware.format.html#var-wrap-restful-format) docstring for help on customizing error handling.
+See also [wrap-restful-format](http://ikitommi.github.com/ring-middleware-format/ring.middleware.format.html#var-wrap-restful-format) docstring for help on customizing error handling.
 
 ## Usage ##
 
