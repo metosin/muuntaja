@@ -1,4 +1,6 @@
-(ns ring-format.core)
+(ns ring-format.core
+  (:require [clojure.string :as str]
+            [clojure.core.memoize :as memoize]))
 
 (set! *warn-on-reflection* true)
 
@@ -64,6 +66,69 @@
               (< (inc i) (count matchers)) (recur (inc i))))))
     (nth matchers 1)))
 
+(defn extract-accept-format [lookup extract-accept-fn request]
+  (if-let [accept (extract-accept-fn request)]
+    (or
+      (get lookup accept)
+      ;; TODO: remove ;-stuff
+      (let [data (str/split accept #",\s*")]
+        (loop [i 0]
+          (or (get lookup (nth data i))
+              (if (< (inc i) (count data))
+                (recur (inc i)))))))))
+
+;;
+;; accept resolution
+;;
+
+(defn- old-sort-by-check
+  [by check headers]
+  (sort-by by (fn [a b]
+                (cond (= (= a check) (= b check)) 0
+                      (= a check) 1
+                      :else -1))
+           headers))
+
+(defn- old-parse-accept-header*
+  "Parse Accept headers into a sorted sequence of maps.
+  \"application/json;level=1;q=0.4\"
+  => ({:type \"application\" :sub-type \"json\"
+       :q 0.4 :parameter \"level=1\"})"
+  [accept-header]
+  (->> (map (fn [val]
+              (let [[media-range & rest] (str/split (str/trim val) #";")
+                    type (zipmap [:type :sub-type]
+                                 (str/split (str/trim media-range) #"/"))]
+                (cond (nil? rest)
+                      (assoc type :q 1.0)
+                      (= (first (str/triml (first rest)))
+                         \q)                                ;no media-range params
+                      (assoc type :q
+                                  (Double/parseDouble
+                                    (second (str/split (first rest) #"="))))
+                      :else
+                      (assoc (if-let [q-val (second rest)]
+                               (assoc type :q
+                                           (Double/parseDouble
+                                             (second (str/split q-val #"="))))
+                               (assoc type :q 1.0))
+                        :parameter (str/trim (first rest))))))
+            (str/split accept-header #","))
+       (old-sort-by-check :parameter nil)
+       (old-sort-by-check :type "*")
+       (old-sort-by-check :sub-type "*")
+       (sort-by :q >)))
+
+(def ^:private old-parse-accept-header
+  "Memoized form of [[parse-accept-header*]]"
+  (memoize/fifo old-parse-accept-header* :fifo/threshold 500))
+
+(defn- old-accept-maps [extract-accept-fn request]
+  (if-let [accept (extract-accept-fn request)]
+    (if (string? accept)
+      (old-parse-accept-header accept)
+      accept)))
+
 ;;
 ;; customization
 ;;
@@ -85,8 +150,14 @@
   [request]
   (get (:headers request) "content-type"))
 
+(defn extract-accept-ring
+  "Extracts accept from ring-request."
+  [request]
+  (get (:headers request) "accept"))
+
 (def default-options
   {:extract-content-type-fn extract-content-type-ring
+   :extract-accept-fn extract-accept-ring
    :formats [[:json ["application/json" #"^application/(vnd.+)?json"]]
              [:edn ["application/edn" "application/clojure" #"^application/(vnd.+)?(x-)?(clojure|edn)"]]
              [:msgpack ["application/msgpack" "application/x-msgpack" #"^application/(vnd.+)?(x-)?msgpack"]]
@@ -98,7 +169,24 @@
 ;; spike
 ;;
 
-(def +request+ {:headers {"Content-Type" "application/json"} :body "kikka"})
+(def +request+ {:headers {"content-type" "application/json", "accept" "application/json"} :body "kikka"})
+
+(println "---- accept ----")
+
+;; RMF
+(let [extract-accept-fn (:extract-accept-fn default-options)]
+  (time
+    (dotimes [_ 1000000]
+      (old-accept-maps extract-accept-fn +request+))))
+
+;; NEW
+(let [{:keys [extract-accept-fn formats]} default-options
+      {:keys [lookup]} (parse-formats formats)]
+  (time
+    (dotimes [_ 1000000]
+      (extract-accept-format lookup extract-accept-fn +request+))))
+
+(println "---- content-type ----")
 
 ;; RMF
 (let [json-request? (fn [{:keys [body] :as req}]
@@ -111,10 +199,11 @@
       (json-request? +request+))))
 
 ;; NEW
-(let [{:keys [lookup matchers]} (parse-formats default-options)]
+(let [{:keys [extract-content-type-fn formats]} default-options
+      {:keys [lookup matchers]} (parse-formats formats)]
   (time
     (dotimes [_ 1000000]
-      (extract-format lookup matchers extract-content-type-ring +request+))))
+      (extract-format lookup matchers extract-content-type-fn +request+))))
 
 
 ;; NAIVE

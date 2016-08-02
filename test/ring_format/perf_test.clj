@@ -32,7 +32,8 @@
    :body "kikka"})
 
 (def +transit-json-request+
-  {:headers {"content-type" "application/transit+json"}
+  {:headers {"content-type" "application/transit+json"
+             "accept" "application/transit+json"}
    :body "kikka"})
 
 ;;
@@ -95,26 +96,36 @@
 ;; Real
 ;;
 
-(defn core []
-  ; 52ns
-  (let [{:keys [extract-content-type-fn formats]} rfc/default-options
+(defn request []
+  (let [{:keys [extract-content-type-fn extract-accept-fn formats]} rfc/default-options
         {:keys [lookup matchers]} (rfc/parse-formats formats)]
 
     ; 52ns
-    (title "NEW: JSON")
+    (title "Request: JSON")
     (assert (= :json (rfc/extract-format lookup matchers extract-content-type-fn +json-request+)))
     (cc/quick-bench
       (rfc/extract-format lookup matchers extract-content-type-fn +json-request+))
 
     ; 65ns
-    (title "NEW: TRANSIT")
+    (title "Request: TRANSIT")
     (assert (= :transit-json (rfc/extract-format lookup matchers extract-content-type-fn +transit-json-request+)))
     (cc/quick-bench
       (rfc/extract-format lookup matchers extract-content-type-fn +transit-json-request+))))
 
+(defn response []
+  (let [{:keys [extract-accept-fn formats]} rfc/default-options
+        {:keys [lookup]} (rfc/parse-formats formats)]
+
+    ; 71ns
+    (title "Response: TRANSIT")
+    (assert (= :transit-json (rfc/extract-accept-format lookup extract-accept-fn +transit-json-request+)))
+    (cc/quick-bench
+      (rfc/extract-accept-format lookup extract-accept-fn +transit-json-request+))))
+
 (defn all []
   (old)
-  (core))
+  (request)
+  (response))
 
 (comment
   (all))
