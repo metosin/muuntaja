@@ -97,8 +97,7 @@
 ;;
 
 (defn request []
-  (let [{:keys [extract-content-type-fn adapters]} rfc/default-options
-        {:keys [consumes matchers]} (rfc/format-map adapters)]
+  (let [{:keys [consumes matchers extract-content-type-fn]} (rfc/compile rfc/default-options)]
 
     ; 52ns
     ; 38ns consumes & produces (-27%)
@@ -115,8 +114,7 @@
       (rfc/extract-format consumes matchers extract-content-type-fn +transit-json-request+))))
 
 (defn response []
-  (let [{:keys [extract-accept-fn adapters]} rfc/default-options
-        {:keys [consumes]} (rfc/format-map adapters)]
+  (let [{:keys [consumes extract-accept-fn]} (rfc/compile rfc/default-options)]
 
     ; 71ns
     ; 58ns consumes & produces (-18%)

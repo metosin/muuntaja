@@ -1,7 +1,8 @@
 (ns ring-format.core
   (:require [clojure.string :as str]
             [ring-format.formats :as formats]
-            [clojure.core.memoize :as memoize]))
+            [clojure.core.memoize :as memoize])
+  (:refer-clojure :exclude [compile]))
 
 (set! *warn-on-reflection* true)
 
@@ -51,12 +52,13 @@
 (defn- match? [^String content-type string-or-regexp request]
   (and (:body request) (re-find string-or-regexp content-type)))
 
-;; TODO: order and filter by formats!
-(defn format-map [adapters]
+(defn compile [{:keys [adapters] :as options}]
   (let [formats (for [[k {:keys [format]}] adapters] [k format])]
-    {:consumes (content-type->format formats)
-     :produces (format->content-type formats)
-     :matchers (format-regexps formats)}))
+    (merge
+      options
+      {:consumes (content-type->format formats)
+       :produces (format->content-type formats)
+       :matchers (format-regexps formats)})))
 
 (defn extract-format [consumes matchers extract-content-type-fn request]
   (if-let [content-type (extract-content-type-fn request)]
@@ -203,7 +205,7 @@
                                 :binary? true}}
    :formats [:json :edn :msgpack :yaml :transit-json :transit-msgpack]})
 
-(format-map (:adapters default-options))
+(compile default-options)
 
 ;;
 ;; spike
@@ -220,8 +222,7 @@
       (old-accept-maps extract-accept-fn +request+))))
 
 ;; NEW
-(let [{:keys [extract-accept-fn adapters]} default-options
-      {:keys [consumes]} (format-map adapters)]
+(let [{:keys [consumes extract-accept-fn]} (compile default-options)]
   (time
     (dotimes [_ 1000000]
       (extract-accept-format consumes extract-accept-fn +request+))))
@@ -239,8 +240,7 @@
       (json-request? +request+))))
 
 ;; NEW
-(let [{:keys [extract-content-type-fn adapters]} default-options
-      {:keys [consumes matchers]} (format-map adapters)]
+(let [{:keys [consumes matchers extract-content-type-fn]} (compile default-options)]
   (time
     (dotimes [_ 1000000]
       (extract-format consumes matchers extract-content-type-fn +request+))))
