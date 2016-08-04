@@ -101,6 +101,7 @@
 
     ; 52ns
     ; 38ns consumes & produces (-27%)
+    ; 27ns compile (-29%) (-48%)
     (title "Request: JSON")
     (assert (= :json (rfc/extract-format consumes matchers extract-content-type-fn +json-request+)))
     (cc/quick-bench
@@ -108,6 +109,7 @@
 
     ; 65ns
     ; 55ns consumes & produces (-15%)
+    ; 42ns compile (-24%) (-35%)
     (title "Request: TRANSIT")
     (assert (= :transit-json (rfc/extract-format consumes matchers extract-content-type-fn +transit-json-request+)))
     (cc/quick-bench
@@ -118,6 +120,7 @@
 
     ; 71ns
     ; 58ns consumes & produces (-18%)
+    ; 48ns compile (-17%) (-32%)
     (title "Response: TRANSIT")
     (assert (= :transit-json (rfc/extract-accept-format consumes extract-accept-fn +transit-json-request+)))
     (cc/quick-bench
