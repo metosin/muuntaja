@@ -49,8 +49,7 @@
       [k type])))
 
 (defn- match? [^String content-type string-or-regexp request]
-  (and (:body request)
-       (re-find string-or-regexp content-type)))
+  (and (:body request) (re-find string-or-regexp content-type)))
 
 (defn parse-formats [formats]
   {:lookup (content-type->format formats)
