@@ -63,8 +63,9 @@
       (when-not (.isEmpty (.trim s))
         (edn/read-string options s)))))
 
-(defn encode-edn [data]
-  (pr-str data))
+(defn make-edn-encoder [_]
+  (fn [data]
+    (pr-str data)))
 
 ;; TRANSIT
 

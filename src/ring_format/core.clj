@@ -185,7 +185,7 @@
                      :encoder [formats/make-json-encoder]}
               :edn {:format ["application/edn" #"^application/(vnd.+)?(x-)?(clojure|edn)"]
                     :decoder [formats/make-edn-decoder]
-                    :encoder formats/encode-edn}
+                    :encoder [formats/make-edn-encoder]}
               :msgpack {:format ["application/msgpack" #"^application/(vnd.+)?(x-)?msgpack"]
                         :decoder [formats/make-msgpack-decoder]
                         :encoder [formats/make-msgpack-encoder]
