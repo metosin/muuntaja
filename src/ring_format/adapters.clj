@@ -6,7 +6,7 @@
             [cognitect.transit :as transit]
             [msgpack.core :as msgpack]
             [clojure.java.io :as io])
-  (:import [java.io InputStream ByteArrayOutputStream DataInputStream]))
+  (:import [java.io InputStream ByteArrayOutputStream DataInputStream DataOutputStream]))
 
 (set! *warn-on-reflection* true)
 
@@ -31,16 +31,18 @@
 
 ;; msgpack
 
-(defn decode-msgpack [in]
-  (with-open [i (clojure.java.io/input-stream (slurp-to-bytes in))]
-    (let [data-input (DataInputStream. i)]
-      (msgpack/unpack-stream data-input))))
+(defn make-msgpack-decoder [options]
+  (fn [in]
+    (with-open [i (io/input-stream (slurp-to-bytes in))]
+      (let [data-input (DataInputStream. i)]
+        (msgpack/unpack-stream data-input options)))))
 
-(defn encode-msgpack [data]
-  (with-open [out-stream (ByteArrayOutputStream.)]
-    (let [data-out (java.io.DataOutputStream. out-stream)]
-      (msgpack/pack-stream (walk/stringify-keys data) data-out))
-    (.toByteArray out-stream)))
+(defn make-msgpack-encoder [options]
+  (fn [data]
+    (with-open [out-stream (ByteArrayOutputStream.)]
+      (let [data-out (DataOutputStream. out-stream)]
+        (msgpack/pack-stream (walk/stringify-keys data) data-out) options)
+      (.toByteArray out-stream))))
 
 ;; YAML
 
@@ -48,15 +50,18 @@
   (let [options-args (mapcat identity options)]
     (fn [s] (apply yaml/parse-string s options-args))))
 
-(defn encode-yaml [data]
-  (yaml/generate-string data))
+(defn make-yaml-encoder [options]
+  (let [options-args (mapcat identity options)]
+    (fn [data]
+      (apply yaml/generate-string data options-args))))
 
 ;; EDN
 
-(defn decode-edn [^String s]
-  (when-not (.isEmpty (.trim s))
-    ;; TODO: explicit readers
-    (edn/read-string {:readers *data-readers*} s)))
+(defn make-edn-decoder [options]
+  (let [options (merge {:readers *data-readers*} options)]
+    (fn [^String s]
+      (when-not (.isEmpty (.trim s))
+        (edn/read-string options s)))))
 
 (defn encode-edn [data]
   (pr-str data))
@@ -105,15 +110,15 @@
           :decoder [make-json-decoder]
           :encoder [make-json-encoder]}
    :edn {:format :edn
-         :decoder decode-edn
+         :decoder [make-edn-decoder]
          :encoder encode-edn}
    :msgpack {:format :msgpack
-             :decoder decode-msgpack
-             :encoder encode-msgpack
+             :decoder [make-msgpack-decoder]
+             :encoder [make-msgpack-encoder]
              :binary? true}
    :yaml {:format :yaml
           :decoder [make-yaml-decoder {:keywords false}]
-          :encoder encode-yaml}
+          :encoder [make-yaml-encoder]}
    :transit-json {:format :transit-json
                   :decoder [(partial make-transit-decoder :json)]
                   :encoder [(partial make-transit-encoder :json)]
