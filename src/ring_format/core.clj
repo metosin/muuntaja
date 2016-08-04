@@ -52,12 +52,29 @@
 (defn- match? [^String content-type string-or-regexp request]
   (and (:body request) (re-find string-or-regexp content-type)))
 
+(defn make-adapters [adapters formats]
+  (let [make (fn [spec-opts spec]
+               (if (vector? spec)
+                 (let [[f opts] spec]
+                   (f (merge opts spec-opts)))
+                 spec))]
+    (->> formats
+         (keep identity)
+         (mapv (fn [format]
+                 (if-let [{:keys [decoder decoder-opts encoder encoder-opts] :as adapter}
+                          (if (map? format) format (get adapters format))]
+                   [format (merge
+                             (select-keys adapter [:binary?])
+                             (if decoder {:decode (partial make decoder-opts)})
+                             (if encoder {:encode (partial make encoder-opts)}))])))
+         (into {}))))
+
 (defn compile [{:keys [adapters formats] :as options}]
   (let [selected-format? (set formats)
         format-types (for [[k {:keys [format]}] adapters
                            :when (selected-format? k)]
                        [k format])
-        adapters (select-keys adapters formats)]
+        adapters (make-adapters adapters formats)]
     (merge
       options
       {:adapters adapters
@@ -137,26 +154,6 @@
     (if (string? accept)
       (old-parse-accept-header accept)
       accept)))
-
-;;
-;; Adapters
-;;
-
-(defn make-adapters [adapters formats]
-  (let [make (fn [spec-opts spec]
-               (if (vector? spec)
-                 (let [[f opts] spec]
-                   (f (merge opts spec-opts)))
-                 spec))]
-    (->> formats
-         (keep identity)
-         (mapv (fn [format]
-                 (if-let [{:keys [decoder decoder-opts encoder encoder-opts] :as adapter}
-                          (if (map? format) format (get adapters format))]
-                   (cond-> adapter
-                           decoder (update :decoder (partial make decoder-opts))
-                           encoder (update :encoder (partial make encoder-opts))))))
-         (keep identity))))
 
 ;;
 ;; customization
