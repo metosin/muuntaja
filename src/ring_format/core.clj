@@ -1,6 +1,6 @@
 (ns ring-format.core
   (:require [clojure.string :as str]
-            [ring-format.adapters :as adapters]
+            [ring-format.formats :as formats]
             [clojure.core.memoize :as memoize]))
 
 (set! *warn-on-reflection* true)
@@ -51,14 +51,16 @@
 (defn- match? [^String content-type string-or-regexp request]
   (and (:body request) (re-find string-or-regexp content-type)))
 
-(defn parse-formats [formats]
-  {:lookup (content-type->format formats)
-   :defaults (format->content-type formats)
-   :matchers (format-regexps formats)})
+;; TODO: order and filter by formats!
+(defn format-map [adapters]
+  (let [formats (for [[k {:keys [format]}] adapters] [k format])]
+    {:consumes (content-type->format formats)
+     :produces (format->content-type formats)
+     :matchers (format-regexps formats)}))
 
-(defn extract-format [lookup matchers extract-content-type-fn request]
+(defn extract-format [consumes matchers extract-content-type-fn request]
   (if-let [content-type (extract-content-type-fn request)]
-    (or (get lookup content-type)
+    (or (get consumes content-type)
         (loop [i 0]
           (let [[f r] (nth matchers i)]
             (cond
@@ -66,14 +68,14 @@
               (< (inc i) (count matchers)) (recur (inc i))))))
     (nth matchers 1)))
 
-(defn extract-accept-format [lookup extract-accept-fn request]
+(defn extract-accept-format [consumes extract-accept-fn request]
   (if-let [accept (extract-accept-fn request)]
     (or
-      (get lookup accept)
+      (get consumes accept)
       ;; TODO: remove ;-stuff
       (let [data (str/split accept #",\s*")]
         (loop [i 0]
-          (or (get lookup (nth data i))
+          (or (get consumes (nth data i))
               (if (< (inc i) (count data))
                 (recur (inc i)))))))))
 
@@ -130,6 +132,26 @@
       accept)))
 
 ;;
+;; Adapters
+;;
+
+(defn make-adapters [adapters formats]
+  (let [make (fn [spec-opts spec]
+               (if (vector? spec)
+                 (let [[f opts] spec]
+                   (f (merge opts spec-opts)))
+                 spec))]
+    (->> formats
+         (keep identity)
+         (mapv (fn [format]
+                 (if-let [{:keys [decoder decoder-opts encoder encoder-opts] :as adapter}
+                          (if (map? format) format (get adapters format))]
+                   (cond-> adapter
+                           decoder (update :decoder (partial make decoder-opts))
+                           encoder (update :encoder (partial make encoder-opts))))))
+         (keep identity))))
+
+;;
 ;; customization
 ;;
 
@@ -158,13 +180,30 @@
 (def default-options
   {:extract-content-type-fn extract-content-type-ring
    :extract-accept-fn extract-accept-ring
-   :formats [[:json ["application/json" #"^application/(vnd.+)?json"]]
-             [:edn ["application/edn" "application/clojure" #"^application/(vnd.+)?(x-)?(clojure|edn)"]]
-             [:msgpack ["application/msgpack" "application/x-msgpack" #"^application/(vnd.+)?(x-)?msgpack"]]
-             [:yaml ["application/yaml" "application/x-yaml" "text/yaml" "text/x-yaml" #"^(application|text)/(vnd.+)?(x-)?yaml"]]
-             [:transit-json ["application/transit+json" "application/x-transit+json" #"^application/(vnd.+)?(x-)?transit\+json"]]
-             [:transit-msgpack ["application/transit+msgpack" "application/x-transit+msgpack" #"^application/(vnd.+)?(x-)?transit\+msgpack"]]]
-   :adapters adapters/default-adapters})
+   :adapters {:json {:format ["application/json" #"^application/(vnd.+)?json"]
+                     :decoder [formats/make-json-decoder {:key-fn true}]
+                     :encoder [formats/make-json-encoder]}
+              :edn {:format ["application/edn" #"^application/(vnd.+)?(x-)?(clojure|edn)"]
+                    :decoder [formats/make-edn-decoder]
+                    :encoder formats/encode-edn}
+              :msgpack {:format ["application/msgpack" #"^application/(vnd.+)?(x-)?msgpack"]
+                        :decoder [formats/make-msgpack-decoder]
+                        :encoder [formats/make-msgpack-encoder]
+                        :binary? true}
+              :yaml {:format ["application/yaml" #"^(application|text)/(vnd.+)?(x-)?yaml"]
+                     :decoder [formats/make-yaml-decoder {:keywords true}]
+                     :encoder [formats/make-yaml-encoder]}
+              :transit-json {:format ["application/transit+json" #"^application/(vnd.+)?(x-)?transit\+json"]
+                             :decoder [(partial formats/make-transit-decoder :json)]
+                             :encoder [(partial formats/make-transit-encoder :json)]
+                             :binary? true}
+              :transit-msgpack {:format ["application/transit+msgpack" #"^application/(vnd.+)?(x-)?transit\+msgpack"]
+                                :decoder [(partial formats/make-transit-decoder :msgpack)]
+                                :encoder [(partial formats/make-transit-encoder :msgpack)]
+                                :binary? true}}
+   :formats [:json :edn :msgpack :yaml :transit-json :transit-msgpack]})
+
+(format-map (:adapters default-options))
 
 ;;
 ;; spike
@@ -181,11 +220,11 @@
       (old-accept-maps extract-accept-fn +request+))))
 
 ;; NEW
-(let [{:keys [extract-accept-fn formats]} default-options
-      {:keys [lookup]} (parse-formats formats)]
+(let [{:keys [extract-accept-fn adapters]} default-options
+      {:keys [consumes]} (format-map adapters)]
   (time
     (dotimes [_ 1000000]
-      (extract-accept-format lookup extract-accept-fn +request+))))
+      (extract-accept-format consumes extract-accept-fn +request+))))
 
 (println "---- content-type ----")
 
@@ -200,11 +239,11 @@
       (json-request? +request+))))
 
 ;; NEW
-(let [{:keys [extract-content-type-fn formats]} default-options
-      {:keys [lookup matchers]} (parse-formats formats)]
+(let [{:keys [extract-content-type-fn adapters]} default-options
+      {:keys [consumes matchers]} (format-map adapters)]
   (time
     (dotimes [_ 1000000]
-      (extract-format lookup matchers extract-content-type-fn +request+))))
+      (extract-format consumes matchers extract-content-type-fn +request+))))
 
 
 ;; NAIVE

@@ -97,30 +97,33 @@
 ;;
 
 (defn request []
-  (let [{:keys [extract-content-type-fn extract-accept-fn formats]} rfc/default-options
-        {:keys [lookup matchers]} (rfc/parse-formats formats)]
+  (let [{:keys [extract-content-type-fn adapters]} rfc/default-options
+        {:keys [consumes matchers]} (rfc/format-map adapters)]
 
     ; 52ns
+    ; 38ns consumes & produces (-27%)
     (title "Request: JSON")
-    (assert (= :json (rfc/extract-format lookup matchers extract-content-type-fn +json-request+)))
+    (assert (= :json (rfc/extract-format consumes matchers extract-content-type-fn +json-request+)))
     (cc/quick-bench
-      (rfc/extract-format lookup matchers extract-content-type-fn +json-request+))
+      (rfc/extract-format consumes matchers extract-content-type-fn +json-request+))
 
     ; 65ns
+    ; 55ns consumes & produces (-15%)
     (title "Request: TRANSIT")
-    (assert (= :transit-json (rfc/extract-format lookup matchers extract-content-type-fn +transit-json-request+)))
+    (assert (= :transit-json (rfc/extract-format consumes matchers extract-content-type-fn +transit-json-request+)))
     (cc/quick-bench
-      (rfc/extract-format lookup matchers extract-content-type-fn +transit-json-request+))))
+      (rfc/extract-format consumes matchers extract-content-type-fn +transit-json-request+))))
 
 (defn response []
-  (let [{:keys [extract-accept-fn formats]} rfc/default-options
-        {:keys [lookup]} (rfc/parse-formats formats)]
+  (let [{:keys [extract-accept-fn adapters]} rfc/default-options
+        {:keys [consumes]} (rfc/format-map adapters)]
 
     ; 71ns
+    ; 58ns consumes & produces (-18%)
     (title "Response: TRANSIT")
-    (assert (= :transit-json (rfc/extract-accept-format lookup extract-accept-fn +transit-json-request+)))
+    (assert (= :transit-json (rfc/extract-accept-format consumes extract-accept-fn +transit-json-request+)))
     (cc/quick-bench
-      (rfc/extract-accept-format lookup extract-accept-fn +transit-json-request+))))
+      (rfc/extract-accept-format consumes extract-accept-fn +transit-json-request+))))
 
 (defn all []
   (old)

@@ -1,4 +1,4 @@
-(ns ring-format.adapters
+(ns ring-format.formats
   (:require [cheshire.core :as json]
             [clj-yaml.core :as yaml]
             [clojure.tools.reader.edn :as edn]
@@ -84,46 +84,3 @@
           wrt (transit/writer out full-type options)]
       (transit/write wrt data)
       (.toByteArray out))))
-
-;;
-;; Adapters
-;;
-
-(defn make-adapters [adapters formats]
-  (let [make (fn [spec-opts spec]
-               (if (vector? spec)
-                 (let [[f opts] spec]
-                   (f (merge opts spec-opts)))
-                 spec))]
-    (->> formats
-         (keep identity)
-         (mapv (fn [format]
-                 (if-let [{:keys [decoder decoder-opts encoder encoder-opts] :as adapter}
-                          (if (map? format) format (get adapters format))]
-                   (cond-> adapter
-                           decoder (update :decoder (partial make decoder-opts))
-                           encoder (update :encoder (partial make encoder-opts))))))
-         (keep identity))))
-
-(def default-adapters
-  {:json {:format :json
-          :decoder [make-json-decoder]
-          :encoder [make-json-encoder]}
-   :edn {:format :edn
-         :decoder [make-edn-decoder]
-         :encoder encode-edn}
-   :msgpack {:format :msgpack
-             :decoder [make-msgpack-decoder]
-             :encoder [make-msgpack-encoder]
-             :binary? true}
-   :yaml {:format :yaml
-          :decoder [make-yaml-decoder {:keywords false}]
-          :encoder [make-yaml-encoder]}
-   :transit-json {:format :transit-json
-                  :decoder [(partial make-transit-decoder :json)]
-                  :encoder [(partial make-transit-encoder :json)]
-                  :binary? true}
-   :transit-msgpack {:format :transit-msgpack
-                     :decoder [(partial make-transit-decoder :msgpack)]
-                     :encoder [(partial make-transit-encoder :msgpack)]
-                     :binary? true}})
