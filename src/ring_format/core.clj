@@ -1,5 +1,6 @@
 (ns ring-format.core
   (:require [clojure.string :as str]
+            [ring-format.adapters :as adapters]
             [clojure.core.memoize :as memoize]))
 
 (set! *warn-on-reflection* true)
@@ -163,7 +164,8 @@
              [:msgpack ["application/msgpack" "application/x-msgpack" #"^application/(vnd.+)?(x-)?msgpack"]]
              [:yaml ["application/yaml" "application/x-yaml" "text/yaml" "text/x-yaml" #"^(application|text)/(vnd.+)?(x-)?yaml"]]
              [:transit-json ["application/transit+json" "application/x-transit+json" #"^application/(vnd.+)?(x-)?transit\+json"]]
-             [:transit-msgpack ["application/transit+msgpack" "application/x-transit+msgpack" #"^application/(vnd.+)?(x-)?transit\+msgpack"]]]})
+             [:transit-msgpack ["application/transit+msgpack" "application/x-transit+msgpack" #"^application/(vnd.+)?(x-)?transit\+msgpack"]]]
+   :adapters adapters/default-adapters})
 
 ;;
 ;; spike
