@@ -10,7 +10,7 @@
 ;; Content-type resolution
 ;;
 
-(defn- content-type->format [formats]
+(defn- content-type->format [format-types]
   (reduce
     (fn [acc [k type]]
       (let [old-k (acc type)]
@@ -19,31 +19,31 @@
                                                                      :formats [k old-k]}))))
       (assoc acc type k))
     {}
-    (for [[k type-or-types] formats
+    (for [[k type-or-types] format-types
           :let [types (flatten (vector type-or-types))]
           type types
           :when (string? type)]
       [k type])))
 
-(defn- format-regexps [formats]
+(defn- format-regexps [format-types]
   (reduce
     (fn [acc [k type]]
       (conj acc [k type]))
     []
-    (for [[k type-or-types] formats
+    (for [[k type-or-types] format-types
           :let [types (flatten (vector type-or-types))]
           type types
           :when (not (string? type))]
       [k type])))
 
-(defn- format->content-type [formats]
+(defn- format->content-type [format-types]
   (reduce
     (fn [acc [k type]]
       (if-not (acc k)
         (assoc acc k type)
         acc))
     {}
-    (for [[k type-or-types] formats
+    (for [[k type-or-types] format-types
           :let [types (flatten (vector type-or-types))]
           type types
           :when (string? type)]
@@ -52,13 +52,18 @@
 (defn- match? [^String content-type string-or-regexp request]
   (and (:body request) (re-find string-or-regexp content-type)))
 
-(defn compile [{:keys [adapters] :as options}]
-  (let [formats (for [[k {:keys [format]}] adapters] [k format])]
+(defn compile [{:keys [adapters formats] :as options}]
+  (let [selected-format? (set formats)
+        format-types (for [[k {:keys [format]}] adapters
+                           :when (selected-format? k)]
+                       [k format])
+        adapters (select-keys adapters formats)]
     (merge
       options
-      {:consumes (content-type->format formats)
-       :produces (format->content-type formats)
-       :matchers (format-regexps formats)})))
+      {:adapters adapters
+       :consumes (content-type->format format-types)
+       :produces (format->content-type format-types)
+       :matchers (format-regexps format-types)})))
 
 (defn extract-format [consumes matchers extract-content-type-fn request]
   (if-let [content-type (extract-content-type-fn request)]
@@ -204,8 +209,6 @@
                                 :encoder [(partial formats/make-transit-encoder :msgpack)]
                                 :binary? true}}
    :formats [:json :edn :msgpack :yaml :transit-json :transit-msgpack]})
-
-(compile default-options)
 
 ;;
 ;; spike
