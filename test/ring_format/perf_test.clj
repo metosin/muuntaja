@@ -102,58 +102,60 @@
 ;;
 
 (defn content-type []
-  (let [{:keys [consumes matchers extract-content-type-fn]} (rfc/compile rfc/default-options)]
+  (let [formats (rfc/compile rfc/default-options)]
 
     ; 52ns
     ; 38ns consumes & produces (-27%)
     ; 27ns compile (-29%) (-48%)
     (title "Content-type: JSON")
-    (assert (= :json (rfc/extract-content-type consumes matchers extract-content-type-fn +json-request+)))
+    (assert (= :json (rfc/extract-content-type-format formats +json-request+)))
     (cc/quick-bench
-      (rfc/extract-content-type consumes matchers extract-content-type-fn +json-request+))
+      (rfc/extract-content-type-format formats +json-request+))
 
     ; 65ns
     ; 55ns consumes & produces (-15%)
     ; 42ns compile (-24%) (-35%)
     (title "Content-type: TRANSIT")
-    (assert (= :transit-json (rfc/extract-content-type consumes matchers extract-content-type-fn +transit-json-request+)))
+    (assert (= :transit-json (rfc/extract-content-type-format formats +transit-json-request+)))
     (cc/quick-bench
-      (rfc/extract-content-type consumes matchers extract-content-type-fn +transit-json-request+))))
+      (rfc/extract-content-type-format formats +transit-json-request+))))
 
 (defn accept []
-  (let [{:keys [consumes extract-accept-fn]} (rfc/compile rfc/default-options)]
+  (let [formats (rfc/compile rfc/default-options)]
 
     ; 71ns
     ; 58ns consumes & produces (-18%)
     ; 48ns compile (-17%) (-32%)
     (title "Accept: TRANSIT")
-    (assert (= :transit-json (rfc/extract-accept consumes extract-accept-fn +transit-json-request+)))
+    (assert (= :transit-json (rfc/extract-accept-format formats +transit-json-request+)))
     (cc/quick-bench
-      (rfc/extract-accept consumes extract-accept-fn +transit-json-request+))))
+      (rfc/extract-accept-format formats +transit-json-request+))))
 
 (defn request []
-  (let [{:keys [consumes matchers extract-content-type-fn extract-accept-fn]} (rfc/compile rfc/default-options)]
+  (let [formats (rfc/compile rfc/default-options)]
 
     ; 179ns
+    ; 187ns (records)
     (title "Request: JSON")
     (cc/quick-bench
-      (rfc/format-request consumes matchers extract-content-type-fn extract-accept-fn +json-request+))
+      (rfc/format-request formats +json-request+))
 
     ; 211ns
+    ; 226ns (records)
     (title "Request: Transit")
     (cc/quick-bench
-      (rfc/format-request consumes matchers extract-content-type-fn extract-accept-fn +transit-json-request+))))
+      (rfc/format-request formats +transit-json-request+))))
 
 (defn decode-encode []
-  (let [{:keys [consumes matchers extract-content-type-fn extract-accept-fn adapters]} (rfc/compile rfc/default-options)
+  (let [{:keys [adapters] :as formats} (rfc/compile rfc/default-options)
         handle-request (fn [request]
-                         (let [format (rfc/extract-content-type consumes matchers extract-content-type-fn +json-request+)
+                         (let [format (rfc/extract-content-type-format formats +json-request+)
                                decode (-> adapters format :decode)]
                            (-> request
                                (update :body decode)
                                (assoc ::format format))))
         handle-response (fn [request response]
-                          (let [format (rfc/extract-accept consumes extract-accept-fn request)
+                          (let [format (rfc/extract-accept-format formats request)
                                 encode (-> adapters format :encode)]
                             (-> response
                                 (update :body encode)

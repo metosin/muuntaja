@@ -6,6 +6,40 @@
 
 (set! *warn-on-reflection* true)
 
+(defn- match? [^String content-type string-or-regexp request]
+  (and (:body request) (re-find string-or-regexp content-type)))
+
+(defprotocol FormatExtractor
+  (extract-content-type-format [_ request])
+  (extract-accept-format [_ request]))
+
+(defprotocol Formatter
+  (encode [_ format data])
+  (decode [_ format data]))
+
+(defrecord Formats [consumes matchers extract-content-type-fn extract-accept-fn]
+  FormatExtractor
+  (extract-content-type-format [_ request]
+    (if-let [content-type (extract-content-type-fn request)]
+      (or (get consumes content-type)
+          (loop [i 0]
+            (let [[f r] (nth matchers i)]
+              (cond
+                (match? content-type r request) f
+                (< (inc i) (count matchers)) (recur (inc i))))))
+      (nth matchers 1)))
+
+  (extract-accept-format [_ request]
+    (if-let [accept (extract-accept-fn request)]
+      (or
+        (get consumes accept)
+        ;; TODO: remove ;-stuff
+        (let [data (str/split accept #",\s*")]
+          (loop [i 0]
+            (or (get consumes (nth data i))
+                (if (< (inc i) (count data))
+                  (recur (inc i))))))))))
+
 ;;
 ;; Content-type resolution
 ;;
@@ -49,9 +83,6 @@
           :when (string? type)]
       [k type])))
 
-(defn- match? [^String content-type string-or-regexp request]
-  (and (:body request) (re-find string-or-regexp content-type)))
-
 (defn make-adapters [adapters formats]
   (let [make (fn [spec spec-opts]
                (if (vector? spec)
@@ -75,40 +106,17 @@
                            :when (selected-format? k)]
                        [k format])
         adapters (make-adapters adapters formats)]
-    (merge
-      options
-      {:adapters adapters
-       :consumes (content-type->format format-types)
-       :produces (format->content-type format-types)
-       :matchers (format-regexps format-types)})))
+    (map->Formats
+      (merge
+        options
+        {:adapters adapters
+         :consumes (content-type->format format-types)
+         :produces (format->content-type format-types)
+         :matchers (format-regexps format-types)}))))
 
-(defn extract-content-type [consumes matchers extract-content-type-fn request]
-  (if-let [content-type (extract-content-type-fn request)]
-    (or (get consumes content-type)
-        (loop [i 0]
-          (let [[f r] (nth matchers i)]
-            (cond
-              (match? content-type r request) f
-              (< (inc i) (count matchers)) (recur (inc i))))))
-    (nth matchers 1)))
-
-(defn extract-accept [consumes extract-accept-fn request]
-  (if-let [accept (extract-accept-fn request)]
-    (or
-      (get consumes accept)
-      ;; TODO: remove ;-stuff
-      (let [data (str/split accept #",\s*")]
-        (loop [i 0]
-          (or (get consumes (nth data i))
-              (if (< (inc i) (count data))
-                (recur (inc i)))))))))
-
-(defn extract-formats [consumers matchers extract-content-type-fn extract-accept-fn request]
-  [(extract-content-type consumers matchers extract-content-type-fn request)
-   (extract-accept consumers extract-accept-fn request)])
-
-(defn format-request [consumers matchers extract-content-type-fn extract-accept-fn request]
-  (let [[content-type accept] (extract-formats consumers matchers extract-content-type-fn extract-accept-fn request)]
+(defn format-request [formats request]
+  (let [content-type (extract-content-type-format formats request)
+        accept (extract-accept-format formats request)]
     (-> request
         (assoc ::request content-type)
         (assoc ::response accept))))
@@ -227,40 +235,40 @@
 
 ;; RMF
 #_(let [extract-accept-fn (:extract-accept-fn default-options)]
-  (time
-    (dotimes [_ 1000000]
-      (old-accept-maps extract-accept-fn +request+))))
+    (time
+      (dotimes [_ 1000000]
+        (old-accept-maps extract-accept-fn +request+))))
 
 ;; NEW
 #_(let [{:keys [consumes extract-accept-fn]} (compile default-options)]
-  (time
-    (dotimes [_ 1000000]
-      (extract-accept consumes extract-accept-fn +request+))))
+    (time
+      (dotimes [_ 1000000]
+        (extract-accept consumes extract-accept-fn +request+))))
 
 (println "---- content-type ----")
 
 ;; RMF
 #_(let [json-request? (fn [{:keys [body] :as req}]
-                      (if-let [^String type (get req :content-type
-                                                 (get-in req [:headers "Content-Type"]
-                                                         (get-in req [:headers "content-type"])))]
-                        (and body (not (empty? (re-find #"^application/(vnd.+)?json" type))))))]
-  (time
-    (dotimes [_ 1000000]
-      (json-request? +request+))))
+                        (if-let [^String type (get req :content-type
+                                                   (get-in req [:headers "Content-Type"]
+                                                           (get-in req [:headers "content-type"])))]
+                          (and body (not (empty? (re-find #"^application/(vnd.+)?json" type))))))]
+    (time
+      (dotimes [_ 1000000]
+        (json-request? +request+))))
 
 ;; NEW
 #_(let [{:keys [consumes matchers extract-content-type-fn]} (compile default-options)]
-  (time
-    (dotimes [_ 1000000]
-      (extract-content-type consumes matchers extract-content-type-fn +request+))))
+    (time
+      (dotimes [_ 1000000]
+        (extract-content-type consumes matchers extract-content-type-fn +request+))))
 
 ;; NEW2
-(let [{:keys [consumes matchers extract-content-type-fn extract-accept-fn]} (compile default-options)]
-  (println (format-request consumes matchers extract-content-type-fn extract-accept-fn +request+))
+(let [formats (compile default-options)]
+  (println (format-request formats +request+))
   (time
     (dotimes [_ 1000000]
-      (format-request consumes matchers extract-content-type-fn extract-accept-fn +request+))))
+      (format-request formats +request+))))
 
 (let [request {}]
   (time
@@ -271,28 +279,28 @@
 
 ;; NAIVE
 #_(let [json-request? (fn [req] (and (= (get-in req [:headers "content-type"]) "application/json")
-                                   (:body req)
-                                   true))]
-  (time
-    (dotimes [_ 1000000]
-      (json-request? +request+))))
+                                     (:body req)
+                                     true))]
+    (time
+      (dotimes [_ 1000000]
+        (json-request? +request+))))
 
 (println "---- decode ----")
 
 ;; NEW
 #_(let [{:keys [consumes matchers extract-content-type-fn adapters]} (compile default-options)]
-  (time
-    (dotimes [_ 1000000]
-      (let [format (extract-content-type consumes matchers extract-content-type-fn +request+)
-            decode (-> adapters format :decode)]
-        (-> +request+
-            (update :body decode)
-            (assoc ::format format))))))
+    (time
+      (dotimes [_ 1000000]
+        (let [format (extract-content-type consumes matchers extract-content-type-fn +request+)
+              decode (-> adapters format :decode)]
+          (-> +request+
+              (update :body decode)
+              (assoc ::format format))))))
 
 ;; NEW
 #_(let [decode (formats/make-json-decoder {})]
-  (time
-    (dotimes [_ 1000000]
-      (-> +request+
-          (update :body decode)
-          (assoc ::format :json)))))
+    (time
+      (dotimes [_ 1000000]
+        (-> +request+
+            (update :body decode)
+            (assoc ::format :json)))))
