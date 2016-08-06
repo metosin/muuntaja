@@ -1,9 +1,9 @@
-(ns ring.middleware.perf-test
+(ns ring-middleware.perf-test
   (:require [criterium.core :as cc]
             [cheshire.core :as json]
-            [ring.middleware.format :as rmf]
-            [ring.middleware.format-params :as rmfp]
-            [ring.middleware.format-response :as rmfr])
+            [ring-middleware.format :as rmf]
+            [ring-middleware.format-params :as rmfp]
+            [ring-middleware.format-response :as rmfr])
   (:import [java.io ByteArrayInputStream]))
 
 ;;

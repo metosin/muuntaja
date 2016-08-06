@@ -1,6 +1,6 @@
-(ns ring.middleware.format-params-test
+(ns ring-middleware.format-params-test
   (:require [clojure.test :refer :all]
-            [ring.middleware.format-params :refer :all]
+            [ring-middleware.format-params :refer :all]
             [cognitect.transit :as transit]
             [clojure.java.io :as io]
             [clojure.walk :refer [stringify-keys keywordize-keys]]

@@ -1,6 +1,6 @@
-(ns ring.middleware.format
-  (:require [ring.middleware.format-params :as par]
-            [ring.middleware.format-response :as res]))
+(ns ring-middleware.format
+  (:require [ring-middleware.format-params :as par]
+            [ring-middleware.format-response :as res]))
 
 (def default-formats [:json :edn :msgpack :msgpack-kw :yaml :yaml-in-html :transit-msgpack :transit-json])
 
@@ -17,8 +17,8 @@
    or the response encoding with *:response-error-handler*.
    Format options can be passed to responding middlewares using *:response-options*
    and *:params-options*.
-   See [[ring.middleware.format-params/wrap-format-params]] and
-   [[ring.middleware.format-response/wrap-format-response]] for details"
+   See [[ring-middleware.format-params/wrap-format-params]] and
+   [[ring-middleware.format-response/wrap-format-response]] for details"
   ([handler]
    (wrap-api-format handler {}))
   ([handler {:keys [response-error-handler request-error-handler response-options params-options] :as options}]

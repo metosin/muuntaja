@@ -1,4 +1,4 @@
-(ns ring.middleware.format-params
+(ns ring-middleware.format-params
   (:require [cheshire.core :as json]
             [clj-yaml.core :as yaml]
             [clojure.tools.reader.edn :as edn]

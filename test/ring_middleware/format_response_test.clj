@@ -1,6 +1,6 @@
-(ns ring.middleware.format-response-test
+(ns ring-middleware.format-response-test
   (:require [clojure.test :refer :all]
-            [ring.middleware.format-response :as rmfr]
+            [ring-middleware.format-response :as rmfr]
             [cheshire.core :as json]
             [clj-yaml.core :as yaml]
             [clojure.walk :refer [stringify-keys keywordize-keys]]
