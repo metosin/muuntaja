@@ -5,21 +5,11 @@
             [clojure.walk :as walk]
             [cognitect.transit :as transit]
             [msgpack.core :as msgpack]
-            [clojure.java.io :as io])
-  (:import [java.io InputStream ByteArrayOutputStream DataInputStream DataOutputStream]))
+            [clojure.java.io :as io]
+            [ring-format.util :as util])
+  (:import [java.io ByteArrayOutputStream DataInputStream DataOutputStream]))
 
 (set! *warn-on-reflection* true)
-
-(defn- slurp-to-bytes ^bytes [^InputStream in]
-  (if in
-    (let [buf (byte-array 4096)
-          out (ByteArrayOutputStream.)]
-      (loop []
-        (let [r (.read in buf)]
-          (when (not= r -1)
-            (.write out buf 0 r)
-            (recur))))
-      (.toByteArray out))))
 
 ;; JSON
 
@@ -33,7 +23,7 @@
 
 (defn make-msgpack-decoder [options]
   (fn [in]
-    (with-open [i (io/input-stream (slurp-to-bytes in))]
+    (with-open [i (io/input-stream (util/slurp-to-bytes in))]
       (let [data-input (DataInputStream. i)]
         (msgpack/unpack-stream data-input options)))))
 

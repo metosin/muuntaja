@@ -28,8 +28,13 @@
          "\u001B[0m\n")))
 
 (def +json-request+
-  {:headers {"content-type" "application/json"}
-   :body "kikka"})
+  {:headers {"content-type" "application/json"
+             "accept" "application/json"}
+   :body "{\"kikka\": 42}"})
+
+(def +json-response+
+  {:status 200
+   :body {:kukka 24}})
 
 (def +transit-json-request+
   {:headers {"content-type" "application/transit+json"
@@ -96,40 +101,88 @@
 ;; Real
 ;;
 
-(defn request []
+(defn content-type []
   (let [{:keys [consumes matchers extract-content-type-fn]} (rfc/compile rfc/default-options)]
 
     ; 52ns
     ; 38ns consumes & produces (-27%)
     ; 27ns compile (-29%) (-48%)
-    (title "Request: JSON")
-    (assert (= :json (rfc/extract-format consumes matchers extract-content-type-fn +json-request+)))
+    (title "Content-type: JSON")
+    (assert (= :json (rfc/extract-content-type consumes matchers extract-content-type-fn +json-request+)))
     (cc/quick-bench
-      (rfc/extract-format consumes matchers extract-content-type-fn +json-request+))
+      (rfc/extract-content-type consumes matchers extract-content-type-fn +json-request+))
 
     ; 65ns
     ; 55ns consumes & produces (-15%)
     ; 42ns compile (-24%) (-35%)
-    (title "Request: TRANSIT")
-    (assert (= :transit-json (rfc/extract-format consumes matchers extract-content-type-fn +transit-json-request+)))
+    (title "Content-type: TRANSIT")
+    (assert (= :transit-json (rfc/extract-content-type consumes matchers extract-content-type-fn +transit-json-request+)))
     (cc/quick-bench
-      (rfc/extract-format consumes matchers extract-content-type-fn +transit-json-request+))))
+      (rfc/extract-content-type consumes matchers extract-content-type-fn +transit-json-request+))))
 
-(defn response []
+(defn accept []
   (let [{:keys [consumes extract-accept-fn]} (rfc/compile rfc/default-options)]
 
     ; 71ns
     ; 58ns consumes & produces (-18%)
     ; 48ns compile (-17%) (-32%)
-    (title "Response: TRANSIT")
-    (assert (= :transit-json (rfc/extract-accept-format consumes extract-accept-fn +transit-json-request+)))
+    (title "Accept: TRANSIT")
+    (assert (= :transit-json (rfc/extract-accept consumes extract-accept-fn +transit-json-request+)))
     (cc/quick-bench
-      (rfc/extract-accept-format consumes extract-accept-fn +transit-json-request+))))
+      (rfc/extract-accept consumes extract-accept-fn +transit-json-request+))))
+
+(defn request []
+  (let [{:keys [consumes matchers extract-content-type-fn extract-accept-fn]} (rfc/compile rfc/default-options)]
+
+    ; 179ns
+    (title "Request: JSON")
+    (cc/quick-bench
+      (rfc/format-request consumes matchers extract-content-type-fn extract-accept-fn +json-request+))
+
+    ; 211ns
+    (title "Request: Transit")
+    (cc/quick-bench
+      (rfc/format-request consumes matchers extract-content-type-fn extract-accept-fn +transit-json-request+))))
+
+(defn decode-encode []
+  (let [{:keys [consumes matchers extract-content-type-fn extract-accept-fn adapters]} (rfc/compile rfc/default-options)
+        handle-request (fn [request]
+                         (let [format (rfc/extract-content-type consumes matchers extract-content-type-fn +json-request+)
+                               decode (-> adapters format :decode)]
+                           (-> request
+                               (update :body decode)
+                               (assoc ::format format))))
+        handle-response (fn [request response]
+                          (let [format (rfc/extract-accept consumes extract-accept-fn request)
+                                encode (-> adapters format :encode)]
+                            (-> response
+                                (update :body encode)
+                                (assoc ::format format))))]
+
+    ; 1131ns
+    (title "Request - decode: JSON")
+    (assert (= {:kikka 42} (:body (handle-request +json-request+))))
+    (cc/quick-bench
+      (handle-request +json-request+))
+
+    ; 1204ns
+    (title "Response - encode: JSON")
+    (assert (= "{\"kukka\":24}" (:body (handle-response +json-request+ +json-response+))))
+    (cc/quick-bench
+      (handle-response +json-request+ +json-response+))))
 
 (defn all []
   (old)
+  (content-type)
+  (accept)
   (request)
-  (response))
+  (decode-encode))
 
 (comment
+  (old)
+  (content-type)
+  (accept)
+  (request)
+  (decode-encode)
   (all))
+
