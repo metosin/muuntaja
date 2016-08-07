@@ -11,13 +11,14 @@
 
 (defprotocol FormatExtractor
   (extract-content-type-format [_ request])
-  (extract-accept-format [_ request]))
+  (extract-accept-format [_ request])
+  (default-format [_]))
 
 (defprotocol Formatter
-  (encode [_ format data])
-  (decode [_ format data]))
+  (encoder [_ format])
+  (decoder [_ format]))
 
-(defrecord Formats [consumes matchers extract-content-type-fn extract-accept-fn]
+(defrecord Formats [consumes matchers extract-content-type-fn extract-accept-fn adapters formats default-format]
   FormatExtractor
   (extract-content-type-format [_ request]
     (if-let [content-type (extract-content-type-fn request)]
@@ -38,7 +39,17 @@
           (loop [i 0]
             (or (get consumes (nth data i))
                 (if (< (inc i) (count data))
-                  (recur (inc i))))))))))
+                  (recur (inc i)))))))))
+
+  (default-format [_]
+    default-format)
+
+  Formatter
+  (encoder [_ format]
+    (-> format adapters :encode))
+
+  (decoder [_ format]
+    (-> format adapters :decode)))
 
 ;;
 ;; Content-type resolution
@@ -109,17 +120,33 @@
     (map->Formats
       (merge
         options
-        {:adapters adapters
+        {:default-format (first formats)
+         :adapters adapters
          :consumes (content-type->format format-types)
          :produces (format->content-type format-types)
          :matchers (format-regexps format-types)}))))
 
 (defn format-request [formats request]
   (let [content-type (extract-content-type-format formats request)
-        accept (extract-accept-format formats request)]
-    (-> request
-        (assoc ::request content-type)
-        (assoc ::response accept))))
+        accept (extract-accept-format formats request)
+        decoder (decoder formats content-type)]
+    (as-> request $
+          (assoc $ ::request content-type)
+          (assoc $ ::response accept)
+          (if decoder
+            (update $ :body decoder)
+            request))))
+
+(defn format-response [formats request response]
+  (if-let [format (or (::format response)
+                      (::response request)
+                      (default-format formats))]
+    (if-let [encoder (encoder formats format)]
+      (as-> response $
+            (assoc $ ::format format)
+            (update $ :body encoder))
+      response)
+    response))
 
 ;;
 ;; accept resolution
@@ -225,11 +252,20 @@
                                 :binary? true}}
    :formats [:json :edn :msgpack :yaml :transit-json :transit-msgpack]})
 
+(defn transform-adapter-options [f options]
+  (update options :adapters #(into (empty %) (map (fn [[k v]] [k (f v)]) %))))
+
+(def no-decoding (partial transform-adapter-options #(dissoc % :decoder)))
+(def no-encoding (partial transform-adapter-options #(dissoc % :encoder)))
+
 ;;
 ;; spike
 ;;
 
-(def +request+ {:headers {"content-type" "application/json", "accept" "application/json"} :body "{\"kikka\": 42}"})
+(def +request+ {:body "{\"kikka\": 42}"
+                :headers {"content-type" "application/json"
+                          "accept" "application/json"}})
+(def +response+ {:body {:kukka 24}})
 
 (println "---- accept ----")
 
@@ -264,18 +300,10 @@
         (extract-content-type consumes matchers extract-content-type-fn +request+))))
 
 ;; NEW2
-(let [formats (compile default-options)]
-  (println (format-request formats +request+))
+(let [formats (-> default-options no-decoding compile)]
   (time
     (dotimes [_ 1000000]
       (format-request formats +request+))))
-
-(let [request {}]
-  (time
-    (dotimes [_ 1000000]
-      (-> request
-          (assoc ::request 1)
-          (assoc ::response 2)))))
 
 ;; NAIVE
 #_(let [json-request? (fn [req] (and (= (get-in req [:headers "content-type"]) "application/json")
@@ -285,22 +313,22 @@
       (dotimes [_ 1000000]
         (json-request? +request+))))
 
-(println "---- decode ----")
+(println "---- decode&encode ----")
 
-;; NEW
-#_(let [{:keys [consumes matchers extract-content-type-fn adapters]} (compile default-options)]
-    (time
-      (dotimes [_ 1000000]
-        (let [format (extract-content-type consumes matchers extract-content-type-fn +request+)
-              decode (-> adapters format :decode)]
-          (-> +request+
-              (update :body decode)
-              (assoc ::format format))))))
+(let [formats (-> default-options compile)]
+  (time
+    (dotimes [_ 1000000]
+      (format-request formats +request+))))
 
-;; NEW
-#_(let [decode (formats/make-json-decoder {})]
-    (time
-      (dotimes [_ 1000000]
-        (-> +request+
-            (update :body decode)
-            (assoc ::format :json)))))
+(let [formats (-> default-options compile)]
+  (time
+    (dotimes [_ 1000000]
+      (as-> +request+ $
+            (format-response formats $ +response+)))))
+
+(let [formats (-> default-options compile)]
+  (time
+    (dotimes [_ 1000000]
+      (as-> +request+ $
+            (format-request formats $)
+            (format-response formats $ +response+)))))

@@ -147,31 +147,29 @@
       (rfc/format-request formats +transit-json-request+))))
 
 (defn decode-encode []
-  (let [{:keys [adapters] :as formats} (rfc/compile rfc/default-options)
-        handle-request (fn [request]
-                         (let [format (rfc/extract-content-type-format formats +json-request+)
-                               decode (-> adapters format :decode)]
-                           (-> request
-                               (update :body decode)
-                               (assoc ::format format))))
-        handle-response (fn [request response]
-                          (let [format (rfc/extract-accept-format formats request)
-                                encode (-> adapters format :encode)]
-                            (-> response
-                                (update :body encode)
-                                (assoc ::format format))))]
+  (let [formats (rfc/compile rfc/default-options)]
 
     ; 1131ns
     (title "Request - decode: JSON")
-    (assert (= {:kikka 42} (:body (handle-request +json-request+))))
+    (assert (= {:kikka 42} (:body (rfc/format-request formats +json-request+))))
     (cc/quick-bench
-      (handle-request +json-request+))
+      (rfc/format-request formats +json-request+))
 
     ; 1204ns
     (title "Response - encode: JSON")
-    (assert (= "{\"kukka\":24}" (:body (handle-response +json-request+ +json-response+))))
+    (assert (= "{\"kukka\":24}" (:body (rfc/format-response formats +json-request+ +json-response+))))
     (cc/quick-bench
-      (handle-response +json-request+ +json-response+))))
+      (rfc/format-response formats +json-request+ +json-response+))
+
+    ; 2406ns
+    (title "Request & Response - encode: JSON")
+    (let [handle-format (fn [request response]
+                          (as-> request $
+                                (rfc/format-request formats $)
+                                (rfc/format-response formats $ response)))]
+      (assert (= "{\"kukka\":24}" (:body (handle-format +json-request+ +json-response+))))
+      (cc/quick-bench
+        (handle-format +json-request+ +json-response+)))))
 
 (defn all []
   (old)
