@@ -1,8 +1,6 @@
-(defproject ikitommi/ring-middleware-format "0.8.0-SNAPSHOT"
-  :description "Ring middleware for parsing parameters and emitting
-  responses in various formats (mainly JSON, YAML and Transit out of
-  the box)"
-  :url "https://github.com/ngrunwald/ring-middleware-format"
+(defproject ikitommi/ring-format "0.1.0-SNAPSHOT"
+  :description "Snappy lib for encoding/decoding http formats"
+  :url "https://github.com/ikitommi/ring-format"
   :license {:name "Eclipse Public License - v 1.0"
             :url "http://www.eclipse.org/legal/epl-v10.html"
             :distribution :repo
@@ -16,9 +14,10 @@
                  [clojure-msgpack "1.2.0"]
                  [com.cognitect/transit-clj "0.8.288"]]
   :plugins [[lein-codox "0.9.5"]]
-  :codox {:src-uri "http://github.com/ngrunwald/ring-middleware-format/blob/master/{filepath}#L{line}"
+  :codox {:src-uri "http://github.com/ikitommi/ring-format/blob/master/{filepath}#L{line}"
           :defaults {:doc/format :markdown}}
   :profiles {:dev {:dependencies [[org.clojure/clojure "1.8.0"]
+                                  [ring-middleware-format "0.7.0"]
                                   [criterium "0.4.4"]]}
              :1.6 {:dependencies [[org.clojure/clojure "1.6.0"]]}
              :1.7 {:dependencies [[org.clojure/clojure "1.7.0"]]}
