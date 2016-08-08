@@ -25,7 +25,7 @@
 
 (defn request-stream
   ([request]
-   (request-stream request 100000))
+   (request-stream request 3000000))
   ([request count]
    (let [i (atom 0)
          data (mapv
@@ -50,7 +50,7 @@
 (def +json-request+
   {:headers {"content-type" "application/json"
              "accept" "application/json"}
-   :body "{\"kikka\": 42}"})
+   :body "{\"kikka\":42}"})
 
 (def +json-response+
   {:status 200
@@ -124,7 +124,7 @@
 ;;
 
 (defn content-type []
-  (let [formats (-> rfc/default-options rfc/no-decoding rfc/no-encoding rfc/compile )]
+  (let [formats (-> rfc/default-options rfc/no-decoding rfc/no-encoding rfc/compile)]
 
     ; 52ns
     ; 38ns consumes & produces (-27%)
@@ -143,7 +143,7 @@
       (rfc/extract-content-type-format formats +transit-json-request+))))
 
 (defn accept []
-  (let [formats (-> rfc/default-options rfc/no-decoding rfc/no-encoding rfc/compile )]
+  (let [formats (-> rfc/default-options rfc/no-decoding rfc/no-encoding rfc/compile)]
 
     ; 71ns
     ; 58ns consumes & produces (-18%)
@@ -154,7 +154,7 @@
       (rfc/extract-accept-format formats +transit-json-request+))))
 
 (defn request []
-  (let [formats (-> rfc/default-options rfc/no-decoding rfc/no-encoding rfc/compile )]
+  (let [formats (-> rfc/default-options rfc/no-decoding rfc/no-encoding rfc/compile)]
 
     ; 179ns
     ; 187ns (records)
@@ -168,72 +168,87 @@
     (cc/quick-bench
       (rfc/format-request formats +transit-json-request+))))
 
-(defn decode-encode []
-  (let [formats (rfc/compile rfc/default-options)]
+(defn parse-json []
 
-    ; 1131ns
-    (title "Request - decode: JSON")
-    (assert (= {:kikka 42} (:body (rfc/format-request formats +json-request+))))
-    (cc/quick-bench
-      (rfc/format-request formats +json-request+))
+  ; 2.0µs
+  (title "parse-json-stream")
+  (let [parse (rfc/decoder (rfc/compile rfc/default-options) :json)
+        request! (request-stream +json-request+)]
+    (cc/quick-bench (parse (:body (request!)))))
 
-    ; 1204ns
-    (title "Response - encode: JSON")
-    (assert (= "{\"kukka\":24}" (:body (rfc/format-response formats +json-request+ +json-response+))))
-    (cc/quick-bench
-      (rfc/format-response formats +json-request+ +json-response+))
+  ; 4.3µs
+  (title "parse-json-string")
+  (let [parse #(json/parse-string % true)
+        request! (request-stream +json-request+)]
+    (cc/quick-bench (parse (slurp (:body (request!)))))))
 
-    ; 2406ns
-    (title "Request & Response - encode: JSON")
-    (let [handle-format (fn [request response]
-                          (as-> request $
-                                (rfc/format-request formats $)
-                                (rfc/format-response formats $ response)))]
-      (assert (= "{\"kukka\":24}" (:body (handle-format +json-request+ +json-response+))))
-      (cc/quick-bench
-        (handle-format +json-request+ +json-response+)))))
-
-;;
-;; handlers
-;;
-
-(defn ring-middleware-format []
+(defn ring-middleware-format-e2e []
 
   ; 10.2µs
   (let [app (rmfp/wrap-restful-params +handler+ {:formats [:json-kw :edn :msgpack-kw :yaml-kw :transit-msgpack :transit-json]})
-        next (request-stream +json-request+ 1000000)
-        call #(app (next))]
+        request! (request-stream +json-request+)]
 
     (title "RMF: JSON-REQUEST")
-    (assert (= {:kikka 42} (:body (call))))
-    (cc/quick-bench (call)))
+    (assert (= {:kikka 42} (:body (app (request!)))))
+    (cc/quick-bench (app (request!))))
 
   ; 8.5µs
   (let [app (rmfp/wrap-restful-params +handler+ {:formats [:json-kw :edn :msgpack-kw :yaml-kw :transit-msgpack :transit-json]})
-        next (request-stream +transit-json-request+ 1000000)
-        call #(app (next))]
+        request! (request-stream +transit-json-request+)]
 
     (title "RMF: TRANSIT-REQUEST")
-    (assert (= {:kikka 42} (:body (call))))
-    (cc/quick-bench (call)))
+    (assert (= {:kikka 42} (:body (app (request!)))))
+    (cc/quick-bench (app (request!))))
 
   ; 22.5µs
   (let [app (rmf/wrap-restful-format +handler+ {:formats [:json-kw :edn :msgpack-kw :yaml-kw :transit-msgpack :transit-json]})
-        next (request-stream +json-request+ 1000000)
-        call #(app (next))]
+        request! (request-stream +json-request+)]
 
     (title "RMF: JSON-REQUEST-RESPONSE")
-    (assert (= (:body +json-request+) (slurp (:body (call)))))
-    (cc/quick-bench (call)))
+    (assert (= (:body +json-request+) (slurp (:body (app (request!))))))
+    (cc/quick-bench (app (request!))))
 
   ; 21.0µs
   (let [app (rmf/wrap-restful-format +handler+ {:formats [:json-kw :edn :msgpack-kw :yaml-kw :transit-msgpack :transit-json]})
-        next (request-stream +transit-json-request+ 1000000)
-        call #(app (next))]
+        request! (request-stream +transit-json-request+)]
 
     (title "RMF: TRANSIT-REQUEST-RESPONSE")
-    (assert (= (:body +transit-json-request+) (slurp (:body (call)))))
-    (cc/quick-bench (call))))
+    (assert (= (:body +transit-json-request+) (slurp (:body (app (request!))))))
+    (cc/quick-bench (app (request!)))))
+
+(defn ring-format-e2e []
+
+  ; 2.2µs
+  (let [app (rfc/wrap-format +handler+ (rfc/no-encoding rfc/default-options))
+        request! (request-stream +json-request+)]
+
+    (title "RFC: JSON-REQUEST")
+    (assert (= {:kikka 42} (:body (app (request!)))))
+    (cc/quick-bench (app (request!))))
+
+  ; 4.1µs
+  (let [app (rfc/wrap-format +handler+ (rfc/no-encoding rfc/default-options))
+        request! (request-stream +transit-json-request+)]
+
+    (title "RFC: TRANSIT-REQUEST")
+    (assert (= {:kikka 42} (:body (app (request!)))))
+    (cc/quick-bench (app (request!))))
+
+  ; 3.5µs
+  (let [app (rfc/wrap-format +handler+ rfc/default-options)
+        request! (request-stream +json-request+)]
+
+    (title "RFC: JSON-REQUEST-RESPONSE")
+    (assert (= (:body +json-request+) (:body (app (request!)))))
+    (cc/quick-bench (app (request!))))
+
+  ; 8.9µs
+  (let [app (rfc/wrap-format +handler+ rfc/default-options)
+        request! (request-stream +transit-json-request+)]
+
+    (title "RFC: TRANSIT-REQUEST-RESPONSE")
+    (assert (= (:body +transit-json-request+) (slurp (:body (app (request!))))))
+    (cc/quick-bench (app (request!)))))
 
 ;;
 ;; Run
@@ -244,14 +259,16 @@
   (content-type)
   (accept)
   (request)
-  (decode-encode))
+  (ring-middleware-format-e2e)
+  (ring-format-e2e)
+  (parse-json))
 
 (comment
   (old)
   (content-type)
   (accept)
   (request)
-  (decode-encode)
-  (ring-middleware-format)
+  (ring-middleware-format-e2e)
+  (ring-format-e2e)
+  (parse-json)
   (all))
-

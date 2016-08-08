@@ -1,7 +1,6 @@
 (ns ring-format.core
   (:require [clojure.string :as str]
-            [ring-format.formats :as formats]
-            [clojure.core.memoize :as memoize])
+            [ring-format.formats :as formats])
   (:refer-clojure :exclude [compile]))
 
 (set! *warn-on-reflection* true)
@@ -129,12 +128,15 @@
 (defn format-request [formats request]
   (let [content-type (extract-content-type-format formats request)
         accept (extract-accept-format formats request)
-        decoder (decoder formats content-type)]
+        decoder (decoder formats content-type)
+        body (:body request)]
     (as-> request $
           (assoc $ ::request content-type)
           (assoc $ ::response accept)
           (if decoder
-            (update $ :body decoder)
+            (-> $
+                (assoc :body nil)
+                (assoc :body-params (decoder body)))
             request))))
 
 (defn format-response [formats request response]
@@ -148,57 +150,12 @@
       response)
     response))
 
-;;
-;; accept resolution
-;;
-
-(defn- old-sort-by-check
-  [by check headers]
-  (sort-by by (fn [a b]
-                (cond (= (= a check) (= b check)) 0
-                      (= a check) 1
-                      :else -1))
-           headers))
-
-(defn- old-parse-accept-header*
-  "Parse Accept headers into a sorted sequence of maps.
-  \"application/json;level=1;q=0.4\"
-  => ({:type \"application\" :sub-type \"json\"
-       :q 0.4 :parameter \"level=1\"})"
-  [accept-header]
-  (->> (map (fn [val]
-              (let [[media-range & rest] (str/split (str/trim val) #";")
-                    type (zipmap [:type :sub-type]
-                                 (str/split (str/trim media-range) #"/"))]
-                (cond (nil? rest)
-                      (assoc type :q 1.0)
-                      (= (first (str/triml (first rest)))
-                         \q)                                ;no media-range params
-                      (assoc type :q
-                                  (Double/parseDouble
-                                    (second (str/split (first rest) #"="))))
-                      :else
-                      (assoc (if-let [q-val (second rest)]
-                               (assoc type :q
-                                           (Double/parseDouble
-                                             (second (str/split q-val #"="))))
-                               (assoc type :q 1.0))
-                        :parameter (str/trim (first rest))))))
-            (str/split accept-header #","))
-       (old-sort-by-check :parameter nil)
-       (old-sort-by-check :type "*")
-       (old-sort-by-check :sub-type "*")
-       (sort-by :q >)))
-
-(def ^:private old-parse-accept-header
-  "Memoized form of [[parse-accept-header*]]"
-  (memoize/fifo old-parse-accept-header* :fifo/threshold 500))
-
-(defn- old-accept-maps [extract-accept-fn request]
-  (if-let [accept (extract-accept-fn request)]
-    (if (string? accept)
-      (old-parse-accept-header accept)
-      accept)))
+(defn wrap-format [handler options]
+  (let [formats (compile options)]
+    (fn [request]
+      (let [format-request (format-request formats request)]
+        (->> (handler format-request)
+             (format-response formats format-request))))))
 
 ;;
 ;; customization
@@ -258,78 +215,3 @@
 
 (def no-decoding (partial transform-adapter-options #(dissoc % :decoder)))
 (def no-encoding (partial transform-adapter-options #(dissoc % :encoder)))
-
-;;
-;; spike
-;;
-
-(def +request+ {:body "{\"kikka\": 42}"
-                :headers {"content-type" "application/json"
-                          "accept" "application/json"}})
-(def +response+ {:body {:kukka 24}})
-
-(println "---- accept ----")
-
-;; RMF
-#_(let [extract-accept-fn (:extract-accept-fn default-options)]
-    (time
-      (dotimes [_ 1000000]
-        (old-accept-maps extract-accept-fn +request+))))
-
-;; NEW
-#_(let [{:keys [consumes extract-accept-fn]} (compile default-options)]
-    (time
-      (dotimes [_ 1000000]
-        (extract-accept consumes extract-accept-fn +request+))))
-
-(println "---- content-type ----")
-
-;; RMF
-#_(let [json-request? (fn [{:keys [body] :as req}]
-                        (if-let [^String type (get req :content-type
-                                                   (get-in req [:headers "Content-Type"]
-                                                           (get-in req [:headers "content-type"])))]
-                          (and body (not (empty? (re-find #"^application/(vnd.+)?json" type))))))]
-    (time
-      (dotimes [_ 1000000]
-        (json-request? +request+))))
-
-;; NEW
-#_(let [{:keys [consumes matchers extract-content-type-fn]} (compile default-options)]
-    (time
-      (dotimes [_ 1000000]
-        (extract-content-type consumes matchers extract-content-type-fn +request+))))
-
-;; NEW2
-(let [formats (-> default-options no-decoding compile)]
-  (time
-    (dotimes [_ 1000000]
-      (format-request formats +request+))))
-
-;; NAIVE
-#_(let [json-request? (fn [req] (and (= (get-in req [:headers "content-type"]) "application/json")
-                                     (:body req)
-                                     true))]
-    (time
-      (dotimes [_ 1000000]
-        (json-request? +request+))))
-
-(println "---- decode&encode ----")
-
-(let [formats (-> default-options compile)]
-  (time
-    (dotimes [_ 1000000]
-      (format-request formats +request+))))
-
-(let [formats (-> default-options compile)]
-  (time
-    (dotimes [_ 1000000]
-      (as-> +request+ $
-            (format-response formats $ +response+)))))
-
-(let [formats (-> default-options compile)]
-  (time
-    (dotimes [_ 1000000]
-      (as-> +request+ $
-            (format-request formats $)
-            (format-response formats $ +response+)))))
