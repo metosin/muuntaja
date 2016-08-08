@@ -226,7 +226,7 @@
     (assert (= {:kikka 42} (:body (app (request!)))))
     (cc/quick-bench (app (request!))))
 
-  ; 4.0µs
+  ; 3.6µs
   (let [app (rfc/wrap-format +handler+ (-> rfc/default-options rfc/no-encoding))
         request! (request-stream +transit-json-request+)]
 
@@ -234,7 +234,7 @@
     (assert (= {:kikka 42} (:body (app (request!)))))
     (cc/quick-bench (app (request!))))
 
-  ; 3.8µs
+  ; 3.6µs
   (let [app (rfc/wrap-format +handler+ rfc/default-options)
         request! (request-stream +json-request+)]
 
@@ -242,7 +242,7 @@
     (assert (= (:body +json-request+) (:body (app (request!)))))
     (cc/quick-bench (app (request!))))
 
-  ; 7.9µs
+  ; 7.1µs
   (let [app (rfc/wrap-format +handler+ rfc/default-options)
         request! (request-stream +transit-json-request+)]
 

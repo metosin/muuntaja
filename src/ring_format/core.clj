@@ -17,7 +17,7 @@
   (encoder [_ format])
   (decoder [_ format]))
 
-(defrecord Formats [extract-content-type-fn extract-accept-fn encode-body-fn consumes matchers adapters formats default-format]
+(defrecord Formats [extract-content-type-fn extract-accept-fn encode-body-fn encode-error-fn consumes matchers adapters formats default-format]
   FormatExtractor
   (extract-content-type-format [_ request]
     (if-let [content-type (extract-content-type-fn request)]
@@ -142,9 +142,14 @@
           (assoc $ ::request content-type)
           (assoc $ ::response accept)
           (if decoder
-            (-> $
-                (assoc :body nil)
-                (assoc :body-params (decoder body)))
+            (try
+              (-> $
+                  (assoc :body nil)
+                  (assoc :body-params (decoder body)))
+              (catch Exception e
+                (if-let [f (:encode-exception-fn formats)]
+                  (f e content-type $)
+                  (throw e))))
             request))))
 
 (defn format-response [formats request response]
@@ -164,8 +169,8 @@
   (let [formats (compile options)]
     (fn
       ([request]
-      (let [format-request (format-request formats request)]
-        (->> (handler format-request)
+       (let [format-request (format-request formats request)]
+         (->> (handler format-request)
               (format-response formats format-request))))
       ([request respond raise]
        (let [format-request (format-request formats request)]
@@ -188,11 +193,21 @@
 (defn encode-collections [_ response]
   (-> response :body coll?))
 
-;; TODO: `:handle-error`, `:charset`
+(defn default-handle-exception [^Exception e format request]
+  (throw
+    (ex-info
+      (format "Malformed %s request." format)
+      {:type ::decode
+       :format format
+       :request request}
+      e)))
+
+;; TODO: `:charset`
 (def default-options
   {:extract-content-type-fn extract-content-type-ring
    :extract-accept-fn extract-accept-ring
    :encode-body-fn encode-collections
+   :encode-exception-fn default-handle-exception
    :adapters {:json {:format ["application/json" #"^application/(vnd.+)?json"]
                      :decoder [formats/make-json-decoder {:keywords? true}]
                      :encoder [formats/make-json-encoder]
