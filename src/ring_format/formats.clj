@@ -7,14 +7,17 @@
             [msgpack.core :as msgpack]
             [clojure.java.io :as io]
             [ring-format.util :as util])
-  (:import [java.io ByteArrayOutputStream DataInputStream DataOutputStream]))
+  (:import [java.io ByteArrayOutputStream DataInputStream DataOutputStream InputStreamReader]))
 
 (set! *warn-on-reflection* true)
 
 ;; JSON
 
-(defn make-json-decoder [{:keys [key-fn array-coerce-fn]}]
-  (fn [s] (json/parse-string s key-fn array-coerce-fn)))
+(defn make-json-decoder [{:keys [keywords?]}]
+  (fn [x]
+    (if (string? x)
+      (json/parse-string x keywords?)
+      (json/parse-stream (InputStreamReader. x) keywords?))))
 
 (defn make-json-encoder [options]
   (fn [data] (json/generate-string data options)))

@@ -230,8 +230,9 @@
   {:extract-content-type-fn extract-content-type-ring
    :extract-accept-fn extract-accept-ring
    :adapters {:json {:format ["application/json" #"^application/(vnd.+)?json"]
-                     :decoder [formats/make-json-decoder {:key-fn true}]
-                     :encoder [formats/make-json-encoder]}
+                     :decoder [formats/make-json-decoder {:keywords? true}]
+                     :encoder [formats/make-json-encoder]
+                     :binary? true}
               :edn {:format ["application/edn" #"^application/(vnd.+)?(x-)?(clojure|edn)"]
                     :decoder [formats/make-edn-decoder]
                     :encoder [formats/make-edn-encoder]}
