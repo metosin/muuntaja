@@ -218,23 +218,23 @@
 
 (defn ring-format-e2e []
 
-  ; 2.2µs
-  (let [app (rfc/wrap-format +handler+ (rfc/no-encoding rfc/default-options))
+  ; 2.3µs
+  (let [app (rfc/wrap-format +handler+ (-> rfc/default-options rfc/no-encoding))
         request! (request-stream +json-request+)]
 
     (title "RFC: JSON-REQUEST")
     (assert (= {:kikka 42} (:body (app (request!)))))
     (cc/quick-bench (app (request!))))
 
-  ; 4.1µs
-  (let [app (rfc/wrap-format +handler+ (rfc/no-encoding rfc/default-options))
+  ; 4.0µs
+  (let [app (rfc/wrap-format +handler+ (-> rfc/default-options rfc/no-encoding))
         request! (request-stream +transit-json-request+)]
 
     (title "RFC: TRANSIT-REQUEST")
     (assert (= {:kikka 42} (:body (app (request!)))))
     (cc/quick-bench (app (request!))))
 
-  ; 3.5µs
+  ; 3.8µs
   (let [app (rfc/wrap-format +handler+ rfc/default-options)
         request! (request-stream +json-request+)]
 
@@ -242,7 +242,7 @@
     (assert (= (:body +json-request+) (:body (app (request!)))))
     (cc/quick-bench (app (request!))))
 
-  ; 8.9µs
+  ; 7.9µs
   (let [app (rfc/wrap-format +handler+ rfc/default-options)
         request! (request-stream +transit-json-request+)]
 

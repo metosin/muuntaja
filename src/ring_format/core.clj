@@ -17,7 +17,7 @@
   (encoder [_ format])
   (decoder [_ format]))
 
-(defrecord Formats [consumes matchers extract-content-type-fn extract-accept-fn adapters formats default-format]
+(defrecord Formats [extract-content-type-fn extract-accept-fn encode-body-fn consumes matchers adapters formats default-format]
   FormatExtractor
   (extract-content-type-format [_ request]
     (if-let [content-type (extract-content-type-fn request)]
@@ -139,14 +139,20 @@
                 (assoc :body-params (decoder body)))
             request))))
 
+(defn encode-response-body? [formats request response]
+  (if-let [f (:encode-body-fn formats)]
+    (f request response)))
+
 (defn format-response [formats request response]
   (if-let [format (or (::format response)
                       (::response request)
                       (default-format formats))]
+    (if (encode-response-body? formats request response)
     (if-let [encoder (encoder formats format)]
       (as-> response $
             (assoc $ ::format format)
             (update $ :body encoder))
+      response)
       response)
     response))
 
@@ -183,9 +189,13 @@
   [request]
   (get (:headers request) "accept"))
 
+(defn encode-collections [_ response]
+  (-> response :body coll?))
+
 (def default-options
   {:extract-content-type-fn extract-content-type-ring
    :extract-accept-fn extract-accept-ring
+   :encode-body-fn encode-collections
    :adapters {:json {:format ["application/json" #"^application/(vnd.+)?json"]
                      :decoder [formats/make-json-decoder {:keywords? true}]
                      :encoder [formats/make-json-encoder]
