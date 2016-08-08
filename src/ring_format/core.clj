@@ -148,11 +148,11 @@
                       (::response request)
                       (default-format formats))]
     (if (encode-response-body? formats request response)
-    (if-let [encoder (encoder formats format)]
-      (as-> response $
-            (assoc $ ::format format)
-            (update $ :body encoder))
-      response)
+      (if-let [encoder (encoder formats format)]
+        (as-> response $
+              (assoc $ ::format format)
+              (update $ :body encoder))
+        response)
       response)
     response))
 
@@ -192,6 +192,7 @@
 (defn encode-collections [_ response]
   (-> response :body coll?))
 
+;; TODO: `:handle-error`, `:charset`
 (def default-options
   {:extract-content-type-fn extract-content-type-ring
    :extract-accept-fn extract-accept-ring
