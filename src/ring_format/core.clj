@@ -93,7 +93,11 @@
           :when (string? type)]
       [k type])))
 
-(defn make-adapters [adapters formats]
+(defn- encode-response-body? [formats request response]
+  (if-let [f (:encode-body-fn formats)]
+    (f request response)))
+
+(defn- make-adapters [adapters formats]
   (let [make (fn [spec spec-opts]
                (if (vector? spec)
                  (let [[f opts] spec]
@@ -125,6 +129,10 @@
          :produces (format->content-type format-types)
          :matchers (format-regexps format-types)}))))
 
+;;
+;; Ring
+;;
+
 (defn format-request [formats request]
   (let [content-type (extract-content-type-format formats request)
         accept (extract-accept-format formats request)
@@ -138,10 +146,6 @@
                 (assoc :body nil)
                 (assoc :body-params (decoder body)))
             request))))
-
-(defn encode-response-body? [formats request response]
-  (if-let [f (:encode-body-fn formats)]
-    (f request response)))
 
 (defn format-response [formats request response]
   (if-let [format (or (::format response)
@@ -158,26 +162,18 @@
 
 (defn wrap-format [handler options]
   (let [formats (compile options)]
-    (fn [request]
+    (fn
+      ([request]
       (let [format-request (format-request formats request)]
         (->> (handler format-request)
-             (format-response formats format-request))))))
+              (format-response formats format-request))))
+      ([request respond raise]
+       (let [format-request (format-request formats request)]
+         (handler format-request #(respond (format-response formats format-request %)) raise))))))
 
 ;;
 ;; customization
 ;;
-
-(defn extract-content-type-default
-  "Extracts content-type from request:
-  1) [:content-type]
-  2) [:headers \"content-type\"]
-  3) [:headers [\"Content-Type\"]"
-  [request]
-  (or (:content-type request)
-      (let [headers (:headers request)]
-        (or
-          (get headers "content-type")
-          (get headers "Content-Type")))))
 
 (defn extract-content-type-ring
   "Extracts content-type from ring-request."
