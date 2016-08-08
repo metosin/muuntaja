@@ -1,6 +1,10 @@
 (ns ring-format.perf-test
   (:require [criterium.core :as cc]
-            [ring-format.core :as rfc]))
+            [ring-format.core :as rfc]
+            [cheshire.core :as json]
+            [ring.middleware.format-params :as rmfp]
+            [ring.middleware.format :as rmf])
+  (:import [java.io ByteArrayInputStream]))
 
 ;;
 ;; start repl with `lein perf repl`
@@ -18,6 +22,22 @@
 ;;
 
 (set! *warn-on-reflection* true)
+
+(defn request-stream
+  ([request]
+   (request-stream request 100000))
+  ([request count]
+   (let [i (atom 0)
+         data (mapv
+                (fn [_]
+                  (->
+                    request
+                    (update :body #(ByteArrayInputStream. (.getBytes ^String %)))))
+                (range count))]
+     (fn []
+       (let [item (nth data @i)]
+         (swap! i inc)
+         item)))))
 
 (defn title [s]
   (println
@@ -39,7 +59,9 @@
 (def +transit-json-request+
   {:headers {"content-type" "application/transit+json"
              "accept" "application/transit+json"}
-   :body "kikka"})
+   :body "[\"^ \",\"~:kikka\",42]"})
+
+(def +handler+ (fn [request] {:status 200 :body (:body-params request)}))
 
 ;;
 ;; naive
@@ -102,7 +124,7 @@
 ;;
 
 (defn content-type []
-  (let [formats (rfc/compile rfc/default-options)]
+  (let [formats (-> rfc/default-options rfc/no-decoding rfc/no-encoding rfc/compile )]
 
     ; 52ns
     ; 38ns consumes & produces (-27%)
@@ -121,7 +143,7 @@
       (rfc/extract-content-type-format formats +transit-json-request+))))
 
 (defn accept []
-  (let [formats (rfc/compile rfc/default-options)]
+  (let [formats (-> rfc/default-options rfc/no-decoding rfc/no-encoding rfc/compile )]
 
     ; 71ns
     ; 58ns consumes & produces (-18%)
@@ -132,17 +154,17 @@
       (rfc/extract-accept-format formats +transit-json-request+))))
 
 (defn request []
-  (let [formats (rfc/compile rfc/default-options)]
+  (let [formats (-> rfc/default-options rfc/no-decoding rfc/no-encoding rfc/compile )]
 
     ; 179ns
     ; 187ns (records)
-    (title "Request: JSON")
+    (title "Accept & Contnet-type: JSON")
     (cc/quick-bench
       (rfc/format-request formats +json-request+))
 
     ; 211ns
     ; 226ns (records)
-    (title "Request: Transit")
+    (title "Accept & Contnet-type: Transit")
     (cc/quick-bench
       (rfc/format-request formats +transit-json-request+))))
 
@@ -171,6 +193,52 @@
       (cc/quick-bench
         (handle-format +json-request+ +json-response+)))))
 
+;;
+;; handlers
+;;
+
+(defn ring-middleware-format []
+
+  ; 10.2µs
+  (let [app (rmfp/wrap-restful-params +handler+ {:formats [:json-kw :edn :msgpack-kw :yaml-kw :transit-msgpack :transit-json]})
+        next (request-stream +json-request+ 1000000)
+        call #(app (next))]
+
+    (title "RMF: JSON-REQUEST")
+    (assert (= {:kikka 42} (:body (call))))
+    (cc/quick-bench (call)))
+
+  ; 8.5µs
+  (let [app (rmfp/wrap-restful-params +handler+ {:formats [:json-kw :edn :msgpack-kw :yaml-kw :transit-msgpack :transit-json]})
+        next (request-stream +transit-json-request+ 1000000)
+        call #(app (next))]
+
+    (title "RMF: TRANSIT-REQUEST")
+    (assert (= {:kikka 42} (:body (call))))
+    (cc/quick-bench (call)))
+
+  ; 22.5µs
+  (let [app (rmf/wrap-restful-format +handler+ {:formats [:json-kw :edn :msgpack-kw :yaml-kw :transit-msgpack :transit-json]})
+        next (request-stream +json-request+ 1000000)
+        call #(app (next))]
+
+    (title "RMF: JSON-REQUEST-RESPONSE")
+    (assert (= (:body +json-request+) (slurp (:body (call)))))
+    (cc/quick-bench (call)))
+
+  ; 21.0µs
+  (let [app (rmf/wrap-restful-format +handler+ {:formats [:json-kw :edn :msgpack-kw :yaml-kw :transit-msgpack :transit-json]})
+        next (request-stream +transit-json-request+ 1000000)
+        call #(app (next))]
+
+    (title "RMF: TRANSIT-REQUEST-RESPONSE")
+    (assert (= (:body +transit-json-request+) (slurp (:body (call)))))
+    (cc/quick-bench (call))))
+
+;;
+;; Run
+;;
+
 (defn all []
   (old)
   (content-type)
@@ -184,5 +252,6 @@
   (accept)
   (request)
   (decode-encode)
+  (ring-middleware-format)
   (all))
 
