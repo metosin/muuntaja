@@ -98,20 +98,26 @@
     (f request response)))
 
 (defn- make-adapters [adapters formats]
-  (let [make (fn [spec spec-opts]
-               (if (vector? spec)
-                 (let [[f opts] spec]
-                   (f (merge opts spec-opts)))
-                 spec))]
+  (let [make (fn [spec spec-opts [p pf]]
+               (let [g (if (vector? spec)
+                         (let [[f opts] spec]
+                           (f (merge opts spec-opts)))
+                         spec)]
+                 (if (and p pf)
+                   (fn [x]
+                     (if (and (record? x) (satisfies? p x))
+                       (pf x)
+                       (g x)))
+                   g)))]
     (->> formats
          (keep identity)
          (mapv (fn [format]
-                 (if-let [{:keys [decoder decoder-opts encoder encoder-opts] :as adapter}
+                 (if-let [{:keys [decoder decoder-opts encoder encoder-opts encode-protocol] :as adapter}
                           (if (map? format) format (get adapters format))]
                    [format (merge
                              (select-keys adapter [:binary?])
-                             (if decoder {:decode (make decoder decoder-opts)})
-                             (if encoder {:encode (make encoder encoder-opts)}))])))
+                             (if decoder {:decode (make decoder decoder-opts nil)})
+                             (if encoder {:encode (make encoder encoder-opts encode-protocol)}))])))
          (into {}))))
 
 (defn compile [{:keys [adapters formats] :as options}]

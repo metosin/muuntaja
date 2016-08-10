@@ -3,7 +3,8 @@
             [ring-format.core :as rfc]
             [cheshire.core :as json]
             [ring.middleware.format-params :as rmfp]
-            [ring.middleware.format :as rmf])
+            [ring.middleware.format :as rmf]
+            [ring-format.formats :as formats])
   (:import [java.io ByteArrayInputStream]))
 
 ;;
@@ -61,7 +62,13 @@
              "accept" "application/transit+json"}
    :body "[\"^ \",\"~:kikka\",42]"})
 
+(defrecord Hello [name]
+  formats/EncodeJson
+  (encode-json [_]
+    (str "{\"hello\":\"" name "\"}")))
+
 (def +handler+ (fn [request] {:status 200 :body (:body-params request)}))
+(def +handler2+ (fn [request] {:status 200 :body (->Hello "yello")}))
 
 ;;
 ;; naive
@@ -248,6 +255,15 @@
 
     (title "RFC: TRANSIT-REQUEST-RESPONSE")
     (assert (= (:body +transit-json-request+) (slurp (:body (app (request!))))))
+    (cc/quick-bench (app (request!))))
+
+  ; 3.8µs
+  ; 2.6µs Protocol (-30%)
+  (let [app (rfc/wrap-format +handler2+ (assoc-in rfc/default-options [:adapters :json :encode-protocol] [formats/EncodeJson formats/encode-json]))
+        request! (request-stream +json-request+)]
+
+    (title "RFC: JSON-REQUEST-RESPONSE (PROTOCOL)")
+    (assert (= "{\"hello\":\"yello\"}" (:body (app (request!)))))
     (cc/quick-bench (app (request!)))))
 
 ;;

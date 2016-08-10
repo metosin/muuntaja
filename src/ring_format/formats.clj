@@ -22,6 +22,9 @@
 (defn make-json-encoder [options]
   (fn [data] (json/generate-string data options)))
 
+(defprotocol EncodeJson
+  (encode-json [this]))
+
 ;; msgpack
 
 (defn make-msgpack-decoder [options]
@@ -37,6 +40,9 @@
         (msgpack/pack-stream (walk/stringify-keys data) data-out) options)
       (.toByteArray out-stream))))
 
+(defprotocol EncodeMessagePack
+  (encode-msgpack [this]))
+
 ;; YAML
 
 (defn make-yaml-decoder [options]
@@ -47,6 +53,9 @@
   (let [options-args (mapcat identity options)]
     (fn [data]
       (apply yaml/generate-string data options-args))))
+
+(defprotocol EncodeYaml
+  (encode-yaml [this]))
 
 ;; EDN
 
@@ -59,6 +68,9 @@
 (defn make-edn-encoder [_]
   (fn [data]
     (pr-str data)))
+
+(defprotocol EncodeEdn
+  (encode-edn [this]))
 
 ;; TRANSIT
 
@@ -78,3 +90,9 @@
           wrt (transit/writer out full-type options)]
       (transit/write wrt data)
       (.toByteArray out))))
+
+(defprotocol EncodeTransitJson
+  (encode-transit-json [this]))
+
+(defprotocol EncodeTransitMessagePack
+  (encode-transit-msgpack [this]))
