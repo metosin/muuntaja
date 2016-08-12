@@ -183,6 +183,20 @@
          (handler format-request #(respond (format-response formats format-request %)) raise))))))
 
 ;;
+;; Interceptors
+;;
+
+(defrecord Interceptor [enter leave])
+
+(defn format-interceptor [options]
+  (let [formats (compile options)]
+    (map->Interceptor
+      {:enter (fn [ctx]
+                (update ctx :request (partial format-request formats)))
+       :leave (fn [ctx]
+                (update ctx :response (partial format-response formats (:request ctx))))})))
+
+;;
 ;; customization
 ;;
 

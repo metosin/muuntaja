@@ -70,6 +70,11 @@
 (def +handler+ (fn [request] {:status 200 :body (:body-params request)}))
 (def +handler2+ (fn [_] {:status 200 :body (->Hello "yello")}))
 
+(defn handle [context handler]
+  (assoc context :response (handler (:request context))))
+
+(defrecord Context [request])
+
 ;;
 ;; naive
 ;;
@@ -266,6 +271,26 @@
     (assert (= "{\"hello\":\"yello\"}" (:body (app (request!)))))
     (cc/quick-bench (app (request!)))))
 
+(defn interceptor-e2e []
+
+  ; 3.8µs
+  (let [{:keys [enter leave]} (rfc/format-interceptor rfc/default-options)
+        app (fn [request] (-> (->Context request) enter (handle +handler+) leave :response))
+        request! (request-stream +json-request+)]
+
+    (title "RFC: Interceptor JSON-REQUEST-RESPONSE")
+    (assert (= (:body +json-request+) (:body (app (request!)))))
+    (cc/quick-bench (app (request!))))
+
+  ; 7.5µs
+  (let [{:keys [enter leave]} (rfc/format-interceptor rfc/default-options)
+        app (fn [request] (-> (->Context request) enter (handle +handler+) leave :response))
+        request! (request-stream +transit-json-request+)]
+
+    (title "RFC: Interceptor JSON-REQUEST-RESPONSE")
+    (assert (= (:body +transit-json-request+) (slurp (:body (app (request!))))))
+    (cc/quick-bench (app (request!)))))
+
 ;;
 ;; Run
 ;;
@@ -284,7 +309,8 @@
   (content-type)
   (accept)
   (request)
+  (parse-json)
   (ring-middleware-format-e2e)
   (ring-format-e2e)
-  (parse-json)
+  (interceptor-e2e)
   (all))
