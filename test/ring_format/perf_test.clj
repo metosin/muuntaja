@@ -68,7 +68,7 @@
     (str "{\"hello\":\"" name "\"}")))
 
 (def +handler+ (fn [request] {:status 200 :body (:body-params request)}))
-(def +handler2+ (fn [request] {:status 200 :body (->Hello "yello")}))
+(def +handler2+ (fn [_] {:status 200 :body (->Hello "yello")}))
 
 ;;
 ;; naive
