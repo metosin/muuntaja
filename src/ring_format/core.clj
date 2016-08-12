@@ -80,7 +80,7 @@
           :when (not (string? type))]
       [k type])))
 
-(defn- format->content-type [format-types]
+(defn- format->content-type [format-types charset]
   (reduce
     (fn [acc [k type]]
       (if-not (acc k)
@@ -91,7 +91,7 @@
           :let [types (flatten (vector type-or-types))]
           type types
           :when (string? type)]
-      [k type])))
+      [k (str type "; charset=" charset)])))
 
 (defn- encode-response-body? [formats request response]
   (if-let [f (:encode-body-fn formats)]
@@ -120,7 +120,7 @@
                              (if encoder {:encode (make encoder encoder-opts encode-protocol)}))])))
          (into {}))))
 
-(defn compile [{:keys [adapters formats] :as options}]
+(defn compile [{:keys [adapters formats charset] :as options}]
   (let [selected-format? (set formats)
         format-types (for [[k {:keys [format]}] adapters
                            :when (selected-format? k)]
@@ -132,7 +132,7 @@
         {:default-format (first formats)
          :adapters adapters
          :consumes (content-type->format format-types)
-         :produces (format->content-type format-types)
+         :produces (format->content-type format-types charset)
          :matchers (format-regexps format-types)}))))
 
 ;;
@@ -208,12 +208,12 @@
        :request request}
       e)))
 
-;; TODO: `:charset`
 (def default-options
   {:extract-content-type-fn extract-content-type-ring
    :extract-accept-fn extract-accept-ring
    :encode-body-fn encode-collections
    :encode-exception-fn default-handle-exception
+   :charset "utf-8"
    :adapters {:json {:format ["application/json" #"^application/(vnd.+)?json"]
                      :decoder [formats/make-json-decoder {:keywords? true}]
                      :encoder [formats/make-json-encoder]
