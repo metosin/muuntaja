@@ -1,10 +1,10 @@
-(ns ring-format.perf-test
+(ns muuntaja.perf-test
   (:require [criterium.core :as cc]
-            [ring-format.core :as rfc]
+            [muuntaja.core :as rfc]
             [cheshire.core :as json]
             [ring.middleware.format-params :as rmfp]
             [ring.middleware.format :as rmf]
-            [ring-format.formats :as formats])
+            [muuntaja.formats :as formats])
   (:import [java.io ByteArrayInputStream]))
 
 ;;
@@ -228,7 +228,7 @@
     (assert (= (:body +transit-json-request+) (slurp (:body (app (request!))))))
     (cc/quick-bench (app (request!)))))
 
-(defn ring-format-e2e []
+(defn muuntaja-e2e []
 
   ; 2.3µs
   (let [app (rfc/wrap-format +handler+ (-> rfc/default-options rfc/no-encoding))
@@ -301,7 +301,7 @@
   (accept)
   (request)
   (ring-middleware-format-e2e)
-  (ring-format-e2e)
+  (muuntaja-e2e)
   (parse-json))
 
 (comment
@@ -311,6 +311,6 @@
   (request)
   (parse-json)
   (ring-middleware-format-e2e)
-  (ring-format-e2e)
+  (muuntaja-e2e)
   (interceptor-e2e)
   (all))

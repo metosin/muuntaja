@@ -1,4 +1,4 @@
-(ns ring-format.util
+(ns muuntaja.util
   (:import [java.io ByteArrayOutputStream InputStream]))
 
 (defn slurp-to-bytes ^bytes [^InputStream in]

@@ -1,6 +1,6 @@
-(defproject ikitommi/ring-format "0.1.0-SNAPSHOT"
-  :description "Snappy lib for encoding/decoding http formats"
-  :url "https://github.com/ikitommi/ring-format"
+(defproject metosin/muuntaja "0.1.0-SNAPSHOT"
+  :description "Snappy lib for encoding/decoding http api formats"
+  :url "https://github.com/metosin/muuntaja"
   :license {:name "Eclipse Public License - v 1.0"
             :url "http://www.eclipse.org/legal/epl-v10.html"
             :distribution :repo
@@ -14,7 +14,7 @@
                  [clojure-msgpack "1.2.0"]
                  [com.cognitect/transit-clj "0.8.288"]]
   :plugins [[lein-codox "0.9.5"]]
-  :codox {:src-uri "http://github.com/ikitommi/ring-format/blob/master/{filepath}#L{line}"
+  :codox {:src-uri "http://github.com/metosin/muuntaja/blob/master/{filepath}#L{line}"
           :defaults {:doc/format :markdown}}
   :profiles {:dev {:dependencies [[org.clojure/clojure "1.8.0"]
                                   [ring-middleware-format "0.7.0"]

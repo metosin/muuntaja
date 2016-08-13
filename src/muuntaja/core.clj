@@ -1,6 +1,6 @@
-(ns ring-format.core
+(ns muuntaja.core
   (:require [clojure.string :as str]
-            [ring-format.formats :as formats])
+            [muuntaja.formats :as formats])
   (:refer-clojure :exclude [compile]))
 
 (set! *warn-on-reflection* true)

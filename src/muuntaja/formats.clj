@@ -1,4 +1,4 @@
-(ns ring-format.formats
+(ns muuntaja.formats
   (:require [cheshire.core :as json]
             [clj-yaml.core :as yaml]
             [clojure.tools.reader.edn :as edn]
@@ -6,7 +6,7 @@
             [cognitect.transit :as transit]
             [msgpack.core :as msgpack]
             [clojure.java.io :as io]
-            [ring-format.util :as util])
+            [muuntaja.util :as util])
   (:import [java.io ByteArrayOutputStream DataInputStream DataOutputStream InputStreamReader]))
 
 (set! *warn-on-reflection* true)
