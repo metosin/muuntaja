@@ -7,8 +7,8 @@ Snappy Clojure library for managing (http) api-formats. Provides adapters for bo
 Design goals:
 
 - explicit configuration, no shared mutable state
-- performance over 100% compliancy with [HTTP spec](https://www.w3.org/Protocols/rfc2616/rfc2616.txt)
-- extendable & pluggable: new formats, changing behavior
+- pragmatic & fast over 100% compliancy with [HTTP spec](https://www.w3.org/Protocols/rfc2616/rfc2616.txt)
+- extendable & pluggable: new formats, behavior
 - standalone + adapters for both ring (middleware) and pedestal (interceptors)
 - replacement for [ring-middleware-defaults](https://github.com/ngrunwald/ring-middleware-format)
 
@@ -33,7 +33,7 @@ Full [API documentation](http://metosin.github.com/muuntaja) is available.
 
 ## License
 
-### [original code](https://github.com/ngrunwald/ring-middleware-format)
+### Original Code (ring-middleware-format)
 
 Copyright &copy; 2011, 2012, 2013, 2014 Nils Grunwald<br>
 Copyright &copy; 2015, 2016 Juho Teperi
