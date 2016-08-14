@@ -118,8 +118,8 @@
                           (if (map? format) format (get adapters format))]
                    [format (map->Adapter
                              (merge
-                             (select-keys adapter [:binary?])
-                             (if decoder {:decode (make decoder decoder-opts nil)})
+                               (select-keys adapter [:binary?])
+                               (if decoder {:decode (make decoder decoder-opts nil)})
                                (if encoder {:encode (make encoder encoder-opts encode-protocol)})))])))
          (into {}))))
 
@@ -162,14 +162,16 @@
             request))))
 
 (defn format-response [formats request response]
-  (if-let [format (or (::format response)
-                      (::response request)
-                      (default-format formats))]
-    (if (encode-response-body? formats request response)
-      (if-let [encoder (encoder formats format)]
-        (as-> response $
-              (assoc $ ::format format)
-              (update $ :body encoder))
+  (if-not (::format response)
+    (if-let [format (or (::encode response)
+                        (::response request)
+                        (default-format formats))]
+      (if (encode-response-body? formats request response)
+        (if-let [encoder (encoder formats format)]
+          (-> response
+              (assoc ::format format)
+              (update :body encoder))
+          response)
         response)
       response)
     response))
