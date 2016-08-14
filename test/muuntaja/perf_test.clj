@@ -4,6 +4,7 @@
             [cheshire.core :as json]
             [ring.middleware.format-params :as rmfp]
             [ring.middleware.format :as rmf]
+            [ring.middleware.json :as rmj]
             [muuntaja.formats :as formats])
   (:import [java.io ByteArrayInputStream]))
 
@@ -228,6 +229,25 @@
     (assert (= (:body +transit-json-request+) (slurp (:body (app (request!))))))
     (cc/quick-bench (app (request!)))))
 
+(defn ring-json-e2e []
+  (let [+handler+ (fn [request] {:status 200 :body (:body request)})]
+
+    ; 5.2µs
+    (let [app (rmj/wrap-json-body +handler+ {:keywords? true})
+          request! (request-stream +json-request+)]
+
+      (title "ring-json: JSON-REQUEST")
+      (assert (= {:kikka 42} (:body (app (request!)))))
+      (cc/quick-bench (app (request!))))
+
+    ; 7.7µs
+    (let [app (-> +handler+ (rmj/wrap-json-body {:keywords? true}) (rmj/wrap-json-response))
+          request! (request-stream +json-request+)]
+
+      (title "ring-json: JSON-REQUEST-RESPONSE")
+      (assert (= (:body +json-request+) (:body (app (request!)))))
+      (cc/quick-bench (app (request!))))))
+
 (defn muuntaja-e2e []
 
   ; 2.3µs
@@ -300,9 +320,11 @@
   (content-type)
   (accept)
   (request)
+  (parse-json)
   (ring-middleware-format-e2e)
+  (ring-json-e2e)
   (muuntaja-e2e)
-  (parse-json))
+  (interceptor-e2e))
 
 (comment
   (old)
@@ -311,6 +333,7 @@
   (request)
   (parse-json)
   (ring-middleware-format-e2e)
+  (ring-json-e2e)
   (muuntaja-e2e)
   (interceptor-e2e)
   (all))
