@@ -8,17 +8,19 @@
 (defn- match? [^String content-type string-or-regexp request]
   (and (:body request) (re-find string-or-regexp content-type)))
 
-(defprotocol FormatExtractor
+(defprotocol RequestFormatter
   (extract-content-type-format [_ request])
-  (extract-accept-format [_ request])
-  (default-format [_]))
+  (extract-accept-format [_ request]))
 
 (defprotocol Formatter
   (encoder [_ format])
-  (decoder [_ format]))
+  (decoder [_ format])
+  (default-format [_]))
+
+(defrecord Adapter [encode decode binary?])
 
 (defrecord Formats [extract-content-type-fn extract-accept-fn encode-body-fn encode-error-fn consumes matchers adapters formats default-format]
-  FormatExtractor
+  RequestFormatter
   (extract-content-type-format [_ request]
     (if-let [content-type (extract-content-type-fn request)]
       (or (get consumes content-type)
@@ -29,26 +31,26 @@
                 (< (inc i) (count matchers)) (recur (inc i))))))
       (nth matchers 1)))
 
+  ;; TODO: really parse ;-stuff, memoized fn?
   (extract-accept-format [_ request]
     (if-let [accept (extract-accept-fn request)]
       (or
         (get consumes accept)
-        ;; TODO: remove ;-stuff
         (let [data (str/split accept #",\s*")]
           (loop [i 0]
             (or (get consumes (nth data i))
                 (if (< (inc i) (count data))
                   (recur (inc i)))))))))
 
-  (default-format [_]
-    default-format)
-
   Formatter
   (encoder [_ format]
     (-> format adapters :encode))
 
   (decoder [_ format]
-    (-> format adapters :decode)))
+    (-> format adapters :decode))
+
+  (default-format [_]
+    default-format))
 
 ;;
 ;; Content-type resolution
@@ -97,7 +99,7 @@
   (if-let [f (:encode-body-fn formats)]
     (f request response)))
 
-(defn- make-adapters [adapters formats]
+(defn- compile-adapters [adapters formats]
   (let [make (fn [spec spec-opts [p pf]]
                (let [g (if (vector? spec)
                          (let [[f opts] spec]
@@ -114,10 +116,11 @@
          (mapv (fn [format]
                  (if-let [{:keys [decoder decoder-opts encoder encoder-opts encode-protocol] :as adapter}
                           (if (map? format) format (get adapters format))]
-                   [format (merge
+                   [format (map->Adapter
+                             (merge
                              (select-keys adapter [:binary?])
                              (if decoder {:decode (make decoder decoder-opts nil)})
-                             (if encoder {:encode (make encoder encoder-opts encode-protocol)}))])))
+                               (if encoder {:encode (make encoder encoder-opts encode-protocol)})))])))
          (into {}))))
 
 (defn compile [{:keys [adapters formats charset] :as options}]
@@ -125,7 +128,7 @@
         format-types (for [[k {:keys [format]}] adapters
                            :when (selected-format? k)]
                        [k format])
-        adapters (make-adapters adapters formats)]
+        adapters (compile-adapters adapters formats)]
     (map->Formats
       (merge
         options
