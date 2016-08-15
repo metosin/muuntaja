@@ -40,13 +40,13 @@
   (title "encode: muuntaja.json")
   (let [encode (fn [] (.toString (doto (json/object) (.put "hello" "world"))))]
     (assert (= "{\"hello\":\"world\"}" (encode)))
-    (cc/quick-bench (.toString (doto (json/object) (.put "hello" "world")))))
+    (cc/quick-bench (encode)))
 
   ;; 82ns
   (title "encode: str")
   (let [encode (fn [] (str "{\"hello\":\"" "world" "\"}"))]
     (assert (= "{\"hello\":\"world\"}" (encode)))
-    (cc/quick-bench (str "{\"hello\":\"" "world" "\"}"))))
+    (cc/quick-bench (encode))))
 
 (comment
   (bench))
