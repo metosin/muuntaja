@@ -8,6 +8,7 @@
   :dependencies [[org.clojure/core.memoize "0.5.9"]
                  [ring/ring-core "1.5.0"]
                  [cheshire "5.6.3"]
+                 [com.fasterxml.jackson.core/jackson-databind "2.8.1"]
                  [org.clojure/tools.reader "0.10.0"]
                  [com.ibm.icu/icu4j "57.1"]
                  [circleci/clj-yaml "0.5.5"]

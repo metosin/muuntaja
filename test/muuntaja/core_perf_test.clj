@@ -1,12 +1,13 @@
-(ns muuntaja.perf-test
+(ns muuntaja.core-perf-test
   (:require [criterium.core :as cc]
-            [muuntaja.core :as rfc]
-            [cheshire.core :as json]
-            [ring.middleware.format-params :as rmfp]
-            [ring.middleware.format :as rmf]
+            [muuntaja.core :as muuntaja]
+            [muuntaja.json :as json]
+            [muuntaja.test_utils :refer :all]
+            [cheshire.core :as cheshire]
+            [ring.middleware.format-params :as ring-middleware-formatp]
+            [ring.middleware.format :as ring-middleware-format]
             [ring.middleware.json :as rmj]
-            [muuntaja.formats :as formats])
-  (:import [java.io ByteArrayInputStream]))
+            [muuntaja.formats :as formats]))
 
 ;;
 ;; start repl with `lein perf repl`
@@ -23,50 +24,20 @@
 ;; Memory:                16 GB
 ;;
 
-(set! *warn-on-reflection* true)
-
-(defn request-stream
-  ([request]
-   (request-stream request 3000000))
-  ([request count]
-   (let [i (atom 0)
-         data (mapv
-                (fn [_]
-                  (->
-                    request
-                    (update :body #(ByteArrayInputStream. (.getBytes ^String %)))))
-                (range count))]
-     (fn []
-       (let [item (nth data @i)]
-         (swap! i inc)
-         item)))))
-
-(defn title [s]
-  (println
-    (str "\n\u001B[35m"
-         (apply str (repeat (+ 6 (count s)) "#"))
-         "\n## " s " ##\n"
-         (apply str (repeat (+ 6 (count s)) "#"))
-         "\u001B[0m\n")))
-
 (def +json-request+
   {:headers {"content-type" "application/json"
              "accept" "application/json"}
    :body "{\"kikka\":42}"})
-
-(def +json-response+
-  {:status 200
-   :body {:kukka 24}})
 
 (def +transit-json-request+
   {:headers {"content-type" "application/transit+json"
              "accept" "application/transit+json"}
    :body "[\"^ \",\"~:kikka\",42]"})
 
-(defrecord Hello [name]
+(defrecord Hello [^String name]
   formats/EncodeJson
   (encode-json [_]
-    (str "{\"hello\":\"" name "\"}")))
+    (.toString (doto (json/object) (.put "hello" name)))))
 
 (def +handler+ (fn [request] {:status 200 :body (:body-params request)}))
 (def +handler2+ (fn [_] {:status 200 :body (->Hello "yello")}))
@@ -97,13 +68,13 @@
                        (match? #"^application/(vnd.+)?(x-)?transit\+msgpack"))]
 
     ;; 551ns
-    (title "R-M-F: JSON")
+    (title "ring-middleware-format: JSON")
     (assert (api-request? +json-request+))
     (cc/quick-bench
       (api-request? +json-request+))
 
     ;; 2520ns
-    (title "R-M-F: TRANSIT")
+    (title "ring-middleware-format: TRANSIT")
     (assert (api-request? +transit-json-request+))
     (cc/quick-bench
       (api-request? +transit-json-request+)))
@@ -137,95 +108,95 @@
 ;;
 
 (defn content-type []
-  (let [formats (-> rfc/default-options rfc/no-decoding rfc/no-encoding rfc/compile)]
+  (let [formats (-> muuntaja/default-options muuntaja/no-decoding muuntaja/no-encoding muuntaja/compile)]
 
     ; 52ns
     ; 38ns consumes & produces (-27%)
     ; 27ns compile (-29%) (-48%)
     (title "Content-type: JSON")
-    (assert (= :json (rfc/extract-content-type-format formats +json-request+)))
+    (assert (= :json (muuntaja/extract-content-type-format formats +json-request+)))
     (cc/quick-bench
-      (rfc/extract-content-type-format formats +json-request+))
+      (muuntaja/extract-content-type-format formats +json-request+))
 
     ; 65ns
     ; 55ns consumes & produces (-15%)
     ; 42ns compile (-24%) (-35%)
     (title "Content-type: TRANSIT")
-    (assert (= :transit-json (rfc/extract-content-type-format formats +transit-json-request+)))
+    (assert (= :transit-json (muuntaja/extract-content-type-format formats +transit-json-request+)))
     (cc/quick-bench
-      (rfc/extract-content-type-format formats +transit-json-request+))))
+      (muuntaja/extract-content-type-format formats +transit-json-request+))))
 
 (defn accept []
-  (let [formats (-> rfc/default-options rfc/no-decoding rfc/no-encoding rfc/compile)]
+  (let [formats (-> muuntaja/default-options muuntaja/no-decoding muuntaja/no-encoding muuntaja/compile)]
 
     ; 71ns
     ; 58ns consumes & produces (-18%)
     ; 48ns compile (-17%) (-32%)
     (title "Accept: TRANSIT")
-    (assert (= :transit-json (rfc/extract-accept-format formats +transit-json-request+)))
+    (assert (= :transit-json (muuntaja/extract-accept-format formats +transit-json-request+)))
     (cc/quick-bench
-      (rfc/extract-accept-format formats +transit-json-request+))))
+      (muuntaja/extract-accept-format formats +transit-json-request+))))
 
 (defn request []
-  (let [formats (-> rfc/default-options rfc/no-decoding rfc/no-encoding rfc/compile)]
+  (let [formats (-> muuntaja/default-options muuntaja/no-decoding muuntaja/no-encoding muuntaja/compile)]
 
     ; 179ns
     ; 187ns (records)
     (title "Accept & Contnet-type: JSON")
     (cc/quick-bench
-      (rfc/format-request formats +json-request+))
+      (muuntaja/format-request formats +json-request+))
 
     ; 211ns
     ; 226ns (records)
     (title "Accept & Contnet-type: Transit")
     (cc/quick-bench
-      (rfc/format-request formats +transit-json-request+))))
+      (muuntaja/format-request formats +transit-json-request+))))
 
 (defn parse-json []
 
   ; 2.0µs
   (title "parse-json-stream")
-  (let [parse (rfc/decoder (rfc/compile rfc/default-options) :json)
+  (let [parse (muuntaja/decoder (muuntaja/compile muuntaja/default-options) :json)
         request! (request-stream +json-request+)]
     (cc/quick-bench (parse (:body (request!)))))
 
   ; 4.3µs
   (title "parse-json-string")
-  (let [parse #(json/parse-string % true)
+  (let [parse #(cheshire/parse-string % true)
         request! (request-stream +json-request+)]
     (cc/quick-bench (parse (slurp (:body (request!)))))))
 
 (defn ring-middleware-format-e2e []
 
   ; 10.2µs
-  (let [app (rmfp/wrap-restful-params +handler+ {:formats [:json-kw :edn :msgpack-kw :yaml-kw :transit-msgpack :transit-json]})
+  (let [app (ring-middleware-formatp/wrap-restful-params +handler+ {:formats [:json-kw :edn :msgpack-kw :yaml-kw :transit-msgpack :transit-json]})
         request! (request-stream +json-request+)]
 
-    (title "RMF: JSON-REQUEST")
+    (title "ring-middleware-format: JSON-REQUEST")
     (assert (= {:kikka 42} (:body (app (request!)))))
     (cc/quick-bench (app (request!))))
 
   ; 8.5µs
-  (let [app (rmfp/wrap-restful-params +handler+ {:formats [:json-kw :edn :msgpack-kw :yaml-kw :transit-msgpack :transit-json]})
+  (let [app (ring-middleware-formatp/wrap-restful-params +handler+ {:formats [:json-kw :edn :msgpack-kw :yaml-kw :transit-msgpack :transit-json]})
         request! (request-stream +transit-json-request+)]
 
-    (title "RMF: TRANSIT-REQUEST")
+    (title "ring-middleware-format: TRANSIT-REQUEST")
     (assert (= {:kikka 42} (:body (app (request!)))))
     (cc/quick-bench (app (request!))))
 
   ; 22.5µs
-  (let [app (rmf/wrap-restful-format +handler+ {:formats [:json-kw :edn :msgpack-kw :yaml-kw :transit-msgpack :transit-json]})
+  (let [app (ring-middleware-format/wrap-restful-format +handler+ {:formats [:json-kw :edn :msgpack-kw :yaml-kw :transit-msgpack :transit-json]})
         request! (request-stream +json-request+)]
 
-    (title "RMF: JSON-REQUEST-RESPONSE")
+    (title "ring-middleware-format: JSON-REQUEST-RESPONSE")
     (assert (= (:body +json-request+) (slurp (:body (app (request!))))))
     (cc/quick-bench (app (request!))))
 
   ; 21.0µs
-  (let [app (rmf/wrap-restful-format +handler+ {:formats [:json-kw :edn :msgpack-kw :yaml-kw :transit-msgpack :transit-json]})
+  (let [app (ring-middleware-format/wrap-restful-format +handler+ {:formats [:json-kw :edn :msgpack-kw :yaml-kw :transit-msgpack :transit-json]})
         request! (request-stream +transit-json-request+)]
 
-    (title "RMF: TRANSIT-REQUEST-RESPONSE")
+    (title "ring-middleware-format: TRANSIT-REQUEST-RESPONSE")
     (assert (= (:body +transit-json-request+) (slurp (:body (app (request!))))))
     (cc/quick-bench (app (request!)))))
 
@@ -251,63 +222,63 @@
 (defn muuntaja-e2e []
 
   ; 2.3µs
-  (let [app (rfc/wrap-format +handler+ (-> rfc/default-options rfc/no-encoding))
+  (let [app (muuntaja/wrap-format +handler+ (-> muuntaja/default-options muuntaja/no-encoding))
         request! (request-stream +json-request+)]
 
-    (title "RFC: JSON-REQUEST")
+    (title "muuntaja: JSON-REQUEST")
     (assert (= {:kikka 42} (:body (app (request!)))))
     (cc/quick-bench (app (request!))))
 
   ; 3.6µs
-  (let [app (rfc/wrap-format +handler+ (-> rfc/default-options rfc/no-encoding))
+  (let [app (muuntaja/wrap-format +handler+ (-> muuntaja/default-options muuntaja/no-encoding))
         request! (request-stream +transit-json-request+)]
 
-    (title "RFC: TRANSIT-REQUEST")
+    (title "muuntaja: TRANSIT-REQUEST")
     (assert (= {:kikka 42} (:body (app (request!)))))
     (cc/quick-bench (app (request!))))
 
   ; 3.6µs
-  (let [app (rfc/wrap-format +handler+ rfc/default-options)
+  (let [app (muuntaja/wrap-format +handler+ muuntaja/default-options)
         request! (request-stream +json-request+)]
 
-    (title "RFC: JSON-REQUEST-RESPONSE")
+    (title "muuntaja: JSON-REQUEST-RESPONSE")
     (assert (= (:body +json-request+) (:body (app (request!)))))
     (cc/quick-bench (app (request!))))
 
   ; 7.1µs
-  (let [app (rfc/wrap-format +handler+ rfc/default-options)
+  (let [app (muuntaja/wrap-format +handler+ muuntaja/default-options)
         request! (request-stream +transit-json-request+)]
 
-    (title "RFC: TRANSIT-REQUEST-RESPONSE")
+    (title "muuntaja: TRANSIT-REQUEST-RESPONSE")
     (assert (= (:body +transit-json-request+) (slurp (:body (app (request!))))))
     (cc/quick-bench (app (request!))))
 
   ; 3.8µs
   ; 2.6µs Protocol (-30%)
-  (let [app (rfc/wrap-format +handler2+ (assoc-in rfc/default-options [:adapters :json :encode-protocol] [formats/EncodeJson formats/encode-json]))
+  (let [app (muuntaja/wrap-format +handler2+ (assoc-in muuntaja/default-options [:adapters :json :encode-protocol] [formats/EncodeJson formats/encode-json]))
         request! (request-stream +json-request+)]
 
-    (title "RFC: JSON-REQUEST-RESPONSE (PROTOCOL)")
+    (title "muuntaja: JSON-REQUEST-RESPONSE (PROTOCOL)")
     (assert (= "{\"hello\":\"yello\"}" (:body (app (request!)))))
     (cc/quick-bench (app (request!)))))
 
 (defn interceptor-e2e []
 
   ; 3.8µs
-  (let [{:keys [enter leave]} (rfc/format-interceptor rfc/default-options)
+  (let [{:keys [enter leave]} (muuntaja/format-interceptor muuntaja/default-options)
         app (fn [request] (-> (->Context request) enter (handle +handler+) leave :response))
         request! (request-stream +json-request+)]
 
-    (title "RFC: Interceptor JSON-REQUEST-RESPONSE")
+    (title "muuntaja: Interceptor JSON-REQUEST-RESPONSE")
     (assert (= (:body +json-request+) (:body (app (request!)))))
     (cc/quick-bench (app (request!))))
 
   ; 7.5µs
-  (let [{:keys [enter leave]} (rfc/format-interceptor rfc/default-options)
+  (let [{:keys [enter leave]} (muuntaja/format-interceptor muuntaja/default-options)
         app (fn [request] (-> (->Context request) enter (handle +handler+) leave :response))
         request! (request-stream +transit-json-request+)]
 
-    (title "RFC: Interceptor JSON-REQUEST-RESPONSE")
+    (title "muuntaja: Interceptor JSON-REQUEST-RESPONSE")
     (assert (= (:body +transit-json-request+) (slurp (:body (app (request!))))))
     (cc/quick-bench (app (request!)))))
 
