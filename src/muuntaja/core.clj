@@ -8,6 +8,10 @@
 (defn- match? [^String content-type string-or-regexp request]
   (and (:body request) (re-find string-or-regexp content-type)))
 
+(defn- stripped [^String s]
+  (let [i (.indexOf s ";")]
+    (if (neg? i) s (.substring s 0 i))))
+
 (defprotocol RequestFormatter
   (extract-content-type-format [_ request])
   (extract-accept-format [_ request]))
@@ -31,14 +35,13 @@
                 (< (inc i) (count matchers)) (recur (inc i))))))
       (nth matchers 1)))
 
-  ;; TODO: really parse ;-stuff, memoized fn?
   (extract-accept-format [_ request]
     (if-let [accept (extract-accept-fn request)]
       (or
         (get consumes accept)
         (let [data (str/split accept #",\s*")]
           (loop [i 0]
-            (or (get consumes (nth data i))
+            (or (get consumes (stripped (nth data i)))
                 (if (< (inc i) (count data))
                   (recur (inc i)))))))))
 
