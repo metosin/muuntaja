@@ -3,7 +3,10 @@
             [clojure.test :refer :all]
             [muuntaja.test_utils :refer :all]
             [muuntaja.json :as json]
-            [cheshire.core :as cheshire]))
+            [cheshire.core :as cheshire])
+  (:import [java.util Map]))
+
+(set! *warn-on-reflection* true)
 
 ;;
 ;; start repl with `lein perf repl`
@@ -28,25 +31,50 @@
                             (.add 42)
                             (.add true))))))))
 
-(defn bench []
+(def ^String +json+ (cheshire.core/generate-string {"hello" "world"}))
+
+(def +data+ (cheshire.core/parse-string +json+))
+
+(defn encode-perf []
 
   ;; 1005ns
   (title "encode: cheshire")
   (let [encode (fn [] (cheshire/generate-string {"hello" "world"}))]
-    (assert (= "{\"hello\":\"world\"}" (encode)))
+    (assert (= +json+ (encode)))
     (cc/quick-bench (encode)))
 
   ;; 183ns
   (title "encode: muuntaja.json")
-  (let [encode (fn [] (.toString (doto (json/object) (.put "hello" "world"))))]
-    (assert (= "{\"hello\":\"world\"}" (encode)))
+  (let [encode (fn [] (str (doto (json/object) (.put "hello" "world"))))]
+    (assert (= +json+ (encode)))
     (cc/quick-bench (encode)))
 
   ;; 82ns
   (title "encode: str")
   (let [encode (fn [] (str "{\"hello\":\"" "world" "\"}"))]
-    (assert (= "{\"hello\":\"world\"}" (encode)))
+    (assert (= +json+ (encode)))
     (cc/quick-bench (encode))))
 
+(defn decode-perf []
+
+  ;; 896ns
+  (title "decode: cheshire")
+  (let [decode (fn [] (cheshire/parse-string-strict +json+))]
+    (assert (= +data+ (decode)))
+    (cc/quick-bench (decode)))
+
+  ;; 319ns
+  (title "decode: muuntaja.json")
+  (let [decode (fn [] (json/decode-map +json+))]
+    (assert (= +data+ (decode)))
+    (cc/quick-bench (decode)))
+
+  ;; 246ns
+  (title "decode: jackson")
+  (let [decode (fn [] (.readValue json/mapper +json+ Map))]
+    (assert (= +data+ (decode)))
+    (cc/quick-bench (decode))))
+
 (comment
-  (bench))
+  (encode-perf)
+  (decode-perf))
