@@ -224,7 +224,7 @@
 (defn default-handle-exception [^Exception e format request]
   (throw
     (ex-info
-      (format "Malformed %s request." format)
+      (str "Malformed" format "request.")
       {:type ::decode
        :format format
        :request request}
