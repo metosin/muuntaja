@@ -26,7 +26,7 @@
 (defrecord Formats [extract-content-type-fn extract-accept-fn encode-body-fn encode-error-fn consumes matchers adapters formats default-format]
   RequestFormatter
   (extract-content-type-format [_ request]
-    (if-let [content-type (extract-content-type-fn request)]
+    (if-let [content-type (stripped (extract-content-type-fn request))]
       (or (get consumes content-type)
           (loop [i 0]
             (let [[f r] (nth matchers i)]
