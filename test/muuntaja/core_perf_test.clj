@@ -37,7 +37,7 @@
 (defrecord Hello [^String name]
   formats/EncodeJson
   (encode-json [_]
-    (.toString (doto (json/object) (.put "hello" name)))))
+    (str (doto (json/object) (.put "hello" name)))))
 
 (def +handler+ (fn [request] {:status 200 :body (:body-params request)}))
 (def +handler2+ (fn [_] {:status 200 :body (->Hello "yello")}))
@@ -255,7 +255,7 @@
 
   ; 3.8µs
   ; 2.6µs Protocol (-30%)
-  (let [app (muuntaja/wrap-format +handler2+ (assoc-in muuntaja/default-options [:adapters :json :encode-protocol] [formats/EncodeJson formats/encode-json]))
+  (let [app (muuntaja/wrap-format +handler2+ muuntaja/default-options)
         request! (request-stream +json-request+)]
 
     (title "muuntaja: JSON-REQUEST-RESPONSE (PROTOCOL)")

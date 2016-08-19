@@ -3,7 +3,7 @@
             [muuntaja.formats :as formats])
   (:refer-clojure :exclude [compile]))
 
-(set! *warn-on-reflection* true)
+(declare default-options)
 
 (defn- match? [^String content-type string-or-regexp request]
   (and (:body request) (re-find string-or-regexp content-type)))
@@ -179,16 +179,19 @@
       response)
     response))
 
-(defn wrap-format [handler options]
-  (let [formats (compile options)]
-    (fn
-      ([request]
-       (let [format-request (format-request formats request)]
-         (->> (handler format-request)
-              (format-response formats format-request))))
-      ([request respond raise]
-       (let [format-request (format-request formats request)]
-         (handler format-request #(respond (format-response formats format-request %)) raise))))))
+(defn wrap-format
+  ([handler]
+   (wrap-format handler default-options))
+  ([handler options]
+   (let [formats (compile options)]
+     (fn
+       ([request]
+        (let [format-request (format-request formats request)]
+          (->> (handler format-request)
+               (format-response formats format-request))))
+       ([request respond raise]
+        (let [format-request (format-request formats request)]
+          (handler format-request #(respond (format-response formats format-request %)) raise)))))))
 
 ;;
 ;; Interceptors
@@ -239,24 +242,30 @@
    :adapters {:json {:format ["application/json" #"^application/(vnd.+)?json"]
                      :decoder [formats/make-json-decoder {:keywords? true}]
                      :encoder [formats/make-json-encoder]
+                     :encode-protocol [formats/EncodeJson formats/encode-json]
                      :binary? true}
               :edn {:format ["application/edn" #"^application/(vnd.+)?(x-)?(clojure|edn)"]
                     :decoder [formats/make-edn-decoder]
-                    :encoder [formats/make-edn-encoder]}
+                    :encoder [formats/make-edn-encoder]
+                    :encode-protocol [formats/EncodeEdn formats/encode-edn]}
               :msgpack {:format ["application/msgpack" #"^application/(vnd.+)?(x-)?msgpack"]
                         :decoder [formats/make-msgpack-decoder]
                         :encoder [formats/make-msgpack-encoder]
+                        :encode-protocol [formats/EncodeMsgpack formats/encode-msgpack]
                         :binary? true}
               :yaml {:format ["application/yaml" #"^(application|text)/(vnd.+)?(x-)?yaml"]
                      :decoder [formats/make-yaml-decoder {:keywords true}]
-                     :encoder [formats/make-yaml-encoder]}
+                     :encoder [formats/make-yaml-encoder]
+                     :encode-protocol [formats/EncodeYaml formats/encode-yaml]}
               :transit-json {:format ["application/transit+json" #"^application/(vnd.+)?(x-)?transit\+json"]
                              :decoder [(partial formats/make-transit-decoder :json)]
                              :encoder [(partial formats/make-transit-encoder :json)]
+                             :encode-protocol [formats/EncodeTransitJson formats/encode-transit-json]
                              :binary? true}
               :transit-msgpack {:format ["application/transit+msgpack" #"^application/(vnd.+)?(x-)?transit\+msgpack"]
                                 :decoder [(partial formats/make-transit-decoder :msgpack)]
                                 :encoder [(partial formats/make-transit-encoder :msgpack)]
+                                :encode-protocol [formats/EncodeTransitMessagePack formats/encode-transit-msgpack]
                                 :binary? true}}
    :formats [:json :edn :msgpack :yaml :transit-json :transit-msgpack]})
 
@@ -265,3 +274,4 @@
 
 (def no-decoding (partial transform-adapter-options #(dissoc % :decoder)))
 (def no-encoding (partial transform-adapter-options #(dissoc % :encoder)))
+(def no-protocol-encoding (partial transform-adapter-options #(dissoc % :encode-protocol)))

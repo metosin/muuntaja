@@ -40,7 +40,7 @@
         (msgpack/pack-stream (walk/stringify-keys data) data-out) options)
       (.toByteArray out-stream))))
 
-(defprotocol EncodeMessagePack
+(defprotocol EncodeMsgpack
   (encode-msgpack [this]))
 
 ;; YAML
