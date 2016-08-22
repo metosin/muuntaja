@@ -7,11 +7,14 @@
 (def +handler+ (fn [{:keys [body-params body]}]
                  {:body (or body-params body)}))
 
+(defn json-decoding-opts [opts]
+  (-> muuntaja/default-options
+      muuntaja/no-encoding
+      (muuntaja/with-decoder-opts :json opts)))
+
 (deftest test-json-body
   (let [wrap (-> +handler+
-                 (muuntaja/wrap-format (-> muuntaja/default-options
-                                           muuntaja/no-encoding
-                                           (assoc-in [:adapters :json :decoder-opts] {:keywords? false})))
+                 (muuntaja/wrap-format (json-decoding-opts {:keywords? false}))
                  (muuntaja/wrap-exception (constantly
                                             {:status 400
                                              :headers {"Content-Type" "text/plain"}
@@ -49,18 +52,14 @@
                 :headers {"Content-Type" "text/plain"}
                 :body    "Malformed JSON in request body."})))))
 
-  (let [wrap (muuntaja/wrap-format +handler+ (-> muuntaja/default-options
-                                                 muuntaja/no-encoding
-                                                 (assoc-in [:adapters :json :decoder-opts] {:keywords? true})))]
+  (let [wrap (muuntaja/wrap-format +handler+ (json-decoding-opts {:keywords? true}))]
     (testing "keyword keys"
       (let [request  {:headers {"content-type" "application/json"}
                       :body (string-input-stream "{\"foo\": \"bar\"}")}
             response (wrap request)]
         (is (= {:foo "bar"} (:body response))))))
 
-  (let [wrap (muuntaja/wrap-format +handler+ (-> muuntaja/default-options
-                                                 muuntaja/no-encoding
-                                                 (assoc-in [:adapters :json :decoder-opts] {:keywords? true, :bigdecimals? true})))]
+  (let [wrap (muuntaja/wrap-format +handler+ (json-decoding-opts {:keywords? true, :bigdecimals? true}))]
     (testing "bigdecimal floats"
       (let [request  {:headers {"content-type" "application/json"}
                       :body (string-input-stream "{\"foo\": 5.5}")}
@@ -73,26 +72,19 @@
                      :headers {"Content-Type" "text/html"}
                      :body "<b>Your JSON is wrong!</b>"}
           wrap (-> +handler+
-                   (muuntaja/wrap-format (-> muuntaja/default-options
-                                             muuntaja/no-encoding))
+                   (muuntaja/wrap-format (json-decoding-opts {}))
                    (muuntaja/wrap-exception (constantly malformed)))
           request {:headers {"content-type" "application/json"}
                    :body (string-input-stream "{\"foo\": \"bar\"")}]
       (is (= (wrap request) malformed))))
 
-  (let [handler  (fn [_] {:status 200 :headers {} :body {:bigdecimals cheshire.parse/*use-bigdecimals?*}})
-        wrap (muuntaja/wrap-format handler (-> muuntaja/default-options
-                                               muuntaja/no-encoding
-                                               (assoc-in [:adapters :json :decoder-opts] {:bigdecimals? true})))
-        wrap2 (muuntaja/wrap-format handler (-> muuntaja/default-options
-                                                muuntaja/no-encoding
-                                                (assoc-in [:adapters :json :decoder-opts] {:bigdecimals? false})))]
+  (let [handler  (fn [_] {:status 200 :headers {} :body {:bigdecimals cheshire.parse/*use-bigdecimals?*}})]
     (testing "don't overwrite bigdecimal binding"
       (binding [cheshire.parse/*use-bigdecimals?* false]
-        (let [response (wrap {})]
+        (let [response ((muuntaja/wrap-format handler (json-decoding-opts {:bigdecimals? true})) {})]
           (is (= (get-in response [:body :bigdecimals]) false))))
       (binding [cheshire.parse/*use-bigdecimals?* true]
-        (let [response (wrap2 {})]
+        (let [response ((muuntaja/wrap-format handler (json-decoding-opts {:bigdecimals? false})) {})]
           (is (= (get-in response [:body :bigdecimals]) true)))))))
 
 
