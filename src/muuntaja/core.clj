@@ -181,7 +181,7 @@
           (if decoder
             (try
               (-> $
-                   (assoc :body nil)
+                  (assoc :body nil)
                   (assoc :body-params (decoder body)))
               (catch Exception e
                 (on-decode-exception e format $)))
@@ -314,4 +314,12 @@
 
 (def no-decoding (partial transform-adapter-options #(dissoc % :decoder)))
 (def no-encoding (partial transform-adapter-options #(dissoc % :encoder)))
-(def no-protocol-encoding (partial transform-adapter-options #(dissoc % :encode-protocol)))
+
+(def no-protocol-encoding
+  (partial transform-adapter-options #(dissoc % :encode-protocol)))
+
+(defn with-decoder-opts [options format opts]
+  (assoc-in options [:adapters format :decoder-opts] opts))
+
+(defn with-encoder-opts [options format opts]
+  (assoc-in options [:adapters format :encoder-opts] opts))
