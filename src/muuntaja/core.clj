@@ -13,6 +13,15 @@
     (let [i (.indexOf s ";")]
       (if (neg? i) s (.substring s 0 i)))))
 
+(defn- on-decode-exception [^Exception e format request]
+  (throw
+    (ex-info
+      (str "Malformed " format " request.")
+      {:type ::decode
+       :format format
+       :request request}
+      e)))
+
 (defprotocol RequestFormatter
   (extract-content-type-format [_ request])
   (extract-accept-format [_ request])
@@ -159,7 +168,7 @@
 ;; Ring
 ;;
 
-(defn read-format [formats request]
+(defn format-request [formats request]
   (let [content-type (extract-content-type-format formats request)
         accept (extract-accept-format formats request)
         decoder (if (decode-request? formats request)
@@ -171,14 +180,12 @@
           (assoc $ ::decode? (boolean decoder))
           (if decoder
             (try
-              [(-> $
+              (-> $
                    (assoc :body nil)
-                   (assoc :body-params (decoder body))) nil]
+                  (assoc :body-params (decoder body)))
               (catch Exception e
-                (if-let [f (:handle-error formats)]
-                  [$ (f e content-type $)]
-                  (throw e))))
-            [$ nil]))))
+                (on-decode-exception e format $)))
+            $))))
 
 (defn format-response [formats request response]
   (if-not (::format response)
@@ -202,11 +209,38 @@
    (let [formats (compile options)]
      (fn
        ([request]
-        (let [[req res] (read-format formats request)]
-          (or res (->> (handler req) (format-response formats req)))))
+        (let [req (format-request formats request)]
+          (->> (handler req) (format-response formats req))))
        ([request respond raise]
-        (let [[req res] (read-format formats request)]
-          (or res (handler req #(respond (format-response formats req %)) raise))))))))
+        (let [req (format-request formats request)]
+          (handler req #(respond (format-response formats req %)) raise)))))))
+
+;;
+;; Ring-exceptions
+;;
+
+; [^Exception e format request]
+(defn- default-on-exception [_ format _]
+  {:status 400
+   :headers {"Content-Type" "text/plain"}
+   :body (str "Malformed " format " request.")})
+
+(defn- try-catch [handler request on-exception]
+  (try
+    (handler request)
+    (catch Exception e
+      (if-let [data (ex-data e)]
+        (if (-> data :type (= ::decode))
+          (on-exception e (:format data) request)
+          (throw e))
+        (throw e)))))
+
+(defn wrap-exception
+  ([handler]
+   (wrap-exception handler default-on-exception))
+  ([handler on-exception]
+   (fn [request]
+     (try-catch handler request on-exception))))
 
 ;;
 ;; Interceptors
@@ -218,10 +252,7 @@
   (let [formats (compile options)]
     (map->Interceptor
       {:enter (fn [ctx]
-                (let [[req res] (read-format formats (:request ctx))]
-                  (if res
-                    (assoc ctx :response res)
-                    (assoc ctx :request req))))
+                (update ctx :request (partial format-request formats)))
        :leave (fn [ctx]
                 (update ctx :response (partial format-response formats (:request ctx))))})))
 
@@ -242,21 +273,11 @@
 (defn encode-collections [_ response]
   (-> response :body coll?))
 
-(defn default-handle-exception [^Exception e format request]
-  (throw
-    (ex-info
-      (str "Malformed " format " request.")
-      {:type ::decode
-       :format format
-       :request request}
-      e)))
-
 (def default-options
   {:extract-content-type-fn extract-content-type-ring
    :extract-accept-fn extract-accept-ring
    :decode? (constantly true)
    :encode? encode-collections
-   :handle-error default-handle-exception
    :charset "utf-8"
    :adapters {:json {:format ["application/json" #"^application/(vnd.+)?json"]
                      :decoder [formats/make-json-decoder {:keywords? true}]

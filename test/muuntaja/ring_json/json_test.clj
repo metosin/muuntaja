@@ -8,13 +8,14 @@
                  {:body (or body-params body)}))
 
 (deftest test-json-body
-  (let [wrap (muuntaja/wrap-format +handler+ (-> muuntaja/default-options
-                                                 muuntaja/no-encoding
-                                                 (assoc-in [:adapters :json :decoder-opts] {:keywords? false})
-                                                 (assoc :handle-error (constantly
-                                                                        {:status 400
-                                                                         :headers {"Content-Type" "text/plain"}
-                                                                         :body "Malformed JSON in request body."}))))]
+  (let [wrap (-> +handler+
+                 (muuntaja/wrap-format (-> muuntaja/default-options
+                                           muuntaja/no-encoding
+                                           (assoc-in [:adapters :json :decoder-opts] {:keywords? false})))
+                 (muuntaja/wrap-exception (constantly
+                                            {:status 400
+                                             :headers {"Content-Type" "text/plain"}
+                                             :body "Malformed JSON in request body."})))]
     (testing "xml body"
       (let [request  {:headers {"content-type" "application/xml"}
                       :body (string-input-stream "<xml></xml>")}
@@ -71,10 +72,10 @@
     (let [malformed {:status 400
                      :headers {"Content-Type" "text/html"}
                      :body "<b>Your JSON is wrong!</b>"}
-          wrap (muuntaja/wrap-format +handler+ (-> muuntaja/default-options
-                                                      muuntaja/no-encoding
-                                                      (assoc :handle-error (constantly
-                                                                             malformed))))
+          wrap (-> +handler+
+                   (muuntaja/wrap-format (-> muuntaja/default-options
+                                             muuntaja/no-encoding))
+                   (muuntaja/wrap-exception (constantly malformed)))
           request {:headers {"content-type" "application/json"}
                    :body (string-input-stream "{\"foo\": \"bar\"")}]
       (is (= (wrap request) malformed))))

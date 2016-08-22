@@ -142,17 +142,15 @@
 
     ; 179ns
     ; 187ns (records)
-    ; 228ns (conditional return)
     (title "Accept & Contnet-type: JSON")
     (cc/quick-bench
-      (muuntaja/read-format formats +json-request+))
+      (muuntaja/format-request formats +json-request+))
 
     ; 211ns
     ; 226ns (records)
-    ; 275ns (conditional return)
     (title "Accept & Contnet-type: Transit")
     (cc/quick-bench
-      (muuntaja/read-format formats +transit-json-request+))))
+      (muuntaja/format-request formats +transit-json-request+))))
 
 (defn parse-json []
 
