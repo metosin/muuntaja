@@ -1,5 +1,6 @@
 (ns muuntaja.formats
   (:require [cheshire.core :as json]
+            [cheshire.parse :as parse]
             [clj-yaml.core :as yaml]
             [clojure.tools.reader.edn :as edn]
             [clojure.walk :as walk]
@@ -13,11 +14,12 @@
 
 ;; JSON
 
-(defn make-json-decoder [{:keys [keywords?]}]
+(defn make-json-decoder [{:keys [keywords? bigdecimals?]}]
   (fn [x]
-    (if (string? x)
-      (json/parse-string x keywords?)
-      (json/parse-stream (InputStreamReader. x) keywords?))))
+    (binding [parse/*use-bigdecimals?* bigdecimals?]
+      (if (string? x)
+        (json/parse-string x keywords?)
+        (json/parse-stream (InputStreamReader. x) keywords?)))))
 
 (defn make-json-encoder [options]
   (fn [data] (json/generate-string data options)))
