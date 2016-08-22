@@ -9,12 +9,15 @@
   (and (:body request) (re-find string-or-regexp content-type)))
 
 (defn- stripped [^String s]
-  (let [i (.indexOf s ";")]
-    (if (neg? i) s (.substring s 0 i))))
+  (if s
+    (let [i (.indexOf s ";")]
+      (if (neg? i) s (.substring s 0 i)))))
 
 (defprotocol RequestFormatter
   (extract-content-type-format [_ request])
-  (extract-accept-format [_ request]))
+  (extract-accept-format [_ request])
+  (decode-request? [_ request])
+  (encode-response? [_ request response]))
 
 (defprotocol Formatter
   (encoder [_ format])
@@ -23,7 +26,16 @@
 
 (defrecord Adapter [encode decode binary?])
 
-(defrecord Formats [extract-content-type-fn extract-accept-fn encode-body-fn encode-error-fn consumes matchers adapters formats default-format]
+(defrecord Formats [extract-content-type-fn
+                    extract-accept-fn
+                    encode?
+                    decode?
+                    encode-error-fn
+                    consumes
+                    matchers
+                    adapters
+                    formats
+                    default-format]
   RequestFormatter
   (extract-content-type-format [_ request]
     (if-let [content-type (stripped (extract-content-type-fn request))]
@@ -44,6 +56,12 @@
             (or (get consumes (stripped (nth data i)))
                 (if (< (inc i) (count data))
                   (recur (inc i)))))))))
+
+  (decode-request? [_ request]
+    (and decode? (decode? request)))
+
+  (encode-response? [_ request response]
+    (and encode? (encode? request response)))
 
   Formatter
   (encoder [_ format]
@@ -98,10 +116,6 @@
           :when (string? type)]
       [k (str type "; charset=" charset)])))
 
-(defn- encode-response-body? [formats request response]
-  (if-let [f (:encode-body-fn formats)]
-    (f request response)))
-
 (defn- compile-adapters [adapters formats]
   (let [make (fn [spec spec-opts [p pf]]
                (let [g (if (vector? spec)
@@ -145,31 +159,33 @@
 ;; Ring
 ;;
 
-(defn format-request [formats request]
+(defn read-format [formats request]
   (let [content-type (extract-content-type-format formats request)
         accept (extract-accept-format formats request)
-        decoder (decoder formats content-type)
+        decoder (if (decode-request? formats request)
+                  (decoder formats content-type))
         body (:body request)]
     (as-> request $
           (assoc $ ::request content-type)
           (assoc $ ::response accept)
+          (assoc $ ::decode? (boolean decoder))
           (if decoder
             (try
-              (-> $
-                  (assoc :body nil)
-                  (assoc :body-params (decoder body)))
+              [(-> $
+                   (assoc :body nil)
+                   (assoc :body-params (decoder body))) nil]
               (catch Exception e
-                (if-let [f (:encode-exception-fn formats)]
-                  (f e content-type $)
+                (if-let [f (:handle-error formats)]
+                  [$ (f e content-type $)]
                   (throw e))))
-            request))))
+            [$ nil]))))
 
 (defn format-response [formats request response]
   (if-not (::format response)
     (if-let [format (or (::encode response)
                         (::response request)
                         (default-format formats))]
-      (if (encode-response-body? formats request response)
+      (if (encode-response? formats request response)
         (if-let [encoder (encoder formats format)]
           (-> response
               (assoc ::format format)
@@ -186,12 +202,11 @@
    (let [formats (compile options)]
      (fn
        ([request]
-        (let [format-request (format-request formats request)]
-          (->> (handler format-request)
-               (format-response formats format-request))))
+        (let [[req res] (read-format formats request)]
+          (or res (->> (handler req) (format-response formats req)))))
        ([request respond raise]
-        (let [format-request (format-request formats request)]
-          (handler format-request #(respond (format-response formats format-request %)) raise)))))))
+        (let [[req res] (read-format formats request)]
+          (or res (handler req #(respond (format-response formats req %)) raise))))))))
 
 ;;
 ;; Interceptors
@@ -203,7 +218,10 @@
   (let [formats (compile options)]
     (map->Interceptor
       {:enter (fn [ctx]
-                (update ctx :request (partial format-request formats)))
+                (let [[req res] (read-format formats (:request ctx))]
+                  (if res
+                    (assoc ctx :response res)
+                    (assoc ctx :request req))))
        :leave (fn [ctx]
                 (update ctx :response (partial format-response formats (:request ctx))))})))
 
@@ -227,7 +245,7 @@
 (defn default-handle-exception [^Exception e format request]
   (throw
     (ex-info
-      (str "Malformed" format "request.")
+      (str "Malformed " format " request.")
       {:type ::decode
        :format format
        :request request}
@@ -236,8 +254,9 @@
 (def default-options
   {:extract-content-type-fn extract-content-type-ring
    :extract-accept-fn extract-accept-ring
-   :encode-body-fn encode-collections
-   :encode-exception-fn default-handle-exception
+   :decode? (constantly true)
+   :encode? encode-collections
+   :handle-error default-handle-exception
    :charset "utf-8"
    :adapters {:json {:format ["application/json" #"^application/(vnd.+)?json"]
                      :decoder [formats/make-json-decoder {:keywords? true}]
