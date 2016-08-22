@@ -22,6 +22,9 @@
        :request request}
       e)))
 
+(defn- content-type [response content-type]
+  (assoc-in response [:headers "Content-Type"] content-type))
+
 (defprotocol RequestFormatter
   (extract-content-type-format [_ request])
   (extract-accept-format [_ request])
@@ -194,9 +197,12 @@
                         (default-format formats))]
       (if (encode-response? formats request response)
         (if-let [encoder (encoder formats format)]
-          (-> response
-              (assoc ::format format)
-              (update :body encoder))
+          (as-> response $
+                (assoc $ ::format format)
+                (update $ :body encoder)
+                (if-not (get (:headers $) "Content-Type")
+                  (content-type $ ((:produces formats) format))
+                  $))
           response)
         response)
       response)
