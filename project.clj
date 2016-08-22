@@ -21,8 +21,8 @@
                                   [ring-middleware-format "0.7.0"]
                                   [ring/ring-json "0.4.0"]
                                   [criterium "0.4.4"]]}
-             :1.6 {:dependencies [[org.clojure/clojure "1.6.0"]]}
              :1.7 {:dependencies [[org.clojure/clojure "1.7.0"]]}
+             :1.9 {:dependencies [[org.clojure/clojure "1.9.0-alpha11"]]}
              :perf {:jvm-opts ^:replace ["-server"]}}
-  :aliases {"all" ["with-profile" "dev:dev,1.6:dev,1.7"]
+  :aliases {"all" ["with-profile" "dev:dev,1.7:dev,1.9"]
             "perf" ["with-profile" "default,dev,perf"]})
