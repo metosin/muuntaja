@@ -2,9 +2,10 @@
 
 # muuntaja [![Continuous Integration status](https://secure.travis-ci.org/metosin/muuntaja.png)](http://travis-ci.org/metosin/muuntaja) [![Dependencies Status](http://jarkeeper.com/metosin/muuntaja/status.svg)](http://jarkeeper.com/metosin/muuntaja)
 
-Clojure library for handling content negotiation, encoding and decoding of http-api formats.
-Ships with adapters for common api-formats: *JSON*, *MessagePack*, *YAML*, *EDN*,
-*Transit over JSON and Msgpack*. Works both with Ring (middleware) and Pedestal (interceptors).
+Clojure library for handling http-api formats with web apps: content negotiation, encoding and decoding.
+Pluggable & configurable, ships with adapters for: [JSON](http://www.json.org/), [EDN](https://github.com/edn-format/edn),
+[MessagePack](http://msgpack.org/), [YAML](http://yaml.org/) and [Transit](https://github.com/cognitect/transit-format) 
+(with both JSON & MessagePack -binding). Works both with Ring (middleware) and Pedestal (interceptors).
 
 Design decisions:
 
@@ -21,15 +22,19 @@ Design decisions:
 
 ## Spec
 
-* Request
-  * `:muuntaja.core/adapter` holds the adapter that was used to decode the request body, e.g. `:json`.
-     Setting value to anything (e.g. `nil`) before muuntaja will skip the decoding process.
-  * `:muuntaja.core/accept` holds the client-negotiated adapter for the response, e.g. `:json`
+### Request
 
-* Response
-  * `:muuntaja.core/adapter` holds the adapter that was used to encode the response body, e.g. `:json`.
-     Setting value to anything (e.g. `nil`) before muuntaja will skip the encoding process.
-  * `:muuntaja.core/content-type` can be use to override the negotiated content-type for response encoding, e.g. `application/json`
+* `:muuntaja.core/adapter`, holds the adapter name that was used to decode the request body, e.g. `:json`.
+   Setting value to anything (e.g. `nil`) before muuntaja middleware/interceptor will skip the decoding process.
+* `:muuntaja.core/accept`, holds the client-negotiated adapter name for the response, e.g. `:json`. Will be used
+   later in the response pipeline.
+
+### Response
+
+* `:muuntaja.core/adapter`, holds the adapter name that was used to encode the response body, e.g. `:json`.
+   Setting value to anything (e.g. `nil`) before muuntaja middleware/interceptor will skip the encoding process.
+* `:muuntaja.core/content-type`, can be used to override the negotiated content-type for response encoding,
+   e.g. setting it to `application/edn` will cause the response to encoded always with the `:edn` adapter.
 
 ## Usage
 
