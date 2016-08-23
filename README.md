@@ -2,15 +2,18 @@
 
 # muuntaja [![Continuous Integration status](https://secure.travis-ci.org/metosin/muuntaja.png)](http://travis-ci.org/metosin/muuntaja) [![Dependencies Status](http://jarkeeper.com/metosin/muuntaja/status.svg)](http://jarkeeper.com/metosin/muuntaja)
 
-Snappy Clojure library for managing (http) api-formats. Provides adapters for both ring, async-ring and pedestal.
+Clojure library for handling content negotiation, encoding and decoding of http-api formats.
+Ships with adapters for common api-formats: *JSON*, *MessagePack*, *YAML*, *EDN*,
+*Transit over JSON and Msgpack*. Works both with Ring (middleware) and Pedestal (interceptors).
 
-Design goals:
+Design decisions:
 
-- explicit configuration, no shared mutable state
+- explicit configuration with good defaults, avoid shared mutable state (e.g. multimethods)
 - pragmatic & fast over 100% compliancy with [HTTP spec](https://www.w3.org/Protocols/rfc2616/rfc2616.txt)
-- extendable & pluggable: new formats, behavior
-- standalone + adapters for both ring (middleware) and pedestal (interceptors)
-- replacement for [ring-middleware-defaults](https://github.com/ngrunwald/ring-middleware-format)
+- work as standalone + has adapeters for ring, async-ring and pedestal (interceptors)
+- extendable & pluggable: new formats, behavior (open-closed)
+- separation of concerns: exception handling is done elsewhere, we just hint what happened
+- targetting to replace [ring-middleware-defaults](https://github.com/ngrunwald/ring-middleware-format)
 
 ## Latest version
 
@@ -32,16 +35,26 @@ Design goals:
 
 **TODO**
 
- - Ring compatible middleware, works with any web framework build on top of Ring
- - Automatically parses requests and encodes responses according to Content-Type and Accept headers
- - Automatically handles charset detection of requests bodies, even if the charset given by the MIME type is absent or wrong (using ICU)
- - Automatically selects and uses the right charset for the response according to the request header
- - Varied formats handled out of the box (*JSON*, *MessagePack*, *YAML*, *EDN*, *Transit over JSON or Msgpack*)
- - Pluggable system makes it easy to add to the standards encoders and decoders custom ones (proprietary format, Protobuf, specific xml, csv, etc.)
+## Performance
+
+* by default, 6x faster than `[ring-middleware-format "0.7.0"]` (JSON request & response).
+* by default, 2x faster than `[ring/ring-json "0.4.0"]` (JSON requests & responses).
+
+In addition, muuntaja ships with a low-level JSON decoder & support protocols for hand-crafting responses
+directly with `Jackson`. It's up to 5x faster than `[cheshire "5.6.3"]`.
+
+All perf test are found in this repo.
 
 ## API Documentation
 
 Full [API documentation](http://metosin.github.com/muuntaja) is available.
+
+## Differences with current solutions
+
+* Populates just `:body-params`, does not merge to `:params` & `:json-params` etc.
+* Set's the `:body` to nil after consuming the body
+* Uses keywords in maps by default (good for Plumbing, Schema & Spec)
+* `ring-json` tests have been added to muuntaja to a) verify it works b) to demonstrate differences
 
 ## License
 
