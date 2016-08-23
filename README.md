@@ -2,10 +2,9 @@
 
 # muuntaja [![Continuous Integration status](https://secure.travis-ci.org/metosin/muuntaja.png)](http://travis-ci.org/metosin/muuntaja) [![Dependencies Status](http://jarkeeper.com/metosin/muuntaja/status.svg)](http://jarkeeper.com/metosin/muuntaja)
 
-Clojure library for handling http-api formats with web apps: content negotiation, encoding and decoding.
-Pluggable & configurable, ships with adapters for: [JSON](http://www.json.org/), [EDN](https://github.com/edn-format/edn),
-[MessagePack](http://msgpack.org/), [YAML](http://yaml.org/) and [Transit](https://github.com/cognitect/transit-format) 
-(with both JSON & MessagePack -binding). Works both with Ring (middleware) and Pedestal (interceptors).
+Clojure library for handling http-api formats with web apps (both middleware & interceptors). Explicit configuration, easy to
+extend. Ships with adapters for: [JSON](http://www.json.org/), [EDN](https://github.com/edn-format/edn),
+[MessagePack](http://msgpack.org/), [YAML](http://yaml.org/) and [Transit](https://github.com/cognitect/transit-format).
 
 Design decisions:
 
@@ -42,11 +41,12 @@ Design decisions:
 
 ## Performance
 
-* by default, 6x faster than `[ring-middleware-format "0.7.0"]` (JSON request & response).
-* by default, 2x faster than `[ring/ring-json "0.4.0"]` (JSON requests & responses).
+* by default, ~6x faster than `[ring-middleware-format "0.7.0"]` (JSON request & response).
+* by default, ~2x faster than `[ring/ring-json "0.4.0"]` (JSON requests & responses).
 
-In addition, muuntaja ships with a low-level JSON decoder & support protocols for hand-crafting responses
-directly with `Jackson`. It's up to 5x faster than `[cheshire "5.6.3"]`.
+There is also a new low-level JSON encoder (in `muuntaja.json`) on top of 
+[Jackson Databind](https://github.com/FasterXML/jackson-databind) and protocols supporting
+hand-crafted responses => up to 5x faster than `[cheshire "5.6.3"]`.
 
 All perf test are found in this repo.
 
