@@ -16,7 +16,19 @@ Design goals:
 
 [![Clojars Project](http://clojars.org/metosin/muuntaja/latest-version.svg)](http://clojars.org/metosin/muuntaja)
 
-## Features
+## Spec
+
+* Request
+  * `:muuntaja.core/adapter` holds the adapter that was used to decode the request body, e.g. `:json`.
+     Setting value to anything (e.g. `nil`) before muuntaja will skip the decoding process.
+  * `:muuntaja.core/accept` holds the client-negotiated adapter for the response, e.g. `:json`
+
+* Response
+  * `:muuntaja.core/adapter` holds the adapter that was used to encode the response body, e.g. `:json`.
+     Setting value to anything (e.g. `nil`) before muuntaja will skip the encoding process.
+  * `:muuntaja.core/content-type` can be use to override the negotiated content-type for response encoding, e.g. `application/json`
+
+## Usage
 
 **TODO**
 

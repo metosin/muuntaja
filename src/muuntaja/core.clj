@@ -70,10 +70,14 @@
                   (recur (inc i)))))))))
 
   (decode-request? [_ request]
-    (and decode? (decode? request)))
+    (and decode?
+         (not (contains? request ::adapter))
+         (decode? request)))
 
   (encode-response? [_ request response]
-    (and encode? (encode? request response)))
+    (and encode?
+         (not (contains? response ::adapter))
+         (encode? request response)))
 
   Formatter
   (encoder [_ format]
@@ -172,18 +176,17 @@
 ;;
 
 (defn format-request [formats request]
-  (let [content-type (extract-content-type-format formats request)
-        accept (extract-accept-format formats request)
+  (let [content-type-format (extract-content-type-format formats request)
+        accept-format (extract-accept-format formats request)
         decoder (if (decode-request? formats request)
-                  (decoder formats content-type))
+                  (decoder formats content-type-format))
         body (:body request)]
     (as-> request $
-          (assoc $ ::request content-type)
-          (assoc $ ::response accept)
-          (assoc $ ::decode? (boolean decoder))
+          (assoc $ ::accept accept-format)
           (if decoder
             (try
               (-> $
+                  (assoc ::adapter content-type-format)
                   (assoc :body nil)
                   (assoc :body-params (decoder body)))
               (catch Exception e
@@ -191,21 +194,18 @@
             $))))
 
 (defn format-response [formats request response]
-  (if-not (::format response)
-    (if-let [format (or (::encode response)
-                        (::response request)
-                        (default-format formats))]
-      (if (encode-response? formats request response)
-        (if-let [encoder (encoder formats format)]
-          (as-> response $
-                (assoc $ ::format format)
-                (update $ :body encoder)
-                (if-not (get (:headers $) "Content-Type")
-                  (content-type $ ((:produces formats) format))
-                  $))
-          response)
-        response)
-      response)
+  (if (encode-response? formats request response)
+    (let [format (or (get (:consumes formats) (::content-type response))
+                     (::accept request)
+                     (default-format formats))]
+      (if-let [encoder (encoder formats format)]
+        (as-> response $
+              (assoc $ ::adapter format)
+              (update $ :body encoder)
+              (if-not (get (:headers $) "Content-Type")
+                (content-type $ ((:produces formats) format))
+                $))
+        response))
     response))
 
 (defn wrap-format
@@ -252,12 +252,13 @@
 ;; Interceptors
 ;;
 
-(defrecord Interceptor [enter leave])
+(defrecord Interceptor [name enter leave])
 
 (defn format-interceptor [options]
   (let [formats (compile options)]
     (map->Interceptor
-      {:enter (fn [ctx]
+      {:name ::format
+       :enter (fn [ctx]
                 (update ctx :request (partial format-request formats)))
        :leave (fn [ctx]
                 (update ctx :response (partial format-response formats (:request ctx))))})))
@@ -329,3 +330,20 @@
 
 (defn with-encoder-opts [options format opts]
   (assoc-in options [:adapters format :encoder-opts] opts))
+
+;;
+;; request helpers
+;;
+
+(defn disable-request-decoding [request]
+  (assoc request ::adapter nil))
+
+;;
+;; response helpers
+;;
+
+(defn disable-response-encoding [response]
+  (assoc response ::adapter nil))
+
+(defn set-response-content-type [response content-type]
+  (assoc response ::content-type content-type))
