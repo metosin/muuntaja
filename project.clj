@@ -7,7 +7,7 @@
             :comments "same as Clojure"}
   :dependencies [[ring/ring-core "1.5.0" :exclusions [commons-codec]]
                  [cheshire "5.6.3" :exclusions [com.fasterxml.jackson.core/jackson-core]]
-                 [com.fasterxml.jackson.core/jackson-databind "2.8.1"]
+                 [com.fasterxml.jackson.core/jackson-databind "2.8.2"]
                  [circleci/clj-yaml "0.5.5"]
                  [clojure-msgpack "1.2.0" :exclusions [org.clojure/clojure]]
                  [com.cognitect/transit-clj "0.8.288"]]
