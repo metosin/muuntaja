@@ -18,13 +18,21 @@
        (muuntaja/wrap-format
          (-> muuntaja/default-options
              muuntaja/no-encoding
-             (muuntaja/with-decoder-opts :json (merge {:keywords? false} opts))))
+             (muuntaja/with-decoder-opts :json (merge {:keywords? false} opts))
+             (assoc-in [:adapters :json :format] ["application/json" #"application/(.+\+)?json"])))
        (muuntaja/wrap-exception (constantly
                                   (or
                                     (:malformed-response opts)
                                     {:status 400
                                      :headers {"Content-Type" "text/plain"}
                                      :body "Malformed JSON in request body."}))))))
+
+(defn wrap-params [handler]
+  (fn [request]
+    (let [body-params (:body-params request)]
+      (handler (-> request
+                   (assoc :json-params body-params)
+                   (cond-> (map? body-params) (update :params merge body-params)))))))
 
 (defn wrap-json-response
   ([handler]
@@ -114,8 +122,8 @@
         (let [response ((wrap-json-params handler {:bigdecimals? false}) {})]
           (is (= (get-in response [:body :bigdecimals]) true)))))))
 
-#_(deftest test-json-params
-  (let [handler (wrap-json-params identity)]
+(deftest test-json-params
+  (let [handler (-> identity wrap-params wrap-json-params)]
     (testing "xml body"
       (let [request {:headers {"content-type" "application/xml"}
                      :body (string-input-stream "<xml></xml>")
@@ -134,7 +142,7 @@
         (is (= {"foo" "bar"} (:json-params response)))))
 
     (testing "json body with bigdecimals"
-      (let [handler (wrap-json-params identity {:bigdecimals? true})
+      (let [handler (-> identity wrap-params (wrap-json-params {:bigdecimals? true}))
             request {:headers {"content-type" "application/json; charset=UTF-8"}
                      :body (string-input-stream "{\"foo\": 5.5}")
                      :params {"id" 3}}
