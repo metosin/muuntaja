@@ -8,12 +8,12 @@ extend. Ships with adapters for: [JSON](http://www.json.org/), [EDN](https://git
 
 Design decisions:
 
-- explicit configuration with good defaults, avoid shared mutable state (e.g. multimethods)
-- pragmatic & fast over 100% compliancy with [HTTP spec](https://www.w3.org/Protocols/rfc2616/rfc2616.txt)
-- work as standalone + has adapeters for ring, async-ring and pedestal (interceptors)
-- extendable & pluggable: new formats, behavior (open-closed)
-- separation of concerns: exception handling is done elsewhere, we just hint what happened
-- targetting to replace [ring-middleware-defaults](https://github.com/ngrunwald/ring-middleware-format)
+- explicit configuration, avoid shared mutable state (e.g. multimethods)
+- fast & pragmatic by default, intented for api usage
+- extendable & pluggable: new formats, behavior
+- typed exceptions but caught elsewhere
+- standalone lib + adapters for ring, async-ring & pedestal
+- targeting to replace [ring-middleware-defaults](https://github.com/ngrunwald/ring-middleware-format)
 
 ## Latest version
 
@@ -56,7 +56,8 @@ Full [API documentation](http://metosin.github.com/muuntaja) is available.
 
 ## Differences with current solutions
 
-* Populates just `:body-params`, does not merge to `:params` & `:json-params` etc.
+* Populates just `:body-params`, does not merge data to `:params` & protocol-spesific params like `:json-params`
+  * Merging Persistent Maps is slow. You can do this with a extra step if you need this.   
 * Set's the `:body` to nil after consuming the body
 * Uses keywords in maps by default (good for Plumbing, Schema & Spec)
 * `ring-json` tests have been added to muuntaja to a) verify it works b) to demonstrate differences
