@@ -8,6 +8,9 @@
 (defn- match? [^String content-type string-or-regexp request]
   (and (:body request) (re-find string-or-regexp content-type)))
 
+(defn- assoc-assoc [m k1 k2 v]
+  (assoc m k1 (assoc (k1 m) k2 v)))
+
 (defn- stripped [^String s]
   (if s
     (let [i (.indexOf s ";")]
@@ -23,7 +26,7 @@
       e)))
 
 (defn- content-type [response content-type]
-  (assoc-in response [:headers "Content-Type"] content-type))
+  (assoc-assoc response :headers "Content-Type" content-type))
 
 (defprotocol RequestFormatter
   (extract-content-type-format [_ request])
