@@ -59,8 +59,7 @@
             (let [[f r] (nth matchers i)]
               (cond
                 (match? content-type r request) f
-                (< (inc i) (count matchers)) (recur (inc i))))))
-      (nth matchers 1)))
+                (< (inc i) (count matchers)) (recur (inc i))))))))
 
   (extract-accept-format [_ request]
     (if-let [accept (extract-accept-fn request)]
@@ -186,7 +185,7 @@
         body (:body request)]
     (as-> request $
           (assoc $ ::accept accept-format)
-          (if decoder
+          (if (and body decoder)
             (try
               (-> $
                   (assoc ::adapter content-type-format)
@@ -339,15 +338,15 @@
 ;; request helpers
 ;;
 
-(defn disable-request-decoding [request]
+(defn disable-request-decoding [request]
   (assoc request ::adapter nil))
 
 ;;
 ;; response helpers
 ;;
 
-(defn disable-response-encoding [response]
+(defn disable-response-encoding [response]
   (assoc response ::adapter nil))
 
-(defn set-response-content-type [response content-type]
+(defn set-response-content-type [response content-type]
   (assoc response ::content-type content-type))
