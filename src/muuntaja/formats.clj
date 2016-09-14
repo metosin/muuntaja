@@ -8,7 +8,7 @@
             [msgpack.core :as msgpack]
             [clojure.java.io :as io]
             [muuntaja.util :as util])
-  (:import [java.io ByteArrayOutputStream DataInputStream DataOutputStream InputStreamReader]))
+  (:import [java.io ByteArrayOutputStream DataInputStream DataOutputStream InputStreamReader PushbackReader]))
 
 (set! *warn-on-reflection* true)
 
@@ -63,9 +63,10 @@
 
 (defn make-edn-decoder [options]
   (let [options (merge {:readers *data-readers*} options)]
-    (fn [^String s]
-      (when-not (.isEmpty (.trim s))
-        (edn/read-string options s)))))
+    (fn [x]
+      (if (string? x)
+        (edn/read-string options x)
+        (edn/read options (PushbackReader. (InputStreamReader. x)))))))
 
 (defn make-edn-encoder [_]
   (fn [data]

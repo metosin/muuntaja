@@ -297,7 +297,8 @@
               :edn {:format ["application/edn" #"^application/(vnd.+)?(x-)?(clojure|edn)"]
                     :decoder [formats/make-edn-decoder]
                     :encoder [formats/make-edn-encoder]
-                    :encode-protocol [formats/EncodeEdn formats/encode-edn]}
+                    :encode-protocol [formats/EncodeEdn formats/encode-edn]
+                    :binary? true}
               :msgpack {:format ["application/msgpack" #"^application/(vnd.+)?(x-)?msgpack"]
                         :decoder [formats/make-msgpack-decoder]
                         :encoder [formats/make-msgpack-encoder]
