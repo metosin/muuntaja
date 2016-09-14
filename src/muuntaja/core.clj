@@ -334,6 +334,9 @@
 (defn with-encoder-opts [options format opts]
   (assoc-in options [:adapters format :encoder-opts] opts))
 
+(defn with-formats [options formats]
+  (assoc options :formats formats))
+
 ;;
 ;; request helpers
 ;;

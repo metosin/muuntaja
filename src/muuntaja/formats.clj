@@ -35,6 +35,7 @@
       (let [data-input (DataInputStream. i)]
         (msgpack/unpack-stream data-input options)))))
 
+;; TODO: keyword vs strings? better walk
 (defn make-msgpack-encoder [options]
   (fn [data]
     (with-open [out-stream (ByteArrayOutputStream.)]

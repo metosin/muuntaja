@@ -56,11 +56,23 @@ Full [API documentation](http://metosin.github.com/muuntaja) is available.
 
 ## Differences with current solutions
 
-* Populates just `:body-params`, does not merge data to `:params` & protocol-spesific params like `:json-params`
-  * Merging Persistent Maps is slow. You can do this with a extra step if you need this.   
-* Set's the `:body` to nil after consuming the body
+Both `ring-json` and `ring-middleware-format` tests have been ported to muuntaja to
+verify behavior and demonstrate differences.
+
 * Uses keywords in maps by default (good for Plumbing, Schema & Spec)
-* `ring-json` tests have been added to muuntaja to a) verify it works b) to demonstrate differences
+
+### Ring-json
+
+* Populates just the `:body-params`, does not merge data to `:params` & protocol-spesific params like `:json-params`
+  * Merging Persistent Maps is slow. You can do this with a extra middleware if you need this.
+
+### Ring-middleware-format
+
+* Set's the `:body` to nil after consuming the body (instead of re-creating a stream)
+* Does not set the `Content-Length` header
+* Different default return formats (**TODO**: WHY?):
+  * `:json`, `:edn` => `String`
+  * `:msgpack` => `byte[]`
 
 ## License
 
