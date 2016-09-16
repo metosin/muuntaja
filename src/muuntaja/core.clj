@@ -303,7 +303,7 @@
                         :encoder [formats/make-msgpack-encoder]
                         :encode-protocol [formats/EncodeMsgpack formats/encode-msgpack]
                         :binary? true}
-              :yaml {:format ["application/yaml" #"^(application|text)/(vnd.+)?(x-)?yaml"]
+              :yaml {:format ["application/x-yaml" #"^(application|text)/(vnd.+)?(x-)?yaml"]
                      :decoder [formats/make-yaml-decoder {:keywords true}]
                      :encoder [formats/make-yaml-encoder]
                      :encode-protocol [formats/EncodeYaml formats/encode-yaml]}
