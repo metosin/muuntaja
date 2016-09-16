@@ -30,6 +30,7 @@ Design decisions:
 
 ### Response
 
+* `:muuntaja.core/encode?`, if set to true, the response body will be encoded regardles of the type
 * `:muuntaja.core/adapter`, holds the adapter name that was used to encode the response body, e.g. `:json`.
    Setting value to anything (e.g. `nil`) before muuntaja middleware/interceptor will skip the encoding process.
 * `:muuntaja.core/content-type`, can be used to override the negotiated content-type for response encoding,
@@ -69,10 +70,15 @@ verify behavior and demonstrate differences.
 ### Ring-middleware-format
 
 * Set's the `:body` to nil after consuming the body (instead of re-creating a stream)
+* By default, encodes only collections (or responses with `:muuntaja.core/encode?` set)
+* Reads the `Content-Type` from headers (as the RING Spec says)
 * Does not set the `Content-Length` header
+* Does not negotiate the charset
+* Does not negotiate the
+* `:yaml-in-html` / `text/html` is not supported
 * Different default return formats (**TODO**: WHY?):
-  * `:json`, `:edn` => `String`
-  * `:msgpack` => `byte[]`
+  * `:json`, `:edn`, `:yaml` => `String`
+  * `:msgpack`, `:transit-json`, `:transit-msgpack` => `byte[]`
 
 ## License
 
