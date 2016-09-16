@@ -279,14 +279,16 @@
   [request]
   (get (:headers request) "accept"))
 
-(defn encode-collections [_ response]
-  (-> response :body coll?))
+(defn encode-collections-with-override [_ response]
+  (or
+    (-> response ::encode?)
+    (-> response :body coll?)))
 
 (def default-options
   {:extract-content-type-fn extract-content-type-ring
    :extract-accept-fn extract-accept-ring
    :decode? (constantly true)
-   :encode? encode-collections
+   :encode? encode-collections-with-override
    :charset "utf-8"
    :adapters {:json {:format ["application/json" #"^application/(vnd.+)?json"]
                      :decoder [formats/make-json-decoder {:keywords? true}]
