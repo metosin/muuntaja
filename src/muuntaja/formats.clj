@@ -29,11 +29,12 @@
 
 ;; msgpack
 
-(defn make-msgpack-decoder [options]
-  (fn [in]
-    (with-open [i (io/input-stream (util/slurp-to-bytes in))]
-      (let [data-input (DataInputStream. i)]
-        (msgpack/unpack-stream data-input options)))))
+(defn make-msgpack-decoder [{:keys [keywords?] :as options}]
+  (let [transform (if keywords? walk/keywordize-keys identity)]
+    (fn [in]
+      (with-open [i (io/input-stream (util/slurp-to-bytes in))]
+        (let [data-input (DataInputStream. i)]
+          (transform (msgpack/unpack-stream data-input options)))))))
 
 ;; TODO: keyword vs strings? better walk
 (defn make-msgpack-encoder [options]
