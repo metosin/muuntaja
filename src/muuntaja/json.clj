@@ -11,7 +11,7 @@
 (defn ^ObjectNode object []
   (.objectNode factory))
 
-(defn array ^ArrayNode []
+(defn ^ArrayNode array []
   (.arrayNode ^JsonNodeFactory factory))
 
 (declare clojurify)
