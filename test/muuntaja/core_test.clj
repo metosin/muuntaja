@@ -4,8 +4,9 @@
 
 (deftest core-test
   (testing "symmetic encode + decode for all formats"
-    (let [muuntaja (muuntaja/compile muuntaja/default-options)]
+    (let [muuntaja (muuntaja/compile muuntaja/default-options)
+          data {:kikka 42, :childs {:facts [1.2 true {:so "nested"}]}}]
       (are [format]
         (let [{:keys [encode decode]} (get-in muuntaja [:adapters format])]
-          (= {:kikka 42} (decode (encode {:kikka 42}))))
+          (= data (decode (encode data))))
         :json :edn :yaml :msgpack :transit-json :transit-msgpack))))
