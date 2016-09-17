@@ -1,6 +1,7 @@
 (ns muuntaja.ring-middleware.format-response-test
   (:require [clojure.test :refer :all]
             [muuntaja.core :as muuntaja]
+            [muuntaja.middleware :as middleware]
             [cheshire.core :as json]
             [clj-yaml.core :as yaml]
             [clojure.walk :refer [keywordize-keys]]
@@ -17,7 +18,7 @@
    (wrap-api-response handler muuntaja/default-options))
   ([handler opts]
    (-> handler
-       (muuntaja/wrap-format
+       (middleware/wrap-format
          (-> opts muuntaja/no-decoding)))))
 
 (def api-echo

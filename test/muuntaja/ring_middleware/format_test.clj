@@ -2,14 +2,9 @@
   (:require [clojure.test :refer :all]
             [cheshire.core :as json]
             [muuntaja.core :as muuntaja]
+            [muuntaja.middleware :as middleware]
             [clj-yaml.core :as yaml])
   (:import [java.io ByteArrayInputStream]))
-
-(defn wrap-params [handler]
-  (fn [request]
-    (let [body-params (:body-params request)]
-      (handler (-> request
-                   (cond-> (map? body-params) (update :params merge body-params)))))))
 
 (defn stream [s]
   (ByteArrayInputStream. (.getBytes s "UTF-8")))
@@ -19,16 +14,16 @@
         {:status 200
          :params (:params req)
          :body (:body-params req)})
-      (wrap-params)
-      (muuntaja/wrap-format)))
+      (middleware/wrap-params)
+      (middleware/wrap-format)))
 
 (def api-echo-json
   (-> (fn [req]
         {:status 200
          :params (:params req)
          :body (:body-params req)})
-      (wrap-params)
-      (muuntaja/wrap-format
+      (middleware/wrap-params)
+      (middleware/wrap-format
         (-> muuntaja/default-options
             (assoc :formats [:json])))))
 
@@ -37,8 +32,8 @@
         {:status 200
          :params (:params req)
          :body (:body-params req)})
-      (wrap-params)
-      (muuntaja/wrap-format
+      (middleware/wrap-params)
+      (middleware/wrap-format
         (-> muuntaja/default-options
             (assoc :formats [:yaml])))))
 

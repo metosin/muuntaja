@@ -1,6 +1,7 @@
 (ns muuntaja.core-perf-test
   (:require [criterium.core :as cc]
             [muuntaja.core :as muuntaja]
+            [muuntaja.middleware :as middleware]
             [muuntaja.json :as json]
             [muuntaja.test_utils :refer :all]
             [cheshire.core :as cheshire]
@@ -222,7 +223,7 @@
 (defn muuntaja-e2e []
 
   ; 2.3µs
-  (let [app (muuntaja/wrap-format +handler+ (-> muuntaja/default-options muuntaja/no-encoding))
+  (let [app (middleware/wrap-format +handler+ (-> muuntaja/default-options muuntaja/no-encoding))
         request! (request-stream +json-request+)]
 
     (title "muuntaja: JSON-REQUEST")
@@ -230,7 +231,7 @@
     (cc/quick-bench (app (request!))))
 
   ; 3.6µs
-  (let [app (muuntaja/wrap-format +handler+ (-> muuntaja/default-options muuntaja/no-encoding))
+  (let [app (middleware/wrap-format +handler+ (-> muuntaja/default-options muuntaja/no-encoding))
         request! (request-stream +transit-json-request+)]
 
     (title "muuntaja: TRANSIT-REQUEST")
@@ -238,7 +239,7 @@
     (cc/quick-bench (app (request!))))
 
   ; 3.6µs
-  (let [app (muuntaja/wrap-format +handler+ muuntaja/default-options)
+  (let [app (middleware/wrap-format +handler+ muuntaja/default-options)
         request! (request-stream +json-request+)]
 
     (title "muuntaja: JSON-REQUEST-RESPONSE")
@@ -246,7 +247,7 @@
     (cc/quick-bench (app (request!))))
 
   ; 7.1µs
-  (let [app (muuntaja/wrap-format +handler+ muuntaja/default-options)
+  (let [app (middleware/wrap-format +handler+ muuntaja/default-options)
         request! (request-stream +transit-json-request+)]
 
     (title "muuntaja: TRANSIT-REQUEST-RESPONSE")
@@ -255,7 +256,7 @@
 
   ; 3.8µs
   ; 2.6µs Protocol (-30%)
-  (let [app (muuntaja/wrap-format +handler2+ muuntaja/default-options)
+  (let [app (middleware/wrap-format +handler2+ muuntaja/default-options)
         request! (request-stream +json-request+)]
 
     (title "muuntaja: JSON-REQUEST-RESPONSE (PROTOCOL)")

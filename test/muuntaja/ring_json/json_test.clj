@@ -1,6 +1,7 @@
 (ns muuntaja.ring-json.json-test
   (:require [clojure.test :refer :all]
             [muuntaja.core :as muuntaja]
+            [muuntaja.middleware :as middleware]
             [ring.util.io :refer [string-input-stream]]))
 
 (def +handler+ (fn [{:keys [body-params body]}]
@@ -15,40 +16,39 @@
    (wrap-json-params handler {}))
   ([handler opts]
    (-> handler
-       (muuntaja/wrap-format
+       (middleware/wrap-params)
+       (middleware/wrap-format
          (-> muuntaja/default-options
              muuntaja/no-encoding
              (muuntaja/with-decoder-opts :json (merge {:keywords? false} opts))
              (assoc-in [:adapters :json :format] ["application/json" #"application/(.+\+)?json"])))
-       (muuntaja/wrap-exception (constantly
-                                  (or
-                                    (:malformed-response opts)
-                                    {:status 400
-                                     :headers {"Content-Type" "text/plain"}
-                                     :body "Malformed JSON in request body."}))))))
+       (middleware/wrap-exception (constantly
+                                    (or
+                                      (:malformed-response opts)
+                                      {:status 400
+                                       :headers {"Content-Type" "text/plain"}
+                                       :body "Malformed JSON in request body."}))))))
 
 (defn wrap-params [handler]
   (fn [request]
     (let [body-params (:body-params request)]
-      (handler (-> request
-                   (assoc :json-params body-params)
-                   (cond-> (map? body-params) (update :params merge body-params)))))))
+      (handler (assoc request :json-params body-params)))))
 
 (defn wrap-json-response
   ([handler]
    (wrap-json-response handler {}))
   ([handler opts]
    (-> handler
-       (muuntaja/wrap-format
+       (middleware/wrap-format
          (-> muuntaja/default-options
              muuntaja/no-decoding
              (muuntaja/with-encoder-opts :json opts)))
-       (muuntaja/wrap-exception (constantly
-                                  (or
-                                    (:malformed-response opts)
-                                    {:status 400
-                                     :headers {"Content-Type" "text/plain"}
-                                     :body "Malformed JSON in request body."}))))))
+       (middleware/wrap-exception (constantly
+                                    (or
+                                      (:malformed-response opts)
+                                      {:status 400
+                                       :headers {"Content-Type" "text/plain"}
+                                       :body "Malformed JSON in request body."}))))))
 
 ;;
 ;; tests
