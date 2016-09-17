@@ -245,7 +245,7 @@
                     :encode-protocol [formats/EncodeEdn formats/encode-edn]
                     :binary? true}
               :msgpack {:format ["application/msgpack" #"^application/(vnd.+)?(x-)?msgpack"]
-                        :decoder [formats/make-msgpack-decoder]
+                        :decoder [formats/make-msgpack-decoder {:keywords? true}]
                         :encoder [formats/make-msgpack-encoder]
                         :encode-protocol [formats/EncodeMsgpack formats/encode-msgpack]
                         :binary? true}

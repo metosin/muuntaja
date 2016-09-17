@@ -77,7 +77,8 @@
       (middleware/wrap-params)
       (wrap-api-params
         (-> muuntaja/default-options
-            (muuntaja/with-formats [:msgpack])))))
+            (muuntaja/with-formats [:msgpack])
+            (muuntaja/with-decoder-opts :msgpack {:keywords? false})))))
 
 (deftest augments-with-msgpack-content-type
   (let [req {:headers {"content-type" "application/msgpack"}
@@ -92,8 +93,7 @@
       (middleware/wrap-params)
       (wrap-api-params
         (-> muuntaja/default-options
-            (muuntaja/with-formats [:msgpack])
-            (muuntaja/with-decoder-opts :msgpack {:keywords? true})))))
+            (muuntaja/with-formats [:msgpack])))))
 
 (deftest augments-with-msgpack-kw-content-type
   (let [req {:headers {"content-type" "application/msgpack"}
