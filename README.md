@@ -81,9 +81,7 @@ verify behavior and demonstrate differences.
 * **TODO**: does not negotiate the request charset
 * **TODO**: does not negotiate the response charset
 * `:yaml-in-html` / `text/html` is not supported
-* Return formats are not wrapped into InputStreams, should they?
-  * `:json`, `:edn`, `:yaml` => `String`
-  * `:msgpack`, `:transit-json`, `:transit-msgpack` => `byte[]`
+* `:json` `:edn` & `:yaml` responses are not wrapped into InputStreams, should they?
 
 ## License
 

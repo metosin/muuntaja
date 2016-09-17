@@ -7,7 +7,7 @@
             [cognitect.transit :as transit]
             [msgpack.core :as msgpack]
             [clojure.java.io :as io])
-  (:import [java.io ByteArrayOutputStream DataInputStream DataOutputStream InputStreamReader PushbackReader InputStream]))
+  (:import [java.io ByteArrayOutputStream DataInputStream DataOutputStream InputStreamReader PushbackReader InputStream ByteArrayInputStream]))
 
 (defn- slurp-to-bytes ^bytes [^InputStream in]
   (if in
@@ -50,7 +50,8 @@
     (with-open [out-stream (ByteArrayOutputStream.)]
       (let [data-out (DataOutputStream. out-stream)]
         (msgpack/pack-stream (walk/stringify-keys data) data-out) options)
-      (.toByteArray out-stream))))
+      (ByteArrayInputStream.
+        (.toByteArray out-stream)))))
 
 (defprotocol EncodeMsgpack
   (encode-msgpack [this]))
@@ -102,7 +103,8 @@
                       type)
           wrt (transit/writer out full-type options)]
       (transit/write wrt data)
-      (.toByteArray out))))
+      (ByteArrayInputStream.
+        (.toByteArray out)))))
 
 (defprotocol EncodeTransitJson
   (encode-transit-json [this]))
