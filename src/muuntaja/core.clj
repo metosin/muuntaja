@@ -78,6 +78,7 @@
 
   (encode-response? [_ request response]
     (and encode?
+         (map? response)
          (not (contains? response ::adapter))
          (encode? request response)))
 
