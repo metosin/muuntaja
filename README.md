@@ -73,10 +73,10 @@ verify behavior and demonstrate differences.
 * By default, encodes only collections (or responses with `:muuntaja.core/encode?` set)
 * Reads the `Content-Type` from headers (as the RING Spec says)
 * Does not set the `Content-Length` header
-* Does not negotiate the charset
-* Does not negotiate the
+* **TODO**: does not negotiate the request charset
+* **TODO**: does not negotiate the response charset
 * `:yaml-in-html` / `text/html` is not supported
-* Different default return formats (**TODO**: WHY?):
+* Return formats are not wrapped into InputStreams, should they?
   * `:json`, `:edn`, `:yaml` => `String`
   * `:msgpack`, `:transit-json`, `:transit-msgpack` => `byte[]`
 
