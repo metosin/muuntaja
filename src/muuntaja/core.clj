@@ -210,21 +210,6 @@
     response))
 
 ;;
-;; Interceptors
-;;
-
-(defrecord Interceptor [name enter leave])
-
-(defn format-interceptor [options]
-  (let [formats (compile options)]
-    (map->Interceptor
-      {:name ::format
-       :enter (fn [ctx]
-                (update ctx :request (partial format-request formats)))
-       :leave (fn [ctx]
-                (update ctx :response (partial format-response formats (:request ctx))))})))
-
-;;
 ;; customization
 ;;
 

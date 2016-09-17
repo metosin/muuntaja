@@ -2,6 +2,7 @@
   (:require [criterium.core :as cc]
             [muuntaja.core :as muuntaja]
             [muuntaja.middleware :as middleware]
+            [muuntaja.interceptor :as interceptor]
             [muuntaja.json :as json]
             [muuntaja.test_utils :refer :all]
             [cheshire.core :as cheshire]
@@ -266,7 +267,7 @@
 (defn interceptor-e2e []
 
   ; 3.8µs
-  (let [{:keys [enter leave]} (muuntaja/format-interceptor muuntaja/default-options)
+  (let [{:keys [enter leave]} (interceptor/format-interceptor muuntaja/default-options)
         app (fn [request] (-> (->Context request) enter (handle +handler+) leave :response))
         request! (request-stream +json-request+)]
 
@@ -275,7 +276,7 @@
     (cc/quick-bench (app (request!))))
 
   ; 7.5µs
-  (let [{:keys [enter leave]} (muuntaja/format-interceptor muuntaja/default-options)
+  (let [{:keys [enter leave]} (interceptor/format-interceptor muuntaja/default-options)
         app (fn [request] (-> (->Context request) enter (handle +handler+) leave :response))
         request! (request-stream +transit-json-request+)]
 
