@@ -9,9 +9,9 @@ extend. Ships with adapters for: [JSON](http://www.json.org/), [EDN](https://git
 Design decisions:
 
 - explicit configuration, avoid shared mutable state (e.g. multimethods)
-- fast & pragmatic by default, intented for api usage
+- fast & pragmatic by default, for api usage
 - extendable & pluggable: new formats, behavior
-- typed exceptions but caught elsewhere
+- typed exceptions - caught elsewhere
 - standalone lib + adapters for ring, async-ring & pedestal
 - targeting to replace [ring-middleware-defaults](https://github.com/ngrunwald/ring-middleware-format)
 
@@ -60,19 +60,24 @@ Full [API documentation](http://metosin.github.com/muuntaja) is available.
 Both `ring-json` and `ring-middleware-format` tests have been ported to muuntaja to
 verify behavior and demonstrate differences.
 
-* Uses keywords in maps by default (good for Plumbing, Schema & Spec)
+* By default, uses Keywords in map keys (good for `clojure.spec` & `Schema`)
 
 ### Ring-json
 
-* Populates just the `:body-params`, does not merge data to `:params` & protocol-spesific params like `:json-params`
-  * Merging Persistent Maps is slow. You can do this with a extra middleware if you need this.
+* Besides JSON, offers other protocols by default
+* Populates just the `:body-params`, not `:params` & `:json-params`
+  * Merging Persistent Maps is slow, if you need the `:params` there is `muuntaja.middleware/wrap-params` for this
+  * If you need `:json-params`, add a extra middleware for it.
+* No in-built exception handling
+  * Add `muuntaja.middleware/wrap-exception` to add an exception callback
 
 ### Ring-middleware-format
 
 * Set's the `:body` to nil after consuming the body (instead of re-creating a stream)
+* Multiple Muuntaja middlewares can be used in the same middleware pipeline, first one does the deeds
 * By default, encodes only collections (or responses with `:muuntaja.core/encode?` set)
-* Reads the `Content-Type` from headers (as the RING Spec says)
-* Does not set the `Content-Length` header
+* Reads the `Content-Type` from request headers (as defined in the  RING Spec)
+* Does not set the `Content-Length` header (done by the adapters)
 * **TODO**: does not negotiate the request charset
 * **TODO**: does not negotiate the response charset
 * `:yaml-in-html` / `text/html` is not supported
