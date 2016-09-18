@@ -90,6 +90,14 @@
   (default-format [_]
     default-format))
 
+(defn encode [formats format data]
+  (if-let [encode (encoder formats format)]
+    (encode data)))
+
+(defn decode [formats format data]
+  (if-let [decode (decoder formats format)]
+    (decode data)))
+
 ;;
 ;; Content-type resolution
 ;;

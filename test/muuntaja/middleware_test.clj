@@ -13,12 +13,6 @@
           (= data (decode (encode data))))
         :json :edn :yaml :msgpack :transit-json :transit-msgpack)))
 
-  (testing "encode & decode"
-    (let [muuntaja (muuntaja/compile muuntaja/default-options)
-          data {:kikka 42}]
-      (is (= "{\"kikka\":42}" (muuntaja/encode muuntaja :json data)))
-      (is (= data (muuntaja/decode muuntaja :json (muuntaja/encode muuntaja :json data))))))
-
   (testing "adding new format"
     (let [format :upper
           upper-case-format {:decoder str/lower-case
