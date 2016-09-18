@@ -163,7 +163,7 @@
                                (select-keys adapter [:binary?])
                                (if decoder {:decode (make decoder decoder-opts nil)})
                                (if encoder {:encode (make encoder encoder-opts encode-protocol)})))]
-                   (throw (ex-info (str "no adapter for: " format) {:adapters adapters
+                   (throw (ex-info (str "no adapter for: " format) {:supported (keys adapters)
                                                                     :format format})))))
          (into {}))))
 

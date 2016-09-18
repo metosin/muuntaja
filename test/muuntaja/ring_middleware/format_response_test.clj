@@ -318,7 +318,7 @@
        :body {:foo "bar"}})
     (-> muuntaja/default-options
         (assoc-in [:adapters :custom-json] custom-encoder)
-        (assoc :formats [:custom-json :json-kw]))))
+        (assoc :formats [:custom-json :json]))))
 
 (deftest custom-content-type-test
   (let [resp (custom-content-type {:body {:foo "bar"} :headers {"accept" "application/vnd.mixradio.something+json"}})]
