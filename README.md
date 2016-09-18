@@ -65,7 +65,6 @@ verify behavior and demonstrate differences.
 ### Ring-json
 
 * Besides JSON, offers other protocols by default
-* Matches `#"application/(vnd.+)?json"`, not `#"application/(.+\+)?json"`
 * Populates just the `:body-params`, not `:params` & `:json-params`
   * Merging Persistent Maps is slow, if you need the `:params` there is `muuntaja.middleware/wrap-params` for this
   * If you need `:json-params`, add a extra middleware for it.

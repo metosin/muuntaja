@@ -1,5 +1,6 @@
 (ns muuntaja.middleware
-  (:require [muuntaja.core :as muuntaja]))
+  (:require [muuntaja.core :as muuntaja])
+  (:import [muuntaja.core Formats]))
 
 ; [^Exception e format request]
 (defn- default-on-exception [_ format _]
@@ -34,8 +35,10 @@
 (defn wrap-format
   ([handler]
    (wrap-format handler muuntaja/default-options))
-  ([handler options]
-   (let [formats (muuntaja/compile options)]
+  ([handler options-or-formats]
+   (let [formats (if (instance? Formats options-or-formats)
+                   options-or-formats
+                   (muuntaja/compile options-or-formats))]
      (fn
        ([request]
         (let [req (muuntaja/format-request formats request)]

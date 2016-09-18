@@ -244,7 +244,7 @@
    :decode? (constantly true)
    :encode? encode-collections-with-override
    :charset "utf-8"
-   :adapters {:json {:format ["application/json" #"^application/(vnd.+)?json"]
+   :adapters {:json {:format ["application/json" #"application/(.+\+)?json"]
                      :decoder [formats/make-json-decoder {:keywords? true}]
                      :encoder [formats/make-json-encoder]
                      :encode-protocol [formats/EncodeJson formats/encode-json]
