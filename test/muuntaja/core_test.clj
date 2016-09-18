@@ -31,4 +31,15 @@
           Exception
           (muuntaja/compile
             (-> muuntaja/default-options
-                (update :formats conj :kikka)))))))
+                (update :formats conj :kikka))))))
+
+  (testing "overriding adapter configs"
+    (let [decode-json-kw (-> (muuntaja/compile
+                               (-> muuntaja/default-options))
+                             (get-in [:adapters :json :decode]))
+          decode-json (-> (muuntaja/compile
+                            (-> muuntaja/default-options
+                                (muuntaja/with-decoder-opts :json {:keywords? false})))
+                          (get-in [:adapters :json :decode]))]
+      (is (= {:kikka true} (decode-json-kw "{\"kikka\":true}")))
+      (is (= {"kikka" true} (decode-json "{\"kikka\":true}"))))))
