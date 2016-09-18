@@ -154,7 +154,9 @@
                              (merge
                                (select-keys adapter [:binary?])
                                (if decoder {:decode (make decoder decoder-opts nil)})
-                               (if encoder {:encode (make encoder encoder-opts encode-protocol)})))])))
+                               (if encoder {:encode (make encoder encoder-opts encode-protocol)})))]
+                   (throw (ex-info (str "no adapter for: " format) {:adapters adapters
+                                                                    :format format})))))
          (into {}))))
 
 (defn compile [{:keys [adapters formats charset] :as options}]
