@@ -37,7 +37,7 @@
   (decoder [_ format])
   (default-format [_]))
 
-(defrecord Adapter [encode decode binary?])
+(defrecord Adapter [encode decode])
 
 (defrecord Formats [extract-content-type-fn
                     extract-accept-fn
@@ -160,7 +160,6 @@
                           (if (map? format) format (get adapters format))]
                    [format (map->Adapter
                              (merge
-                               (select-keys adapter [:binary?])
                                (if decoder {:decode (make decoder decoder-opts nil)})
                                (if encoder {:encode (make encoder encoder-opts encode-protocol)})))]
                    (throw (ex-info (str "no adapter for: " format) {:supported (keys adapters)
@@ -247,18 +246,15 @@
    :adapters {:json {:format ["application/json" #"application/(.+\+)?json"]
                      :decoder [formats/make-json-decoder {:keywords? true}]
                      :encoder [formats/make-json-encoder]
-                     :encode-protocol [formats/EncodeJson formats/encode-json]
-                     :binary? true}
+                     :encode-protocol [formats/EncodeJson formats/encode-json]}
               :edn {:format ["application/edn" #"^application/(vnd.+)?(x-)?(clojure|edn)"]
                     :decoder [formats/make-edn-decoder]
                     :encoder [formats/make-edn-encoder]
-                    :encode-protocol [formats/EncodeEdn formats/encode-edn]
-                    :binary? true}
+                    :encode-protocol [formats/EncodeEdn formats/encode-edn]}
               :msgpack {:format ["application/msgpack" #"^application/(vnd.+)?(x-)?msgpack"]
                         :decoder [formats/make-msgpack-decoder {:keywords? true}]
                         :encoder [formats/make-msgpack-encoder]
-                        :encode-protocol [formats/EncodeMsgpack formats/encode-msgpack]
-                        :binary? true}
+                        :encode-protocol [formats/EncodeMsgpack formats/encode-msgpack]}
               :yaml {:format ["application/x-yaml" #"^(application|text)/(vnd.+)?(x-)?yaml"]
                      :decoder [formats/make-yaml-decoder {:keywords true}]
                      :encoder [formats/make-yaml-encoder]
@@ -266,13 +262,11 @@
               :transit-json {:format ["application/transit+json" #"^application/(vnd.+)?(x-)?transit\+json"]
                              :decoder [(partial formats/make-transit-decoder :json)]
                              :encoder [(partial formats/make-transit-encoder :json)]
-                             :encode-protocol [formats/EncodeTransitJson formats/encode-transit-json]
-                             :binary? true}
+                             :encode-protocol [formats/EncodeTransitJson formats/encode-transit-json]}
               :transit-msgpack {:format ["application/transit+msgpack" #"^application/(vnd.+)?(x-)?transit\+msgpack"]
                                 :decoder [(partial formats/make-transit-decoder :msgpack)]
                                 :encoder [(partial formats/make-transit-encoder :msgpack)]
-                                :encode-protocol [formats/EncodeTransitMessagePack formats/encode-transit-msgpack]
-                                :binary? true}}
+                                :encode-protocol [formats/EncodeTransitMessagePack formats/encode-transit-msgpack]}}
    :formats [:json :edn :msgpack :yaml :transit-json :transit-msgpack]})
 
 (defn transform-adapter-options [f options]
