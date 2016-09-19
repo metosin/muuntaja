@@ -20,8 +20,7 @@
        (middleware/wrap-format
          (-> muuntaja/default-options
              muuntaja/no-encoding
-             (muuntaja/with-decoder-opts :json (merge {:keywords? false} opts))
-             (assoc-in [:adapters :json :format] ["application/json" #"application/(.+\+)?json"])))
+             (muuntaja/with-decoder-opts :json (merge {:keywords? false} opts))))
        (middleware/wrap-exception (constantly
                                     (or
                                       (:malformed-response opts)
