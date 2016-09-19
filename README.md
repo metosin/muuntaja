@@ -14,7 +14,7 @@ Design decisions:
 - extendable & pluggable: new formats, behavior
 - typed exceptions - caught elsewhere
 - standalone lib + adapters for ring, async-ring & pedestal
-- targeting to replace [ring-middleware-defaults](https://github.com/ngrunwald/ring-middleware-format)
+- targeting to replace [ring-middleware-format](https://github.com/ngrunwald/ring-middleware-format)
 
 ## Latest version
 
