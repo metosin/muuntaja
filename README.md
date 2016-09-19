@@ -2,14 +2,15 @@
 
 # muuntaja [![Continuous Integration status](https://secure.travis-ci.org/metosin/muuntaja.png)](http://travis-ci.org/metosin/muuntaja) [![Dependencies Status](http://jarkeeper.com/metosin/muuntaja/status.svg)](http://jarkeeper.com/metosin/muuntaja)
 
-Clojure library for handling http-api formats with web apps (both middleware & interceptors). Explicit configuration, easy to
-extend. Ships with adapters for: [JSON](http://www.json.org/), [EDN](https://github.com/edn-format/edn),
+Clojure library for fast http api content negotiation - symmetric on both for servers & clients.
+Standalone library, but ships with adapters for ring (async) middleware & Pedestal-style interceptors.
+Explicit & extendable, supporting out-of-the-box [JSON](http://www.json.org/), [EDN](https://github.com/edn-format/edn),
 [MessagePack](http://msgpack.org/), [YAML](http://yaml.org/) and [Transit](https://github.com/cognitect/transit-format).
 
 Design decisions:
 
-- explicit configuration, avoid shared mutable state (e.g. multimethods)
-- fast & pragmatic by default, for api usage
+- explicit configuration, no shared mutable state (e.g. multimethods)
+- fast & pragmatic by default, for app-to-app communication
 - extendable & pluggable: new formats, behavior
 - typed exceptions - caught elsewhere
 - standalone lib + adapters for ring, async-ring & pedestal
@@ -19,7 +20,7 @@ Design decisions:
 
 [![Clojars Project](http://clojars.org/metosin/muuntaja/latest-version.svg)](http://clojars.org/metosin/muuntaja)
 
-## Spec
+## Server Spec
 
 ### Request
 
@@ -38,7 +39,99 @@ Design decisions:
 
 ## Usage
 
-**TODO**
+More detailed examples in the [wiki](https://github.com/metosin/muuntaja/wiki).
+
+### Standalone
+
+Creating a muuntaja and using it to encode & decode JSON:
+
+```clj
+(require '[muuntaja.core :as muuntaja])
+(def m (muuntaja/compile muuntaja/default-options))
+
+(muuntaja/encode m :json {:kikka 42})
+; "{\"kikka\":42}"
+
+(->> {:kikka 42}
+     (muuntaja/encode m :json)
+     (muuntaja/decode m :json))
+; {:kikka 42}
+```
+
+With custom EDN decoder opts:
+
+```clj
+(-> (muuntaja/compile
+      (-> muuntaja/default-options
+          (muuntaja/with-decoder-opts :edn {:readers {'INC inc}})))
+    (muuntaja/decode :edn "{:value #INC 41}"))
+```
+
+Transit-json encode fn:
+
+```clj
+(def encode-transit-json (muuntaja/encoder m :transit-json))
+
+(slurp (encode-transit-json {:kikka 42}))
+; "[\"^ \",\"~:kikka\",42]"
+```
+
+### Ring
+
+Middleware with defaults:
+
+```clj
+(require '[muuntaja.middleware :as middleware])
+
+(defn echo [request]
+  {:status 200
+   :body (:body-params request)})
+
+(def app (middleware/wrap-format echo))
+
+(app {:headers {"content-type" "application/json"
+                "accept" "application/edn"}
+      :body "{\"kikka\":42}"})
+; {:status 200
+;  :body "{:kikka 42}"
+;  :muuntaja.core/adapter :edn
+;  :headers {"Content-Type" "application/edn; charset=utf-8"}}
+```
+
+### Default options
+
+```clj
+{:extract-content-type-fn extract-content-type-ring
+ :extract-accept-fn extract-accept-ring
+ :decode? (constantly true)
+ :encode? encode-collections-with-override
+ :charset "utf-8"
+ :adapters {:json {:format ["application/json" #"application/(.+\+)?json"]
+                   :decoder [formats/make-json-decoder {:keywords? true}]
+                   :encoder [formats/make-json-encoder]
+                   :encode-protocol [formats/EncodeJson formats/encode-json]}
+            :edn {:format ["application/edn" #"^application/(vnd.+)?(x-)?(clojure|edn)"]
+                  :decoder [formats/make-edn-decoder]
+                  :encoder [formats/make-edn-encoder]
+                  :encode-protocol [formats/EncodeEdn formats/encode-edn]}
+            :msgpack {:format ["application/msgpack" #"^application/(vnd.+)?(x-)?msgpack"]
+                      :decoder [formats/make-msgpack-decoder {:keywords? true}]
+                      :encoder [formats/make-msgpack-encoder]
+                      :encode-protocol [formats/EncodeMsgpack formats/encode-msgpack]}
+            :yaml {:format ["application/x-yaml" #"^(application|text)/(vnd.+)?(x-)?yaml"]
+                   :decoder [formats/make-yaml-decoder {:keywords true}]
+                   :encoder [formats/make-yaml-encoder]
+                   :encode-protocol [formats/EncodeYaml formats/encode-yaml]}
+            :transit-json {:format ["application/transit+json" #"^application/(vnd.+)?(x-)?transit\+json"]
+                           :decoder [(partial formats/make-transit-decoder :json)]
+                           :encoder [(partial formats/make-transit-encoder :json)]
+                           :encode-protocol [formats/EncodeTransitJson formats/encode-transit-json]}
+            :transit-msgpack {:format ["application/transit+msgpack" #"^application/(vnd.+)?(x-)?transit\+msgpack"]
+                              :decoder [(partial formats/make-transit-decoder :msgpack)]
+                              :encoder [(partial formats/make-transit-encoder :msgpack)]
+                              :encode-protocol [formats/EncodeTransitMessagePack formats/encode-transit-msgpack]}}
+ :formats [:json :edn :msgpack :yaml :transit-json :transit-msgpack]}
+ ```
 
 ## Performance
 
@@ -58,25 +151,30 @@ Full [API documentation](http://metosin.github.com/muuntaja) is available.
 ## Differences with current solutions
 
 Both `ring-json` and `ring-middleware-format` tests have been ported to muuntaja to
-verify behavior and demonstrate differences.
+verify behavior and demonstrate differences. 
 
-* By default, uses Keywords in map keys (good for `clojure.spec` & `Schema`)
+### Common
 
-### Ring-json
-
-* Besides JSON, offers other protocols by default
-* Populates just the `:body-params`, not `:params` & `:json-params`
-  * Merging Persistent Maps is slow, if you need the `:params` there is `muuntaja.middleware/wrap-params` for this
-  * If you need `:json-params`, add a extra middleware for it.
+* By default, uses Keywords in map keys
+  * good default for `clojure.spec` & `Schema`
 * No in-built exception handling
-  * Add `muuntaja.middleware/wrap-exception` to add an exception callback
+  * Exceptions have `:type` of `:muuntaja.core/decode`, catch them elsewhere
+  * Add `muuntaja.middleware/wrap-exception` to catch 'em separately
 
-### Ring-middleware-format
+### ring-json & ring-transit
+
+* Supports multiple formats in a single middleware
+* Populates just the `:body-params`, not `:params` & `:json-params`/`:transit-params`
+  * Because merging Persistent Maps is slow
+  * if you need the `:params` add `muuntaja.middleware/wrap-params`
+  * If you need `:json-params`/`:transit-params`, write your own mw for these.
+
+### ring-middleware-format
 
 * Set's the `:body` to nil after consuming the body (instead of re-creating a stream)
-* Multiple Muuntaja middlewares can be used in the same middleware pipeline, first one does the deeds
+* Multiple `wrap-format` middlewares can be used in the same mw stack, rest are no-op
 * By default, encodes only collections (or responses with `:muuntaja.core/encode?` set)
-* Reads the `Content-Type` from request headers (as defined in the  RING Spec)
+* Reads the `content-type` from request headers (as defined in the RING Spec)
 * Does not set the `Content-Length` header (done by the adapters)
 * **TODO**: does not negotiate the request charset
 * **TODO**: does not negotiate the response charset
