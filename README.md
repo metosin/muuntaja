@@ -2,7 +2,7 @@
 
 # muuntaja [![Continuous Integration status](https://secure.travis-ci.org/metosin/muuntaja.png)](http://travis-ci.org/metosin/muuntaja) [![Dependencies Status](http://jarkeeper.com/metosin/muuntaja/status.svg)](http://jarkeeper.com/metosin/muuntaja)
 
-Clojure library for fast http api content negotiation - symmetric on both for servers & clients.
+Clojure library for fast http api format negotiation - symmetric for both servers & clients.
 Standalone library, but ships with adapters for ring (async) middleware & Pedestal-style interceptors.
 Explicit & extendable, supporting out-of-the-box [JSON](http://www.json.org/), [EDN](https://github.com/edn-format/edn),
 [MessagePack](http://msgpack.org/), [YAML](http://yaml.org/) and [Transit](https://github.com/cognitect/transit-format).
@@ -47,6 +47,7 @@ Creating a muuntaja and using it to encode & decode JSON:
 
 ```clj
 (require '[muuntaja.core :as muuntaja])
+
 (def m (muuntaja/compile muuntaja/default-options))
 
 (muuntaja/encode m :json {:kikka 42})
@@ -65,6 +66,7 @@ With custom EDN decoder opts:
       (-> muuntaja/default-options
           (muuntaja/with-decoder-opts :edn {:readers {'INC inc}})))
     (muuntaja/decode :edn "{:value #INC 41}"))
+; {:value 42}    
 ```
 
 Transit-json encode fn:
@@ -136,7 +138,7 @@ Middleware with defaults:
 ## Performance
 
 * by default, ~6x faster than `[ring-middleware-format "0.7.0"]` (JSON request & response).
-* by default, ~2x faster than `[ring/ring-json "0.4.0"]` (JSON requests & responses).
+* by default, faster than `[ring/ring-json "0.4.0"]` (JSON requests & responses).
 
 There is also a new low-level JSON encoder (in `muuntaja.json`) on top of 
 [Jackson Databind](https://github.com/FasterXML/jackson-databind) and protocols supporting
