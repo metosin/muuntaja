@@ -1,7 +1,12 @@
 (ns muuntaja.core
   (:require [clojure.string :as str]
+            [muuntaja.parse :as parse]
             [muuntaja.formats :as formats])
   (:refer-clojure :exclude [compile]))
+
+(defn- some-value [pred c]
+  (let [f (fn [x] (if (pred x) x))]
+    (some f c)))
 
 (defn- match? [^String content-type string-or-regexp request]
   (and (:body request) (re-find string-or-regexp content-type)))
@@ -26,6 +31,10 @@
 (defn- content-type [response content-type]
   (assoc-assoc response :headers "Content-Type" content-type))
 
+;;
+;; Protocols
+;;
+
 (defprotocol RequestFormatter
   (extract-content-type-format [_ request])
   (extract-accept-format [_ request])
@@ -36,6 +45,34 @@
   (encoder [_ format])
   (decoder [_ format])
   (default-format [_]))
+
+;;
+;; Content negotiation
+;;
+
+(defn negotiate-content-type [formats ^String s]
+  (let [[content-type charset] (parse/parse-content-type s)]
+    [(if ((:consumes formats) content-type) content-type)
+     (or charset (:charset formats))]))
+
+(defn negotiate-accept [formats ^String s]
+  (or
+    (some-value
+      (:consumes formats)
+      (parse/parse-accept s))
+    ((:produces formats)
+      (default-format formats))))
+
+(defn negotiate-accept-charset [formats s]
+  (or
+    (some-value
+      (:charsets formats)
+      (parse/parse-accept-charset s))
+    (:charset formats)))
+
+;;
+;; Records
+;;
 
 (defrecord Adapter [encode decode])
 
@@ -303,3 +340,74 @@
 
 (defn set-response-content-type [response content-type]
   (assoc response ::content-type content-type))
+
+;;
+;; cache
+;;
+
+(def m (compile default-options))
+
+(def cached-negotiate-accept-charset
+  (parse/fast-memoize
+    (parse/cache 1000)
+    (partial negotiate-accept-charset m)))
+
+(def cached-negotiate-accept
+  (parse/fast-memoize
+    (parse/cache 1000)
+    (partial negotiate-accept m)))
+
+(def cached-negotiate-content-type
+  (parse/fast-memoize
+    (parse/cache 1000)
+    (partial negotiate-content-type m)))
+
+;;
+;; test
+;;
+
+(comment
+  (do
+    ;; 2800ms
+    (time
+      (dotimes [_ 1000000]
+        (negotiate-accept-charset m "utf-8, iso-8859-1;q=0.5")))
+
+    ;; 34ms
+    (time
+      (dotimes [_ 1000000]
+        (cached-negotiate-accept-charset "utf-8, iso-8859-1;q=0.5")))
+
+    ;; 144ms
+    (time
+      (dotimes [_ 1000000]
+        (negotiate-content-type m
+                                "application/json; charset=utf-16")))
+
+    ;; 37ms
+    (time
+      (dotimes [_ 1000000]
+        (cached-negotiate-content-type
+          "application/json; charset=utf-16")))
+
+    ;; 14237ms
+    (time
+      (dotimes [_ 1000000]
+        (negotiate-accept m
+                          "image/gif, image/jpeg, image/pjpeg, application/x-ms-application
+                           application/vnd.ms-xpsdocument, application/xaml+xml,
+                           application/x-ms-xbap, application/x-shockwave-flash,
+                           application/x-silverlight-2-b2, application/x-silverlight,
+                           application/vnd.ms-excel, application/vnd.ms-powerpoint,
+                           application/msword, */*")))
+
+    ;;; 42ms
+    (time
+      (dotimes [_ 1000000]
+        (cached-negotiate-accept
+          "image/gif, image/jpeg, image/pjpeg, application/x-ms-application
+           application/vnd.ms-xpsdocument, application/xaml+xml,
+           application/x-ms-xbap, application/x-shockwave-flash,
+           application/x-silverlight-2-b2, application/x-silverlight,
+           application/vnd.ms-excel, application/vnd.ms-powerpoint,
+           application/msword, */*")))))
