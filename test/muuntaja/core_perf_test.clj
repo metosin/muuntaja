@@ -110,7 +110,7 @@
 ;;
 
 (defn content-type []
-  (let [formats (-> muuntaja/default-options muuntaja/no-decoding muuntaja/no-encoding muuntaja/compile)]
+  (let [formats (-> muuntaja/default-options muuntaja/no-decoding muuntaja/no-encoding muuntaja/create)]
 
     ; 52ns
     ; 38ns consumes & produces (-27%)
@@ -129,7 +129,7 @@
       (muuntaja/extract-content-type-format formats +transit-json-request+))))
 
 (defn accept []
-  (let [formats (-> muuntaja/default-options muuntaja/no-decoding muuntaja/no-encoding muuntaja/compile)]
+  (let [formats (-> muuntaja/default-options muuntaja/no-decoding muuntaja/no-encoding muuntaja/create)]
 
     ; 71ns
     ; 58ns consumes & produces (-18%)
@@ -140,7 +140,7 @@
       (muuntaja/extract-accept-format formats +transit-json-request+))))
 
 (defn request []
-  (let [formats (-> muuntaja/default-options muuntaja/no-decoding muuntaja/no-encoding muuntaja/compile)]
+  (let [formats (-> muuntaja/default-options muuntaja/no-decoding muuntaja/no-encoding muuntaja/create)]
 
     ; 179ns
     ; 187ns (records)
@@ -158,7 +158,7 @@
 
   ; 2.0µs
   (title "parse-json-stream")
-  (let [parse (muuntaja/decoder (muuntaja/compile muuntaja/default-options) :json)
+  (let [parse (muuntaja/decoder (muuntaja/create muuntaja/default-options) :json)
         request! (request-stream +json-request+)]
     (cc/quick-bench (parse (:body (request!)))))
 

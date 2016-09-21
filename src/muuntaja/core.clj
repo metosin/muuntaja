@@ -1,8 +1,7 @@
 (ns muuntaja.core
   (:require [clojure.string :as str]
             [muuntaja.parse :as parse]
-            [muuntaja.formats :as formats])
-  (:refer-clojure :exclude [compile]))
+            [muuntaja.formats :as formats]))
 
 (defn- some-value [pred c]
   (let [f (fn [x] (if (pred x) x))]
@@ -203,7 +202,7 @@
                                                                     :format format})))))
          (into {}))))
 
-(defn compile [{:keys [adapters formats charset] :as options}]
+(defn create [{:keys [adapters formats charset] :as options}]
   (let [selected-format? (set formats)
         format-types (for [[k {:keys [format]}] adapters
                            :when (selected-format? k)]

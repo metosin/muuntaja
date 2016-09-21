@@ -38,7 +38,7 @@
   ([handler options-or-formats]
    (let [formats (if (instance? Formats options-or-formats)
                    options-or-formats
-                   (muuntaja/compile options-or-formats))]
+                   (muuntaja/create options-or-formats))]
      (fn
        ([request]
         (let [req (muuntaja/format-request formats request)]
