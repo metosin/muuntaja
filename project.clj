@@ -14,7 +14,8 @@
   :plugins [[lein-codox "0.9.5"]]
   :codox {:src-uri "http://github.com/metosin/muuntaja/blob/master/{filepath}#L{line}"
           :defaults {:doc/format :markdown}}
-  :profiles {:dev {:dependencies [[org.clojure/clojure "1.8.0"]
+  :profiles {:dev {:jvm-opts ^:replace ["-server"]
+                   :dependencies [[org.clojure/clojure "1.8.0"]
                                   [ring-middleware-format "0.7.0"]
                                   [com.ibm.icu/icu4j "57.1"]
                                   [org.clojure/core.memoize "0.5.9"]
