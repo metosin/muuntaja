@@ -238,6 +238,7 @@
 ;; Ring
 ;;
 
+;; TODO: use the negotiated request charset
 (defn format-request [formats request]
   (let [[ctf ctc] (negotiate-request formats request)
         [af ac] (negotiate-response formats request)
@@ -256,6 +257,7 @@
                 (on-decode-exception e format $)))
             $))))
 
+;; TODO: use the negotiated response charset
 (defn format-response [formats request response]
   (if (encode-response? formats request response)
     (let [format (or (get (:consumes formats) (::content-type response))
