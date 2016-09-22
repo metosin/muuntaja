@@ -7,16 +7,8 @@
   (let [f (fn [x] (if (pred x) x))]
     (some f c)))
 
-(defn- match? [^String content-type string-or-regexp request]
-  (and (:body request) (re-find string-or-regexp content-type)))
-
 (defn- assoc-assoc [m k1 k2 v]
   (assoc m k1 (assoc (k1 m) k2 v)))
-
-(defn- stripped [^String s]
-  (if s
-    (let [i (.indexOf s ";")]
-      (if (neg? i) s (.substring s 0 i)))))
 
 (defn- on-decode-exception [^Exception e format request]
   (throw
@@ -35,8 +27,8 @@
 ;;
 
 (defprotocol RequestFormatter
-  (extract-content-type-format [_ request])
-  (extract-accept-format [_ request])
+  (negotiate-request [_ request])
+  (negotiate-response [_ request])
   (decode-request? [_ request])
   (encode-response? [_ request response]))
 
@@ -49,23 +41,31 @@
 ;; Content negotiation
 ;;
 
-(defn negotiate-content-type [formats ^String s]
-  (let [[content-type charset] (parse/parse-content-type s)]
-    [(if ((:consumes formats) content-type) content-type)
-     (or charset (:charset formats))]))
+(defn- -negotiate-content-type [{:keys [consumes matchers charset]} ^String s]
+  (if s
+    (let [[content-type-raw charset-raw] (parse/parse-content-type s)]
+      [(if content-type-raw
+         (or (get consumes content-type-raw)
+             (loop [i 0]
+               (let [[f r] (nth matchers i)]
+                 (cond
+                   (re-find r content-type-raw) f
+                   (< (inc i) (count matchers)) (recur (inc i)))))))
+       (or charset-raw charset)])))
 
-(defn negotiate-accept [formats ^String s]
+(defn- -negotiate-accept [{:keys [consumes produces] :as formats} ^String s]
+  (consumes
+    (or
+      (some-value
+        consumes
+        (parse/parse-accept s))
+      (produces
+        (default-format formats)))))
+
+(defn- -negotiate-accept-charset [formats s]
   (or
     (some-value
-      (:consumes formats)
-      (parse/parse-accept s))
-    ((:produces formats)
-      (default-format formats))))
-
-(defn negotiate-accept-charset [formats s]
-  (or
-    (some-value
-      (:charsets formats)
+      (or (:charsets formats) identity)
       (parse/parse-accept-charset s))
     (:charset formats)))
 
@@ -75,35 +75,33 @@
 
 (defrecord Adapter [encode decode])
 
-(defrecord Formats [extract-content-type-fn
+(defrecord Formats [negotiate-content-type
+                    negotiate-accept
+                    negotiate-accept-charset
+
+                    extract-content-type-fn
                     extract-accept-fn
+                    extract-accept-charset-fn
+
                     encode?
                     decode?
+
                     encode-error-fn
+
                     consumes
                     matchers
+
                     adapters
                     formats
                     default-format]
   RequestFormatter
-  (extract-content-type-format [_ request]
-    (if-let [content-type (stripped (extract-content-type-fn request))]
-      (or (get consumes content-type)
-          (loop [i 0]
-            (let [[f r] (nth matchers i)]
-              (cond
-                (match? content-type r request) f
-                (< (inc i) (count matchers)) (recur (inc i))))))))
 
-  (extract-accept-format [_ request]
-    (if-let [accept (extract-accept-fn request)]
-      (or
-        (get consumes accept)
-        (let [data (str/split accept #",\s*")]
-          (loop [i 0]
-            (or (get consumes (stripped (nth data i)))
-                (if (< (inc i) (count data))
-                  (recur (inc i)))))))))
+  (negotiate-request [_ request]
+    (negotiate-content-type (extract-content-type-fn request)))
+
+  (negotiate-response [_ request]
+    [(negotiate-accept (extract-accept-fn request))
+     (negotiate-accept-charset (extract-accept-charset-fn request))])
 
   (decode-request? [_ request]
     (and decode?
@@ -164,7 +162,7 @@
           :when (not (string? type))]
       [k type])))
 
-(defn- format->content-type [format-types charset]
+(defn- format->content-type [format-types]
   (reduce
     (fn [acc [k type]]
       (if-not (acc k)
@@ -175,7 +173,7 @@
           :let [types (flatten (vector type-or-types))]
           type types
           :when (string? type)]
-      [k (str type "; charset=" charset)])))
+      [k type])))
 
 (defn- compile-adapters [adapters formats]
   (let [make (fn [spec spec-opts [p pf]]
@@ -207,32 +205,48 @@
         format-types (for [[k {:keys [format]}] adapters
                            :when (selected-format? k)]
                        [k format])
-        adapters (compile-adapters adapters formats)]
-    (map->Formats
-      (merge
-        options
-        {:default-format (first formats)
-         :adapters adapters
-         :consumes (content-type->format format-types)
-         :produces (format->content-type format-types charset)
-         :matchers (format-regexps format-types)}))))
+        adapters (compile-adapters adapters formats)
+        m (map->Formats
+            (merge
+              options
+              {:default-format (first formats)
+               :adapters adapters
+               :consumes (content-type->format format-types)
+               :produces (format->content-type format-types)
+               :matchers (format-regexps format-types)}))]
+    (-> m
+        (assoc
+          :negotiate-accept-charset
+          (parse/fast-memoize
+            (parse/cache 1000)
+            (partial -negotiate-accept-charset m)))
+        (assoc
+          :negotiate-accept
+          (parse/fast-memoize
+            (parse/cache 1000)
+            (partial -negotiate-accept m)))
+        (assoc
+          :negotiate-content-type
+          (parse/fast-memoize
+            (parse/cache 1000)
+            (partial -negotiate-content-type m))))))
 
 ;;
 ;; Ring
 ;;
 
 (defn format-request [formats request]
-  (let [content-type-format (extract-content-type-format formats request)
-        accept-format (extract-accept-format formats request)
+  (let [[ctf ctc] (negotiate-request formats request)
+        [af ac] (negotiate-response formats request)
         decoder (if (decode-request? formats request)
-                  (decoder formats content-type-format))
+                  (decoder formats ctf))
         body (:body request)]
     (as-> request $
-          (assoc $ ::accept accept-format)
+          (assoc $ ::accept af)
           (if (and body decoder)
             (try
               (-> $
-                  (assoc ::adapter content-type-format)
+                  (assoc ::adapter ctf)
                   (assoc :body nil)
                   (assoc :body-params (decoder body)))
               (catch Exception e
@@ -268,6 +282,11 @@
   [request]
   (get (:headers request) "accept"))
 
+(defn extract-accept-charset-ring
+  "Extracts accept-charset from ring-request."
+  [request]
+  (get (:headers request) "accept-charset"))
+
 (defn encode-collections-with-override [_ response]
   (or
     (-> response ::encode?)
@@ -275,10 +294,12 @@
 
 (def default-options
   {:extract-content-type-fn extract-content-type-ring
+   :extract-accept-charset-fn extract-accept-charset-ring
    :extract-accept-fn extract-accept-ring
    :decode? (constantly true)
    :encode? encode-collections-with-override
    :charset "utf-8"
+   ;charsets #{"utf-8", "utf-16", "iso-8859-1"
    :adapters {:json {:format ["application/json" #"application/(.+\+)?json"]
                      :decoder [formats/make-json-decoder {:keywords? true}]
                      :encoder [formats/make-json-encoder]
@@ -304,6 +325,10 @@
                                 :encoder [(partial formats/make-transit-encoder :msgpack)]
                                 :encode-protocol [formats/EncodeTransitMessagePack formats/encode-transit-msgpack]}}
    :formats [:json :edn :msgpack :yaml :transit-json :transit-msgpack]})
+
+;;
+;; Working with options
+;;
 
 (defn transform-adapter-options [f options]
   (update options :adapters #(into (empty %) (map (fn [[k v]] [k (f v)]) %))))
@@ -339,74 +364,3 @@
 
 (defn set-response-content-type [response content-type]
   (assoc response ::content-type content-type))
-
-;;
-;; cache
-;;
-
-(def m (compile default-options))
-
-(def cached-negotiate-accept-charset
-  (parse/fast-memoize
-    (parse/cache 1000)
-    (partial negotiate-accept-charset m)))
-
-(def cached-negotiate-accept
-  (parse/fast-memoize
-    (parse/cache 1000)
-    (partial negotiate-accept m)))
-
-(def cached-negotiate-content-type
-  (parse/fast-memoize
-    (parse/cache 1000)
-    (partial negotiate-content-type m)))
-
-;;
-;; test
-;;
-
-(comment
-  (do
-    ;; 2800ms
-    (time
-      (dotimes [_ 1000000]
-        (negotiate-accept-charset m "utf-8, iso-8859-1;q=0.5")))
-
-    ;; 34ms
-    (time
-      (dotimes [_ 1000000]
-        (cached-negotiate-accept-charset "utf-8, iso-8859-1;q=0.5")))
-
-    ;; 144ms
-    (time
-      (dotimes [_ 1000000]
-        (negotiate-content-type m
-                                "application/json; charset=utf-16")))
-
-    ;; 37ms
-    (time
-      (dotimes [_ 1000000]
-        (cached-negotiate-content-type
-          "application/json; charset=utf-16")))
-
-    ;; 14237ms
-    (time
-      (dotimes [_ 1000000]
-        (negotiate-accept m
-                          "image/gif, image/jpeg, image/pjpeg, application/x-ms-application
-                           application/vnd.ms-xpsdocument, application/xaml+xml,
-                           application/x-ms-xbap, application/x-shockwave-flash,
-                           application/x-silverlight-2-b2, application/x-silverlight,
-                           application/vnd.ms-excel, application/vnd.ms-powerpoint,
-                           application/msword, */*")))
-
-    ;;; 42ms
-    (time
-      (dotimes [_ 1000000]
-        (cached-negotiate-accept
-          "image/gif, image/jpeg, image/pjpeg, application/x-ms-application
-           application/vnd.ms-xpsdocument, application/xaml+xml,
-           application/x-ms-xbap, application/x-shockwave-flash,
-           application/x-silverlight-2-b2, application/x-silverlight,
-           application/vnd.ms-excel, application/vnd.ms-powerpoint,
-           application/msword, */*")))))

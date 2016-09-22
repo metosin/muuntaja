@@ -13,7 +13,8 @@
   (fn [& args]
     (or (.get cache args)
         (let [ret (apply f args)]
-          (.put cache args ret)
+          (when ret
+            (.put cache args ret))
           ret))))
 
 ;;
@@ -47,41 +48,43 @@
   \"application/json;level=1;q=0.4\"
   => (\"application/json\"})"
   [accept-header]
-  (->> (map (fn [val]
-              (let [[media-range & rest] (str/split (str/trim val) #";")
-                    type {:type media-range}]
-                (cond (nil? rest)
-                      (assoc type :q 1.0)
-                      (= (first (str/triml (first rest)))
-                         \q)                                ;no media-range params
-                      (assoc type :q
-                                  (Double/parseDouble
-                                    (second (str/split (first rest) #"="))))
-                      :else
-                      (assoc (if-let [q-val (second rest)]
-                               (assoc type :q
-                                           (Double/parseDouble
-                                             (second (str/split q-val #"="))))
-                               (assoc type :q 1.0))
-                        :parameter (str/trim (first rest))))))
-            (str/split accept-header #","))
-       (sort-by-check :parameter nil)
-       (sort-by-check :type "*/*")
-       (sort-by :q >)
-       (map :type)))
+  (if accept-header
+    (->> (map (fn [val]
+                (let [[media-range & rest] (str/split (str/trim val) #";")
+                      type {:type media-range}]
+                  (cond (nil? rest)
+                        (assoc type :q 1.0)
+                        (= (first (str/triml (first rest)))
+                           \q)                              ;no media-range params
+                        (assoc type :q
+                                    (Double/parseDouble
+                                      (second (str/split (first rest) #"="))))
+                        :else
+                        (assoc (if-let [q-val (second rest)]
+                                 (assoc type :q
+                                             (Double/parseDouble
+                                               (second (str/split q-val #"="))))
+                                 (assoc type :q 1.0))
+                          :parameter (str/trim (first rest))))))
+              (str/split accept-header #","))
+         (sort-by-check :parameter nil)
+         (sort-by-check :type "*/*")
+         (sort-by :q >)
+         (map :type))))
 
 (defn parse-accept-charset [^String s]
-  (let [segments (str/split s #",")
-        choices (for [segment segments
-                      :when (not (empty? segment))
-                      :let [[_ charset qs] (re-find #"([^;]+)(?:;\s*q\s*=\s*([0-9\.]+))?" segment)]
-                      :when charset
-                      :let [qscore (try
-                                     (Double/parseDouble (str/trim qs))
-                                     (catch Exception e 1))]]
-                  [(str/trim charset) qscore])]
-    (->> choices
-         (sort-by second)
-         (reverse)
-         (map first)
-         (map str/lower-case))))
+  (if s
+    (let [segments (str/split s #",")
+          choices (for [segment segments
+                        :when (not (empty? segment))
+                        :let [[_ charset qs] (re-find #"([^;]+)(?:;\s*q\s*=\s*([0-9\.]+))?" segment)]
+                        :when charset
+                        :let [qscore (try
+                                       (Double/parseDouble (str/trim qs))
+                                       (catch Exception e 1))]]
+                    [(str/trim charset) qscore])]
+      (->> choices
+           (sort-by second)
+           (reverse)
+           (map first)
+           (map str/lower-case)))))

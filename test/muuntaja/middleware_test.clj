@@ -23,8 +23,7 @@
             request (->request "application/edn" "application/edn" edn-string)]
         (is (= "{:kikka 42}" edn-string))
         (are [app]
-          (do
-            (= edn-string (:body (app request))))
+          (= edn-string (:body (app request)))
 
           ;; without paramters
           (middleware/wrap-format echo)
