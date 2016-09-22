@@ -200,7 +200,7 @@
                                                                     :format format})))))
          (into {}))))
 
-(defn create [{:keys [adapters formats charset] :as options}]
+(defn create [{:keys [adapters formats] :as options}]
   (let [selected-format? (set formats)
         format-types (for [[k {:keys [format]}] adapters
                            :when (selected-format? k)]
