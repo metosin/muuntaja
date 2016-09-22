@@ -88,8 +88,6 @@
                     encode?
                     decode?
 
-                    encode-error-fn
-
                     consumes
                     matchers
 
@@ -368,3 +366,5 @@
 
 (defn set-response-content-type [response content-type]
   (assoc response ::content-type content-type))
+
+(create default-options)
