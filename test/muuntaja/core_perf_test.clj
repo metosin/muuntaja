@@ -33,7 +33,7 @@
 
 (def +transit-json-request+
   {:headers {"content-type" "application/transit+json"
-             "accept" "application/transit+json"}
+             "accept" "application/transit+json; charset=utf-16"}
    :body "[\"^ \",\"~:kikka\",42]"})
 
 (defrecord Hello [^String name]
@@ -110,37 +110,37 @@
 ;;
 
 (defn content-type []
-  (let [formats (-> muuntaja/default-options muuntaja/no-decoding muuntaja/no-encoding muuntaja/compile)]
+  (let [m (-> muuntaja/default-options muuntaja/no-decoding muuntaja/no-encoding muuntaja/create)]
 
     ; 52ns
     ; 38ns consumes & produces (-27%)
     ; 27ns compile (-29%) (-48%)
+    ; 49ns + charset, memoized
     (title "Content-type: JSON")
-    (assert (= :json (muuntaja/extract-content-type-format formats +json-request+)))
-    (cc/quick-bench
-      (muuntaja/extract-content-type-format formats +json-request+))
+    (assert [:json "utf-8"] (muuntaja/negotiate-request m +json-request+))
+    (cc/quick-bench (muuntaja/negotiate-request m +json-request+))
 
     ; 65ns
     ; 55ns consumes & produces (-15%)
     ; 42ns compile (-24%) (-35%)
+    ; 48ns + charset, memoized
     (title "Content-type: TRANSIT")
-    (assert (= :transit-json (muuntaja/extract-content-type-format formats +transit-json-request+)))
-    (cc/quick-bench
-      (muuntaja/extract-content-type-format formats +transit-json-request+))))
+    (assert [:transit-json "utf-16"] (muuntaja/negotiate-request m +transit-json-request+))
+    (cc/quick-bench (muuntaja/negotiate-request m +transit-json-request+))))
 
 (defn accept []
-  (let [formats (-> muuntaja/default-options muuntaja/no-decoding muuntaja/no-encoding muuntaja/compile)]
+  (let [m (-> muuntaja/default-options muuntaja/no-decoding muuntaja/no-encoding muuntaja/create)]
 
     ; 71ns
     ; 58ns consumes & produces (-18%)
     ; 48ns compile (-17%) (-32%)
+    ; 113ns + charser, memoized
     (title "Accept: TRANSIT")
-    (assert (= :transit-json (muuntaja/extract-accept-format formats +transit-json-request+)))
-    (cc/quick-bench
-      (muuntaja/extract-accept-format formats +transit-json-request+))))
+    (assert [:json "utf-8"] (muuntaja/negotiate-response m +transit-json-request+))
+    (cc/quick-bench (muuntaja/negotiate-response m +transit-json-request+))))
 
 (defn request []
-  (let [formats (-> muuntaja/default-options muuntaja/no-decoding muuntaja/no-encoding muuntaja/compile)]
+  (let [formats (-> muuntaja/default-options muuntaja/no-decoding muuntaja/no-encoding muuntaja/create)]
 
     ; 179ns
     ; 187ns (records)
@@ -158,7 +158,7 @@
 
   ; 2.0µs
   (title "parse-json-stream")
-  (let [parse (muuntaja/decoder (muuntaja/compile muuntaja/default-options) :json)
+  (let [parse (muuntaja/decoder (muuntaja/create muuntaja/default-options) :json)
         request! (request-stream +json-request+)]
     (cc/quick-bench (parse (:body (request!)))))
 

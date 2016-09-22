@@ -16,6 +16,9 @@ Design decisions:
 - standalone lib + adapters for ring, async-ring & pedestal
 - targeting to replace [ring-middleware-format](https://github.com/ngrunwald/ring-middleware-format)
 
+Content-negotiation is done for both request and response and covers format and charset. Negotiation is
+done using `Content-type`, `Accept` and `Accept-Charset` headers.
+
 ## Latest version
 
 [![Clojars Project](http://clojars.org/metosin/muuntaja/latest-version.svg)](http://clojars.org/metosin/muuntaja)
@@ -48,7 +51,7 @@ Creating a muuntaja and using it to encode & decode JSON:
 ```clj
 (require '[muuntaja.core :as muuntaja])
 
-(def m (muuntaja/compile muuntaja/default-options))
+(def m (muuntaja/create muuntaja/default-options))
 
 (muuntaja/encode m :json {:kikka 42})
 ; "{\"kikka\":42}"
@@ -62,7 +65,7 @@ Creating a muuntaja and using it to encode & decode JSON:
 With custom EDN decoder opts:
 
 ```clj
-(-> (muuntaja/compile
+(-> (muuntaja/create
       (-> muuntaja/default-options
           (muuntaja/with-decoder-opts :edn {:readers {'INC inc}})))
     (muuntaja/decode :edn "{:value #INC 41}"))
@@ -178,8 +181,6 @@ verify behavior and demonstrate differences.
 * By default, encodes only collections (or responses with `:muuntaja.core/encode?` set)
 * Reads the `content-type` from request headers (as defined in the RING Spec)
 * Does not set the `Content-Length` header (done by the adapters)
-* **TODO**: does not negotiate the request charset
-* **TODO**: does not negotiate the response charset
 * `:yaml-in-html` / `text/html` is not supported
 * `:json` `:edn` & `:yaml` responses are not wrapped into InputStreams, should they?
 

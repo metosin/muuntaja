@@ -15,16 +15,15 @@
    :body body})
 
 (deftest middleware-test
-  (let [muuntaja (muuntaja/compile muuntaja/default-options)
+  (let [m (muuntaja/create muuntaja/default-options)
         data {:kikka 42}]
 
     (testing "multiple way to initialize the middleware"
-      (let [edn-string (muuntaja/encode muuntaja :edn data)
+      (let [edn-string (muuntaja/encode m :edn data)
             request (->request "application/edn" "application/edn" edn-string)]
         (is (= "{:kikka 42}" edn-string))
         (are [app]
-          (do
-            (= edn-string (:body (app request))))
+          (= edn-string (:body (app request)))
 
           ;; without paramters
           (middleware/wrap-format echo)
@@ -33,22 +32,22 @@
           (middleware/wrap-format echo muuntaja/default-options)
 
           ;; with compiled muuntaja
-          (middleware/wrap-format echo muuntaja))))
+          (middleware/wrap-format echo m))))
 
     (testing "with defaults"
       (let [app (middleware/wrap-format echo)]
 
         (testing "symmetric request decode + response encode"
           (are [format]
-            (let [payload (muuntaja/encode muuntaja format data)
-                  decode (partial muuntaja/decode muuntaja format)
-                  content-type (get-in muuntaja [:produces format])
+            (let [payload (muuntaja/encode m format data)
+                  decode (partial muuntaja/decode m format)
+                  content-type (get-in m [:produces format])
                   request (->request content-type content-type payload)]
               (= data (-> request app :body decode)))
             :json :edn :yaml :msgpack :transit-json :transit-msgpack))
 
         (testing "content-type & accept"
-          (let [json-string (muuntaja/encode muuntaja :json data)
+          (let [json-string (muuntaja/encode m :json data)
                 call (fn [content-type accept]
                        (-> (->request content-type accept json-string) app :body))]
 
@@ -72,7 +71,7 @@
                 "application/schema+json")))
 
           (testing "different content-type & accept"
-            (let [edn-string (muuntaja/encode muuntaja :edn data)
-                  yaml-string (muuntaja/encode muuntaja :yaml data)
+            (let [edn-string (muuntaja/encode m :edn data)
+                  yaml-string (muuntaja/encode m :yaml data)
                   request (->request "application/edn" "application/x-yaml" edn-string)]
               (is (= yaml-string (-> request app :body))))))))))

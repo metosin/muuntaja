@@ -1,18 +1,13 @@
 (ns muuntaja.core
-  (:require [clojure.string :as str]
-            [muuntaja.formats :as formats])
-  (:refer-clojure :exclude [compile]))
+  (:require [muuntaja.parse :as parse]
+            [muuntaja.formats :as formats]))
 
-(defn- match? [^String content-type string-or-regexp request]
-  (and (:body request) (re-find string-or-regexp content-type)))
+(defn- some-value [pred c]
+  (let [f (fn [x] (if (pred x) x))]
+    (some f c)))
 
 (defn- assoc-assoc [m k1 k2 v]
   (assoc m k1 (assoc (k1 m) k2 v)))
-
-(defn- stripped [^String s]
-  (if s
-    (let [i (.indexOf s ";")]
-      (if (neg? i) s (.substring s 0 i)))))
 
 (defn- on-decode-exception [^Exception e format request]
   (throw
@@ -23,12 +18,19 @@
        :request request}
       e)))
 
-(defn- content-type [response content-type]
+(defn- set-content-type [response content-type]
   (assoc-assoc response :headers "Content-Type" content-type))
 
+(defn- content-type [formats format]
+  (str ((:produces formats) format) "; charset=" (:charset formats)))
+
+;;
+;; Protocols
+;;
+
 (defprotocol RequestFormatter
-  (extract-content-type-format [_ request])
-  (extract-accept-format [_ request])
+  (negotiate-request [_ request])
+  (negotiate-response [_ request])
   (decode-request? [_ request])
   (encode-response? [_ request response]))
 
@@ -37,37 +39,71 @@
   (decoder [_ format])
   (default-format [_]))
 
+;;
+;; Content negotiation
+;;
+
+(defn- -negotiate-content-type [{:keys [consumes matchers charset]} ^String s]
+  (if s
+    (let [[content-type-raw charset-raw] (parse/parse-content-type s)]
+      [(if content-type-raw
+         (or (get consumes content-type-raw)
+             (loop [i 0]
+               (let [[f r] (nth matchers i)]
+                 (cond
+                   (re-find r content-type-raw) f
+                   (< (inc i) (count matchers)) (recur (inc i)))))))
+       (or charset-raw charset)])))
+
+(defn- -negotiate-accept [{:keys [consumes produces] :as formats} ^String s]
+  (consumes
+    (or
+      (some-value
+        consumes
+        (parse/parse-accept s))
+      (produces
+        (default-format formats)))))
+
+(defn- -negotiate-accept-charset [formats s]
+  (or
+    (some-value
+      (or (:charsets formats) identity)
+      (parse/parse-accept-charset s))
+    (:charset formats)))
+
+;;
+;; Records
+;;
+
 (defrecord Adapter [encode decode])
 
-(defrecord Formats [extract-content-type-fn
+(defrecord Formats [negotiate-content-type
+                    negotiate-accept
+                    negotiate-accept-charset
+
+                    extract-content-type-fn
                     extract-accept-fn
+                    extract-accept-charset-fn
+
                     encode?
                     decode?
+
                     encode-error-fn
+
                     consumes
                     matchers
+
                     adapters
                     formats
                     default-format]
   RequestFormatter
-  (extract-content-type-format [_ request]
-    (if-let [content-type (stripped (extract-content-type-fn request))]
-      (or (get consumes content-type)
-          (loop [i 0]
-            (let [[f r] (nth matchers i)]
-              (cond
-                (match? content-type r request) f
-                (< (inc i) (count matchers)) (recur (inc i))))))))
 
-  (extract-accept-format [_ request]
-    (if-let [accept (extract-accept-fn request)]
-      (or
-        (get consumes accept)
-        (let [data (str/split accept #",\s*")]
-          (loop [i 0]
-            (or (get consumes (stripped (nth data i)))
-                (if (< (inc i) (count data))
-                  (recur (inc i)))))))))
+  (negotiate-request [_ request]
+    (negotiate-content-type (extract-content-type-fn request)))
+
+  (negotiate-response [_ request]
+    [(negotiate-accept (extract-accept-fn request))
+     (negotiate-accept-charset (extract-accept-charset-fn request))])
 
   (decode-request? [_ request]
     (and decode?
@@ -128,7 +164,7 @@
           :when (not (string? type))]
       [k type])))
 
-(defn- format->content-type [format-types charset]
+(defn- format->content-type [format-types]
   (reduce
     (fn [acc [k type]]
       (if-not (acc k)
@@ -139,7 +175,7 @@
           :let [types (flatten (vector type-or-types))]
           type types
           :when (string? type)]
-      [k (str type "; charset=" charset)])))
+      [k type])))
 
 (defn- compile-adapters [adapters formats]
   (let [make (fn [spec spec-opts [p pf]]
@@ -166,43 +202,61 @@
                                                                     :format format})))))
          (into {}))))
 
-(defn compile [{:keys [adapters formats charset] :as options}]
+(defn create [{:keys [adapters formats] :as options}]
   (let [selected-format? (set formats)
         format-types (for [[k {:keys [format]}] adapters
                            :when (selected-format? k)]
                        [k format])
-        adapters (compile-adapters adapters formats)]
-    (map->Formats
-      (merge
-        options
-        {:default-format (first formats)
-         :adapters adapters
-         :consumes (content-type->format format-types)
-         :produces (format->content-type format-types charset)
-         :matchers (format-regexps format-types)}))))
+        adapters (compile-adapters adapters formats)
+        m (map->Formats
+            (merge
+              options
+              {:default-format (first formats)
+               :adapters adapters
+               :consumes (content-type->format format-types)
+               :produces (format->content-type format-types)
+               :matchers (format-regexps format-types)}))]
+    (-> m
+        (assoc
+          :negotiate-accept-charset
+          (parse/fast-memoize
+            (parse/cache 1000)
+            (partial -negotiate-accept-charset m)))
+        (assoc
+          :negotiate-accept
+          (parse/fast-memoize
+            (parse/cache 1000)
+            (partial -negotiate-accept m)))
+        (assoc
+          :negotiate-content-type
+          (parse/fast-memoize
+            (parse/cache 1000)
+            (partial -negotiate-content-type m))))))
 
 ;;
 ;; Ring
 ;;
 
+;; TODO: use the negotiated request charset
 (defn format-request [formats request]
-  (let [content-type-format (extract-content-type-format formats request)
-        accept-format (extract-accept-format formats request)
+  (let [[ctf ctc] (negotiate-request formats request)
+        [af ac] (negotiate-response formats request)
         decoder (if (decode-request? formats request)
-                  (decoder formats content-type-format))
+                  (decoder formats ctf))
         body (:body request)]
     (as-> request $
-          (assoc $ ::accept accept-format)
+          (assoc $ ::accept af)
           (if (and body decoder)
             (try
               (-> $
-                  (assoc ::adapter content-type-format)
+                  (assoc ::adapter ctf)
                   (assoc :body nil)
                   (assoc :body-params (decoder body)))
               (catch Exception e
                 (on-decode-exception e format $)))
             $))))
 
+;; TODO: use the negotiated response charset
 (defn format-response [formats request response]
   (if (encode-response? formats request response)
     (let [format (or (get (:consumes formats) (::content-type response))
@@ -213,7 +267,7 @@
               (assoc $ ::adapter format)
               (update $ :body encoder)
               (if-not (get (:headers $) "Content-Type")
-                (content-type $ ((:produces formats) format))
+                (set-content-type $ (content-type formats format))
                 $))
         response))
     response))
@@ -232,6 +286,11 @@
   [request]
   (get (:headers request) "accept"))
 
+(defn extract-accept-charset-ring
+  "Extracts accept-charset from ring-request."
+  [request]
+  (get (:headers request) "accept-charset"))
+
 (defn encode-collections-with-override [_ response]
   (or
     (-> response ::encode?)
@@ -239,10 +298,12 @@
 
 (def default-options
   {:extract-content-type-fn extract-content-type-ring
+   :extract-accept-charset-fn extract-accept-charset-ring
    :extract-accept-fn extract-accept-ring
    :decode? (constantly true)
    :encode? encode-collections-with-override
    :charset "utf-8"
+   ;charsets #{"utf-8", "utf-16", "iso-8859-1"
    :adapters {:json {:format ["application/json" #"application/(.+\+)?json"]
                      :decoder [formats/make-json-decoder {:keywords? true}]
                      :encoder [formats/make-json-encoder]
@@ -268,6 +329,10 @@
                                 :encoder [(partial formats/make-transit-encoder :msgpack)]
                                 :encode-protocol [formats/EncodeTransitMessagePack formats/encode-transit-msgpack]}}
    :formats [:json :edn :msgpack :yaml :transit-json :transit-msgpack]})
+
+;;
+;; Working with options
+;;
 
 (defn transform-adapter-options [f options]
   (update options :adapters #(into (empty %) (map (fn [[k v]] [k (f v)]) %))))
