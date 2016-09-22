@@ -1,6 +1,5 @@
 (ns muuntaja.core
-  (:require [clojure.string :as str]
-            [muuntaja.parse :as parse]
+  (:require [muuntaja.parse :as parse]
             [muuntaja.formats :as formats]))
 
 (defn- some-value [pred c]
