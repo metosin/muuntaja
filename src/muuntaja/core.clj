@@ -19,8 +19,11 @@
        :request request}
       e)))
 
-(defn- content-type [response content-type]
+(defn- set-content-type [response content-type]
   (assoc-assoc response :headers "Content-Type" content-type))
+
+(defn- content-type [formats format]
+  (str ((:produces formats) format) "; charset=" (:charset formats)))
 
 ;;
 ;; Protocols
@@ -263,7 +266,7 @@
               (assoc $ ::adapter format)
               (update $ :body encoder)
               (if-not (get (:headers $) "Content-Type")
-                (content-type $ ((:produces formats) format))
+                (set-content-type $ (content-type formats format))
                 $))
         response))
     response))
