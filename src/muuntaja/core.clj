@@ -229,8 +229,10 @@
 
 ;; TODO: use the negotiated response charset
 (defn format-response [formats request response]
+  (or
   (if (encode-response? formats request response)
-    (let [format (or ((:produces formats) (::content-type response))
+      (if-let [format (or (if-let [ct (::content-type response)]
+                            ((:produces formats) ct))
                      (::accept request)
                      (:default-format formats))]
       (if-let [encoder (encoder formats format)]
@@ -240,8 +242,7 @@
               (update $ :body encoder)
               (if-not (get (:headers $) "Content-Type")
                 (set-content-type $ (content-type formats format))
-                $))
-        response))
+                  $)))))
     response))
 
 ;;
