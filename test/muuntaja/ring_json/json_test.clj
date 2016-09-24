@@ -20,7 +20,7 @@
        (middleware/wrap-format
          (-> muuntaja/default-options
              muuntaja/no-encoding
-             (muuntaja/with-decoder-opts :json (merge {:keywords? false} opts))))
+             (muuntaja/with-decoder-opts "application/json" (merge {:keywords? false} opts))))
        (middleware/wrap-exception (constantly
                                     (or
                                       (:malformed-response opts)
@@ -41,7 +41,7 @@
        (middleware/wrap-format
          (-> muuntaja/default-options
              muuntaja/no-decoding
-             (muuntaja/with-encoder-opts :json opts)))
+             (muuntaja/with-encoder-opts "application/json" opts)))
        (middleware/wrap-exception (constantly
                                     (or
                                       (:malformed-response opts)

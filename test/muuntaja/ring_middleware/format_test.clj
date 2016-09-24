@@ -25,7 +25,7 @@
       (middleware/wrap-params)
       (middleware/wrap-format
         (-> muuntaja/default-options
-            (assoc :formats [:json])))))
+            (muuntaja/with-formats ["application/json"])))))
 
 (def api-echo-yaml
   (-> (fn [req]
@@ -35,7 +35,7 @@
       (middleware/wrap-params)
       (middleware/wrap-format
         (-> muuntaja/default-options
-            (assoc :formats [:yaml])))))
+            (muuntaja/with-formats ["application/x-yaml"])))))
 
 (deftest test-api-round-trip
   (let [ok-accept "application/edn"

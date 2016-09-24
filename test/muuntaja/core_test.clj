@@ -11,22 +11,26 @@
       (are [format]
         (let [{:keys [encode decode]} (get-in m [:adapters format])]
           (= data (decode (encode data))))
-        :json :edn :yaml :msgpack :transit-json :transit-msgpack)))
+        "application/json"
+        "application/edn"
+        "application/x-yaml"
+        "application/msgpack"
+        "application/transit+json"
+        "application/transit+msgpack")))
 
   (testing "encode & decode"
     (let [m (muuntaja/create muuntaja/default-options)
           data {:kikka 42}]
-      (is (= "{\"kikka\":42}" (muuntaja/encode m :json data)))
-      (is (= data (muuntaja/decode m :json (muuntaja/encode m :json data))))))
+      (is (= "{\"kikka\":42}" (muuntaja/encode m "application/json" data)))
+      (is (= data (muuntaja/decode m "application/json" (muuntaja/encode m "application/json" data))))))
 
   (testing "adding new format"
-    (let [format :upper
+    (let [format "application/upper"
           upper-case-format {:decoder str/lower-case
                              :encoder str/upper-case}
           m (muuntaja/create
               (-> muuntaja/default-options
-                  (assoc-in [:adapters format] upper-case-format)
-                  (update :formats conj format)))
+                  (assoc-in [:formats format] upper-case-format)))
           {:keys [encode decode]} (get-in m [:adapters format])
           data "olipa kerran avaruus"]
       (is (= "OLIPA KERRAN AVARUUS" (encode data)))
@@ -37,15 +41,15 @@
           Exception
           (muuntaja/create
             (-> muuntaja/default-options
-                (update :formats conj :kikka))))))
+                (assoc :default-format "kikka"))))))
 
   (testing "overriding adapter configs"
     (let [decode-json-kw (-> (muuntaja/create
                                (-> muuntaja/default-options))
-                             (get-in [:adapters :json :decode]))
+                             (get-in [:adapters "application/json" :decode]))
           decode-json (-> (muuntaja/create
                             (-> muuntaja/default-options
-                                (muuntaja/with-decoder-opts :json {:keywords? false})))
-                          (get-in [:adapters :json :decode]))]
+                                (muuntaja/with-decoder-opts "application/json" {:keywords? false})))
+                          (get-in [:adapters "application/json" :decode]))]
       (is (= {:kikka true} (decode-json-kw "{\"kikka\":true}")))
       (is (= {"kikka" true} (decode-json "{\"kikka\":true}"))))))

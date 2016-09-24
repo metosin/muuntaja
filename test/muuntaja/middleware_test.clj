@@ -8,9 +8,7 @@
    :body (:body-params request)})
 
 (defn ->request [content-type accept body]
-  {:request-method :get
-   :uri "/anything"
-   :headers {"content-type" content-type
+  {:headers {"content-type" content-type
              "accept" accept}
    :body body})
 
@@ -19,7 +17,7 @@
         data {:kikka 42}]
 
     (testing "multiple way to initialize the middleware"
-      (let [edn-string (muuntaja/encode m :edn data)
+      (let [edn-string (muuntaja/encode m "application/edn" data)
             request (->request "application/edn" "application/edn" edn-string)]
         (is (= "{:kikka 42}" edn-string))
         (are [app]
@@ -41,13 +39,17 @@
           (are [format]
             (let [payload (muuntaja/encode m format data)
                   decode (partial muuntaja/decode m format)
-                  content-type (get-in m [:produces format])
-                  request (->request content-type content-type payload)]
+                  request (->request format format payload)]
               (= data (-> request app :body decode)))
-            :json :edn :yaml :msgpack :transit-json :transit-msgpack))
+            "application/json"
+            "application/edn"
+            "application/x-yaml"
+            "application/msgpack"
+            "application/transit+json"
+            "application/transit+msgpack"))
 
         (testing "content-type & accept"
-          (let [json-string (muuntaja/encode m :json data)
+          (let [json-string (muuntaja/encode m "application/json" data)
                 call (fn [content-type accept]
                        (-> (->request content-type accept json-string) app :body))]
 
@@ -71,7 +73,7 @@
                 "application/schema+json")))
 
           (testing "different content-type & accept"
-            (let [edn-string (muuntaja/encode m :edn data)
-                  yaml-string (muuntaja/encode m :yaml data)
+            (let [edn-string (muuntaja/encode m "application/edn" data)
+                  yaml-string (muuntaja/encode m "application/x-yaml" data)
                   request (->request "application/edn" "application/x-yaml" edn-string)]
               (is (= yaml-string (-> request app :body))))))))))
