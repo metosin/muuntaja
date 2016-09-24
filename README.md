@@ -27,18 +27,18 @@ done using `Content-type`, `Accept` and `Accept-Charset` headers.
 
 ### Request
 
-* `:muuntaja.core/adapter`, holds the adapter name that was used to decode the request body, e.g. `:json`.
+* `:muuntaja.core/format`, format name that was used to decode the request body, e.g. `"application/json"`.
    Setting value to anything (e.g. `nil`) before muuntaja middleware/interceptor will skip the decoding process.
-* `:muuntaja.core/accept`, holds the client-negotiated adapter name for the response, e.g. `:json`. Will be used
-   later in the response pipeline.
+* `:muuntaja.core/accept`, client-negotiated format name for the response, e.g. `"application/json"`. Will
+   be used later in the response pipeline.
 
 ### Response
 
 * `:muuntaja.core/encode?`, if set to true, the response body will be encoded regardles of the type
-* `:muuntaja.core/adapter`, holds the adapter name that was used to encode the response body, e.g. `:json`.
+* `:muuntaja.core/format`, format name that was used to encode the response body, e.g. `"application/json"`.
    Setting value to anything (e.g. `nil`) before muuntaja middleware/interceptor will skip the encoding process.
 * `:muuntaja.core/content-type`, can be used to override the negotiated content-type for response encoding,
-   e.g. setting it to `application/edn` will cause the response to encoded always with the `:edn` adapter.
+   e.g. setting it to `application/edn`. **NOTE**: given format is not negotiated, always set on.
 
 ## Usage
 

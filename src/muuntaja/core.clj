@@ -102,13 +102,13 @@
 
   (decode-request? [_ request]
     (and decode?
-         (not (contains? request ::adapter))
+         (not (contains? request ::format))
          (decode? request)))
 
   (encode-response? [_ request response]
     (and encode?
          (map? response)
-         (not (contains? response ::adapter))
+         (not (contains? response ::format))
          (encode? request response)))
 
   Formatter
@@ -220,7 +220,7 @@
           (if (and body decoder)
             (try
               (-> $
-                  (assoc ::adapter ctf)
+                  (assoc ::format ctf)
                   (assoc :body nil)
                   (assoc :body-params (decoder body)))
               (catch Exception e
@@ -235,7 +235,8 @@
                      (:default-format formats))]
       (if-let [encoder (encoder formats format)]
         (as-> response $
-              (assoc $ ::adapter format)
+              (assoc $ ::format format)
+              (dissoc $ ::content-type)
               (update $ :body encoder)
               (if-not (get (:headers $) "Content-Type")
                 (set-content-type $ (content-type formats format))
@@ -351,14 +352,14 @@
 ;;
 
 (defn disable-request-decoding [request]
-  (assoc request ::adapter nil))
+  (assoc request ::format nil))
 
 ;;
 ;; response helpers
 ;;
 
 (defn disable-response-encoding [response]
-  (assoc response ::adapter nil))
+  (assoc response ::format nil))
 
 (defn set-response-content-type [response content-type]
   (assoc response ::content-type content-type))
