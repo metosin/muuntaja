@@ -1,6 +1,6 @@
 (ns muuntaja.core-perf-test
   (:require [criterium.core :as cc]
-            [muuntaja.core :as muuntaja]
+            [muuntaja.core :as m]
             [muuntaja.middleware :as middleware]
             [muuntaja.interceptor :as interceptor]
             [muuntaja.json :as json]
@@ -110,55 +110,55 @@
 ;;
 
 (defn content-type []
-  (let [m (-> muuntaja/default-options muuntaja/no-decoding muuntaja/no-encoding muuntaja/create)]
+  (let [m (-> m/default-options m/no-decoding m/no-encoding m/create)]
 
     ; 52ns
     ; 38ns consumes & produces (-27%)
     ; 27ns compile (-29%) (-48%)
     ; 49ns + charset, memoized
     (title "Content-type: JSON")
-    (assert [:json "utf-8"] (muuntaja/negotiate-request m +json-request+))
-    (cc/quick-bench (muuntaja/negotiate-request m +json-request+))
+    (assert [:json "utf-8"] (m/negotiate-request m +json-request+))
+    (cc/quick-bench (m/negotiate-request m +json-request+))
 
     ; 65ns
     ; 55ns consumes & produces (-15%)
     ; 42ns compile (-24%) (-35%)
     ; 48ns + charset, memoized
     (title "Content-type: TRANSIT")
-    (assert [:transit-json "utf-16"] (muuntaja/negotiate-request m +transit-json-request+))
-    (cc/quick-bench (muuntaja/negotiate-request m +transit-json-request+))))
+    (assert [:transit-json "utf-16"] (m/negotiate-request m +transit-json-request+))
+    (cc/quick-bench (m/negotiate-request m +transit-json-request+))))
 
 (defn accept []
-  (let [m (-> muuntaja/default-options muuntaja/no-decoding muuntaja/no-encoding muuntaja/create)]
+  (let [m (-> m/default-options m/no-decoding m/no-encoding m/create)]
 
     ; 71ns
     ; 58ns consumes & produces (-18%)
     ; 48ns compile (-17%) (-32%)
     ; 113ns + charser, memoized
     (title "Accept: TRANSIT")
-    (assert [:json "utf-8"] (muuntaja/negotiate-response m +transit-json-request+))
-    (cc/quick-bench (muuntaja/negotiate-response m +transit-json-request+))))
+    (assert [:json "utf-8"] (m/negotiate-response m +transit-json-request+))
+    (cc/quick-bench (m/negotiate-response m +transit-json-request+))))
 
 (defn request []
-  (let [formats (-> muuntaja/default-options muuntaja/no-decoding muuntaja/no-encoding muuntaja/create)]
+  (let [formats (-> m/default-options m/no-decoding m/no-encoding m/create)]
 
     ; 179ns
     ; 187ns (records)
     (title "Accept & Contnet-type: JSON")
     (cc/quick-bench
-      (muuntaja/format-request formats +json-request+))
+      (m/format-request formats +json-request+))
 
     ; 211ns
     ; 226ns (records)
     (title "Accept & Contnet-type: Transit")
     (cc/quick-bench
-      (muuntaja/format-request formats +transit-json-request+))))
+      (m/format-request formats +transit-json-request+))))
 
 (defn parse-json []
 
   ; 2.0µs
   (title "parse-json-stream")
-  (let [parse (muuntaja/decoder (muuntaja/create muuntaja/default-options) :json)
+  (let [parse (m/decoder (m/create m/default-options) :json)
         request! (request-stream +json-request+)]
     (cc/quick-bench (parse (:body (request!)))))
 
@@ -224,7 +224,7 @@
 (defn muuntaja-e2e []
 
   ; 2.3µs
-  (let [app (middleware/wrap-format +handler+ (-> muuntaja/default-options muuntaja/no-encoding))
+  (let [app (middleware/wrap-format +handler+ (-> m/default-options m/no-encoding))
         request! (request-stream +json-request+)]
 
     (title "muuntaja: JSON-REQUEST")
@@ -232,7 +232,7 @@
     (cc/quick-bench (app (request!))))
 
   ; 3.6µs
-  (let [app (middleware/wrap-format +handler+ (-> muuntaja/default-options muuntaja/no-encoding))
+  (let [app (middleware/wrap-format +handler+ (-> m/default-options m/no-encoding))
         request! (request-stream +transit-json-request+)]
 
     (title "muuntaja: TRANSIT-REQUEST")
@@ -240,7 +240,7 @@
     (cc/quick-bench (app (request!))))
 
   ; 3.6µs
-  (let [app (middleware/wrap-format +handler+ muuntaja/default-options)
+  (let [app (middleware/wrap-format +handler+ m/default-options)
         request! (request-stream +json-request+)]
 
     (title "muuntaja: JSON-REQUEST-RESPONSE")
@@ -248,7 +248,7 @@
     (cc/quick-bench (app (request!))))
 
   ; 7.1µs
-  (let [app (middleware/wrap-format +handler+ muuntaja/default-options)
+  (let [app (middleware/wrap-format +handler+ m/default-options)
         request! (request-stream +transit-json-request+)]
 
     (title "muuntaja: TRANSIT-REQUEST-RESPONSE")
@@ -257,7 +257,7 @@
 
   ; 3.8µs
   ; 2.6µs Protocol (-30%)
-  (let [app (middleware/wrap-format +handler2+ muuntaja/default-options)
+  (let [app (middleware/wrap-format +handler2+ m/default-options)
         request! (request-stream +json-request+)]
 
     (title "muuntaja: JSON-REQUEST-RESPONSE (PROTOCOL)")
@@ -267,7 +267,7 @@
 (defn interceptor-e2e []
 
   ; 3.8µs
-  (let [{:keys [enter leave]} (interceptor/format-interceptor muuntaja/default-options)
+  (let [{:keys [enter leave]} (interceptor/format-interceptor m/default-options)
         app (fn [request] (-> (->Context request) enter (handle +handler+) leave :response))
         request! (request-stream +json-request+)]
 
@@ -276,7 +276,7 @@
     (cc/quick-bench (app (request!))))
 
   ; 7.5µs
-  (let [{:keys [enter leave]} (interceptor/format-interceptor muuntaja/default-options)
+  (let [{:keys [enter leave]} (interceptor/format-interceptor m/default-options)
         app (fn [request] (-> (->Context request) enter (handle +handler+) leave :response))
         request! (request-stream +transit-json-request+)]
 

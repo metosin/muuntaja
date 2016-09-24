@@ -1,7 +1,7 @@
 (ns muuntaja.ring-middleware.format-test
   (:require [clojure.test :refer :all]
             [cheshire.core :as json]
-            [muuntaja.core :as muuntaja]
+            [muuntaja.core :as m]
             [muuntaja.middleware :as middleware]
             [clj-yaml.core :as yaml])
   (:import [java.io ByteArrayInputStream]))
@@ -24,8 +24,8 @@
          :body (:body-params req)})
       (middleware/wrap-params)
       (middleware/wrap-format
-        (-> muuntaja/default-options
-            (muuntaja/with-formats ["application/json"])))))
+        (-> m/default-options
+            (m/with-formats ["application/json"])))))
 
 (def api-echo-yaml
   (-> (fn [req]
@@ -34,8 +34,8 @@
          :body (:body-params req)})
       (middleware/wrap-params)
       (middleware/wrap-format
-        (-> muuntaja/default-options
-            (muuntaja/with-formats ["application/x-yaml"])))))
+        (-> m/default-options
+            (m/with-formats ["application/x-yaml"])))))
 
 (deftest test-api-round-trip
   (let [ok-accept "application/edn"

@@ -5,7 +5,7 @@
             [clojure.walk :refer [stringify-keys keywordize-keys]]
             [msgpack.core :as msgpack]
             [clojure.string :as string]
-            [muuntaja.core :as muuntaja]
+            [muuntaja.core :as m]
             [muuntaja.middleware :as middleware])
   (:import [java.io ByteArrayInputStream ByteArrayOutputStream]))
 
@@ -14,11 +14,11 @@
 
 (defn wrap-api-params
   ([handler]
-   (wrap-api-params handler muuntaja/default-options))
+   (wrap-api-params handler m/default-options))
   ([handler opts]
    (-> handler
        (middleware/wrap-format
-         (-> opts muuntaja/no-encoding)))))
+         (-> opts m/no-encoding)))))
 
 (defn key-fn [s]
   (-> s (string/replace #"_" "-") keyword))
@@ -27,16 +27,16 @@
   (is (= {:foo-bar "bar"}
          (:body-params ((wrap-api-params
                           identity
-                          (-> muuntaja/default-options
-                              (muuntaja/with-formats ["application/json"])
-                              (muuntaja/with-decoder-opts "application/json" {:keywords? key-fn})))
+                          (-> m/default-options
+                              (m/with-formats ["application/json"])
+                              (m/with-decoder-opts "application/json" {:keywords? key-fn})))
                          {:headers {"content-type" "application/json"}
                           :body (stream "{\"foo_bar\":\"bar\"}")}))))
   (is (= {:foo-bar "bar"}
          (:body-params ((wrap-api-params
                           identity
-                          (-> muuntaja/default-options
-                              (muuntaja/with-decoder-opts "application/json" {:keywords? key-fn})))
+                          (-> m/default-options
+                              (m/with-decoder-opts "application/json" {:keywords? key-fn})))
                          {:headers {"content-type" "application/json"}
                           :body (stream "{\"foo_bar\":\"bar\"}")})))))
 
@@ -44,9 +44,9 @@
   (-> identity
       (middleware/wrap-params)
       (wrap-api-params
-        (-> muuntaja/default-options
-            (muuntaja/with-formats ["application/x-yaml"])
-            (muuntaja/with-decoder-opts "application/x-yaml" opts)))))
+        (-> m/default-options
+            (m/with-formats ["application/x-yaml"])
+            (m/with-decoder-opts "application/x-yaml" opts)))))
 
 (deftest augments-with-yaml-content-type
   (let [req {:headers {"content-type" "application/x-yaml; charset=UTF-8"}
@@ -60,9 +60,9 @@
   (-> identity
       (middleware/wrap-params)
       (wrap-api-params
-        (-> muuntaja/default-options
-            (muuntaja/with-formats ["application/x-yaml"])
-            (muuntaja/with-decoder-opts "application/x-yaml" {:keywords true})))))
+        (-> m/default-options
+            (m/with-formats ["application/x-yaml"])
+            (m/with-decoder-opts "application/x-yaml" {:keywords true})))))
 
 (deftest augments-with-yaml-kw-content-type
   (let [req {:headers {"content-type" "application/x-yaml; charset=UTF-8"}
@@ -76,9 +76,9 @@
   (-> identity
       (middleware/wrap-params)
       (wrap-api-params
-        (-> muuntaja/default-options
-            (muuntaja/with-formats ["application/msgpack"])
-            (muuntaja/with-decoder-opts "application/msgpack" {:keywords? false})))))
+        (-> m/default-options
+            (m/with-formats ["application/msgpack"])
+            (m/with-decoder-opts "application/msgpack" {:keywords? false})))))
 
 (deftest augments-with-msgpack-content-type
   (let [req {:headers {"content-type" "application/msgpack"}
@@ -92,8 +92,8 @@
   (-> identity
       (middleware/wrap-params)
       (wrap-api-params
-        (-> muuntaja/default-options
-            (muuntaja/with-formats ["application/msgpack"])))))
+        (-> m/default-options
+            (m/with-formats ["application/msgpack"])))))
 
 (deftest augments-with-msgpack-kw-content-type
   (let [req {:headers {"content-type" "application/msgpack"}
@@ -107,8 +107,8 @@
   (-> identity
       (middleware/wrap-params)
       (wrap-api-params
-        (-> muuntaja/default-options
-            (muuntaja/with-formats ["application/edn"])))))
+        (-> m/default-options
+            (m/with-formats ["application/edn"])))))
 
 (deftest augments-with-clojure-content-type
   (let [req {:headers {"content-type" "application/clojure; charset=UTF-8"}
@@ -157,8 +157,8 @@
   (-> identity
       (middleware/wrap-params)
       (wrap-api-params
-        (-> muuntaja/default-options
-            (muuntaja/with-formats ["application/transit+json"])))))
+        (-> m/default-options
+            (m/with-formats ["application/transit+json"])))))
 
 (deftest augments-with-transit-json-content-type
   (let [req {:headers {"content-type" "application/transit+json"}
@@ -172,8 +172,8 @@
   (-> identity
       (middleware/wrap-params)
       (wrap-api-params
-        (-> muuntaja/default-options
-            (muuntaja/with-formats ["application/transit+msgpack"])))))
+        (-> m/default-options
+            (m/with-formats ["application/transit+msgpack"])))))
 
 (deftest augments-with-transit-msgpack-content-type
   (let [req {:headers {"content-type" "application/transit+msgpack"}
@@ -243,8 +243,8 @@
                :headers {"content-type" content-type}}
           resp ((-> identity
                     (wrap-api-params
-                      (-> muuntaja/default-options
-                          (muuntaja/with-formats [format])))
+                      (-> m/default-options
+                          (m/with-formats [format])))
                     (middleware/wrap-exception (constantly {:status 999})))
                  req)]
       (= 999 (:status resp)))
@@ -262,9 +262,9 @@
   (-> identity
       (middleware/wrap-params)
       (wrap-api-params
-        (-> muuntaja/default-options
-            (muuntaja/with-formats ["application/transit+json"])
-            (muuntaja/with-decoder-opts "application/transit+json" {:handlers readers})))))
+        (-> m/default-options
+            (m/with-formats ["application/transit+json"])
+            (m/with-decoder-opts "application/transit+json" {:handlers readers})))))
 
 (def transit-body "[\"^ \", \"~:p\", [\"~#Point\",[1,2]]]")
 
