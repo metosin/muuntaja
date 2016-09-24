@@ -76,4 +76,17 @@
             (let [edn-string (muuntaja/encode m "application/edn" data)
                   yaml-string (muuntaja/encode m "application/x-yaml" data)
                   request (->request "application/edn" "application/x-yaml" edn-string)]
-              (is (= yaml-string (-> request app :body))))))))))
+              (is (= yaml-string (-> request app :body))))))))
+
+    (testing "runtime options for encoding & decoding"
+      (testing "forcing a content-type on a handler (bypass negotiate)"
+        (let [echo-edn (fn [request]
+                         {:status 200
+                          ::muuntaja/content-type "application/edn"
+                          :body (:body-params request)})
+              app (middleware/wrap-format echo-edn)
+              request (->request "application/json" "application/json" "{\"kikka\":42}")
+              response (-> request app)]
+          (is (= "{:kikka 42}" (:body response)))
+          (is (not (contains? response ::muuntaja/content-type)))
+          (is (= "application/edn; charset=utf-8" (get-in response [:headers "Content-Type"]))))))))
