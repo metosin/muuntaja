@@ -49,33 +49,33 @@ More detailed examples in the [wiki](https://github.com/metosin/muuntaja/wiki).
 Creating a muuntaja and using it to encode & decode JSON:
 
 ```clj
-(require '[muuntaja.core :as muuntaja])
+(require '[muuntaja.core :as m])
 
-(def m (muuntaja/create muuntaja/default-options))
+(def m (m/create m/default-options))
 
-(muuntaja/encode m :json {:kikka 42})
+(m/encode m "application/json" {:kikka 42})
 ; "{\"kikka\":42}"
 
 (->> {:kikka 42}
-     (muuntaja/encode m :json)
-     (muuntaja/decode m :json))
+     (m/encode m "application/json")
+     (m/decode m "application/json))
 ; {:kikka 42}
 ```
 
 With custom EDN decoder opts:
 
 ```clj
-(-> (muuntaja/create
-      (-> muuntaja/default-options
-          (muuntaja/with-decoder-opts :edn {:readers {'INC inc}})))
-    (muuntaja/decode :edn "{:value #INC 41}"))
+(-> (m/create
+      (-> m/default-options
+          (m/with-decoder-opts "application/edn" {:readers {'INC inc}})))
+    (m/decode "application/edn" "{:value #INC 41}"))
 ; {:value 42}    
 ```
 
 Transit-json encode fn:
 
 ```clj
-(def encode-transit-json (muuntaja/encoder m :transit-json))
+(def encode-transit-json (m/encoder m "application/transit+json"))
 
 (slurp (encode-transit-json {:kikka 42}))
 ; "[\"^ \",\"~:kikka\",42]"
@@ -107,35 +107,37 @@ Middleware with defaults:
 
 ```clj
 {:extract-content-type-fn extract-content-type-ring
+ :extract-accept-charset-fn extract-accept-charset-ring
  :extract-accept-fn extract-accept-ring
  :decode? (constantly true)
  :encode? encode-collections-with-override
  :charset "utf-8"
- :adapters {:json {:format ["application/json" #"application/(.+\+)?json"]
-                   :decoder [formats/make-json-decoder {:keywords? true}]
-                   :encoder [formats/make-json-encoder]
-                   :encode-protocol [formats/EncodeJson formats/encode-json]}
-            :edn {:format ["application/edn" #"^application/(vnd.+)?(x-)?(clojure|edn)"]
-                  :decoder [formats/make-edn-decoder]
-                  :encoder [formats/make-edn-encoder]
-                  :encode-protocol [formats/EncodeEdn formats/encode-edn]}
-            :msgpack {:format ["application/msgpack" #"^application/(vnd.+)?(x-)?msgpack"]
-                      :decoder [formats/make-msgpack-decoder {:keywords? true}]
-                      :encoder [formats/make-msgpack-encoder]
-                      :encode-protocol [formats/EncodeMsgpack formats/encode-msgpack]}
-            :yaml {:format ["application/x-yaml" #"^(application|text)/(vnd.+)?(x-)?yaml"]
-                   :decoder [formats/make-yaml-decoder {:keywords true}]
-                   :encoder [formats/make-yaml-encoder]
-                   :encode-protocol [formats/EncodeYaml formats/encode-yaml]}
-            :transit-json {:format ["application/transit+json" #"^application/(vnd.+)?(x-)?transit\+json"]
-                           :decoder [(partial formats/make-transit-decoder :json)]
-                           :encoder [(partial formats/make-transit-encoder :json)]
-                           :encode-protocol [formats/EncodeTransitJson formats/encode-transit-json]}
-            :transit-msgpack {:format ["application/transit+msgpack" #"^application/(vnd.+)?(x-)?transit\+msgpack"]
-                              :decoder [(partial formats/make-transit-decoder :msgpack)]
-                              :encoder [(partial formats/make-transit-encoder :msgpack)]
-                              :encode-protocol [formats/EncodeTransitMessagePack formats/encode-transit-msgpack]}}
- :formats [:json :edn :msgpack :yaml :transit-json :transit-msgpack]}
+ ;charsets #{"utf-8", "utf-16", "iso-8859-1"
+ :formats {"application/json" {:matches #"application/(.+\+)?json"
+                               :decoder [formats/make-json-decoder {:keywords? true}]
+                               :encoder [formats/make-json-encoder]
+                               :encode-protocol [formats/EncodeJson formats/encode-json]}
+           "application/edn" {:matches #"^application/(vnd.+)?(x-)?(clojure|edn)"
+                              :decoder [formats/make-edn-decoder]
+                              :encoder [formats/make-edn-encoder]
+                              :encode-protocol [formats/EncodeEdn formats/encode-edn]}
+           "application/msgpack" {:matches #"^application/(vnd.+)?(x-)?msgpack"
+                                  :decoder [formats/make-msgpack-decoder {:keywords? true}]
+                                  :encoder [formats/make-msgpack-encoder]
+                                  :encode-protocol [formats/EncodeMsgpack formats/encode-msgpack]}
+           "application/x-yaml" {:matches #"^(application|text)/(vnd.+)?(x-)?yaml"
+                                 :decoder [formats/make-yaml-decoder {:keywords true}]
+                                 :encoder [formats/make-yaml-encoder]
+                                 :encode-protocol [formats/EncodeYaml formats/encode-yaml]}
+           "application/transit+json" {:matches #"^application/(vnd.+)?(x-)?transit\+json"
+                                       :decoder [(partial formats/make-transit-decoder :json)]
+                                       :encoder [(partial formats/make-transit-encoder :json)]
+                                       :encode-protocol [formats/EncodeTransitJson formats/encode-transit-json]}
+           "application/transit+msgpack" {:matches #"^application/(vnd.+)?(x-)?transit\+msgpack"
+                                          :decoder [(partial formats/make-transit-decoder :msgpack)]
+                                          :encoder [(partial formats/make-transit-encoder :msgpack)]
+                                          :encode-protocol [formats/EncodeTransitMessagePack formats/encode-transit-msgpack]}}
+ :default-format "application/json"}
  ```
 
 ## Performance
