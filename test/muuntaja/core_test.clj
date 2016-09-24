@@ -36,14 +36,21 @@
       (is (= "OLIPA KERRAN AVARUUS" (encode data)))
       (is (= data (decode (encode data))))))
 
-  (testing "non-existing format throws exception"
+  (testing "setting non-existing format as default throws exception"
     (is (thrown?
           Exception
           (muuntaja/create
             (-> muuntaja/default-options
                 (assoc :default-format "kikka"))))))
 
-  (testing "overriding adapter configs"
+  (testing "selecting non-existing format as default throws exception"
+    (is (thrown?
+          Exception
+          (muuntaja/create
+            (-> muuntaja/default-options
+                (muuntaja/with-formats ["kikka"]))))))
+
+  (testing "overriding adapter options"
     (let [decode-json-kw (-> (muuntaja/create
                                (-> muuntaja/default-options))
                              (get-in [:adapters "application/json" :decode]))
@@ -52,4 +59,16 @@
                                 (muuntaja/with-decoder-opts "application/json" {:keywords? false})))
                           (get-in [:adapters "application/json" :decode]))]
       (is (= {:kikka true} (decode-json-kw "{\"kikka\":true}")))
-      (is (= {"kikka" true} (decode-json "{\"kikka\":true}"))))))
+      (is (= {"kikka" true} (decode-json "{\"kikka\":true}")))))
+
+  (testing "overriding invalid adapter options fails"
+    (is (thrown?
+          Exception
+          (muuntaja/create
+            (-> muuntaja/default-options
+                (muuntaja/with-decoder-opts "application/jsonz" {:keywords? false})))))
+    (is (thrown?
+          Exception
+          (muuntaja/create
+            (-> muuntaja/default-options
+                (muuntaja/with-encoder-opts "application/jsonz" {:keywords? false})))))))
