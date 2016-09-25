@@ -82,11 +82,11 @@
       (testing "forcing a content-type on a handler (bypass negotiate)"
         (let [echo-edn (fn [request]
                          {:status 200
-                          ::muuntaja/content-type "application/edn"
+                          ::m/content-type "application/edn"
                           :body (:body-params request)})
               app (middleware/wrap-format echo-edn)
               request (->request "application/json" "application/json" "{\"kikka\":42}")
               response (-> request app)]
           (is (= "{:kikka 42}" (:body response)))
-          (is (not (contains? response ::muuntaja/content-type)))
+          (is (not (contains? response ::m/content-type)))
           (is (= "application/edn; charset=utf-8" (get-in response [:headers "Content-Type"]))))))))
