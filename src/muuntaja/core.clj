@@ -112,20 +112,10 @@
 
   Formatter
   (encoder [_ format]
-    (or (-> format adapters :encode)
-        (throw
-          (ex-info
-            (str "invalid encoder format: " format)
-            {:formats (keys adapters)
-             :format format}))))
+    (-> format adapters :encode))
 
   (decoder [_ format]
-    (or (-> format adapters :decode)
-        (throw
-          (ex-info
-            (str "invalid decoder format: " format)
-            {:formats (keys adapters)
-             :format format})))))
+    (-> format adapters :decode)))
 
 (defn encode [formats format data]
   (if-let [encode (encoder formats format)]
@@ -239,18 +229,18 @@
 ;; TODO: use the negotiated response charset
 (defn format-response [formats request response]
   (or
-  (if (encode-response? formats request response)
+    (if (encode-response? formats request response)
       (if-let [format (or (if-let [ct (::content-type response)]
                             ((:produces formats) ct))
-                     (::accept request)
-                     (:default-format formats))]
-      (if-let [encoder (encoder formats format)]
-        (as-> response $
-              (assoc $ ::format format)
-              (dissoc $ ::content-type)
-              (update $ :body encoder)
-              (if-not (get (:headers $) "Content-Type")
-                (set-content-type $ (content-type formats format))
+                          (::accept request)
+                          (:default-format formats))]
+        (if-let [encoder (encoder formats format)]
+          (as-> response $
+                (assoc $ ::format format)
+                (dissoc $ ::content-type)
+                (update $ :body encoder)
+                (if-not (get (:headers $) "Content-Type")
+                  (set-content-type $ (content-type formats format))
                   $)))))
     response))
 

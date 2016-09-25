@@ -32,13 +32,9 @@
       (is (= "{\"kikka\":42}" (json-encoder data)))
       (is (= data (-> data json-encoder json-decoder)))
 
-      (testing "can't use invalid encoder /decoder"
-        (is (thrown?
-              Exception
-              (m/encoder m "application/INVALID")))
-        (is (thrown?
-              Exception
-              (m/decoder m "application/INVALID"))))))
+      (testing "invalid encoder /decoder returns nil"
+        (is (nil? (m/encoder m "application/INVALID")))
+        (is (nil? (m/decoder m "application/INVALID"))))))
 
   (testing "adding new format"
     (let [format "application/upper"
