@@ -13,7 +13,7 @@
     (handler request)
     (catch Exception e
       (if-let [data (ex-data e)]
-        (if (-> data :type (= ::muuntaja/decode))
+        (if (-> data :type (= ::m/decode))
           (on-exception e (:format data) request)
           (throw e))
         (throw e)))))
