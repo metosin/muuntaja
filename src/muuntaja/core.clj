@@ -89,7 +89,6 @@
                     matchers
 
                     adapters
-                    formats
                     default-format]
   RequestFormatter
 
@@ -286,7 +285,7 @@
    :decode? (constantly true)
    :encode? encode-collections-with-override
    :charset "utf-8"
-   ;charsets #{"utf-8", "utf-16", "iso-8859-1"
+   ;charsets #{"utf-8", "utf-16", "iso-8859-1"}
    :formats {"application/json" {:matches #"application/(.+\+)?json"
                                  :decoder [formats/make-json-decoder {:keywords? true}]
                                  :encoder [formats/make-json-encoder]
@@ -374,5 +373,3 @@
 
 (defn set-response-content-type [response content-type]
   (assoc response ::content-type content-type))
-
-(create default-options)

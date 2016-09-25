@@ -58,7 +58,7 @@ Creating a muuntaja and using it to encode & decode JSON:
 
 (->> {:kikka 42}
      (m/encode m "application/json")
-     (m/decode m "application/json))
+     (m/decode m "application/json"))
 ; {:kikka 42}
 ```
 
@@ -99,7 +99,7 @@ Middleware with defaults:
       :body "{\"kikka\":42}"})
 ; {:status 200
 ;  :body "{:kikka 42}"
-;  :muuntaja.core/adapter :edn
+;  :muuntaja.core/format "application/edn"
 ;  :headers {"Content-Type" "application/edn; charset=utf-8"}}
 ```
 
@@ -112,7 +112,7 @@ Middleware with defaults:
  :decode? (constantly true)
  :encode? encode-collections-with-override
  :charset "utf-8"
- ;charsets #{"utf-8", "utf-16", "iso-8859-1"
+ ;charsets #{"utf-8", "utf-16", "iso-8859-1"}
  :formats {"application/json" {:matches #"application/(.+\+)?json"
                                :decoder [formats/make-json-decoder {:keywords? true}]
                                :encoder [formats/make-json-encoder]
