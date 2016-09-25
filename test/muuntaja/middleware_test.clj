@@ -1,6 +1,6 @@
 (ns muuntaja.middleware-test
   (:require [clojure.test :refer :all]
-            [muuntaja.core :as muuntaja]
+            [muuntaja.core :as m]
             [muuntaja.middleware :as middleware]))
 
 (defn echo [request]
@@ -8,18 +8,16 @@
    :body (:body-params request)})
 
 (defn ->request [content-type accept body]
-  {:request-method :get
-   :uri "/anything"
-   :headers {"content-type" content-type
+  {:headers {"content-type" content-type
              "accept" accept}
    :body body})
 
 (deftest middleware-test
-  (let [m (muuntaja/create muuntaja/default-options)
+  (let [m (m/create m/default-options)
         data {:kikka 42}]
 
     (testing "multiple way to initialize the middleware"
-      (let [edn-string (muuntaja/encode m :edn data)
+      (let [edn-string (m/encode m "application/edn" data)
             request (->request "application/edn" "application/edn" edn-string)]
         (is (= "{:kikka 42}" edn-string))
         (are [app]
@@ -29,7 +27,7 @@
           (middleware/wrap-format echo)
 
           ;; with default options
-          (middleware/wrap-format echo muuntaja/default-options)
+          (middleware/wrap-format echo m/default-options)
 
           ;; with compiled muuntaja
           (middleware/wrap-format echo m))))
@@ -39,15 +37,19 @@
 
         (testing "symmetric request decode + response encode"
           (are [format]
-            (let [payload (muuntaja/encode m format data)
-                  decode (partial muuntaja/decode m format)
-                  content-type (get-in m [:produces format])
-                  request (->request content-type content-type payload)]
+            (let [payload (m/encode m format data)
+                  decode (partial m/decode m format)
+                  request (->request format format payload)]
               (= data (-> request app :body decode)))
-            :json :edn :yaml :msgpack :transit-json :transit-msgpack))
+            "application/json"
+            "application/edn"
+            "application/x-yaml"
+            "application/msgpack"
+            "application/transit+json"
+            "application/transit+msgpack"))
 
         (testing "content-type & accept"
-          (let [json-string (muuntaja/encode m :json data)
+          (let [json-string (m/encode m "application/json" data)
                 call (fn [content-type accept]
                        (-> (->request content-type accept json-string) app :body))]
 
@@ -71,7 +73,20 @@
                 "application/schema+json")))
 
           (testing "different content-type & accept"
-            (let [edn-string (muuntaja/encode m :edn data)
-                  yaml-string (muuntaja/encode m :yaml data)
+            (let [edn-string (m/encode m "application/edn" data)
+                  yaml-string (m/encode m "application/x-yaml" data)
                   request (->request "application/edn" "application/x-yaml" edn-string)]
-              (is (= yaml-string (-> request app :body))))))))))
+              (is (= yaml-string (-> request app :body))))))))
+
+    (testing "runtime options for encoding & decoding"
+      (testing "forcing a content-type on a handler (bypass negotiate)"
+        (let [echo-edn (fn [request]
+                         {:status 200
+                          ::m/content-type "application/edn"
+                          :body (:body-params request)})
+              app (middleware/wrap-format echo-edn)
+              request (->request "application/json" "application/json" "{\"kikka\":42}")
+              response (-> request app)]
+          (is (= "{:kikka 42}" (:body response)))
+          (is (not (contains? response ::m/content-type)))
+          (is (= "application/edn; charset=utf-8" (get-in response [:headers "Content-Type"]))))))))

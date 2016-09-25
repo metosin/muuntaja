@@ -1,5 +1,5 @@
 (ns muuntaja.middleware
-  (:require [muuntaja.core :as muuntaja])
+  (:require [muuntaja.core :as m])
   (:import [muuntaja.core Formats]))
 
 ; [^Exception e format request]
@@ -13,7 +13,7 @@
     (handler request)
     (catch Exception e
       (if-let [data (ex-data e)]
-        (if (-> data :type (= ::muuntaja/decode))
+        (if (-> data :type (= ::m/decode))
           (on-exception e (:format data) request)
           (throw e))
         (throw e)))))
@@ -34,15 +34,15 @@
 
 (defn wrap-format
   ([handler]
-   (wrap-format handler muuntaja/default-options))
+   (wrap-format handler m/default-options))
   ([handler options-or-formats]
    (let [formats (if (instance? Formats options-or-formats)
                    options-or-formats
-                   (muuntaja/create options-or-formats))]
+                   (m/create options-or-formats))]
      (fn
        ([request]
-        (let [req (muuntaja/format-request formats request)]
-          (->> (handler req) (muuntaja/format-response formats req))))
+        (let [req (m/format-request formats request)]
+          (->> (handler req) (m/format-response formats req))))
        ([request respond raise]
-        (let [req (muuntaja/format-request formats request)]
-          (handler req #(respond (muuntaja/format-response formats req %)) raise)))))))
+        (let [req (m/format-request formats request)]
+          (handler req #(respond (m/format-response formats req %)) raise)))))))

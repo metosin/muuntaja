@@ -1,6 +1,6 @@
 (ns muuntaja.ring-middleware.format-response-test
   (:require [clojure.test :refer :all]
-            [muuntaja.core :as muuntaja]
+            [muuntaja.core :as m]
             [muuntaja.middleware :as middleware]
             [cheshire.core :as json]
             [clj-yaml.core :as yaml]
@@ -15,11 +15,11 @@
 
 (defn wrap-api-response
   ([handler]
-   (wrap-api-response handler muuntaja/default-options))
+   (wrap-api-response handler m/default-options))
   ([handler opts]
    (-> handler
        (middleware/wrap-format
-         (-> opts muuntaja/no-decoding)))))
+         (-> opts m/no-decoding)))))
 
 (def api-echo
   (wrap-api-response identity))
@@ -50,9 +50,9 @@
         req {:body body}
         resp ((wrap-api-response
                 identity
-                (-> muuntaja/default-options
-                    (muuntaja/with-formats [:json])
-                    (muuntaja/with-encoder-opts :json {:pretty true}))) req)]
+                (-> m/default-options
+                    (m/with-formats ["application/json"])
+                    (m/with-encoder-opts "application/json" {:pretty true}))) req)]
     (is (.contains (:body resp) "\n "))))
 
 #_(comment
@@ -87,8 +87,8 @@
 (def msgpack-echo
   (wrap-api-response
     identity
-    (-> muuntaja/default-options
-        (muuntaja/with-formats [:msgpack]))))
+    (-> m/default-options
+        (m/with-formats ["application/msgpack"]))))
 
 (deftest format-msgpack-hashmap
   (let [body {:foo "bar"}
@@ -102,8 +102,8 @@
 (def clojure-echo
   (wrap-api-response
     identity
-    (-> muuntaja/default-options
-        (muuntaja/with-formats [:edn]))))
+    (-> m/default-options
+        (m/with-formats ["application/edn"]))))
 
 (deftest format-clojure-hashmap
   (let [body {:foo "bar"}
@@ -117,8 +117,8 @@
 (def yaml-echo
   (wrap-api-response
     identity
-    (-> muuntaja/default-options
-        (muuntaja/with-formats [:yaml]))))
+    (-> m/default-options
+        (m/with-formats ["application/x-yaml"]))))
 
 (deftest format-yaml-hashmap
   (let [body {:foo "bar"}
@@ -146,8 +146,8 @@
 (def transit-json-echo
   (wrap-api-response
     identity
-    (-> muuntaja/default-options
-        (muuntaja/with-formats [:transit-json]))))
+    (-> m/default-options
+        (m/with-formats ["application/transit+json"]))))
 
 (deftest format-transit-json-hashmap
   (let [body {:foo "bar"}
@@ -161,8 +161,8 @@
 (def transit-msgpack-echo
   (wrap-api-response
     identity
-    (-> muuntaja/default-options
-        (muuntaja/with-formats [:transit-msgpack]))))
+    (-> m/default-options
+        (m/with-formats ["application/transit+msgpack"]))))
 
 (deftest format-transit-msgpack-hashmap
   (let [body {:foo "bar"}
@@ -271,10 +271,8 @@
 (def custom-api-echo
   (wrap-api-response
     identity
-    (-> muuntaja/default-options
-        (assoc-in [:adapters :foobar] {:format ["text/foo"]
-                                       :encoder (constantly "foobar")})
-        (assoc :formats [:foobar]))))
+    (-> m/default-options
+        (assoc-in [:formats "text/foo"] {:encoder (constantly "foobar")}))))
 
 (deftest format-custom-api-hashmap
   (let [req {:body {:foo "bar"} :headers {"accept" "text/foo"}}
@@ -295,7 +293,7 @@
 (def api-echo-pred
   (wrap-api-response
     identity
-    (-> muuntaja/default-options
+    (-> m/default-options
         (assoc :encode? ::serializable?))))
 
 (deftest custom-predicate
@@ -306,19 +304,16 @@
     (is (string? (:body resp-serialized)))))
 
 (def custom-encoder
-  (-> muuntaja/default-options
-      :adapters
-      :json
-      (assoc :format ["application/vnd.mixradio.something+json"])))
+  (get-in m/default-options [:formats "application/json"]))
 
 (def custom-content-type
   (wrap-api-response
     (fn [_]
       {:status 200
        :body {:foo "bar"}})
-    (-> muuntaja/default-options
-        (assoc-in [:adapters :custom-json] custom-encoder)
-        (assoc :formats [:custom-json :json]))))
+    (-> m/default-options
+        (assoc-in [:formats "application/vnd.mixradio.something+json"] custom-encoder)
+        (m/with-formats ["application/vnd.mixradio.something+json" "application/json"]))))
 
 (deftest custom-content-type-test
   (let [resp (custom-content-type {:body {:foo "bar"} :headers {"accept" "application/vnd.mixradio.something+json"}})]
@@ -334,15 +329,15 @@
 (def custom-transit-echo
   (wrap-api-response
     identity
-    (-> muuntaja/default-options
-        (muuntaja/with-formats [:transit-json])
-        (muuntaja/with-encoder-opts :transit-json {:handlers writers}))))
+    (-> m/default-options
+        (m/with-formats ["application/transit+json"])
+        (m/with-encoder-opts "application/transit+json" {:handlers writers}))))
 
 (def custom-api-transit-echo
   (wrap-api-response
     identity
-    (-> muuntaja/default-options
-        (muuntaja/with-encoder-opts :transit-json {:handlers writers}))))
+    (-> m/default-options
+        (m/with-encoder-opts "application/transit+json" {:handlers writers}))))
 
 (def transit-resp {:body (Point. 1 2)})
 
