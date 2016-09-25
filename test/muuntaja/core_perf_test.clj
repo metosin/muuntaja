@@ -33,7 +33,8 @@
 
 (def +transit-json-request+
   {:headers {"content-type" "application/transit+json"
-             "accept" "application/transit+json; charset=utf-16"}
+             "accept" "application/transit+json"
+             "accept-charset" "utf-16"}
    :body "[\"^ \",\"~:kikka\",42]"})
 
 (defrecord Hello [^String name]
@@ -110,14 +111,14 @@
 ;;
 
 (defn content-type []
-  (let [m (-> m/default-options m/no-decoding m/no-encoding m/create)]
+  (let [m (m/create m/default-options)]
 
     ; 52ns
     ; 38ns consumes & produces (-27%)
     ; 27ns compile (-29%) (-48%)
     ; 49ns + charset, memoized
     (title "Content-type: JSON")
-    (assert [:json "utf-8"] (m/negotiate-request m +json-request+))
+    (assert (= ["application/json" "utf-8"] (m/negotiate-request m +json-request+)))
     (cc/quick-bench (m/negotiate-request m +json-request+))
 
     ; 65ns
@@ -125,22 +126,22 @@
     ; 42ns compile (-24%) (-35%)
     ; 48ns + charset, memoized
     (title "Content-type: TRANSIT")
-    (assert [:transit-json "utf-16"] (m/negotiate-request m +transit-json-request+))
+    (assert (= ["application/transit+json" "utf-16"] (m/negotiate-request m +transit-json-request+)))
     (cc/quick-bench (m/negotiate-request m +transit-json-request+))))
 
 (defn accept []
-  (let [m (-> m/default-options m/no-decoding m/no-encoding m/create)]
+  (let [m (m/create m/default-options)]
 
     ; 71ns
     ; 58ns consumes & produces (-18%)
     ; 48ns compile (-17%) (-32%)
     ; 113ns + charser, memoized
     (title "Accept: TRANSIT")
-    (assert [:json "utf-8"] (m/negotiate-response m +transit-json-request+))
+    (assert (= ["application/transit+json" "utf-16"] (m/negotiate-response m +transit-json-request+)))
     (cc/quick-bench (m/negotiate-response m +transit-json-request+))))
 
 (defn request []
-  (let [formats (-> m/default-options m/no-decoding m/no-encoding m/create)]
+  (let [formats (m/create m/default-options)]
 
     ; 179ns
     ; 187ns (records)
