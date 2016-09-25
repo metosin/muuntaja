@@ -113,10 +113,20 @@
 
   Formatter
   (encoder [_ format]
-    (-> format adapters :encode))
+    (or (-> format adapters :encode)
+        (throw
+          (ex-info
+            (str "invalid encoder format: " format)
+            {:formats (keys adapters)
+             :format format}))))
 
   (decoder [_ format]
-    (-> format adapters :decode)))
+    (or (-> format adapters :decode)
+        (throw
+          (ex-info
+            (str "invalid decoder format: " format)
+            {:formats (keys adapters)
+             :format format})))))
 
 (defn encode [formats format data]
   (if-let [encode (encoder formats format)]

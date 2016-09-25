@@ -24,6 +24,22 @@
       (is (= "{\"kikka\":42}" (m/encode m "application/json" data)))
       (is (= data (m/decode m "application/json" (m/encode m "application/json" data))))))
 
+  (testing "encoder & decoder"
+    (let [m (m/create m/default-options)
+          data {:kikka 42}
+          json-encoder (m/encoder m "application/json")
+          json-decoder (m/decoder m "application/json")]
+      (is (= "{\"kikka\":42}" (json-encoder data)))
+      (is (= data (-> data json-encoder json-decoder)))
+
+      (testing "can't use invalid encoder /decoder"
+        (is (thrown?
+              Exception
+              (m/encoder m "application/INVALID")))
+        (is (thrown?
+              Exception
+              (m/decoder m "application/INVALID"))))))
+
   (testing "adding new format"
     (let [format "application/upper"
           upper-case-format {:decoder str/lower-case
