@@ -23,6 +23,7 @@
                                   [criterium "0.4.4"]]}
              :1.9 {:dependencies [[org.clojure/clojure "1.9.0-alpha11"]]}
              :perf {:jvm-opts ^:replace ["-server"
+                                         "-Xmx4096m"
                                          "-Dclojure.compiler.direct-linking=true"]}
              :analyze {:jvm-opts ^:replace ["-server"
                                             "-Dclojure.compiler.direct-linking=true"
