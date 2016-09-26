@@ -302,7 +302,7 @@
         app (fn [request] (-> (->Context request) enter (handle +handler+) leave :response))
         request! (request-stream +transit-json-request+)]
 
-    (title "muuntaja: Interceptor JSON-REQUEST-RESPONSE")
+    (title "muuntaja: Interceptor TRANSIT-REQUEST-RESPONSE")
     (assert (= (:body +transit-json-request+) (slurp (:body (app (request!))))))
     (cc/quick-bench (app (request!)))))
 
