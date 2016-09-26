@@ -23,7 +23,7 @@
   (assoc-assoc response :headers "Content-Type" content-type))
 
 (defn- content-type [formats format]
-  (str ((:produces formats) format) "; charset=" (:charset formats)))
+  (str ((:produces formats) format) "; charset=" (:default-charset formats)))
 
 ;;
 ;; Protocols
@@ -43,7 +43,7 @@
 ;; Content negotiation
 ;;
 
-(defn- -negotiate-content-type [{:keys [consumes matchers charset]} s]
+(defn- -negotiate-content-type [{:keys [consumes matchers default-charset]} s]
   (if s
     (let [[content-type-raw charset-raw] (parse/parse-content-type s)]
       [(if content-type-raw
@@ -52,7 +52,7 @@
                (fn [[name r]]
                  (if (re-find r content-type-raw) name))
                matchers)))
-       (or charset-raw charset)])))
+       (or charset-raw default-charset)])))
 
 (defn- -negotiate-accept [{:keys [produces default-format]} s]
   (or
@@ -61,12 +61,12 @@
       (parse/parse-accept s))
     default-format))
 
-(defn- -negotiate-accept-charset [{:keys [charset charsets]} s]
+(defn- -negotiate-accept-charset [{:keys [default-charset charsets]} s]
   (or
     (some-value
       (or charsets identity)
       (parse/parse-accept-charset s))
-    charset))
+    default-charset))
 
 ;;
 ;; Records
@@ -89,6 +89,7 @@
                     matchers
 
                     adapters
+                    default-charset
                     default-format]
   RequestFormatter
 
@@ -170,7 +171,12 @@
                      (if encoder {:encode (make encoder encoder-opts encode-protocol)})))])
          (into {}))))
 
-(defn create [{:keys [formats default-format] :as options}]
+(declare default-options)
+
+(defn create
+  ([]
+   (create default-options))
+  ([{:keys [formats default-format] :as options}]
   (let [adapters (create-adapters formats)
         valid-format? (key-set formats identity)
         m (map->Formats
@@ -201,7 +207,7 @@
           :negotiate-content-type
           (parse/fast-memoize
             (parse/cache 1000)
-            (partial -negotiate-content-type m))))))
+             (partial -negotiate-content-type m)))))))
 
 ;;
 ;; Ring
@@ -274,8 +280,11 @@
    :extract-accept-fn extract-accept-ring
    :decode? (constantly true)
    :encode? encode-collections-with-override
-   :charset "utf-8"
+
+   :default-charset "utf-8"
    ;charsets #{"utf-8", "utf-16", "iso-8859-1"}
+
+   :default-format "application/json"
    :formats {"application/json" {:matches #"application/(.+\+)?json"
                                  :decoder [formats/make-json-decoder {:keywords? true}]
                                  :encoder [formats/make-json-encoder]
@@ -299,8 +308,7 @@
              "application/transit+msgpack" {:matches #"^application/(vnd.+)?(x-)?transit\+msgpack"
                                             :decoder [(partial formats/make-transit-decoder :msgpack)]
                                             :encoder [(partial formats/make-transit-encoder :msgpack)]
-                                            :encode-protocol [formats/EncodeTransitMessagePack formats/encode-transit-msgpack]}}
-   :default-format "application/json"})
+                                            :encode-protocol [formats/EncodeTransitMessagePack formats/encode-transit-msgpack]}}})
 
 ;;
 ;; Working with options
