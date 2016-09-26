@@ -51,6 +51,7 @@ Create a muuntaja and use it to encode & decode JSON:
 ```clj
 (require '[muuntaja.core :as m])
 
+;; with defaults
 (def m (m/create))
 
 (m/encode m "application/json" {:kikka 42})
