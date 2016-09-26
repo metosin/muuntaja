@@ -32,7 +32,7 @@
    :body "{\"kikka\":42}"})
 
 (def +transit-json-request+
-  {:headers {"content-type" "application/transit+json"
+  {:headers {"content-type" "application/transit+json; charset=utf-16"
              "accept" "application/transit+json"
              "accept-charset" "utf-16"}
    :body "[\"^ \",\"~:kikka\",42]"})
@@ -135,25 +135,46 @@
     ; 71ns
     ; 58ns consumes & produces (-18%)
     ; 48ns compile (-17%) (-32%)
-    ; 113ns + charser, memoized
+    ; 113ns + charset, memoized
     (title "Accept: TRANSIT")
     (assert (= ["application/transit+json" "utf-16"] (m/negotiate-response m +transit-json-request+)))
     (cc/quick-bench (m/negotiate-response m +transit-json-request+))))
 
-(defn request []
-  (let [formats (m/create m/default-options)]
+(defn negotiate-request []
+  (let [formats (-> m/default-options
+                    (assoc :decode? false)
+                    (m/create))]
 
     ; 179ns
     ; 187ns (records)
-    (title "Accept & Contnet-type: JSON")
+    (title "Negotiate Request: JSON")
     (cc/quick-bench
       (m/format-request formats +json-request+))
 
     ; 211ns
     ; 226ns (records)
-    (title "Accept & Contnet-type: Transit")
+    (title "Negotiate Request: Transit")
     (cc/quick-bench
       (m/format-request formats +transit-json-request+))))
+
+(defn identity-encode-decode []
+  (let [formats (-> m/default-options
+                    (assoc-in [:formats "application/json" :encoder] identity)
+                    (assoc-in [:formats "application/json" :decoder] identity)
+                    (m/create))]
+
+    ; 474ns
+    (title "request-format - identity: JSON")
+    (cc/quick-bench
+      (m/format-request formats +json-request+))
+
+    ; 670ns
+    (title "response-format - identity: JSON")
+    (let [wrap (fn [request]
+                 (let [req (m/format-request formats request)]
+                   (->> (+handler+ req) (m/format-response formats req))))]
+      (cc/quick-bench
+        (wrap +json-request+)))))
 
 (defn parse-json []
 
@@ -293,7 +314,8 @@
   (old)
   (content-type)
   (accept)
-  (request)
+  (negotiate-request)
+  (identity-encode-decode)
   (parse-json)
   (ring-middleware-format-e2e)
   (ring-json-e2e)
@@ -304,7 +326,8 @@
   (old)
   (content-type)
   (accept)
-  (request)
+  (negotiate-request)
+  (identity-encode-decode)
   (parse-json)
   (ring-middleware-format-e2e)
   (ring-json-e2e)

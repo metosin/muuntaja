@@ -46,12 +46,12 @@ More detailed examples in the [wiki](https://github.com/metosin/muuntaja/wiki).
 
 ### Standalone
 
-Creating a muuntaja and using it to encode & decode JSON:
+Create a muuntaja and use it to encode & decode JSON:
 
 ```clj
 (require '[muuntaja.core :as m])
 
-(def m (m/create m/default-options))
+(def m (m/create))
 
 (m/encode m "application/json" {:kikka 42})
 ; "{\"kikka\":42}"
@@ -67,12 +67,16 @@ With custom EDN decoder opts:
 ```clj
 (-> (m/create
       (-> m/default-options
-          (m/with-decoder-opts "application/edn" {:readers {'INC inc}})))
-    (m/decode "application/edn" "{:value #INC 41}"))
+          (m/with-decoder-opts 
+            "application/edn"
+            {:readers {'INC inc}})))
+    (m/decode 
+      "application/edn" 
+      "{:value #INC 41}"))
 ; {:value 42}    
 ```
 
-Transit-json encode fn:
+Function to encode Transit-json:
 
 ```clj
 (def encode-transit-json (m/encoder m "application/transit+json"))
@@ -142,7 +146,7 @@ Middleware with defaults:
 
 ## Performance
 
-* by default, ~6x faster than `[ring-middleware-format "0.7.0"]` (JSON request & response).
+* by default, ~5x faster than `[ring-middleware-format "0.7.0"]` (JSON request & response).
 * by default, faster than `[ring/ring-json "0.4.0"]` (JSON requests & responses).
 
 There is also a new low-level JSON encoder (in `muuntaja.json`) on top of 
