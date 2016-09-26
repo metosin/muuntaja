@@ -17,12 +17,13 @@
 (defn- assoc-assoc [m k1 k2 v]
   (assoc m k1 (assoc (k1 m) k2 v)))
 
-(defn- on-decode-exception [^Exception e format request]
+(defn- on-request-decode-exception [^Exception e request-format request-charset request]
   (throw
     (ex-info
-      (str "Malformed " format " request.")
+      (str "Malformed " request-format " request.")
       {:type ::decode
-       :format format
+       :format request-format
+       :charset request-charset
        :request request}
       e)))
 
@@ -151,23 +152,40 @@
       [name matches])
     (into {})))
 
+(defn- on-exception [^Exception e format type]
+  (println format type)
+  (throw
+    (ex-info
+      (str "Malformed " format " (" type ")")
+      {:type type
+       :format format}
+      e)))
+
 (defn- create-adapters [formats]
-  (let [make (fn [spec spec-opts [p pf]]
+  (let [make (fn [format type spec spec-opts [p pf]]
                (let [g (if (vector? spec)
                          (let [[f opts] spec]
                            (f (merge opts spec-opts)))
-                         spec)]
+                         spec)
+                     g' (fn [x]
+                          (try
+                            (g x)
+                            (catch Exception e
+                              (on-exception e format type))))]
                  (if (and p pf)
                    (fn [x]
-                     (if (and (record? x) (satisfies? p x))
-                       (pf x)
-                       (g x)))
-                   g)))]
+                     (try
+                       (if (and (record? x) (satisfies? p x))
+                         (pf x)
+                         (g' x))
+                       (catch Exception e
+                         (on-exception e format type))))
+                   g')))]
     (->> (for [[name {:keys [decoder decoder-opts encoder encoder-opts encode-protocol]}] formats]
            [name (map->Adapter
                    (merge
-                     (if decoder {:decode (make decoder decoder-opts nil)})
-                     (if encoder {:encode (make encoder encoder-opts encode-protocol)})))])
+                     (if decoder {:decode (make name ::decode decoder decoder-opts nil)})
+                     (if encoder {:encode (make name ::encode encoder encoder-opts encode-protocol)})))])
          (into {}))))
 
 (declare default-options)
@@ -212,7 +230,7 @@
 ;; Request
 ;;
 
-(defn- handle-request [request format decoder request-format request-charset response-format response-charset]
+(defn- handle-request [request decoder request-format request-charset response-format response-charset]
   (let [body (:body request)]
     (as-> request $
           (assoc $ ::accept response-format)
@@ -224,7 +242,7 @@
                   (assoc :body nil)
                   (assoc :body-params (decoder body)))
               (catch Exception e
-                (on-decode-exception e format $)))
+                (on-request-decode-exception e request-format request-charset $)))
             $))))
 
 ;; TODO: use the negotiated request charset
@@ -233,7 +251,7 @@
         [af ac] (negotiate-response formats request)
         decoder (if (decode-request? formats request)
                   (decoder formats ctf))]
-    (handle-request request format decoder ctf ctc af ac)))
+    (handle-request request decoder ctf ctc af ac)))
 
 ;;
 ;; Response
