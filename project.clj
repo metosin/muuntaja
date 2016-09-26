@@ -22,6 +22,11 @@
                                   [ring/ring-json "0.4.0"]
                                   [criterium "0.4.4"]]}
              :1.9 {:dependencies [[org.clojure/clojure "1.9.0-alpha11"]]}
-             :perf {:jvm-opts ^:replace ["-server"]}}
+             :perf {:jvm-opts ^:replace ["-server"]}
+             :analyze {:jvm-opts ^:replace ["-server"
+                                            "-XX:+PrintCompilation"
+                                            "-XX:+UnlockDiagnosticVMOptions"
+                                            "-XX:+PrintInlining"]}}
   :aliases {"all" ["with-profile" "dev:dev,1.9"]
-            "perf" ["with-profile" "default,dev,perf"]})
+            "perf" ["with-profile" "default,dev,perf"]
+            "analyze" ["with-profile" "default,dev,analyze"]})
