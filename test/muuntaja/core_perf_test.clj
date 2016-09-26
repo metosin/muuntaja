@@ -306,6 +306,14 @@
     (assert (= (:body +transit-json-request+) (slurp (:body (app (request!))))))
     (cc/quick-bench (app (request!)))))
 
+(defn request-streams []
+
+  ;; 17ns
+  (let [r (request-stream +json-request+)]
+    (title "request-stream (baseline)")
+    (cc/quick-bench
+      (r))))
+
 ;;
 ;; Run
 ;;
@@ -320,7 +328,8 @@
   (ring-middleware-format-e2e)
   (ring-json-e2e)
   (muuntaja-e2e)
-  (interceptor-e2e))
+  (interceptor-e2e)
+  (request-streams))
 
 (comment
   (old)
@@ -333,4 +342,5 @@
   (ring-json-e2e)
   (muuntaja-e2e)
   (interceptor-e2e)
+  (request-streams)
   (all))
