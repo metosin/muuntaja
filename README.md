@@ -27,15 +27,15 @@ done using `Content-type`, `Accept` and `Accept-Charset` headers.
 
 ### Request
 
-* `:muuntaja.core/format`, format name that was used to decode the request body, e.g. `"application/json"`.
+* `:muuntaja.core/format`, format name that was used to decode the request body, e.g. `application/json`.
    Setting value to anything (e.g. `nil`) before muuntaja middleware/interceptor will skip the decoding process.
-* `:muuntaja.core/accept`, client-negotiated format name for the response, e.g. `"application/json"`. Will
+* `:muuntaja.core/accept`, client-negotiated format name for the response, e.g. `application/json`. Will
    be used later in the response pipeline.
 
 ### Response
 
 * `:muuntaja.core/encode?`, if set to true, the response body will be encoded regardles of the type
-* `:muuntaja.core/format`, format name that was used to encode the response body, e.g. `"application/json"`.
+* `:muuntaja.core/format`, format name that was used to encode the response body, e.g. `application/json`.
    Setting value to anything (e.g. `nil`) before muuntaja middleware/interceptor will skip the encoding process.
 * `:muuntaja.core/content-type`, can be used to override the negotiated content-type for response encoding,
    e.g. setting it to `application/edn`. **NOTE**: given format is not negotiated, always set on.
@@ -143,7 +143,64 @@ Middleware with defaults:
                                           :encoder [(partial formats/make-transit-encoder :msgpack)]
                                           :encode-protocol [formats/EncodeTransitMessagePack formats/encode-transit-msgpack]}}
  :default-format "application/json"}
- ```
+```
+
+## Formats
+
+Formats are presented as Clojure maps, registered into options under `:formats` with `content-type` as a key.
+Format maps can the following optional keys:
+
+* `:decoder` a function (or a function generator) to parse input into Clojure data structure: `InputStream => Anything`. If
+the key is missing, no decoding will be done.
+* `:encoder` a function (or a function generator) to encode input into Clojure data structure: `Anything => String | InputStream`.
+If the key is missing, no encoding will be done.
+* `:decoder-opts` extra options maps for the given format if a function generator is used with the decoder.
+* `:encoder-opts` extra options maps for the given format if a function generator is used with the encoder.
+* `:matches` a regexp for additional matching of the content-type in request negotiation. Added for legacy support
+(both ring-middleware-format & ring-json use these).
+* `:encode-protocol` vector tuple of protocol name and function that can be used to encode a data.
+
+### Function generators
+
+Instead of providing direct encoder/decoder functions, one can provide [Duct](https://github.com/duct-framework/duct)-style function
+generator as a vector tuple of 2 elements: `options => encoder/decoder` & default options map. Muuntaja ships generators for
+most common formats, both for encoding & decoding. To make overriding the default options easier, there are the `:decode-opts` & `:encode-opts`,
+which are merged on top of the default options.
+
+### Examples
+
+Example of JSON decoder configuration:
+
+```clj
+
+;; custom fn to decode
+{"application/json" 
+ {:decoder my-decode-json}}
+
+;; default generator without opts
+{"application/json" 
+ {:decoder [formats/make-json-decoder]}}
+
+;; default generator with defaults opts
+{"application/json" 
+ {:decoder [formats/make-json-decoder {:keywords? true}]}}
+
+;; default generator with default & client opts
+{"application/json" 
+ {:decoder [formats/make-json-decoder {:keywords? true}]
+  :decoder-opts {:keywords? false, :bigdecimals? true}}}
+```
+
+Ring-json style JSON request formatting:
+* regexp-matching (memoized against content-types for stellar performance)
+* String-keys for decoded maps (no `{:keywords? true}` options in the generator)
+* no encoder => no response negotiation
+
+```clj
+{"application/json" 
+ {:matches #"application/(.+\+)?json"
+  :decoder [formats/make-json-decoder]}}
+```
 
 ## Performance
 
