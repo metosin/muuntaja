@@ -150,14 +150,12 @@ Middleware with defaults:
 Formats are presented as Clojure maps, registered into options under `:formats` with `content-type` as a key.
 Format maps can the following optional keys:
 
-* `:decoder` a function (or a function generator) to parse input into Clojure data structure: `InputStream => Anything`. If
-the key is missing, no decoding will be done.
-* `:encoder` a function (or a function generator) to encode input into Clojure data structure: `Anything => String | InputStream`.
-If the key is missing, no encoding will be done.
-* `:decoder-opts` extra options maps for the given format if a function generator is used with the decoder.
-* `:encoder-opts` extra options maps for the given format if a function generator is used with the encoder.
+* `:decoder` a function (or a function generator) to parse InputStreams into Clojure data structure. If the key is missing, no decoding will be done.
+* `:encoder` a function (or a function generator) to encode Clojure data structures into a String or an InputStream. If the key is missing, no encoding will be done.
+* `:decoder-opts` extra options maps for the decoder function generator.
+* `:encoder-opts` extra options maps for the encoder function generator.
 * `:matches` a regexp for additional matching of the content-type in request negotiation. Added for legacy support
-(both ring-middleware-format & ring-json use these).
+(both ring-middleware-format & ring-json use these), e.g. `#"application/(.+\+)?json"`. Memoized behind the hoods against content-types for stellar performance.
 * `:encode-protocol` vector tuple of protocol name and function that can be used to encode a data.
 
 ### Function generators
@@ -167,39 +165,22 @@ generator as a vector tuple of 2 elements: `options => encoder/decoder` & defaul
 most common formats, both for encoding & decoding. To make overriding the default options easier, there are the `:decode-opts` & `:encode-opts`,
 which are merged on top of the default options.
 
-### Examples
-
-Example of JSON decoder configuration:
+Example of format map for JSON decoding - using both functions & function generators:
 
 ```clj
 
-;; custom fn to decode
-{"application/json" 
- {:decoder my-decode-json}}
+;; using cheshire
+{:decoder (fn [is] (cheshire.core/parse-stream (java.io.InputStreamReader. is)))}
 
-;; default generator without opts
-{"application/json" 
- {:decoder [formats/make-json-decoder]}}
+;; generator without opts
+{:decoder [formats/make-json-decoder]}
 
-;; default generator with defaults opts
-{"application/json" 
- {:decoder [formats/make-json-decoder {:keywords? true}]}}
+;; generator with default opts
+{:decoder [formats/make-json-decoder {:keywords? true}]}
 
-;; default generator with default & client opts
-{"application/json" 
- {:decoder [formats/make-json-decoder {:keywords? true}]
-  :decoder-opts {:keywords? false, :bigdecimals? true}}}
-```
-
-Ring-json style JSON request formatting:
-* regexp-matching (memoized against content-types for stellar performance)
-* String-keys for decoded maps (no `{:keywords? true}` options in the generator)
-* no encoder => no response negotiation
-
-```clj
-{"application/json" 
- {:matches #"application/(.+\+)?json"
-  :decoder [formats/make-json-decoder]}}
+;; generator with default & client opts
+{:decoder [formats/make-json-decoder {:keywords? true}]
+ :decoder-opts {:keywords? false, :bigdecimals? true}}
 ```
 
 ## Performance
