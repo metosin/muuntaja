@@ -34,7 +34,12 @@
 
       (testing "invalid encoder /decoder returns nil"
         (is (nil? (m/encoder m "application/INVALID")))
-        (is (nil? (m/decoder m "application/INVALID"))))))
+        (is (nil? (m/decoder m "application/INVALID"))))
+
+      (testing "decode exception"
+        (is (thrown?
+              Exception
+              (json-decoder "{:invalid :syntax}"))))))
 
   (testing "adding new format"
     (let [format "application/upper"

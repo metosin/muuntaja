@@ -3,6 +3,13 @@
             [muuntaja.formats :as formats]
             [clojure.set :as set]))
 
+(defn- throw! [formats format message]
+  (throw
+    (ex-info
+      (str message ": " format)
+      {:formats (-> formats :formats keys)
+       :format format})))
+
 (defn- some-value [pred c]
   (let [f (fn [x] (if (pred x) x))]
     (some f c)))
@@ -10,20 +17,21 @@
 (defn- assoc-assoc [m k1 k2 v]
   (assoc m k1 (assoc (k1 m) k2 v)))
 
-(defn- on-decode-exception [^Exception e format request]
+(defn- on-request-decode-exception [^Exception e request-format request-charset request]
   (throw
     (ex-info
-      (str "Malformed " format " request.")
+      (str "Malformed " request-format " request.")
       {:type ::decode
-       :format format
+       :format request-format
+       :charset request-charset
        :request request}
       e)))
 
 (defn- set-content-type [response content-type]
   (assoc-assoc response :headers "Content-Type" content-type))
 
-(defn- content-type [formats format]
-  (str ((:produces formats) format) "; charset=" (:charset formats)))
+(defn- content-type [formats format charset]
+  (str ((:produces formats) format) "; charset=" charset))
 
 ;;
 ;; Protocols
@@ -43,7 +51,7 @@
 ;; Content negotiation
 ;;
 
-(defn- -negotiate-content-type [{:keys [consumes matchers charset]} s]
+(defn- -negotiate-content-type [{:keys [consumes matchers default-charset]} s]
   (if s
     (let [[content-type-raw charset-raw] (parse/parse-content-type s)]
       [(if content-type-raw
@@ -52,7 +60,7 @@
                (fn [[name r]]
                  (if (re-find r content-type-raw) name))
                matchers)))
-       (or charset-raw charset)])))
+       (or charset-raw default-charset)])))
 
 (defn- -negotiate-accept [{:keys [produces default-format]} s]
   (or
@@ -61,12 +69,12 @@
       (parse/parse-accept s))
     default-format))
 
-(defn- -negotiate-accept-charset [{:keys [charset charsets]} s]
+(defn- -negotiate-accept-charset [{:keys [default-charset charsets]} s]
   (or
     (some-value
       (or charsets identity)
       (parse/parse-accept-charset s))
-    charset))
+    default-charset))
 
 ;;
 ;; Records
@@ -89,6 +97,7 @@
                     matchers
 
                     adapters
+                    default-charset
                     default-format]
   RequestFormatter
 
@@ -120,20 +129,12 @@
 (defn encode [formats format data]
   (if-let [encode (encoder formats format)]
     (encode data)
-    (throw
-      (ex-info
-        (str "invalid encode format: " format)
-        {:formats (-> formats :formats keys)
-         :format format}))))
+    (throw! formats format "invalid encode format")))
 
 (defn decode [formats format data]
   (if-let [decode (decoder formats format)]
     (decode data)
-    (throw
-      (ex-info
-        (str "invalid decode format: " format)
-        {:formats (-> formats :formats keys)
-         :format format}))))
+    (throw! formats format "invalid decode format")))
 
 ;;
 ;; Creation
@@ -151,97 +152,138 @@
       [name matches])
     (into {})))
 
+(defn- on-exception [^Exception e format type]
+  (println format type)
+  (throw
+    (ex-info
+      (str "Malformed " format " (" type ")")
+      {:type type
+       :format format}
+      e)))
+
 (defn- create-adapters [formats]
-  (let [make (fn [spec spec-opts [p pf]]
+  (let [make (fn [format type spec spec-opts [p pf]]
                (let [g (if (vector? spec)
                          (let [[f opts] spec]
                            (f (merge opts spec-opts)))
-                         spec)]
+                         spec)
+                     g' (fn [x]
+                          (try
+                            (g x)
+                            (catch Exception e
+                              (on-exception e format type))))]
                  (if (and p pf)
                    (fn [x]
-                     (if (and (record? x) (satisfies? p x))
-                       (pf x)
-                       (g x)))
-                   g)))]
+                     (try
+                       (if (and (record? x) (satisfies? p x))
+                         (pf x)
+                         (g' x))
+                       (catch Exception e
+                         (on-exception e format type))))
+                   g')))]
     (->> (for [[name {:keys [decoder decoder-opts encoder encoder-opts encode-protocol]}] formats]
            [name (map->Adapter
                    (merge
-                     (if decoder {:decode (make decoder decoder-opts nil)})
-                     (if encoder {:encode (make encoder encoder-opts encode-protocol)})))])
+                     (if decoder {:decode (make name ::decode decoder decoder-opts nil)})
+                     (if encoder {:encode (make name ::encode encoder encoder-opts encode-protocol)})))])
          (into {}))))
 
-(defn create [{:keys [formats default-format] :as options}]
-  (let [adapters (create-adapters formats)
-        valid-format? (key-set formats identity)
-        m (map->Formats
-            (merge
-              (dissoc options :formats)
-              {:adapters adapters
-               :consumes (key-set formats :decoder)
-               :produces (key-set formats :encoder)
-               :matchers (matchers formats)}))]
-    (when-not (valid-format? default-format)
-      (throw
-        (ex-info
-          (str "Invalid default format " default-format)
-          {:formats valid-format?
-           :default-format default-format})))
-    (-> m
-        (assoc
-          :negotiate-accept-charset
-          (parse/fast-memoize
-            (parse/cache 1000)
-            (partial -negotiate-accept-charset m)))
-        (assoc
-          :negotiate-accept
-          (parse/fast-memoize
-            (parse/cache 1000)
-            (partial -negotiate-accept m)))
-        (assoc
-          :negotiate-content-type
-          (parse/fast-memoize
-            (parse/cache 1000)
-            (partial -negotiate-content-type m))))))
+(declare default-options)
+
+(defn create
+  ([]
+   (create default-options))
+  ([{:keys [formats default-format] :as options}]
+   (let [adapters (create-adapters formats)
+         valid-format? (key-set formats identity)
+         m (map->Formats
+             (merge
+               (dissoc options :formats)
+               {:adapters adapters
+                :consumes (key-set formats :decoder)
+                :produces (key-set formats :encoder)
+                :matchers (matchers formats)}))]
+     (when-not (valid-format? default-format)
+       (throw
+         (ex-info
+           (str "Invalid default format " default-format)
+           {:formats valid-format?
+            :default-format default-format})))
+     (-> m
+         (assoc
+           :negotiate-accept-charset
+           (parse/fast-memoize
+             (parse/cache 1000)
+             (partial -negotiate-accept-charset m)))
+         (assoc
+           :negotiate-accept
+           (parse/fast-memoize
+             (parse/cache 1000)
+             (partial -negotiate-accept m)))
+         (assoc
+           :negotiate-content-type
+           (parse/fast-memoize
+             (parse/cache 1000)
+             (partial -negotiate-content-type m)))))))
 
 ;;
-;; Ring
+;; Request
 ;;
+
+(defn- handle-request [request decoder request-format request-charset response-format response-charset]
+  (let [body (:body request)]
+    (as-> request $
+          (assoc $ ::accept response-format)
+          (assoc $ ::accept-charset response-charset)
+          (if (and body decoder)
+            (try
+              (-> $
+                  (assoc ::format request-format)
+                  (assoc :body nil)
+                  (assoc :body-params (decoder body)))
+              (catch Exception e
+                (on-request-decode-exception e request-format request-charset $)))
+            $))))
 
 ;; TODO: use the negotiated request charset
 (defn format-request [formats request]
   (let [[ctf ctc] (negotiate-request formats request)
         [af ac] (negotiate-response formats request)
         decoder (if (decode-request? formats request)
-                  (decoder formats ctf))
-        body (:body request)]
-    (as-> request $
-          (assoc $ ::accept af)
-          (if (and body decoder)
-            (try
-              (-> $
-                  (assoc ::format ctf)
-                  (assoc :body nil)
-                  (assoc :body-params (decoder body)))
-              (catch Exception e
-                (on-decode-exception e format $)))
-            $))))
+                  (decoder formats ctf))]
+    (handle-request request decoder ctf ctc af ac)))
+
+;;
+;; Response
+;;
+
+(defn- handle-response [response formats format encoder charset]
+  (as-> response $
+        (assoc $ ::format format)
+        (dissoc $ ::content-type)
+        (update $ :body encoder)
+        (if-not (get (:headers $) "Content-Type")
+          (set-content-type $ (content-type formats format charset))
+          $)))
+
+(defn- resolve-response-format [response formats request]
+  (or (if-let [ct (::content-type response)]
+        ((:produces formats) ct))
+      (::accept request)
+      (:default-format formats)))
+
+(defn- resolve-response-charset [response formats request]
+  (or (::accept-charset request)
+      (:default-format formats)))
 
 ;; TODO: use the negotiated response charset
 (defn format-response [formats request response]
   (or
     (if (encode-response? formats request response)
-      (if-let [format (or (if-let [ct (::content-type response)]
-                            ((:produces formats) ct))
-                          (::accept request)
-                          (:default-format formats))]
-        (if-let [encoder (encoder formats format)]
-          (as-> response $
-                (assoc $ ::format format)
-                (dissoc $ ::content-type)
-                (update $ :body encoder)
-                (if-not (get (:headers $) "Content-Type")
-                  (set-content-type $ (content-type formats format))
-                  $)))))
+      (if-let [format (resolve-response-format response formats request)]
+        (if-let [charset (resolve-response-charset response formats request)]
+          (if-let [encoder (encoder formats format)]
+            (handle-response response formats format encoder charset)))))
     response))
 
 ;;
@@ -274,8 +316,11 @@
    :extract-accept-fn extract-accept-ring
    :decode? (constantly true)
    :encode? encode-collections-with-override
-   :charset "utf-8"
+
+   :default-charset "utf-8"
    ;charsets #{"utf-8", "utf-16", "iso-8859-1"}
+
+   :default-format "application/json"
    :formats {"application/json" {:matches #"application/(.+\+)?json"
                                  :decoder [formats/make-json-decoder {:keywords? true}]
                                  :encoder [formats/make-json-encoder]
@@ -299,8 +344,7 @@
              "application/transit+msgpack" {:matches #"^application/(vnd.+)?(x-)?transit\+msgpack"
                                             :decoder [(partial formats/make-transit-decoder :msgpack)]
                                             :encoder [(partial formats/make-transit-encoder :msgpack)]
-                                            :encode-protocol [formats/EncodeTransitMessagePack formats/encode-transit-msgpack]}}
-   :default-format "application/json"})
+                                            :encode-protocol [formats/EncodeTransitMessagePack formats/encode-transit-msgpack]}}})
 
 ;;
 ;; Working with options

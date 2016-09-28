@@ -3,21 +3,10 @@
 
 (set! *warn-on-reflection* true)
 
-(defn request-stream
-  ([request]
-   (request-stream request 3000000))
-  ([request count]
-   (let [i (atom 0)
-         data (mapv
-                (fn [_]
-                  (->
-                    request
-                    (update :body #(ByteArrayInputStream. (.getBytes ^String %)))))
-                (range count))]
-     (fn []
-       (let [item (nth data @i)]
-         (swap! i inc)
-         item)))))
+(defn request-stream [request]
+  (let [b (.getBytes ^String (:body request))]
+    (fn []
+      (assoc request :body (ByteArrayInputStream. b)))))
 
 (defn title [s]
   (println
