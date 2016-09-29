@@ -2,14 +2,14 @@
 
 # muuntaja [![Continuous Integration status](https://secure.travis-ci.org/metosin/muuntaja.png)](http://travis-ci.org/metosin/muuntaja) [![Dependencies Status](http://jarkeeper.com/metosin/muuntaja/status.svg)](http://jarkeeper.com/metosin/muuntaja)
 
-Clojure library for fast http api format negotiation - symmetric for both servers & clients.
+Clojure library for fast http format negotiation - symmetric for both servers & clients.
 Standalone library, but ships with adapters for ring (async) middleware & Pedestal-style interceptors.
 Explicit & extendable, supporting out-of-the-box [JSON](http://www.json.org/), [EDN](https://github.com/edn-format/edn),
 [MessagePack](http://msgpack.org/), [YAML](http://yaml.org/) and [Transit](https://github.com/cognitect/transit-format).
 
 Based on [ring-middleware-format](https://github.com/ngrunwald/ring-middleware-format), but a complete rewrite.
 
-Rationale:
+## Rationale
 
 - explicit configuration, avoiding shared mutable state (e.g. multimethods)
 - fast & pragmatic by default
@@ -25,7 +25,9 @@ done using `Content-type`, `Accept` and `Accept-Charset` headers.
 
 [![Clojars Project](http://clojars.org/metosin/muuntaja/latest-version.svg)](http://clojars.org/metosin/muuntaja)
 
-## Quickstart (Ring)
+## Quickstart 
+
+### Ring
 
 ```clj
 (require '[muuntaja.middleware :as middleware])
@@ -47,39 +49,7 @@ done using `Content-type`, `Accept` and `Accept-Charset` headers.
 ;  :headers {"Content-Type" "application/edn; charset=utf-8"}}
 ```
 
-## Performance
-
-* by default, over 4x faster than `[ring-middleware-format "0.7.0"]` (JSON request & response).
-* by default, faster than `[ring/ring-json "0.4.0"]` (JSON requests & responses).
-
-There is also a new low-level JSON encoder (in `muuntaja.json`) on top of 
-[Jackson Databind](https://github.com/FasterXML/jackson-databind) and protocols supporting
-hand-crafted responses => up to 5x faster than `[cheshire "5.6.3"]`.
-
-All perf test are found in this repo.
-
-## API Documentation
-
-Full [API documentation](http://metosin.github.com/muuntaja) is available.
-
-## Server Spec
-
-### Request
-
-* `:muuntaja.core/format`, format name that was used to decode the request body, e.g. `application/json`. If
-   the key is already present in the request map, muuntaja middleware/interceptor will skip the decoding process.
-* `:muuntaja.core/accept`, client-negotiated format name for the response, e.g. `application/json`. Will
-   be used later in the response pipeline.
-
-### Response
-
-* `:muuntaja.core/encode?`, if set to true, the response body will be encoded regardles of the type (primitives!)
-* `:muuntaja.core/format`, format name that was used to encode the response body, e.g. `application/json`. If
-   the key is already present in the response map, muuntaja middleware/interceptor will skip the encoding process.
-* `:muuntaja.core/content-type`, handlers can use this to override the negotiated content-type for response encoding,
-   e.g. setting it to `application/edn` will cause the response to be formatted in JSON.
-   
-## Standalone
+### Standalone
 
 Create a muuntaja and use it to encode & decode JSON:
 
@@ -120,6 +90,38 @@ Function to encode Transit-json:
 (slurp (encode-transit-json {:kikka 42}))
 ; "[\"^ \",\"~:kikka\",42]"
 ```
+
+## Performance
+
+* by default, over 4x faster than `[ring-middleware-format "0.7.0"]` (JSON request & response).
+* by default, faster than `[ring/ring-json "0.4.0"]` (JSON requests & responses).
+
+There is also a new low-level JSON encoder (in `muuntaja.json`) on top of 
+[Jackson Databind](https://github.com/FasterXML/jackson-databind) and protocols supporting
+hand-crafted responses => up to 5x faster than `[cheshire "5.6.3"]`.
+
+All perf test are found in this repo.
+
+## API Documentation
+
+Full [API documentation](http://metosin.github.com/muuntaja) is available.
+
+## Server Spec
+
+### Request
+
+* `:muuntaja.core/format`, format name that was used to decode the request body, e.g. `application/json`. If
+   the key is already present in the request map, muuntaja middleware/interceptor will skip the decoding process.
+* `:muuntaja.core/accept`, client-negotiated format name for the response, e.g. `application/json`. Will
+   be used later in the response pipeline.
+
+### Response
+
+* `:muuntaja.core/encode?`, if set to true, the response body will be encoded regardles of the type (primitives!)
+* `:muuntaja.core/format`, format name that was used to encode the response body, e.g. `application/json`. If
+   the key is already present in the response map, muuntaja middleware/interceptor will skip the encoding process.
+* `:muuntaja.core/content-type`, handlers can use this to override the negotiated content-type for response encoding,
+   e.g. setting it to `application/edn` will cause the response to be formatted in JSON.
 
 ### Default options
 
