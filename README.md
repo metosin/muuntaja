@@ -7,44 +7,79 @@ Standalone library, but ships with adapters for ring (async) middleware & Pedest
 Explicit & extendable, supporting out-of-the-box [JSON](http://www.json.org/), [EDN](https://github.com/edn-format/edn),
 [MessagePack](http://msgpack.org/), [YAML](http://yaml.org/) and [Transit](https://github.com/cognitect/transit-format).
 
-Design decisions:
+Based on [ring-middleware-format](https://github.com/ngrunwald/ring-middleware-format), but a complete rewrite.
 
-- explicit configuration, no shared mutable state (e.g. multimethods)
-- fast & pragmatic by default, for app-to-app communication
+Rationale:
+
+- explicit configuration, avoiding shared mutable state (e.g. multimethods)
+- fast & pragmatic by default
 - extendable & pluggable: new formats, behavior
 - typed exceptions - caught elsewhere
-- standalone lib + adapters for ring, async-ring & pedestal
-- targeting to replace [ring-middleware-format](https://github.com/ngrunwald/ring-middleware-format)
+- supports runtime docs (like swagger) & inspection (negotion results)
+- supports runtime configuration (negotiation overrides)
 
-Content-negotiation is done for both request and response and covers format and charset. Negotiation is
+Content-negotiation is done for both request and response and covers format and charset. Default negotiation is
 done using `Content-type`, `Accept` and `Accept-Charset` headers.
 
 ## Latest version
 
 [![Clojars Project](http://clojars.org/metosin/muuntaja/latest-version.svg)](http://clojars.org/metosin/muuntaja)
 
+## Quickstart (Ring)
+
+```clj
+(require '[muuntaja.middleware :as middleware])
+
+(defn echo [request]
+  {:status 200
+   :body (:body-params request)})
+
+; with defaults
+(def app (middleware/wrap-format echo))
+
+(app {:headers 
+      {"content-type" "application/json"
+       "accept" "application/edn"}
+      :body "{\"kikka\":42}"})
+; {:status 200
+;  :body "{:kikka 42}"
+;  :muuntaja.core/format "application/edn"
+;  :headers {"Content-Type" "application/edn; charset=utf-8"}}
+```
+
+## Performance
+
+* by default, over 4x faster than `[ring-middleware-format "0.7.0"]` (JSON request & response).
+* by default, faster than `[ring/ring-json "0.4.0"]` (JSON requests & responses).
+
+There is also a new low-level JSON encoder (in `muuntaja.json`) on top of 
+[Jackson Databind](https://github.com/FasterXML/jackson-databind) and protocols supporting
+hand-crafted responses => up to 5x faster than `[cheshire "5.6.3"]`.
+
+All perf test are found in this repo.
+
+## API Documentation
+
+Full [API documentation](http://metosin.github.com/muuntaja) is available.
+
 ## Server Spec
 
 ### Request
 
-* `:muuntaja.core/format`, format name that was used to decode the request body, e.g. `application/json`.
-   Setting value to anything (e.g. `nil`) before muuntaja middleware/interceptor will skip the decoding process.
+* `:muuntaja.core/format`, format name that was used to decode the request body, e.g. `application/json`. If
+   the key is already present in the request map, muuntaja middleware/interceptor will skip the decoding process.
 * `:muuntaja.core/accept`, client-negotiated format name for the response, e.g. `application/json`. Will
    be used later in the response pipeline.
 
 ### Response
 
-* `:muuntaja.core/encode?`, if set to true, the response body will be encoded regardles of the type
-* `:muuntaja.core/format`, format name that was used to encode the response body, e.g. `application/json`.
-   Setting value to anything (e.g. `nil`) before muuntaja middleware/interceptor will skip the encoding process.
-* `:muuntaja.core/content-type`, can be used to override the negotiated content-type for response encoding,
-   e.g. setting it to `application/edn`. **NOTE**: given format is not negotiated, always set on.
-
-## Usage
-
-More detailed examples in the [wiki](https://github.com/metosin/muuntaja/wiki).
-
-### Standalone
+* `:muuntaja.core/encode?`, if set to true, the response body will be encoded regardles of the type (primitives!)
+* `:muuntaja.core/format`, format name that was used to encode the response body, e.g. `application/json`. If
+   the key is already present in the response map, muuntaja middleware/interceptor will skip the encoding process.
+* `:muuntaja.core/content-type`, handlers can use this to override the negotiated content-type for response encoding,
+   e.g. setting it to `application/edn` will cause the response to be formatted in JSON.
+   
+## Standalone
 
 Create a muuntaja and use it to encode & decode JSON:
 
@@ -86,28 +121,6 @@ Function to encode Transit-json:
 ; "[\"^ \",\"~:kikka\",42]"
 ```
 
-### Ring
-
-Middleware with defaults:
-
-```clj
-(require '[muuntaja.middleware :as middleware])
-
-(defn echo [request]
-  {:status 200
-   :body (:body-params request)})
-
-(def app (middleware/wrap-format echo))
-
-(app {:headers {"content-type" "application/json"
-                "accept" "application/edn"}
-      :body "{\"kikka\":42}"})
-; {:status 200
-;  :body "{:kikka 42}"
-;  :muuntaja.core/format "application/edn"
-;  :headers {"Content-Type" "application/edn; charset=utf-8"}}
-```
-
 ### Default options
 
 ```clj
@@ -116,8 +129,11 @@ Middleware with defaults:
  :extract-accept-fn extract-accept-ring
  :decode? (constantly true)
  :encode? encode-collections-with-override
- :charset "utf-8"
+
+ :default-charset "utf-8"
  ;charsets #{"utf-8", "utf-16", "iso-8859-1"}
+
+ :default-format "application/json"
  :formats {"application/json" {:matches #"application/(.+\+)?json"
                                :decoder [formats/make-json-decoder {:keywords? true}]
                                :encoder [formats/make-json-encoder]
@@ -141,8 +157,7 @@ Middleware with defaults:
            "application/transit+msgpack" {:matches #"^application/(vnd.+)?(x-)?transit\+msgpack"
                                           :decoder [(partial formats/make-transit-decoder :msgpack)]
                                           :encoder [(partial formats/make-transit-encoder :msgpack)]
-                                          :encode-protocol [formats/EncodeTransitMessagePack formats/encode-transit-msgpack]}}
- :default-format "application/json"}
+                                          :encode-protocol [formats/EncodeTransitMessagePack formats/encode-transit-msgpack]}}}
 ```
 
 ## Formats
@@ -150,8 +165,8 @@ Middleware with defaults:
 Formats are presented as Clojure maps, registered into options under `:formats` with `content-type` as a key.
 Format maps can the following optional keys:
 
-* `:decoder` a function (or a function generator) to parse InputStreams into Clojure data structure. If the key is missing, no decoding will be done.
-* `:encoder` a function (or a function generator) to encode Clojure data structures into a String or an InputStream. If the key is missing, no encoding will be done.
+* `:decoder` a function (or a function generator) to parse InputStreams into Clojure data structure. If the key is missing or value is `nil`, no decoding will be done.
+* `:encoder` a function (or a function generator) to encode Clojure data structures into a String or an InputStream. If the key is missing or value is `nil`, no encoding will be done.
 * `:decoder-opts` extra options maps for the decoder function generator.
 * `:encoder-opts` extra options maps for the encoder function generator.
 * `:matches` a regexp for additional matching of the content-type in request negotiation. Added for legacy support
@@ -161,42 +176,29 @@ Format maps can the following optional keys:
 ### Function generators
 
 Instead of providing direct encoder/decoder functions, one can provide [Duct](https://github.com/duct-framework/duct)-style function
-generator as a vector tuple of 2 elements: `options => encoder/decoder` & default options map. Muuntaja ships generators for
-most common formats, both for encoding & decoding. To make overriding the default options easier, there are the `:decode-opts` & `:encode-opts`,
-which are merged on top of the default options.
+generator as a vector of the following elements:
+1) a function of `options => encoder/decoder` (mandatory)
+2) default options (optional)
 
-Example of format map for JSON decoding - using both functions & function generators:
+To make overriding the default options easier in the call site, separate `:decode-opts` & `:encode-opts`
+can be used. They are merged on top of the default options.
+
+#### Decoder examples
 
 ```clj
-
-;; using cheshire
-{:decoder (fn [is] (cheshire.core/parse-stream (java.io.InputStreamReader. is)))}
+;; a function
+{:decoder #(cheshire.core/parse-stream (java.io.InputStreamReader. %))}
 
 ;; generator without opts
-{:decoder [formats/make-json-decoder]}
+{:decoder [muuntaja.formats/make-json-decoder]}
 
 ;; generator with default opts
-{:decoder [formats/make-json-decoder {:keywords? true}]}
+{:decoder [muuntaja.formats/make-json-decoder {:keywords? true}]}
 
 ;; generator with default & client opts
-{:decoder [formats/make-json-decoder {:keywords? true}]
+{:decoder [muuntaja.formats/make-json-decoder {:keywords? true}]
  :decoder-opts {:keywords? false, :bigdecimals? true}}
 ```
-
-## Performance
-
-* by default, ~5x faster than `[ring-middleware-format "0.7.0"]` (JSON request & response).
-* by default, faster than `[ring/ring-json "0.4.0"]` (JSON requests & responses).
-
-There is also a new low-level JSON encoder (in `muuntaja.json`) on top of 
-[Jackson Databind](https://github.com/FasterXML/jackson-databind) and protocols supporting
-hand-crafted responses => up to 5x faster than `[cheshire "5.6.3"]`.
-
-All perf test are found in this repo.
-
-## API Documentation
-
-Full [API documentation](http://metosin.github.com/muuntaja) is available.
 
 ## Differences with current solutions
 
