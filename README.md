@@ -114,6 +114,8 @@ Full [API documentation](http://metosin.github.com/muuntaja) is available.
    the key is already present in the request map, muuntaja middleware/interceptor will skip the decoding process.
 * `:muuntaja.core/accept`, client-negotiated format name for the response, e.g. `application/json`. Will
    be used later in the response pipeline.
+* `:muuntaja.core/accept-charset`, client-negotiated charset for the response, e.g. `utf-8`. Will
+   be used later in the response pipeline.
 
 ### Response
 
