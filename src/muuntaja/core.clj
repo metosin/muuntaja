@@ -230,20 +230,22 @@
 ;; Request
 ;;
 
+(defn- decode-request [request decoder request-format request-charset]
+  (try
+    (-> request
+        (assoc ::format request-format)
+        (assoc :body-params (-> request :body decoder))
+        (assoc :body nil))
+    (catch Exception e
+      (on-request-decode-exception e request-format request-charset request))))
+
 (defn- handle-request [request decoder request-format request-charset response-format response-charset]
-  (let [body (:body request)]
-    (as-> request $
-          (assoc $ ::accept response-format)
-          (assoc $ ::accept-charset response-charset)
-          (if (and body decoder)
-            (try
-              (-> $
-                  (assoc ::format request-format)
-                  (assoc :body nil)
-                  (assoc :body-params (decoder body)))
-              (catch Exception e
-                (on-request-decode-exception e request-format request-charset $)))
-            $))))
+  (as-> request $
+        (assoc $ ::accept response-format)
+        (assoc $ ::accept-charset response-charset)
+        (if decoder
+          (decode-request $ decoder request-format request-charset)
+          $)))
 
 ;; TODO: use the negotiated request charset
 (defn format-request [formats request]
