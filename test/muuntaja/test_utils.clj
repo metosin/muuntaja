@@ -8,6 +8,12 @@
     (fn []
       (assoc request :body (ByteArrayInputStream. b)))))
 
+(defn context-stream [request]
+  (let [b (.getBytes ^String (:body request))
+        ctx {:request request}]
+    (fn []
+      (update ctx :request assoc :body (ByteArrayInputStream. b)))))
+
 (defn title [s]
   (println
     (str "\n\u001B[35m"

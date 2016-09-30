@@ -93,8 +93,8 @@ Function to encode Transit-json:
 
 ## Performance
 
-* by default, over 4x faster than `[ring-middleware-format "0.7.0"]` (JSON request & response).
-* by default, faster than `[ring/ring-json "0.4.0"]` (JSON requests & responses).
+* by default, over 5x faster than `[ring-middleware-format "0.7.0"]` (JSON request & response).
+* by default, over 40% faster than `[ring/ring-json "0.4.0"]` (JSON requests & responses).
 
 There is also a new low-level JSON encoder (in `muuntaja.json`) on top of 
 [Jackson Databind](https://github.com/FasterXML/jackson-databind) and protocols supporting
