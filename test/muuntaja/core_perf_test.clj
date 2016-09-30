@@ -148,7 +148,6 @@
     ; 187ns (records)
     ; 278ns (+charset)
     (title "Negotiate Request: JSON")
-    (println (m/format-request formats +json-request+))
     (cc/quick-bench
       (m/format-request formats +json-request+))
 
@@ -156,7 +155,6 @@
     ; 226ns (records)
     ; 278ns (+charset)
     (title "Negotiate Request: Transit")
-    (println (m/format-request formats +transit-json-request+))
     (cc/quick-bench
       (m/format-request formats +transit-json-request+))))
 
@@ -177,12 +175,14 @@
 
     ; 474ns
     ; 626ns (+charset)
+    ; 540ns (content-type)
     (title "request-format - JSON identity")
     (cc/quick-bench
       (m/format-request formats +json-request+))
 
     ; 670ns
     ; 873ns (+charset)
+    ; 706ns (content-type)
     (title "requset-format & response-format - JSON identity")
     (let [wrap (fn [request]
                  (let [req (m/format-request formats request)]
@@ -268,6 +268,7 @@
 
   ; 2.3µs
   ; 2.6µs (negotions)
+  ; 2.6µs (content-type)
   (let [app (middleware/wrap-format +handler+ (-> m/default-options m/no-encoding))
         request! (request-stream +json-request+)]
 
@@ -277,6 +278,7 @@
 
   ; 3.6µs
   ; 4.2µs (negotions)
+  ; 4.1µs (content-type)
   (let [app (middleware/wrap-format +handler+ (-> m/default-options m/no-encoding))
         request! (request-stream +transit-json-request+)]
 
@@ -286,6 +288,7 @@
 
   ; 3.6µs
   ; 4.4µs (negotions)
+  ; 4.2µs (content-type)
   (let [app (middleware/wrap-format +handler+ m/default-options)
         request! (request-stream +json-request+)]
 
@@ -295,6 +298,7 @@
 
   ; 7.1µs
   ; 8.8µs (negotions)
+  ; 8.2µs (content-type)
   (let [app (middleware/wrap-format +handler+ m/default-options)
         request! (request-stream +transit-json-request+)]
 
@@ -305,6 +309,7 @@
   ; 3.8µs
   ; 2.6µs Protocol (-30%)
   ; 3.3µs (negotions)
+  ; 3.2µs (content-type)
   (let [app (middleware/wrap-format +handler2+ m/default-options)
         request! (request-stream +json-request+)]
 
@@ -315,7 +320,8 @@
 (defn interceptor-e2e []
 
   ; 3.8µs
-  ; 4.7µs (negotiations) ???
+  ; 4.7µs (negotiations)
+  ; 4.6µs (content-type)
   (let [{:keys [enter leave]} (interceptor/format-interceptor m/default-options)
         app (fn [ctx] (-> ctx enter (handle +handler+) leave :response))
         request! (context-stream +json-request+)]
@@ -326,6 +332,7 @@
 
   ; 7.5µs
   ; 8.7µs (negotiations) ???
+  ; 8.5µs (content-type)
   (let [{:keys [enter leave]} (interceptor/format-interceptor m/default-options)
         app (fn [ctx] (-> ctx enter (handle +handler+) leave :response))
         request! (context-stream +transit-json-request+)]
@@ -336,7 +343,7 @@
 
 (defn request-streams []
 
-  ;; 17ns
+  ;; 28ns
   (let [r (request-stream +json-request+)]
     (title "request-stream (baseline)")
     (cc/quick-bench

@@ -30,8 +30,8 @@
 (defn- set-content-type [response content-type]
   (assoc-assoc response :headers "Content-Type" content-type))
 
-(defn- content-type [formats format charset]
-  (str ((:produces formats) format) "; charset=" charset))
+(defn- content-type [format charset]
+  (str format "; charset=" charset))
 
 ;;
 ;; Protocols
@@ -259,13 +259,13 @@
 ;; Response
 ;;
 
-(defn- handle-response [response formats format encoder charset]
+(defn- handle-response [response format encoder charset]
   (as-> response $
         (assoc $ ::format format)
         (dissoc $ ::content-type)
         (update $ :body encoder)
         (if-not (get (:headers $) "Content-Type")
-          (set-content-type $ (content-type formats format charset))
+          (set-content-type $ (content-type format charset))
           $)))
 
 (defn- resolve-response-format [response formats request]
@@ -285,7 +285,7 @@
       (if-let [format (resolve-response-format response formats request)]
         (if-let [charset (resolve-response-charset response formats request)]
           (if-let [encoder (encoder formats format)]
-            (handle-response response formats format encoder charset)))))
+            (handle-response response format encoder charset)))))
     response))
 
 ;;
