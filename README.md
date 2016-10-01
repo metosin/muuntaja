@@ -25,6 +25,10 @@ done using `Content-type`, `Accept` and `Accept-Charset` headers.
 
 [![Clojars Project](http://clojars.org/metosin/muuntaja/latest-version.svg)](http://clojars.org/metosin/muuntaja)
 
+## TODO
+
+* Currently, supports only single charset, defaulting to UTF-8.
+
 ## Quickstart 
 
 ### Ring
@@ -135,7 +139,7 @@ Full [API documentation](http://metosin.github.com/muuntaja) is available.
  :encode? encode-collections-with-override
 
  :default-charset "utf-8"
- ;charsets #{"utf-8", "utf-16", "iso-8859-1"}
+ :charsets #{"utf-8"}
 
  :default-format "application/json"
  :formats {"application/json" {:matches #"application/(.+\+)?json"
@@ -231,6 +235,7 @@ verify behavior and demonstrate differences.
 * Multiple `wrap-format` middlewares can be used in the same mw stack, rest are no-op
 * By default, encodes only collections (or responses with `:muuntaja.core/encode?` set)
 * Reads the `content-type` from request headers (as defined in the RING Spec)
+* Currently, supports only single charset, defaulting to UTF-8.
 * Does not set the `Content-Length` header (done by the adapters)
 * `:yaml-in-html` / `text/html` is not supported
 * `:json` `:edn` & `:yaml` responses are not wrapped into InputStreams, should they?

@@ -318,8 +318,9 @@
    :decode? (constantly true)
    :encode? encode-collections-with-override
 
+   ;; TODO: support only fixed charset for now
    :default-charset "utf-8"
-   ;charsets #{"utf-8", "utf-16", "iso-8859-1"}
+   :charsets #{"utf-8"}
 
    :default-format "application/json"
    :formats {"application/json" {:matches #"application/(.+\+)?json"
