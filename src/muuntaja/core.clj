@@ -166,21 +166,20 @@
                (let [g (if (vector? spec)
                          (let [[f opts] spec]
                            (f (merge opts spec-opts)))
-                         spec)
-                     g' (fn [x]
-                          (try
-                            (g x)
-                            (catch Exception e
-                              (on-exception e format type))))]
+                         spec)]
                  (if (and p pf)
                    (fn [x]
                      (try
                        (if (and (record? x) (satisfies? p x))
                          (pf x)
-                         (g' x))
+                         (g x))
                        (catch Exception e
                          (on-exception e format type))))
-                   g')))]
+                   (fn [x]
+                     (try
+                       (g x)
+                       (catch Exception e
+                         (on-exception e format type)))))))]
     (->> (for [[name {:keys [decoder decoder-opts encoder encoder-opts encode-protocol]}] formats]
            [name (map->Adapter
                    (merge
