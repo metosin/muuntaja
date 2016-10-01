@@ -24,34 +24,35 @@
 
 (defn make-json-decoder [{:keys [keywords? bigdecimals?]}]
   (if-not bigdecimals?
-    (fn [x]
+    (fn [x _]
       (if (string? x)
         (json/parse-string x keywords?)
         (json/parse-stream (InputStreamReader. x) keywords?)))
-    (fn [x]
+    (fn [x _]
       (binding [parse/*use-bigdecimals?* bigdecimals?]
         (if (string? x)
           (json/parse-string x keywords?)
           (json/parse-stream (InputStreamReader. x) keywords?))))))
 
 (defn make-json-encoder [options]
-  (fn [data] (json/generate-string data options)))
+  (fn [data _]
+    (json/generate-string data options)))
 
 (defprotocol EncodeJson
-  (encode-json [this]))
+  (encode-json [this charset]))
 
 ;; msgpack
 
 (defn make-msgpack-decoder [{:keys [keywords?] :as options}]
   (let [transform (if keywords? walk/keywordize-keys identity)]
-    (fn [in]
+    (fn [in _]
       (with-open [i (io/input-stream (slurp-to-bytes in))]
         (let [data-input (DataInputStream. i)]
           (transform (msgpack/unpack-stream data-input options)))))))
 
 ;; TODO: keyword vs strings? better walk
 (defn make-msgpack-encoder [options]
-  (fn [data]
+  (fn [data _]
     (with-open [out-stream (ByteArrayOutputStream.)]
       (let [data-out (DataOutputStream. out-stream)]
         (msgpack/pack-stream (walk/stringify-keys data) data-out) options)
@@ -59,49 +60,50 @@
         (.toByteArray out-stream)))))
 
 (defprotocol EncodeMsgpack
-  (encode-msgpack [this]))
+  (encode-msgpack [this charset]))
 
 ;; YAML
 
 (defn make-yaml-decoder [options]
   (let [options-args (mapcat identity options)]
-    (fn [s] (apply yaml/parse-string s options-args))))
+    (fn [s _]
+      (apply yaml/parse-string s options-args))))
 
 (defn make-yaml-encoder [options]
   (let [options-args (mapcat identity options)]
-    (fn [data]
+    (fn [data _]
       (apply yaml/generate-string data options-args))))
 
 (defprotocol EncodeYaml
-  (encode-yaml [this]))
+  (encode-yaml [this charset]))
 
 ;; EDN
 
 (defn make-edn-decoder [options]
   (let [options (merge {:readers *data-readers*} options)]
-    (fn [x]
+    (fn [x charset]
       (if (string? x)
         (edn/read-string options x)
-        (edn/read options (PushbackReader. (InputStreamReader. x)))))))
+        (edn/read options (PushbackReader. (InputStreamReader. ^InputStream x ^String charset)))))))
 
 (defn make-edn-encoder [_]
-  (fn [data]
+  (fn [data _]
     (pr-str data)))
 
 (defprotocol EncodeEdn
-  (encode-edn [this]))
+  (encode-edn [this charset]))
 
 ;; TRANSIT
 
 (defn make-transit-decoder
   [type options]
-  (fn [in]
+  (fn [in _]
     (let [reader (transit/reader in type options)]
       (transit/read reader))))
 
 (defn make-transit-encoder
   [type {:keys [verbose] :as options}]
-  (fn [data]
+  (fn [data _]
     (let [out (ByteArrayOutputStream.)
           full-type (if (and (= type :json) verbose)
                       :json-verbose
@@ -112,7 +114,7 @@
         (.toByteArray out)))))
 
 (defprotocol EncodeTransitJson
-  (encode-transit-json [this]))
+  (encode-transit-json [this charset]))
 
 (defprotocol EncodeTransitMessagePack
-  (encode-transit-msgpack [this]))
+  (encode-transit-msgpack [this charset]))

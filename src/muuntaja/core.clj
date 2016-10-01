@@ -126,15 +126,21 @@
   (decoder [_ format]
     (-> format adapters :decode)))
 
-(defn encode [formats format data]
-  (if-let [encode (encoder formats format)]
-    (encode data)
-    (throw! formats format "invalid encode format")))
+(defn encode
+  ([formats format data]
+   (encode formats format data (:default-charset formats)))
+  ([formats format data charset]
+   (if-let [encode (encoder formats format)]
+     (encode data charset)
+     (throw! formats format "invalid encode format"))))
 
-(defn decode [formats format data]
-  (if-let [decode (decoder formats format)]
-    (decode data)
-    (throw! formats format "invalid decode format")))
+(defn decode
+  ([formats format data]
+   (decode formats format data (:default-charset formats)))
+  ([formats format data charset]
+   (if-let [decode (decoder formats format)]
+     (decode data charset)
+     (throw! formats format "invalid decode format"))))
 
 ;;
 ;; Creation
@@ -153,7 +159,6 @@
     (into {})))
 
 (defn- on-exception [^Exception e format type]
-  (println format type)
   (throw
     (ex-info
       (str "Malformed " format " (" type ")")
@@ -162,24 +167,31 @@
       e)))
 
 (defn- create-adapters [formats]
-  (let [make (fn [format type spec spec-opts [p pf]]
+  (let [default-charset (:default-charset formats)
+        make (fn [format type spec spec-opts [p pf]]
                (let [g (if (vector? spec)
                          (let [[f opts] spec]
                            (f (merge opts spec-opts)))
                          spec)]
                  (if (and p pf)
-                   (fn [x]
-                     (try
-                       (if (and (record? x) (satisfies? p x))
-                         (pf x)
-                         (g x))
-                       (catch Exception e
-                         (on-exception e format type))))
-                   (fn [x]
-                     (try
-                       (g x)
-                       (catch Exception e
-                         (on-exception e format type)))))))]
+                   (fn f
+                     ([x]
+                      (f x default-charset))
+                     ([x charset]
+                      (try
+                        (if (and (record? x) (satisfies? p x))
+                          (pf x charset)
+                          (g x charset))
+                        (catch Exception e
+                          (on-exception e format type)))))
+                   (fn f
+                     ([x]
+                      (f x default-charset))
+                     ([x charset]
+                      (try
+                        (g x charset)
+                        (catch Exception e
+                          (on-exception e format type))))))))]
     (->> (for [[name {:keys [decoder decoder-opts encoder encoder-opts encode-protocol]}] formats]
            [name (map->Adapter
                    (merge
@@ -409,3 +421,17 @@
 
 (defn set-response-content-type [response content-type]
   (assoc response ::content-type content-type))
+
+;;
+;; Spike for using the charset
+;;
+
+(def m (create))
+
+(import '(java.io ByteArrayInputStream))
+
+(defn stream-iso [s]
+  (ByteArrayInputStream. (.getBytes s "ISO-8859-1")))
+
+(def s (encode m "application/edn" {:fée "böz"} "utf-8"))
+(println (decode m "application/edn" (stream-iso s) "ISO-8859-1"))
