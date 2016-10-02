@@ -242,9 +242,12 @@ verify behavior and demonstrate differences.
 
 ## License
 
-### Picture
+### [Picture](https://commons.wikimedia.org/wiki/File:Oudin_coil_Turpain.png)
 
-By Unknown. The drawing is signed "E. Ducretet", indicating that the apparatus was made by Eugene Ducretet, a prominent Paris scientific instrument manufacturer and radio researcher. The drawing was undoubtedly originally from the Ducretet instrument catalog. [Public domain], via Wikimedia Commons. Original: https://commons.wikimedia.org/wiki/File:Oudin_coil_Turpain.png
+By Unknown. The drawing is signed "E. Ducretet", indicating that the apparatus was made
+by Eugene Ducretet, a prominent Paris scientific instrument manufacturer and radio researcher.
+The drawing was undoubtedly originally from the Ducretet instrument catalog. [Public domain],
+via Wikimedia Commons.
 
 ### Original Code (ring-middleware-format)
 
