@@ -1,6 +1,6 @@
-# Muuntaja
+# Muuntaja [![Continuous Integration status](https://secure.travis-ci.org/metosin/muuntaja.png)](http://travis-ci.org/metosin/muuntaja) [![Dependencies Status](http://jarkeeper.com/metosin/muuntaja/status.svg)](http://jarkeeper.com/metosin/muuntaja)
 
-# muuntaja [![Continuous Integration status](https://secure.travis-ci.org/metosin/muuntaja.png)](http://travis-ci.org/metosin/muuntaja) [![Dependencies Status](http://jarkeeper.com/metosin/muuntaja/status.svg)](http://jarkeeper.com/metosin/muuntaja)
+<img src="https://raw.githubusercontent.com/wiki/metosin/muuntaja/muuntaja-small.png" align="right"/>
 
 Clojure library for fast http format negotiation - symmetric for both servers & clients.
 Standalone library, but ships with adapters for ring (async) middleware & Pedestal-style interceptors.
@@ -241,6 +241,10 @@ verify behavior and demonstrate differences.
 * `:json` `:edn` & `:yaml` responses are not wrapped into InputStreams, should they?
 
 ## License
+
+### Picture
+
+By Unknown. The drawing is signed "E. Ducretet", indicating that the apparatus was made by Eugene Ducretet, a prominent Paris scientific instrument manufacturer and radio researcher. The drawing was undoubtedly originally from the Ducretet instrument catalog. [Public domain], via Wikimedia Commons. Original: https://commons.wikimedia.org/wiki/File:Oudin_coil_Turpain.png
 
 ### Original Code (ring-middleware-format)
 
