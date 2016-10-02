@@ -25,10 +25,6 @@ done using `Content-type`, `Accept` and `Accept-Charset` headers.
 
 [![Clojars Project](http://clojars.org/metosin/muuntaja/latest-version.svg)](http://clojars.org/metosin/muuntaja)
 
-## TODO
-
-* Currently, supports only single charset, defaulting to UTF-8.
-
 ## Quickstart 
 
 ### Ring
@@ -109,6 +105,10 @@ All perf test are found in this repo.
 ## API Documentation
 
 Full [API documentation](http://metosin.github.com/muuntaja) is available.
+
+## TODO
+
+* Currently, supports only single charset, defaulting to UTF-8.
 
 ## Server Spec
 
