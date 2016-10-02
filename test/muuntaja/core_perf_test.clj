@@ -40,7 +40,7 @@
 
 (defrecord Hello [^String name]
   formats/EncodeJson
-  (encode-json [_]
+  (encode-json [_ _]
     (str (doto (json/object) (.put "hello" name)))))
 
 (def +handler+ (fn [request] {:status 200 :body (:body-params request)}))
