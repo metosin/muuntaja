@@ -229,30 +229,34 @@
 ;; Request
 ;;
 
-(defn- decode-request [request decoder request-format request-charset]
-  (try
-    (-> request
-        (assoc ::format request-format)
-        (assoc :body-params (-> request :body decoder))
-        (assoc :body nil))
-    (catch Exception e
-      (on-request-decode-exception e request-format request-charset request))))
+(defn- decode-request [formats request request-format request-charset]
+  (if (decode-request? formats request)
+    (if-let [decode (decoder formats request-format)]
+      (try
+        [(-> request :body decode) true]
+        (catch Exception e
+          (on-request-decode-exception e request-format request-charset request))))))
 
-(defn- handle-request [request decoder request-format request-charset response-format response-charset]
-  (as-> request $
-        (assoc $ ::accept response-format)
-        (assoc $ ::accept-charset response-charset)
-        (if decoder
-          (decode-request $ decoder request-format request-charset)
-          $)))
-
-;; TODO: use the negotiated request charset
-(defn format-request [formats request]
+(defn handle-request [formats request]
   (let [[ctf ctc] (negotiate-request formats request)
         [af ac] (negotiate-response formats request)
-        decoder (if (decode-request? formats request)
-                  (decoder formats ctf))]
-    (handle-request request decoder ctf ctc af ac)))
+        [body d?] (decode-request formats request ctf ctc)]
+    [body d? ctf ctc af ac]))
+
+;; TODO: use the negotiated request charset
+(defn populate-ring-request [request [body d? ctf ctc af ac]]
+  (as-> request $
+        (assoc $ ::accept af)
+        (assoc $ ::accept-charset ac)
+        (if d?
+          (-> $
+              (assoc ::format ctf)
+              (assoc :body-params body)
+              (assoc :body nil))
+          $)))
+
+(defn format-request [formats request]
+  (populate-ring-request request (handle-request formats request)))
 
 ;;
 ;; Response
