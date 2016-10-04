@@ -16,12 +16,9 @@
   :profiles {:dev {:jvm-opts ^:replace ["-server"]
                    :dependencies [[org.clojure/clojure "1.8.0"]
                                   [ring-middleware-format "0.7.0"]
-                                  [com.ibm.icu/icu4j "57.1"]
-                                  [org.clojure/core.memoize "0.5.9"]
-                                  [org.clojure/tools.reader "0.10.0"]
                                   [ring/ring-json "0.4.0"]
                                   [criterium "0.4.4"]]}
-             :1.9 {:dependencies [[org.clojure/clojure "1.9.0-alpha11"]]}
+             :1.9 {:dependencies [[org.clojure/clojure "1.9.0-alpha12"]]}
              :perf {:jvm-opts ^:replace ["-server"
                                          "-Xmx4096m"
                                          "-Dclojure.compiler.direct-linking=true"]}
