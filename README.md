@@ -94,7 +94,7 @@ Function to encode Transit-json:
 ## Performance
 
 * by default, over 5x faster than `[ring-middleware-format "0.7.0"]` (JSON request & response).
-* by default, over 40% faster than `[ring/ring-json "0.4.0"]` (JSON requests & responses).
+* by default, faster than `[ring/ring-json "0.4.0"]` (JSON requests & responses).
 
 There is also a new low-level JSON encoder (in `muuntaja.json`) on top of 
 [Jackson Databind](https://github.com/FasterXML/jackson-databind) and protocols supporting
@@ -120,6 +120,7 @@ Full [API documentation](http://metosin.github.com/muuntaja) is available.
    be used later in the response pipeline.
 * `:muuntaja.core/accept-charset`, client-negotiated charset for the response, e.g. `utf-8`. Will
    be used later in the response pipeline.
+* `:body-params` decoded body is here.
 
 ### Response
 
