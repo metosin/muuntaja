@@ -45,7 +45,7 @@
                           :body (stream (pr-str msg))})]
     (is (= (get-in r-trip [:headers "Content-Type"])
            "application/edn; charset=utf-8"))
-    (is (= (read-string (:body r-trip)) msg))
+    (is (= (read-string (slurp (:body r-trip))) msg))
     (is (= (:params r-trip) msg))
     (is (.contains (get-in (api-echo {:headers {"accept" "foo/bar"
                                                 "content-type" ok-accept}
@@ -61,7 +61,7 @@
         r-trip (api-echo-json ok-req)]
     (is (= (get-in r-trip [:headers "Content-Type"])
            "application/json; charset=utf-8"))
-    (is (= (json/decode (:body r-trip)) msg))
+    (is (= (json/decode (slurp (:body r-trip))) msg))
     (is (= (:params r-trip) {:test "ok"}))
     (is (.contains (get-in (api-echo-json
                              {:headers {"accept" "application/edn"

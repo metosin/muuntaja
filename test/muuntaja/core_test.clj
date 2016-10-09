@@ -21,7 +21,7 @@
   (testing "encode & decode"
     (let [m (m/create m/default-options)
           data {:kikka 42}]
-      (is (= "{\"kikka\":42}" (m/encode m "application/json" data)))
+      (is (= "{\"kikka\":42}" (slurp (m/encode m "application/json" data))))
       (is (= data (m/decode m "application/json" (m/encode m "application/json" data))))))
 
   (testing "encoder & decoder"
@@ -29,7 +29,7 @@
           data {:kikka 42}
           json-encoder (m/encoder m "application/json")
           json-decoder (m/decoder m "application/json")]
-      (is (= "{\"kikka\":42}" (json-encoder data)))
+      (is (= "{\"kikka\":42}" (slurp (json-encoder data))))
       (is (= data (-> data json-encoder json-decoder)))
 
       (testing "invalid encoder /decoder returns nil"
