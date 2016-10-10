@@ -15,6 +15,7 @@
           :defaults {:doc/format :markdown}}
   :profiles {:dev {:jvm-opts ^:replace ["-server"]
                    :dependencies [[org.clojure/clojure "1.8.0"]
+                                  [ring/ring-core "1.6.0-beta6"]
                                   [ring-middleware-format "0.7.0"]
                                   [ring/ring-json "0.4.0"]
                                   [criterium "0.4.4"]]}
