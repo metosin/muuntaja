@@ -38,6 +38,10 @@
   (fn [data]
     (ByteArrayInputStream. (.getBytes (json/generate-string data options)))))
 
+(defn make-json-string-encoder [options]
+  (fn [data]
+    (json/generate-string data options)))
+
 (defn make-streaming-json-encoder [options]
   (fn [data]
     (fn [stream]
@@ -99,6 +103,10 @@
     (ByteArrayInputStream.
       (.getBytes
         (pr-str data)))))
+
+(defn make-edn-string-encoder [_]
+  (fn [data]
+    (pr-str data)))
 
 (defprotocol EncodeEdn
   (encode-edn [this]))
