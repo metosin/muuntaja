@@ -194,21 +194,27 @@
 
   ; 2.9µs
   ; 2.5µs (no dynamic binding if not needed)
+  ; 1.8µs ???
   (title "muuntaja: parse-json-stream")
   (let [parse (m/decoder (m/create m/default-options) "application/json")
         request! (request-stream +json-request+)]
+    (assert (= {:kikka 42} (parse (:body (request!)))))
     (cc/quick-bench (parse (:body (request!)))))
 
   ; 2.5µs
+  ; 1.8µs ???
   (title "cheshire: parse-json-stream")
   (let [parse #(cheshire/parse-stream (InputStreamReader. %) true)
         request! (request-stream +json-request+)]
+    (assert (= {:kikka 42} (parse (:body (request!)))))
     (cc/quick-bench (parse (:body (request!)))))
 
   ; 5.1µs
+  ; 3.9µs ???
   (title "cheshire: parse-json-string")
   (let [parse #(cheshire/parse-string % true)
         request! (request-stream +json-request+)]
+    (assert (= {:kikka 42} (parse (slurp (:body (request!))))))
     (cc/quick-bench (parse (slurp (:body (request!)))))))
 
 (defn ring-middleware-format-e2e []
@@ -293,7 +299,7 @@
         request! (request-stream +json-request+)]
 
     (title "muuntaja: JSON-REQUEST-RESPONSE")
-    (assert (= (:body +json-request+) (:body (app (request!)))))
+    (assert (= (:body +json-request+) (slurp (:body (app (request!))))))
     (cc/quick-bench (app (request!))))
 
   ; 7.1µs
@@ -327,7 +333,7 @@
         request! (context-stream +json-request+)]
 
     (title "muuntaja: Interceptor JSON-REQUEST-RESPONSE")
-    (assert (= (:body +json-request+) (:body (app (request!)))))
+    (assert (= (:body +json-request+) (slurp (:body (app (request!))))))
     (cc/quick-bench (app (request!))))
 
   ; 7.5µs

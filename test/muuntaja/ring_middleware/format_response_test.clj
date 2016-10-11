@@ -8,7 +8,7 @@
             [cognitect.transit :as transit]
             [msgpack.core :as msgpack]
             [clojure.java.io :as io])
-  (:import [java.io ByteArrayInputStream]))
+  (:import [java.io ByteArrayInputStream InputStream]))
 
 (defn stream [s]
   (ByteArrayInputStream. (.getBytes s "UTF-8")))
@@ -40,7 +40,7 @@
   (let [body {:foo "bar"}
         req {:body body}
         resp (api-echo req)]
-    (is (= (json/generate-string body) (:body resp)))
+    (is (= (json/generate-string body) (slurp (:body resp))))
     (is (.contains (get-in resp [:headers "Content-Type"]) "application/json"))
     ;; we do not set the "Content-Length"
     #_(is (< 2 (Integer/parseInt (get-in resp [:headers "Content-Length"]))))))
@@ -53,7 +53,7 @@
                 (-> m/default-options
                     (m/with-formats ["application/json"])
                     (m/with-encoder-opts "application/json" {:pretty true}))) req)]
-    (is (.contains (:body resp) "\n "))))
+    (is (.contains (slurp (:body resp)) "\n "))))
 
 #_(comment
     (deftest returns-correct-charset
@@ -109,7 +109,7 @@
   (let [body {:foo "bar"}
         req {:body body}
         resp (clojure-echo req)]
-    (is (= body (read-string (:body resp))))
+    (is (= body (read-string (slurp (:body resp)))))
     (is (.contains (get-in resp [:headers "Content-Type"]) "application/edn"))
     ;; we do not set the "Content-Length"
     #_(is (< 2 (Integer/parseInt (get-in resp [:headers "Content-Length"]))))))
@@ -124,7 +124,7 @@
   (let [body {:foo "bar"}
         req {:body body}
         resp (yaml-echo req)]
-    (is (= (yaml/generate-string body) (:body resp)))
+    (is (= (yaml/generate-string body) (slurp (:body resp))))
     (is (.contains (get-in resp [:headers "Content-Type"]) "application/x-yaml"))
     ;; we do not set the "Content-Length"
     #_(is (< 2 (Integer/parseInt (get-in resp [:headers "Content-Length"]))))))
@@ -301,7 +301,7 @@
         resp-non-serialized (api-echo-pred (assoc req ::serializable? false))
         resp-serialized (api-echo-pred (assoc req ::serializable? true))]
     (is (map? (:body resp-non-serialized)))
-    (is (string? (:body resp-serialized)))))
+    (is (instance? InputStream (:body resp-serialized)))))
 
 (def custom-encoder
   (get-in m/default-options [:formats "application/json"]))
