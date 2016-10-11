@@ -126,15 +126,25 @@
   (decoder [_ format]
     (-> format adapters :decode)))
 
-(defn encode [formats format data]
-  (if-let [encode (encoder formats format)]
-    (encode data)
-    (throw! formats format "invalid encode format")))
+(defn encode
+  ([formats format data]
+   (if-let [encode (encoder formats format)]
+     (encode data)
+     (throw! formats format "invalid encode format")))
+  ([formats format data charset]
+   (if-let [encode (encoder formats format)]
+     (encode data charset)
+     (throw! formats format "invalid encode format"))))
 
-(defn decode [formats format data]
-  (if-let [decode (decoder formats format)]
-    (decode data)
-    (throw! formats format "invalid decode format")))
+(defn decode
+  ([formats format data]
+   (if-let [decode (decoder formats format)]
+     (decode data)
+     (throw! formats format "invalid decode format")))
+  ([formats format data charset]
+   (if-let [decode (decoder formats format)]
+     (decode data charset)
+     (throw! formats format "invalid decode format"))))
 
 ;;
 ;; Creation
@@ -156,30 +166,36 @@
   (println format type)
   (throw
     (ex-info
-      (str "Malformed " format " (" type ")")
+      (str "Malformed " format " in " type "")
       {:type type
        :format format}
       e)))
 
-(defn- create-adapters [formats]
+(defn- create-adapters [formats default-charset]
   (let [make (fn [format type spec spec-opts [p pf]]
                (let [g (if (vector? spec)
                          (let [[f opts] spec]
                            (f (merge opts spec-opts)))
                          spec)]
                  (if (and p pf)
-                   (fn [x]
-                     (try
-                       (if (and (record? x) (satisfies? p x))
-                         (pf x)
-                         (g x))
-                       (catch Exception e
-                         (on-exception e format type))))
-                   (fn [x]
-                     (try
-                       (g x)
-                       (catch Exception e
-                         (on-exception e format type)))))))]
+                   (fn f
+                     ([x]
+                      (f x default-charset))
+                     ([x charset]
+                      (try
+                        (if (and (record? x) (satisfies? p x))
+                          (pf x #_charset)
+                          (g x charset))
+                        (catch Exception e
+                          (on-exception e format type)))))
+                   (fn f
+                     ([x]
+                      (f x default-charset))
+                     ([x charset]
+                      (try
+                        (g x charset)
+                        (catch Exception e
+                          (on-exception e format type))))))))]
     (->> (for [[name {:keys [decoder decoder-opts encoder encoder-opts encode-protocol]}] formats]
            [name (map->Adapter
                    (merge
@@ -192,8 +208,8 @@
 (defn create
   ([]
    (create default-options))
-  ([{:keys [formats default-format] :as options}]
-   (let [adapters (create-adapters formats)
+  ([{:keys [formats default-format default-charset] :as options}]
+   (let [adapters (create-adapters formats default-charset)
          valid-format? (key-set formats identity)
          m (map->Formats
              (merge
@@ -322,7 +338,6 @@
    :decode? (constantly true)
    :encode? encode-collections-with-override
 
-   ;; TODO: support only fixed charset for now
    :default-charset "utf-8"
    :charsets #{"utf-8"}
 

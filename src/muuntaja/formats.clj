@@ -7,7 +7,7 @@
             [cognitect.transit :as transit]
             [msgpack.core :as msgpack]
             [clojure.java.io :as io])
-  (:import [java.io ByteArrayOutputStream DataInputStream DataOutputStream InputStreamReader PushbackReader InputStream ByteArrayInputStream OutputStreamWriter]))
+  (:import [java.io ByteArrayOutputStream DataInputStream DataOutputStream InputStreamReader PushbackReader InputStream ByteArrayInputStream OutputStreamWriter OutputStream]))
 
 (defn- slurp-to-bytes ^bytes [^InputStream in]
   (if in
@@ -24,28 +24,28 @@
 
 (defn make-json-decoder [{:keys [keywords? bigdecimals?]}]
   (if-not bigdecimals?
-    (fn [x]
+    (fn [x _]
       (if (string? x)
         (json/parse-string x keywords?)
         (json/parse-stream (InputStreamReader. x) keywords?)))
-    (fn [x]
+    (fn [x _]
       (binding [parse/*use-bigdecimals?* bigdecimals?]
         (if (string? x)
           (json/parse-string x keywords?)
           (json/parse-stream (InputStreamReader. x) keywords?))))))
 
 (defn make-json-encoder [options]
-  (fn [data]
-    (ByteArrayInputStream. (.getBytes (json/generate-string data options)))))
+  (fn [data ^String charset]
+    (ByteArrayInputStream. (.getBytes (json/generate-string data options) charset))))
 
 (defn make-json-string-encoder [options]
-  (fn [data]
+  (fn [data _]
     (json/generate-string data options)))
 
 (defn make-streaming-json-encoder [options]
-  (fn [data]
-    (fn [stream]
-      (let [writer (OutputStreamWriter. stream)]
+  (fn [data ^String charset]
+    (fn [^OutputStream stream]
+      (let [writer (OutputStreamWriter. stream charset)]
         (json/generate-stream data writer)
         (.flush writer)))))
 
@@ -56,14 +56,14 @@
 
 (defn make-msgpack-decoder [{:keys [keywords?] :as options}]
   (let [transform (if keywords? walk/keywordize-keys identity)]
-    (fn [in]
+    (fn [in _]
       (with-open [i (io/input-stream (slurp-to-bytes in))]
         (let [data-input (DataInputStream. i)]
           (transform (msgpack/unpack-stream data-input options)))))))
 
 ;; TODO: keyword vs strings? better walk
 (defn make-msgpack-encoder [options]
-  (fn [data]
+  (fn [data _]
     (with-open [out-stream (ByteArrayOutputStream.)]
       (let [data-out (DataOutputStream. out-stream)]
         (msgpack/pack-stream (walk/stringify-keys data) data-out) options)
@@ -77,14 +77,15 @@
 
 (defn make-yaml-decoder [options]
   (let [options-args (mapcat identity options)]
-    (fn [s] (apply yaml/parse-string s options-args))))
+    (fn [s _] (apply yaml/parse-string s options-args))))
 
 (defn make-yaml-encoder [options]
   (let [options-args (mapcat identity options)]
-    (fn [data]
+    (fn [data ^String charset]
       (ByteArrayInputStream.
         (.getBytes
-          (apply yaml/generate-string data options-args))))))
+          (apply yaml/generate-string data options-args)
+          charset)))))
 
 (defprotocol EncodeYaml
   (encode-yaml [this]))
@@ -93,19 +94,20 @@
 
 (defn make-edn-decoder [options]
   (let [options (merge {:readers *data-readers*} options)]
-    (fn [x]
+    (fn [x _]
       (if (string? x)
         (edn/read-string options x)
         (edn/read options (PushbackReader. (InputStreamReader. x)))))))
 
 (defn make-edn-encoder [_]
-  (fn [data]
+  (fn [data ^String charset]
     (ByteArrayInputStream.
       (.getBytes
-        (pr-str data)))))
+        (pr-str data)
+        charset))))
 
 (defn make-edn-string-encoder [_]
-  (fn [data]
+  (fn [data _]
     (pr-str data)))
 
 (defprotocol EncodeEdn
@@ -115,13 +117,13 @@
 
 (defn make-transit-decoder
   [type options]
-  (fn [in]
+  (fn [in _]
     (let [reader (transit/reader in type options)]
       (transit/read reader))))
 
 (defn make-transit-encoder [type {:keys [verbose] :as options}]
   (let [full-type (if (and (= type :json) verbose) :json-verbose type)]
-    (fn [data]
+    (fn [data _]
       (let [baos (ByteArrayOutputStream.)
             writer (transit/writer baos full-type options)]
         (transit/write writer data)
@@ -131,7 +133,7 @@
 (defn make-streaming-transit-encoder
   [type {:keys [verbose] :as options}]
   (let [full-type (if (and (= type :json) verbose) :json-verbose type)]
-    (fn [data]
+    (fn [data _]
       (fn [stream]
         (let [writer (transit/writer stream full-type options)]
           (transit/write writer data))))))

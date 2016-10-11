@@ -9,8 +9,7 @@
     (let [m (m/create m/default-options)
           data {:kikka 42, :childs {:facts [1.2 true {:so "nested"}]}}]
       (are [format]
-        (let [{:keys [encode decode]} (get-in m [:adapters format])]
-          (= data (decode (encode data))))
+        (= data (m/decode m format (m/encode m format data)))
         "application/json"
         "application/edn"
         "application/x-yaml"
@@ -43,8 +42,8 @@
 
   (testing "adding new format"
     (let [format "application/upper"
-          upper-case-format {:decoder str/lower-case
-                             :encoder str/upper-case}
+          upper-case-format {:decoder (fn [s _] (str/lower-case s))
+                             :encoder (fn [s _] (str/upper-case s))}
           m (m/create
               (-> m/default-options
                   (assoc-in [:formats format] upper-case-format)))
