@@ -18,9 +18,6 @@ Based on [ring-middleware-format](https://github.com/ngrunwald/ring-middleware-f
 - supports runtime docs (like swagger) & inspection (negotion results)
 - supports runtime configuration (negotiation overrides)
 
-Content-negotiation is done for both request and response and covers format and charset. Default negotiation is
-done using `Content-type`, `Accept` and `Accept-Charset` headers.
-
 ## Latest version
 
 [![Clojars Project](http://clojars.org/metosin/muuntaja/latest-version.svg)](http://clojars.org/metosin/muuntaja)
@@ -93,10 +90,27 @@ Define a function to encode Transit-json:
 ; "[\"^ \",\"~:kikka\",42]"
 ```
 
-## Performance
+## HTTP format negotiation
 
-* by default, over 5x faster than `[ring-middleware-format "0.7.0"]` (JSON request & response).
-* by default, faster than `[ring/ring-json "0.4.0"]` (JSON requests & responses).
+HTTP format negotiation is done for both request and response and covers format and charset. By default,
+Muuntaja allows only full matches for the format, e.g. `application/json` but one can use also regexps
+for more loose matching (like those in ring-middleware-format & ring-json). Behind the scenes, results of
+regexp matches against a given client input are memoized, giving still near constant time resolution. One
+can also force the format negotiation results with special namespaced request & response keys.
+
+* Request format & charset is negotiated using the `Content-type` header (e.g. `application/json; charset=utf-8`)
+  * If a client request format is not registered to Muuntaja, nothing happens.
+  * If a client request format is resolved, but charset is not registered to Muuntaja an exception
+  with type `:muuntaja.core/request-charset-negotiation` is thrown.
+  
+* Response format is negotiated using `Accept` header. If a format can't be negotiated `:default-format`
+  is used. If default is not defined, an exception with type `:muuntaja.core/response-format-negotiation` is thrown.
+
+* Response charset is negotiated using `Accept-Charset` header. If a charset can't be negotiated `:default-charset`
+  is used. If default is not defined, an exception with type `:muuntaja.core/response-charset-negotiation` is thrown.
+
+## Performance 
+
 
 There is also a new low-level JSON encoder (in `muuntaja.json`) directly on top of 
 [Jackson Databind](https://github.com/FasterXML/jackson-databind) and protocols supporting

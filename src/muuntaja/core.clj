@@ -27,6 +27,27 @@
        :request request}
       e)))
 
+(defn- fail-on-request-charset-negotiation [formats]
+  (throw
+    (ex-info
+      "Can't negotiate on request charset"
+      {:type ::request-charset-negotiation
+       :charsets (:charsets formats)})))
+
+(defn- fail-on-response-charset-negotiation [formats]
+  (throw
+    (ex-info
+      "Can't negotiate on response charset"
+      {:type ::response-charset-negotiation
+       :formats (:produces formats)})))
+
+(defn- fail-on-response-format-negotiation [formats]
+  (throw
+    (ex-info
+      "Can't negotiate on response format"
+      {:type ::response-format-negotiation
+       :charsets (:charsets formats)})))
+
 (defn- set-content-type [response content-type]
   (assoc-assoc response :headers "Content-Type" content-type))
 
@@ -51,7 +72,7 @@
 ;; Content negotiation
 ;;
 
-(defn- -negotiate-content-type [{:keys [consumes matchers default-charset]} s]
+(defn- -negotiate-content-type [{:keys [consumes matchers default-charset] :as formats} s]
   (if s
     (let [[content-type-raw charset-raw] (parse/parse-content-type s)]
       [(if content-type-raw
@@ -60,7 +81,9 @@
                (fn [[name r]]
                  (if (re-find r content-type-raw) name))
                matchers)))
-       (or charset-raw default-charset)])))
+       (or charset-raw
+           default-charset
+           (fail-on-request-charset-negotiation formats))])))
 
 (defn- -negotiate-accept [{:keys [produces default-format]} s]
   (or
@@ -218,7 +241,7 @@
                 :consumes (key-set formats :decoder)
                 :produces (key-set formats :encoder)
                 :matchers (matchers formats)}))]
-     (when-not (valid-format? default-format)
+     (when-not (or (not default-format) (valid-format? default-format))
        (throw
          (ex-info
            (str "Invalid default format " default-format)
@@ -291,11 +314,14 @@
   (or (if-let [ct (::content-type response)]
         ((:produces formats) ct))
       (::accept request)
-      (:default-format formats)))
+      (:default-format formats)
+      (fail-on-response-format-negotiation formats)))
 
 (defn- resolve-response-charset [response formats request]
-  (or (::accept-charset request)
-      (:default-format formats)))
+  (or (if-let [ct (::accept-charset request)]
+        ((:charsets formats) ct))
+      (:default-charset formats)
+      (fail-on-response-charset-negotiation formats)))
 
 ;; TODO: use the negotiated response charset
 (defn format-response [formats request response]
