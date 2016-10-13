@@ -2,16 +2,18 @@
 
 <img src="https://raw.githubusercontent.com/wiki/metosin/muuntaja/muuntaja-small.png" align="right"/>
 
-Clojure library for fast http format negotiation - symmetric for both servers & clients.
-Standalone library, but ships with adapters for ring (async) middleware & Pedestal-style interceptors.
-Explicit & extendable, supporting out-of-the-box [JSON](http://www.json.org/), [EDN](https://github.com/edn-format/edn),
-[MessagePack](http://msgpack.org/), [YAML](http://yaml.org/) and [Transit](https://github.com/cognitect/transit-format).
+Clojure library for fast http format negotiation - symmetric for both servers & clients. Standalone library, but
+ships with adapters for ring (async) middleware & Pedestal-style interceptors. Explicit & extendable, supporting
+out-of-the-box [JSON](http://www.json.org/), [EDN](https://github.com/edn-format/edn), [MessagePack](http://msgpack.org/),
+[YAML](http://yaml.org/) and [Transit](https://github.com/cognitect/transit-format) in different flavours.
 
-Based on [ring-middleware-format](https://github.com/ngrunwald/ring-middleware-format), but a complete rewrite.
+Based on [ring-middleware-format](https://github.com/ngrunwald/ring-middleware-format), 
+but a complete rewrite - and up to [10x faster](#performance).
 
 ## Rationale
 
 - explicit configuration, avoiding shared mutable state (e.g. multimethods)
+- symmetric encoding & decoding
 - fast & pragmatic by default
 - extendable & pluggable: new formats, behavior
 - typed exceptions - caught elsewhere
@@ -41,7 +43,7 @@ Based on [ring-middleware-format](https://github.com/ngrunwald/ring-middleware-f
        "accept" "application/edn"}
       :body "{\"kikka\":42}"})
 ; {:status 200
-;  :body #ByteArrayInputStream=>"{:kikka 42}"
+;  :body #ByteArrayInputStream "{:kikka 42}"
 ;  :muuntaja.core/format "application/edn"
 ;  :headers {"Content-Type" "application/edn; charset=utf-8"}}
 ```
