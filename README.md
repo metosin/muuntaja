@@ -44,7 +44,7 @@ done using `Content-type`, `Accept` and `Accept-Charset` headers.
        "accept" "application/edn"}
       :body "{\"kikka\":42}"})
 ; {:status 200
-;  :body "{:kikka 42}"
+;  :body #ByteArrayInputStream=>"{:kikka 42}"
 ;  :muuntaja.core/format "application/edn"
 ;  :headers {"Content-Type" "application/edn; charset=utf-8"}}
 ```
@@ -59,7 +59,9 @@ Create a muuntaja and use it to encode & decode JSON:
 ;; with defaults
 (def m (m/create))
 
-(slurp (m/encode m "application/json" {:kikka 42}))
+(->> {:kikka 42} 
+     (m/encode m "application/json")
+     slurp)
 ; "{\"kikka\":42}"
 
 (->> {:kikka 42}
