@@ -59,7 +59,7 @@ Create a muuntaja and use it to encode & decode JSON:
 ;; with defaults
 (def m (m/create))
 
-(m/encode m "application/json" {:kikka 42})
+(slurp (m/encode m "application/json" {:kikka 42}))
 ; "{\"kikka\":42}"
 
 (->> {:kikka 42}
@@ -82,7 +82,7 @@ With custom EDN decoder opts:
 ; {:value 42}    
 ```
 
-Function to encode Transit-json:
+Define a function to encode Transit-json:
 
 ```clj
 (def encode-transit-json (m/encoder m "application/transit+json"))
@@ -96,7 +96,7 @@ Function to encode Transit-json:
 * by default, over 5x faster than `[ring-middleware-format "0.7.0"]` (JSON request & response).
 * by default, faster than `[ring/ring-json "0.4.0"]` (JSON requests & responses).
 
-There is also a new low-level JSON encoder (in `muuntaja.json`) on top of 
+There is also a new low-level JSON encoder (in `muuntaja.json`) directly on top of 
 [Jackson Databind](https://github.com/FasterXML/jackson-databind) and protocols supporting
 hand-crafted responses => up to 5x faster than `[cheshire "5.6.3"]`.
 
@@ -225,6 +225,7 @@ verify behavior and demonstrate differences.
 ### ring-json & ring-transit
 
 * Supports multiple formats in a single middleware
+* Returns Stream responses instead of Strings
 * Populates just the `:body-params`, not `:params` & `:json-params`/`:transit-params`
   * Because merging Persistent Maps is slow
   * if you need the `:params` add `muuntaja.middleware/wrap-params`
@@ -239,7 +240,6 @@ verify behavior and demonstrate differences.
 * Currently, supports only single charset, defaulting to UTF-8.
 * Does not set the `Content-Length` header (done by the adapters)
 * `:yaml-in-html` / `text/html` is not supported
-* `:json` `:edn` & `:yaml` responses are not wrapped into InputStreams, should they?
 
 ## License
 

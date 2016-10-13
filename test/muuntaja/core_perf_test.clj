@@ -28,10 +28,12 @@
 ;; Memory:                16 GB
 ;;
 
-(def +json-request+
+(defn json-request [data]
   {:headers {"content-type" "application/json"
              "accept" "application/json"}
-   :body "{\"kikka\":42}"})
+   :body (cheshire/generate-string data)})
+
+(def +json-request+ (json-request {:kikka 42}))
 
 (def +transit-json-request+
   {:headers {"content-type" "application/transit+json; charset=utf-16"
@@ -371,6 +373,41 @@
     (cc/quick-bench (app (request!)))
     (cc/quick-bench (ring-stream! (app (request!))))))
 
+(defn e2e-json-comparison-different-payloads []
+  (doseq [file ["dev-resources/json1k.json"
+                #_"dev-resources/json10k.json"
+                #_"dev-resources/json100k.json"]
+          :let [data (cheshire/parse-string (slurp file))
+                request (json-request data)
+                request! (request-stream request)]]
+
+    (title file)
+
+    ;  355µs (1k)
+    ; 2300µs (10k)
+    ; 5100µs (100k)
+    (title "ring-middleware-format: JSON-REQUEST-RESPONSE")
+    (let [app (-> +handler+ (ring-middleware-format/wrap-restful-format))]
+      #_(println (str (ring-stream! (app (request!)))))
+      (cc/quick-bench (ring-stream! (app (request!)))))
+
+    ;   36µs (1k)
+    ;  280µs (10k)
+    ; 2500µs (100k)
+    (title "ring-json: JSON-REQUEST-RESPONSE")
+    (let [+handler+ (fn [request] {:status 200 :body (:body request)})
+          app (-> +handler+ (rmj/wrap-json-body) (rmj/wrap-json-response))]
+      #_(println (str (ring-stream! (app (request!)))))
+      (cc/quick-bench (ring-stream! (app (request!)))))
+
+    ;   23µs (1k)
+    ;  243µs (10k)
+    ; 2200µs (100k)
+    (title "muuntaja: JSON-REQUEST-RESPONSE")
+    (let [app (-> +handler+ (middleware/wrap-format))]
+      #_(println (str (ring-stream! (app (request!)))))
+      (cc/quick-bench (ring-stream! (app (request!)))))))
+
 (defn request-streams []
 
   ;; 28ns
@@ -408,4 +445,5 @@
   (muuntaja-e2e)
   (interceptor-e2e)
   (request-streams)
+  (e2e-json-comparison-different-payloads)
   (all))
