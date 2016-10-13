@@ -272,7 +272,7 @@
   (if (decode-request? formats request)
     (if-let [decode (decoder formats request-format)]
       (try
-        [(-> request :body decode) true]
+        [(decode (:body request) request-charset) true]
         (catch Exception e
           (on-request-decode-exception e request-format request-charset request))))))
 
@@ -305,7 +305,7 @@
   (as-> response $
         (assoc $ ::format format)
         (dissoc $ ::content-type)
-        (update $ :body encoder)
+        (update $ :body encoder charset)
         (if-not (get (:headers $) "Content-Type")
           (set-content-type $ (content-type format charset))
           $)))
