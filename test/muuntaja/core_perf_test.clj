@@ -248,12 +248,30 @@
     (assert (= {:kikka 42} (:body (app (request!)))))
     (cc/quick-bench (app (request!))))
 
+  ; 14.4µs && 17.4µs
+  (let [app (ring-middleware-format/wrap-restful-format +handler+ {:charset "utf-8" :formats [:json-kw :edn :msgpack-kw :yaml-kw :transit-msgpack :transit-json]})
+        request! (request-stream +json-request+)]
+
+    (title "ring-middleware-format: JSON-REQUEST-RESPONSE - fixed charset")
+    (assert (= (:body +json-request+) (str (ring-stream! (app (request!))))))
+    (cc/quick-bench (app (request!)))
+    (cc/quick-bench (ring-stream! (app (request!)))))
+
   ; 22.3µs && 24.7µs
   (let [app (ring-middleware-format/wrap-restful-format +handler+ {:formats [:json-kw :edn :msgpack-kw :yaml-kw :transit-msgpack :transit-json]})
         request! (request-stream +json-request+)]
 
     (title "ring-middleware-format: JSON-REQUEST-RESPONSE")
     (assert (= (:body +json-request+) (str (ring-stream! (app (request!))))))
+    (cc/quick-bench (app (request!)))
+    (cc/quick-bench (ring-stream! (app (request!)))))
+
+  ; 22.5µs && 25.5µs
+  (let [app (ring-middleware-format/wrap-restful-format +handler+ {:charset "utf-8" :formats [:json-kw :edn :msgpack-kw :yaml-kw :transit-msgpack :transit-json]})
+        request! (request-stream +transit-json-request+)]
+
+    (title "ring-middleware-format: TRANSIT-REQUEST-RESPONSE - fixed charset")
+    (assert (= (:body +transit-json-request+) (str (ring-stream! (app (request!))))))
     (cc/quick-bench (app (request!)))
     (cc/quick-bench (ring-stream! (app (request!)))))
 
@@ -373,24 +391,31 @@
     (cc/quick-bench (app (request!)))
     (cc/quick-bench (ring-stream! (app (request!))))))
 
+;; file sizes about about the size. good enough.
 (defn e2e-json-comparison-different-payloads []
-  (doseq [file ["dev-resources/json1k.json"
-                #_"dev-resources/json10k.json"
-                #_"dev-resources/json100k.json"]
+  (doseq [file ["dev-resources/json10b.json"
+                "dev-resources/json100b.json"
+                "dev-resources/json1k.json"
+                "dev-resources/json10k.json"
+                "dev-resources/json100k.json"]
           :let [data (cheshire/parse-string (slurp file))
                 request (json-request data)
                 request! (request-stream request)]]
 
     (title file)
 
-    ;  355µs (1k)
-    ; 2300µs (10k)
-    ; 5100µs (100k)
+    ;   22µs (10b)
+    ;   41µs (100b)
+    ;  306µs (1k)
+    ; 2200µs (10k)
+    ; 5000µs (100k)
     (title "ring-middleware-format: JSON-REQUEST-RESPONSE")
     (let [app (-> +handler+ (ring-middleware-format/wrap-restful-format))]
       #_(println (str (ring-stream! (app (request!)))))
       (cc/quick-bench (ring-stream! (app (request!)))))
 
+    ;   15µs (10b)
+    ;   18µs (100b)
     ;   36µs (1k)
     ;  280µs (10k)
     ; 2500µs (100k)
@@ -400,9 +425,11 @@
       #_(println (str (ring-stream! (app (request!)))))
       (cc/quick-bench (ring-stream! (app (request!)))))
 
+    ;    7µs (10b)
+    ;    9µs (100b)
     ;   23µs (1k)
-    ;  243µs (10k)
-    ; 2200µs (100k)
+    ;  215µs (10k)
+    ; 2100µs (100k)
     (title "muuntaja: JSON-REQUEST-RESPONSE")
     (let [app (-> +handler+ (middleware/wrap-format))]
       #_(println (str (ring-stream! (app (request!)))))
