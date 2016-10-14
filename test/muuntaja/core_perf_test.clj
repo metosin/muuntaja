@@ -35,6 +35,11 @@
 
 (def +json-request+ (json-request {:kikka 42}))
 
+(defn transit-request [data]
+  {:headers {"content-type" "application/transit+json"
+             "accept" "application/transit+json"}
+   :body (slurp (m/encode (m/create) "application/transit+json" data))})
+
 (def +transit-json-request+
   {:headers {"content-type" "application/transit+json; charset=utf-16"
              "accept" "application/transit+json"
@@ -433,6 +438,59 @@
     (title "muuntaja: JSON-REQUEST-RESPONSE")
     (let [app (-> +handler+ (middleware/wrap-format))]
       #_(println (str (ring-stream! (app (request!)))))
+      (cc/quick-bench (ring-stream! (app (request!)))))
+
+    ;    7µs (10b)
+    ;    9µs (100b)
+    ;   23µs (1k)
+    ;  215µs (10k)
+    ; 2100µs (100k)
+    (title "muuntaja: JSON-REQUEST-RESPONSE, streaming")
+    (let [app (-> +handler+ (middleware/wrap-format (assoc-in m/default-options [:formats "application/json" :encoder] [formats/make-streaming-json-encoder])))]
+      #_(println (str (ring-stream! (app (request!)))))
+      (cc/quick-bench (ring-stream! (app (request!)))))))
+
+;; file sizes about about the size in JSON. Smaller with transit.
+(defn e2e-transit-comparison-different-payloads []
+  (doseq [file ["dev-resources/json10b.json"
+                "dev-resources/json100b.json"
+                "dev-resources/json1k.json"
+                "dev-resources/json10k.json"
+                "dev-resources/json100k.json"]
+          :let [data (cheshire/parse-string (slurp file))
+                request (transit-request data)
+                request! (request-stream request)]]
+
+    (title file)
+
+    ;   24µs (10b)
+    ;   34µs (100b)
+    ;   46µs (1k)
+    ;  240µs (10k)
+    ; 2000µs (100k)
+    (title "ring-middleware-format: JSON-REQUEST-RESPONSE")
+    (let [app (-> +handler+ (ring-middleware-format/wrap-restful-format))]
+      #_(println (str (ring-stream! (app (request!)))))
+      (cc/quick-bench (ring-stream! (app (request!)))))
+
+    ;   12µs (10b)
+    ;   18µs (100b)
+    ;   31µs (1k)
+    ;  220µs (10k)
+    ; 1900µs (100k)
+    (title "muuntaja: JSON-REQUEST-RESPONSE")
+    (let [app (-> +handler+ (middleware/wrap-format))]
+      #_(println (str (ring-stream! (app (request!)))))
+      (cc/quick-bench (ring-stream! (app (request!)))))
+
+    ;   11µs (10b)
+    ;   17µs (100b)
+    ;   30µs (1k)
+    ;  215µs (10k)
+    ; 1900µs (100k)
+    (title "muuntaja: JSON-REQUEST-RESPONSE, streaming")
+    (let [app (-> +handler+ (middleware/wrap-format (assoc-in m/default-options [:formats "application/transit+json" :encoder] [(partial formats/make-streaming-transit-encoder :json)])))]
+      #_(println (str (ring-stream! (app (request!)))))
       (cc/quick-bench (ring-stream! (app (request!)))))))
 
 (defn request-streams []
@@ -473,4 +531,5 @@
   (interceptor-e2e)
   (request-streams)
   (e2e-json-comparison-different-payloads)
+  (e2e-transit-comparison-different-payloads)
   (all))
