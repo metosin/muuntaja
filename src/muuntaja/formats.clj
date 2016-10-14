@@ -109,7 +109,7 @@
     (fn [data ^String charset]
       (ByteArrayInputStream.
         (.getBytes
-          (apply yaml/generate-string data options-args)
+          ^String (apply yaml/generate-string data options-args)
           charset)))))
 
 (defprotocol EncodeYaml
@@ -160,7 +160,7 @@
     (fn [data _]
       (->StreamableResponse
         (fn [output-stream]
-          (with-open [out output-stream]
+          (with-open [^OutputStream out output-stream]
             (let [writer (transit/writer out full-type options)]
               (transit/write writer data))))))))
 
