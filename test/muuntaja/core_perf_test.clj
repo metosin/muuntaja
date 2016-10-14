@@ -505,19 +505,6 @@
 ;; Run
 ;;
 
-(defn all []
-  (old)
-  (content-type)
-  (accept)
-  (negotiate-request)
-  (identity-encode-decode)
-  (parse-json)
-  (ring-middleware-format-e2e)
-  (ring-json-e2e)
-  (muuntaja-e2e)
-  (interceptor-e2e)
-  (request-streams))
-
 (comment
   (old)
   (content-type)

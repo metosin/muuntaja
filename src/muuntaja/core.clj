@@ -85,6 +85,7 @@
            default-charset
            (fail-on-request-charset-negotiation formats))])))
 
+;; TODO: fail if no match?
 (defn- -negotiate-accept [{:keys [produces default-format]} s]
   (or
     (some-value
@@ -92,6 +93,7 @@
       (parse/parse-accept s))
     default-format))
 
+;; TODO: fail if no match?
 (defn- -negotiate-accept-charset [{:keys [default-charset charsets]} s]
   (or
     (some-value
@@ -282,7 +284,6 @@
         [body d?] (decode-request formats request ctf ctc)]
     [body d? ctf ctc af ac]))
 
-;; TODO: use the negotiated request charset
 (defn populate-ring-request [request [body d? ctf ctc af ac]]
   (as-> request $
         (assoc $ ::accept af)
@@ -317,6 +318,7 @@
       (:default-format formats)
       (fail-on-response-format-negotiation formats)))
 
+;; TODO: fail is negotiation fails!
 (defn- resolve-response-charset [response formats request]
   (or (if-let [ct (::accept-charset request)]
         ((:charsets formats) ct))
