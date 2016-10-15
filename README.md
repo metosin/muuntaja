@@ -14,10 +14,11 @@ but a complete rewrite - and up to [10x faster](#performance).
 
 - explicit configuration, avoiding shared mutable state (e.g. multimethods)
 - symmetric encoding & decoding
+- use streaming when possible
 - fast & pragmatic by default
 - extendable & pluggable: new formats, behavior
 - typed exceptions - caught elsewhere
-- supports runtime docs (like swagger) & inspection (negotion results)
+- supports runtime docs (like swagger) & inspection (negotiation results)
 - supports runtime configuration (negotiation overrides)
 
 ## Latest version
@@ -39,13 +40,13 @@ but a complete rewrite - and up to [10x faster](#performance).
 (def app (middleware/wrap-format echo))
 
 (app {:headers 
-      {"content-type" "application/json"
-       "accept" "application/edn"}
-      :body "{\"kikka\":42}"})
-; {:status 200
-;  :body #ByteArrayInputStream "{:kikka 42}"
-;  :muuntaja.core/format "application/edn"
-;  :headers {"Content-Type" "application/edn; charset=utf-8"}}
+      {"content-type" "application/edn"
+       "accept" "application/json"}
+      :body "{:kikka 42}"})
+; {:status 200,
+;  :body <<StreamableResponse>>,
+;  :muuntaja.core/format "application/json",
+;  :headers {"Content-Type" "application/json; charset=utf-8"}}
 ```
 
 ### Standalone

@@ -201,37 +201,39 @@
        :format format}
       e)))
 
+(defn- create-coder [format type spec spec-opts default-charset [p pf]]
+  (let [g (if (vector? spec)
+            (let [[f opts] spec]
+              (f (merge opts spec-opts)))
+            spec)
+        prepare (if (= type ::decode) formats/as-stream identity)]
+    (if (and p pf)
+      (fn f
+        ([x]
+         (f x default-charset))
+        ([x charset]
+         (try
+           (if (and (record? x) (satisfies? p x))
+             (pf x #_charset)
+             (g (prepare x) charset))
+           (catch Exception e
+             (on-exception e format type)))))
+      (fn f
+        ([x]
+         (f x default-charset))
+        ([x charset]
+         (try
+           (g (prepare x) charset)
+           (catch Exception e
+             (on-exception e format type))))))))
+
 (defn- create-adapters [formats default-charset]
-  (let [make (fn [format type spec spec-opts [p pf]]
-               (let [g (if (vector? spec)
-                         (let [[f opts] spec]
-                           (f (merge opts spec-opts)))
-                         spec)]
-                 (if (and p pf)
-                   (fn f
-                     ([x]
-                      (f x default-charset))
-                     ([x charset]
-                      (try
-                        (if (and (record? x) (satisfies? p x))
-                          (pf x #_charset)
-                          (g x charset))
-                        (catch Exception e
-                          (on-exception e format type)))))
-                   (fn f
-                     ([x]
-                      (f x default-charset))
-                     ([x charset]
-                      (try
-                        (g x charset)
-                        (catch Exception e
-                          (on-exception e format type))))))))]
-    (->> (for [[name {:keys [decoder decoder-opts encoder encoder-opts encode-protocol]}] formats]
-           [name (map->Adapter
+  (->> (for [[format {:keys [decoder decoder-opts encoder encoder-opts encode-protocol]}] formats]
+         [format (map->Adapter
                    (merge
-                     (if decoder {:decode (make name ::decode decoder decoder-opts nil)})
-                     (if encoder {:encode (make name ::encode encoder encoder-opts encode-protocol)})))])
-         (into {}))))
+                     (if decoder {:decode (create-coder format ::decode decoder decoder-opts default-charset nil)})
+                     (if encoder {:encode (create-coder format ::encode encoder encoder-opts default-charset encode-protocol)})))])
+       (into {})))
 
 (declare default-options)
 

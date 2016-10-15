@@ -8,7 +8,7 @@
             [msgpack.core :as msgpack]
             [clojure.java.io :as io]
             [ring.core.protocols :as protocols])
-  (:import (java.io ByteArrayOutputStream DataInputStream DataOutputStream InputStreamReader PushbackReader InputStream ByteArrayInputStream OutputStreamWriter OutputStream BufferedReader)
+  (:import (java.io ByteArrayOutputStream DataInputStream DataOutputStream InputStreamReader PushbackReader InputStream ByteArrayInputStream OutputStreamWriter OutputStream BufferedReader Writer)
            (clojure.lang AFn IFn)))
 
 (deftype StreamableResponse [f]
@@ -37,6 +37,21 @@
                        (InputStreamReader.
                          (ByteArrayInputStream.
                            (.toByteArray out))))))))
+
+(defmethod print-method StreamableResponse
+  [^StreamableResponse sr ^Writer w]
+  (.write w (str "<<StreamableResponse>>")))
+
+(defprotocol AsInputStream
+  (as-stream [this]))
+
+(extend-protocol AsInputStream
+  InputStream
+  (as-stream [this] this)
+
+  StreamableResponse
+  (as-stream [this]
+    (io/make-input-stream this nil)))
 
 (defn- slurp-to-bytes ^bytes [^InputStream in]
   (if in
