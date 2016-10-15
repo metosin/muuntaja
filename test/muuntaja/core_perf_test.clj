@@ -441,7 +441,7 @@
     ;  215µs (10k)
     ; 2100µs (100k)
     (title "muuntaja: JSON-REQUEST-RESPONSE")
-    (let [app (-> +handler+ (middleware/wrap-format))]
+    (let [app (-> +handler+ (middleware/wrap-format (assoc-in m/default-options [:formats "application/json" :encoder] [formats/make-streaming-json-encoder])))]
       #_(println (str (ring-stream! (app (request!)))))
       (cc/quick-bench (ring-stream! (app (request!)))))
 
@@ -451,7 +451,7 @@
     ;  215µs (10k)
     ; 2100µs (100k)
     (title "muuntaja: JSON-REQUEST-RESPONSE, streaming")
-    (let [app (-> +handler+ (middleware/wrap-format (assoc-in m/default-options [:formats "application/json" :encoder] [formats/make-streaming-json-encoder])))]
+    (let [app (-> +handler+ (middleware/wrap-format))]
       #_(println (str (ring-stream! (app (request!)))))
       (cc/quick-bench (ring-stream! (app (request!)))))))
 
@@ -497,7 +497,7 @@
     ;  220µs (10k)
     ; 1900µs (100k)
     (title "muuntaja: TRANSIT-JSON-REQUEST-RESPONSE")
-    (let [app (-> +handler+ (middleware/wrap-format))]
+    (let [app (-> +handler+ (middleware/wrap-format (assoc-in m/default-options [:formats "application/transit+json" :encoder] [(partial formats/make-transit-encoder :json)])))]
       #_(println (str (ring-stream! (app (request!)))))
       (cc/quick-bench (ring-stream! (app (request!)))))
 
@@ -507,7 +507,7 @@
     ;  215µs (10k)
     ; 1900µs (100k)
     (title "muuntaja: TRANSIT-JSON-REQUEST-RESPONSE, streaming")
-    (let [app (-> +handler+ (middleware/wrap-format (assoc-in m/default-options [:formats "application/transit+json" :encoder] [(partial formats/make-streaming-transit-encoder :json)])))]
+    (let [app (-> +handler+ (middleware/wrap-format))]
       #_(println (str (ring-stream! (app (request!)))))
       (cc/quick-bench (ring-stream! (app (request!)))))))
 
