@@ -185,23 +185,26 @@
 
 ;; HTTP Params
 
+(def api-echo
+  (-> identity
+      (middleware/wrap-params)
+      (wrap-api-params)))
+
+(def safe-api-echo
+  (-> identity
+      (wrap-api-params)
+      (middleware/wrap-exception (constantly {:status 500}))))
+
+(deftest test-api-params-wrapper
+  (let [req {:headers {"content-type" "application/clojure; charset=UTF-8"}
+             :body (stream "{:foo \"bar\"}")
+             :params {"id" 3}}
+        resp (api-echo req)]
+    (is (= {"id" 3 :foo "bar"} (:params resp)))
+    (is (= {:foo "bar"} (:body-params resp)))
+    (is (= 500 (get (safe-api-echo (assoc req :body (stream "{:foo \"bar}"))) :status)))))
+
 #_(comment
-    (def api-echo
-      (wrap-api-params identity))
-
-    (def safe-api-echo
-      (wrap-api-params identity
-                       {:handle-error (fn [_ _ _] {:status 500})}))
-
-    (deftest test-api-params-wrapper
-      (let [req {:content-type "application/clojure; charset=UTF-8"
-                 :body (stream "{:foo \"bar\"}")
-                 :params {"id" 3}}
-            resp (api-echo req)]
-        (is (= {"id" 3 :foo "bar"} (:params resp)))
-        (is (= {:foo "bar"} (:body-params resp)))
-        (is (= 500 (get (safe-api-echo (assoc req :body (stream "{:foo \"bar}"))) :status)))))
-
     (defn stream-iso [s]
       (ByteArrayInputStream. (.getBytes s "ISO-8859-1")))
 
