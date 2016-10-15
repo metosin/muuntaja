@@ -6,9 +6,10 @@
             [muuntaja.json :as json]
             [muuntaja.test_utils :refer :all]
             [cheshire.core :as cheshire]
-            [ring.middleware.format-params :as ring-middleware-formatp]
-            [ring.middleware.format :as ring-middleware-format]
-            [ring.middleware.json :as rmj]
+            [ring.middleware.format-params]
+            [ring.middleware.format]
+            [ring.middleware.transit]
+            [ring.middleware.json]
             [muuntaja.formats :as formats]
             [ring.core.protocols :as protocols])
   (:import (java.io InputStreamReader ByteArrayOutputStream ByteArrayInputStream)))
@@ -238,7 +239,7 @@
 (defn ring-middleware-format-e2e []
 
   ; 8.5µs
-  (let [app (ring-middleware-formatp/wrap-restful-params +handler+ {:formats [:json-kw :edn :msgpack-kw :yaml-kw :transit-msgpack :transit-json]})
+  (let [app (ring.middleware.format-params/wrap-restful-params +handler+ {:formats [:json-kw :edn :msgpack-kw :yaml-kw :transit-msgpack :transit-json]})
         request! (request-stream +json-request+)]
 
     (title "ring-middleware-format: JSON-REQUEST")
@@ -246,7 +247,7 @@
     (cc/quick-bench (app (request!))))
 
   ; 7.8µs
-  (let [app (ring-middleware-formatp/wrap-restful-params +handler+ {:formats [:json-kw :edn :msgpack-kw :yaml-kw :transit-msgpack :transit-json]})
+  (let [app (ring.middleware.format-params/wrap-restful-params +handler+ {:formats [:json-kw :edn :msgpack-kw :yaml-kw :transit-msgpack :transit-json]})
         request! (request-stream +transit-json-request+)]
 
     (title "ring-middleware-format: TRANSIT-REQUEST")
@@ -254,7 +255,7 @@
     (cc/quick-bench (app (request!))))
 
   ; 14.4µs && 17.4µs
-  (let [app (ring-middleware-format/wrap-restful-format +handler+ {:charset "utf-8" :formats [:json-kw :edn :msgpack-kw :yaml-kw :transit-msgpack :transit-json]})
+  (let [app (ring.middleware.format/wrap-restful-format +handler+ {:charset "utf-8" :formats [:json-kw :edn :msgpack-kw :yaml-kw :transit-msgpack :transit-json]})
         request! (request-stream +json-request+)]
 
     (title "ring-middleware-format: JSON-REQUEST-RESPONSE - fixed charset")
@@ -263,7 +264,7 @@
     (cc/quick-bench (ring-stream! (app (request!)))))
 
   ; 22.3µs && 24.7µs
-  (let [app (ring-middleware-format/wrap-restful-format +handler+ {:formats [:json-kw :edn :msgpack-kw :yaml-kw :transit-msgpack :transit-json]})
+  (let [app (ring.middleware.format/wrap-restful-format +handler+ {:formats [:json-kw :edn :msgpack-kw :yaml-kw :transit-msgpack :transit-json]})
         request! (request-stream +json-request+)]
 
     (title "ring-middleware-format: JSON-REQUEST-RESPONSE")
@@ -272,7 +273,7 @@
     (cc/quick-bench (ring-stream! (app (request!)))))
 
   ; 22.5µs && 25.5µs
-  (let [app (ring-middleware-format/wrap-restful-format +handler+ {:charset "utf-8" :formats [:json-kw :edn :msgpack-kw :yaml-kw :transit-msgpack :transit-json]})
+  (let [app (ring.middleware.format/wrap-restful-format +handler+ {:charset "utf-8" :formats [:json-kw :edn :msgpack-kw :yaml-kw :transit-msgpack :transit-json]})
         request! (request-stream +transit-json-request+)]
 
     (title "ring-middleware-format: TRANSIT-REQUEST-RESPONSE - fixed charset")
@@ -281,7 +282,7 @@
     (cc/quick-bench (ring-stream! (app (request!)))))
 
   ; 24.7µs && 27.4µs
-  (let [app (ring-middleware-format/wrap-restful-format +handler+ {:formats [:json-kw :edn :msgpack-kw :yaml-kw :transit-msgpack :transit-json]})
+  (let [app (ring.middleware.format/wrap-restful-format +handler+ {:formats [:json-kw :edn :msgpack-kw :yaml-kw :transit-msgpack :transit-json]})
         request! (request-stream +transit-json-request+)]
 
     (title "ring-middleware-format: TRANSIT-REQUEST-RESPONSE")
@@ -293,7 +294,7 @@
   (let [+handler+ (fn [request] {:status 200 :body (:body request)})]
 
     ; 5.2µs
-    (let [app (rmj/wrap-json-body +handler+ {:keywords? true})
+    (let [app (ring.middleware.json/wrap-json-body +handler+ {:keywords? true})
           request! (request-stream +json-request+)]
 
       (title "ring-json: JSON-REQUEST")
@@ -301,7 +302,9 @@
       (cc/quick-bench (app (request!))))
 
     ; 7.9µs && 16.2µs
-    (let [app (-> +handler+ (rmj/wrap-json-body {:keywords? true}) (rmj/wrap-json-response))
+    (let [app (-> +handler+
+                  (ring.middleware.json/wrap-json-body {:keywords? true})
+                  (ring.middleware.json/wrap-json-response))
           request! (request-stream +json-request+)]
 
       (title "ring-json: JSON-REQUEST-RESPONSE")
@@ -415,7 +418,7 @@
     ; 2200µs (10k)
     ; 5000µs (100k)
     (title "ring-middleware-format: JSON-REQUEST-RESPONSE")
-    (let [app (-> +handler+ (ring-middleware-format/wrap-restful-format))]
+    (let [app (-> +handler+ (ring.middleware.format/wrap-restful-format))]
       #_(println (str (ring-stream! (app (request!)))))
       (cc/quick-bench (ring-stream! (app (request!)))))
 
@@ -426,7 +429,9 @@
     ; 2500µs (100k)
     (title "ring-json: JSON-REQUEST-RESPONSE")
     (let [+handler+ (fn [request] {:status 200 :body (:body request)})
-          app (-> +handler+ (rmj/wrap-json-body) (rmj/wrap-json-response))]
+          app (-> +handler+
+                  (ring.middleware.json/wrap-json-body)
+                  (ring.middleware.json/wrap-json-response))]
       #_(println (str (ring-stream! (app (request!)))))
       (cc/quick-bench (ring-stream! (app (request!)))))
 
@@ -469,7 +474,20 @@
     ;  240µs (10k)
     ; 2000µs (100k)
     (title "ring-middleware-format: TRANSIT-JSON-REQUEST-RESPONSE")
-    (let [app (-> +handler+ (ring-middleware-format/wrap-restful-format))]
+    (let [app (-> +handler+ (ring.middleware.format/wrap-restful-format))]
+      #_(println (str (ring-stream! (app (request!)))))
+      (cc/quick-bench (ring-stream! (app (request!)))))
+
+    ;   21µs (10b)
+    ;   26µs (100b)
+    ;   44µs (1k)
+    ;  258µs (10k)
+    ; 2390µs (100k)
+    (title "ring-transit: TRANSIT-JSON-REQUEST-RESPONSE")
+    (let [+handler+ (fn [request] {:status 200 :body (:body request)})
+          app (-> +handler+
+                  (ring.middleware.transit/wrap-transit-body)
+                  (ring.middleware.transit/wrap-transit-response))]
       #_(println (str (ring-stream! (app (request!)))))
       (cc/quick-bench (ring-stream! (app (request!)))))
 
