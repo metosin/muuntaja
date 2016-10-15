@@ -7,7 +7,8 @@
             [clojure.walk :refer [keywordize-keys]]
             [cognitect.transit :as transit]
             [msgpack.core :as msgpack]
-            [clojure.java.io :as io])
+            [clojure.java.io :as io]
+            [clojure.string :as str])
   (:import [java.io ByteArrayInputStream InputStream]))
 
 (defn stream [s]
@@ -55,34 +56,39 @@
                     (m/with-encoder-opts "application/json" {:pretty true}))) req)]
     (is (.contains (slurp (:body resp)) "\n "))))
 
-#_(comment
-    (deftest returns-correct-charset
-      (testing "with fixed charset"
-        (let [body {:foo "bârçï"}
-              req {:body body :headers {"accept-charset" "utf8; q=0.8 , utf-16"}}
-              resp ((rmfr/wrap-api-response identity) req)]
-          (is (not (.contains (get-in resp [:headers "Content-Type"]) "utf-16")))
-          (is (not= 32 (Integer/parseInt (get-in resp [:headers "Content-Length"]))))))
-      (testing "with fixed charset"
-        (let [body {:foo "bârçï"}
-              req {:body body :headers {"accept-charset" "utf8; q=0.8 , utf-16"}}
-              resp ((rmfr/wrap-api-response identity {:charset rmfr/resolve-response-charset}) req)]
-          (is (.contains (get-in resp [:headers "Content-Type"]) "utf-16"))
-          (is (= 32 (Integer/parseInt (get-in resp [:headers "Content-Length"])))))))
+(deftest returns-correct-charset
+  (testing "with fixed charset"
+    (let [body {:foo "bârçï"}
+          req {:body body :headers {"accept-charset" "utf8; q=0.8 , utf-16"}}
+          resp ((wrap-api-response identity) req)]
+      (is (not (.contains (get-in resp [:headers "Content-Type"]) "utf-16")))
+      #_(is (not= 32 (Integer/parseInt (get-in resp [:headers "Content-Length"]))))))
+  (testing "with fixed charset"
+    (let [body {:foo "bârçï"}
+          req {:body body :headers {"accept-charset" "utf8; q=0.8 , utf-16"}}
+          resp ((-> identity
+                    (wrap-api-response
+                      (assoc m/default-options :charsets m/available-charsets))) req)]
+      (is (.contains (get-in resp [:headers "Content-Type"]) "utf-16"))
+      #_(is (= 32 (Integer/parseInt (get-in resp [:headers "Content-Length"])))))))
 
-    (deftest returns-utf8-by-default
-      (let [body {:foo "bârçï"}
-            req {:body body :headers {"accept-charset" "foo"}}
-            resp ((rmfr/wrap-api-response identity) req)]
-        (is (.contains (get-in resp [:headers "Content-Type"]) "utf-8"))
-        (is (= 18 (Integer/parseInt (get-in resp [:headers "Content-Length"]))))))
+(deftest returns-utf8-by-default
+  (let [body {:foo "bârçï"}
+        req {:body body :headers {"accept-charset" "foo"}}
+        resp ((wrap-api-response identity) req)]
+    (is (.contains (get-in resp [:headers "Content-Type"]) "utf-8"))
+    #_(is (= 18 (Integer/parseInt (get-in resp [:headers "Content-Length"]))))))
 
-    (deftest format-json-options
-      (let [body {:foo-bar "bar"}
-            req {:body body}
-            resp2 ((rmfr/wrap-api-response identity {:format-options {:json {:key-fn (comp string/upper-case name)}}}) req)]
-        (is (= "{\"FOO-BAR\":\"bar\"}"
-               (slurp (:body resp2)))))))
+(deftest format-json-options
+  (let [body {:foo-bar "bar"}
+        req {:body body}
+        resp2 ((-> identity
+                   (wrap-api-response
+                     (-> m/default-options
+                         (m/with-encoder-opts "application/json" {:key-fn (comp str/upper-case name)}))))
+                req)]
+    (is (= "{\"FOO-BAR\":\"bar\"}"
+           (slurp (:body resp2))))))
 
 (def msgpack-echo
   (wrap-api-response
