@@ -72,7 +72,7 @@
 ;; Content negotiation
 ;;
 
-(defn- -negotiate-content-type [{:keys [consumes matchers default-charset] :as formats} s]
+(defn- -negotiate-content-type [{:keys [consumes matchers default-charset charsets] :as formats} s]
   (if s
     (let [[content-type-raw charset-raw] (parse/parse-content-type s)]
       [(if content-type-raw
@@ -81,9 +81,13 @@
                (fn [[name r]]
                  (if (re-find r content-type-raw) name))
                matchers)))
-       (or charset-raw
-           default-charset
-           (fail-on-request-charset-negotiation formats))])))
+       (or
+         ;; if a provided charset was valid
+         (and charset-raw charsets (charsets charset-raw) charset-raw)
+         ;; only set default if none were set
+         (and (not charset-raw) default-charset)
+         ;; negotiation failed
+         (fail-on-request-charset-negotiation formats))])))
 
 ;; TODO: fail if no match?
 (defn- -negotiate-accept [{:keys [produces default-format]} s]
@@ -188,7 +192,6 @@
     (into {})))
 
 (defn- on-exception [^Exception e format type]
-  (println format type)
   (throw
     (ex-info
       (str "Malformed " format " in " type "")
