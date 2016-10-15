@@ -44,7 +44,7 @@
   (testing "adding new format"
     (let [format "application/upper"
           upper-case-format {:decoder (fn [s _] (str/lower-case (slurp s)))
-                             :encoder (fn [s _] (protocols/as-stream (str/upper-case s)))}
+                             :encoder (fn [s _] (protocols/as-input-stream (str/upper-case s)))}
           m (m/create
               (-> m/default-options
                   (assoc-in [:formats format] upper-case-format)))

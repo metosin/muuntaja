@@ -207,7 +207,7 @@
             (let [[f opts] spec]
               (f (merge opts spec-opts)))
             spec)
-        prepare (if (= type ::decode) protocols/as-stream identity)]
+        prepare (if (= type ::decode) protocols/as-input-stream identity)]
     (if (and p pf)
       (fn f
         ([x]

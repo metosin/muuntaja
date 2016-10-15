@@ -36,16 +36,16 @@
   (.write w (str "<<StreamableResponse>>")))
 
 (defprotocol AsInputStream
-  (as-stream [this]))
+  (as-input-stream [this]))
 
 (extend-protocol AsInputStream
   InputStream
-  (as-stream [this] this)
+  (as-input-stream [this] this)
 
   StreamableResponse
-  (as-stream [this]
+  (as-input-stream[this]
     (io/make-input-stream this nil))
 
   String
-  (as-stream [this]
+  (as-input-stream [this]
     (ByteArrayInputStream. (.getBytes this "utf-8"))))
