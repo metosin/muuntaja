@@ -1,7 +1,9 @@
 (ns muuntaja.core
   (:require [muuntaja.parse :as parse]
             [muuntaja.formats :as formats]
-            [clojure.set :as set]))
+            [clojure.set :as set]
+            [clojure.string :as str])
+  (:import (java.nio.charset Charset)))
 
 (defn- throw! [formats format message]
   (throw
@@ -361,6 +363,10 @@
   (or
     (-> response ::encode?)
     (-> response :body coll?)))
+
+(def available-charsets
+  "Set of recognised charsets by the current JVM"
+  (into #{} (map str/lower-case (.keySet (Charset/availableCharsets)))))
 
 (def default-options
   {:extract-content-type-fn extract-content-type-ring

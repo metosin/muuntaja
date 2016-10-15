@@ -17,6 +17,7 @@
    (wrap-api-params handler m/default-options))
   ([handler opts]
    (-> handler
+       (middleware/wrap-params)
        (middleware/wrap-format
          (-> opts m/no-encoding)))))
 
@@ -42,7 +43,6 @@
 
 (defn yaml-echo [opts]
   (-> identity
-      (middleware/wrap-params)
       (wrap-api-params
         (-> m/default-options
             (m/with-formats ["application/x-yaml"])
@@ -58,7 +58,6 @@
 
 (def yaml-kw-echo
   (-> identity
-      (middleware/wrap-params)
       (wrap-api-params
         (-> m/default-options
             (m/with-formats ["application/x-yaml"])
@@ -74,7 +73,6 @@
 
 (def msgpack-echo
   (-> identity
-      (middleware/wrap-params)
       (wrap-api-params
         (-> m/default-options
             (m/with-formats ["application/msgpack"])
@@ -90,7 +88,6 @@
 
 (def msgpack-kw-echo
   (-> identity
-      (middleware/wrap-params)
       (wrap-api-params
         (-> m/default-options
             (m/with-formats ["application/msgpack"])))))
@@ -105,7 +102,6 @@
 
 (def clojure-echo
   (-> identity
-      (middleware/wrap-params)
       (wrap-api-params
         (-> m/default-options
             (m/with-formats ["application/edn"])))))
@@ -155,7 +151,6 @@
 
 (def transit-json-echo
   (-> identity
-      (middleware/wrap-params)
       (wrap-api-params
         (-> m/default-options
             (m/with-formats ["application/transit+json"])))))
@@ -170,7 +165,6 @@
 
 (def transit-msgpack-echo
   (-> identity
-      (middleware/wrap-params)
       (wrap-api-params
         (-> m/default-options
             (m/with-formats ["application/transit+msgpack"])))))
@@ -187,7 +181,6 @@
 
 (def api-echo
   (-> identity
-      (middleware/wrap-params)
       (wrap-api-params)))
 
 (def safe-api-echo
@@ -204,27 +197,29 @@
     (is (= {:foo "bar"} (:body-params resp)))
     (is (= 500 (get (safe-api-echo (assoc req :body (stream "{:foo \"bar}"))) :status)))))
 
-#_(comment
-    (defn stream-iso [s]
-      (ByteArrayInputStream. (.getBytes s "ISO-8859-1")))
+(defn stream-iso [s]
+  (ByteArrayInputStream. (.getBytes s "ISO-8859-1")))
 
-    (deftest test-different-params-charset
-      (testing "with fixed charset"
-        (let [req {:content-type "application/clojure; charset=ISO-8859-1"
-                   :body (stream-iso "{:fée \"böz\"}")
-                   :params {"id" 3}}
-              app (wrap-api-params identity)
-              resp (app req)]
-          (is (not= {"id" 3 :fée "böz"} (:params resp)))
-          (is (not= {:fée "böz"} (:body-params resp)))))
-      (testing "with fixed charset"
-        (let [req {:content-type "application/clojure; charset=ISO-8859-1"
-                   :body (stream-iso "{:fée \"böz\"}")
-                   :params {"id" 3}}
-              app (wrap-api-params identity {:charset resolve-request-charset})
-              resp (app req)]
-          (is (= {"id" 3 :fée "böz"} (:params resp)))
-          (is (= {:fée "böz"} (:body-params resp)))))))
+(deftest test-different-params-charset
+  #_(testing "with fixed charset"
+    (let [req {:headers {"content-type" "application/clojure; charset=ISO-8859-1"}
+               :body (stream-iso "{:fée \"böz\"}")
+               :params {"id" 3}}
+          app (-> identity
+                  (wrap-api-params))
+          resp (app req)]
+      (is (not= {"id" 3 :fée "böz"} (:params resp)))
+      (is (not= {:fée "böz"} (:body-params resp)))))
+  (testing "with fixed charset"
+    (let [req {:headers {"content-type" "application/clojure; charset=ISO-8859-1"}
+               :body (stream-iso "{:fée \"böz\"}")
+               :params {"id" 3}}
+          app (-> identity
+                  (wrap-api-params
+                    (assoc m/default-options :charsets m/available-charsets)))
+          resp (app req)]
+      (is (= {"id" 3 :fée "böz"} (:params resp)))
+      (is (= {:fée "böz"} (:body-params resp))))))
 
 (deftest test-list-body-request
   (let [req {:headers {"content-type" "application/json"}
@@ -263,7 +258,6 @@
 
 (def custom-transit-json-echo
   (-> identity
-      (middleware/wrap-params)
       (wrap-api-params
         (-> m/default-options
             (m/with-formats ["application/transit+json"])
