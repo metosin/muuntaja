@@ -25,6 +25,11 @@
 (extend StreamableResponse
   io/IOFactory
   (assoc io/default-streams-impl
+    :make-input-stream (fn [^StreamableResponse this _]
+                         (with-open [out (ByteArrayOutputStream. 4096)]
+                           ((.f this) out)
+                           (ByteArrayInputStream.
+                             (.toByteArray out))))
     :make-reader (fn [^StreamableResponse this _]
                    (with-open [out (ByteArrayOutputStream. 4096)]
                      ((.f this) out)
