@@ -1,6 +1,7 @@
 (ns muuntaja.core
   (:require [muuntaja.parse :as parse]
             [muuntaja.formats :as formats]
+            [muuntaja.protocols :as protocols]
             [clojure.set :as set]
             [clojure.string :as str])
   (:import (java.nio.charset Charset)))
@@ -61,14 +62,14 @@
 ;;
 
 (defprotocol RequestFormatter
-  (negotiate-request [_ request])
-  (negotiate-response [_ request])
-  (decode-request? [_ request])
-  (encode-response? [_ request response]))
+  (negotiate-request [this request])
+  (negotiate-response [this request])
+  (decode-request? [this request])
+  (encode-response? [this request response]))
 
 (defprotocol Formatter
-  (encoder [_ format])
-  (decoder [_ format]))
+  (encoder [this format])
+  (decoder [this format]))
 
 ;;
 ;; Content negotiation
@@ -206,7 +207,7 @@
             (let [[f opts] spec]
               (f (merge opts spec-opts)))
             spec)
-        prepare (if (= type ::decode) formats/as-stream identity)]
+        prepare (if (= type ::decode) protocols/as-stream identity)]
     (if (and p pf)
       (fn f
         ([x]

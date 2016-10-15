@@ -7,51 +7,8 @@
             [cognitect.transit :as transit]
             [msgpack.core :as msgpack]
             [clojure.java.io :as io]
-            [ring.core.protocols :as protocols])
-  (:import (java.io ByteArrayOutputStream DataInputStream DataOutputStream InputStreamReader PushbackReader InputStream ByteArrayInputStream OutputStreamWriter OutputStream BufferedReader Writer)
-           (clojure.lang AFn IFn)))
-
-(deftype StreamableResponse [f]
-  protocols/StreamableResponseBody
-  (write-body-to-stream [_ _ output-stream]
-    (f output-stream))
-  IFn
-  (invoke [_ output-stream]
-    (f output-stream)
-    output-stream)
-  (applyTo [this args]
-    (AFn/applyToHelper this args)))
-
-(extend StreamableResponse
-  io/IOFactory
-  (assoc io/default-streams-impl
-    :make-input-stream (fn [^StreamableResponse this _]
-                         (with-open [out (ByteArrayOutputStream. 4096)]
-                           ((.f this) out)
-                           (ByteArrayInputStream.
-                             (.toByteArray out))))
-    :make-reader (fn [^StreamableResponse this _]
-                   (with-open [out (ByteArrayOutputStream. 4096)]
-                     ((.f this) out)
-                     (BufferedReader.
-                       (InputStreamReader.
-                         (ByteArrayInputStream.
-                           (.toByteArray out))))))))
-
-(defmethod print-method StreamableResponse
-  [^StreamableResponse sr ^Writer w]
-  (.write w (str "<<StreamableResponse>>")))
-
-(defprotocol AsInputStream
-  (as-stream [this]))
-
-(extend-protocol AsInputStream
-  InputStream
-  (as-stream [this] this)
-
-  StreamableResponse
-  (as-stream [this]
-    (io/make-input-stream this nil)))
+            [muuntaja.protocols :as protocols])
+  (:import (java.io ByteArrayOutputStream DataInputStream DataOutputStream InputStreamReader PushbackReader InputStream ByteArrayInputStream OutputStreamWriter OutputStream)))
 
 (defn- slurp-to-bytes ^bytes [^InputStream in]
   (if in
@@ -88,7 +45,7 @@
 
 (defn make-streaming-json-encoder [options]
   (fn [data ^String charset]
-    (->StreamableResponse
+    (protocols/->StreamableResponse
       (fn [^OutputStream output-stream]
         (with-open [out output-stream
                     writer (OutputStreamWriter. out charset)]
@@ -181,7 +138,7 @@
 (defn make-streaming-transit-encoder [type {:keys [verbose] :as options}]
   (let [full-type (if (and (= type :json) verbose) :json-verbose type)]
     (fn [data _]
-      (->StreamableResponse
+      (protocols/->StreamableResponse
         (fn [output-stream]
           (with-open [^OutputStream out output-stream]
             (let [writer (transit/writer out full-type options)]

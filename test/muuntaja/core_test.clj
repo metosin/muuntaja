@@ -1,7 +1,8 @@
 (ns muuntaja.core-test
   (:require [clojure.test :refer :all]
             [muuntaja.core :as m]
-            [clojure.string :as str]))
+            [clojure.string :as str]
+            [muuntaja.protocols :as protocols]))
 
 (deftest core-test
 
@@ -42,14 +43,14 @@
 
   (testing "adding new format"
     (let [format "application/upper"
-          upper-case-format {:decoder (fn [s _] (str/lower-case s))
-                             :encoder (fn [s _] (str/upper-case s))}
+          upper-case-format {:decoder (fn [s _] (str/lower-case (slurp s)))
+                             :encoder (fn [s _] (protocols/as-stream (str/upper-case s)))}
           m (m/create
               (-> m/default-options
                   (assoc-in [:formats format] upper-case-format)))
           {:keys [encode decode]} (get-in m [:adapters format])
           data "olipa kerran avaruus"]
-      (is (= "OLIPA KERRAN AVARUUS" (encode data)))
+      (is (= "OLIPA KERRAN AVARUUS" (slurp (encode data))))
       (is (= data (decode (encode data))))))
 
   (testing "setting non-existing format as default throws exception"
@@ -67,13 +68,16 @@
                 (m/with-formats ["kikka"]))))))
 
   (testing "overriding adapter options"
-    (let [decode-json-kw (-> (m/create
-                               (-> m/default-options))
-                             (get-in [:adapters "application/json" :decode]))
-          decode-json (-> (m/create
-                            (-> m/default-options
-                                (m/with-decoder-opts "application/json" {:keywords? false})))
-                          (get-in [:adapters "application/json" :decode]))]
+    (let [decode-json-kw (m/decoder
+                           (m/create)
+                           "application/json")
+          decode-json (m/decoder
+                        (m/create
+                          (m/with-decoder-opts
+                            m/default-options
+                            "application/json"
+                            {:keywords? false}))
+                        "application/json")]
       (is (= {:kikka true} (decode-json-kw "{\"kikka\":true}")))
       (is (= {"kikka" true} (decode-json "{\"kikka\":true}")))))
 
