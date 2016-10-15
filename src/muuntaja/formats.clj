@@ -48,15 +48,15 @@
 
 (defn make-json-decoder [{:keys [keywords? bigdecimals?]}]
   (if-not bigdecimals?
-    (fn [x _]
+    (fn [x ^String charset]
       (if (string? x)
         (json/parse-string x keywords?)
-        (json/parse-stream (InputStreamReader. x) keywords?)))
-    (fn [x _]
+        (json/parse-stream (InputStreamReader. ^InputStream x charset) keywords?)))
+    (fn [x ^String charset]
       (binding [parse/*use-bigdecimals?* bigdecimals?]
         (if (string? x)
           (json/parse-string x keywords?)
-          (json/parse-stream (InputStreamReader. x) keywords?))))))
+          (json/parse-stream (InputStreamReader. ^InputStream x charset) keywords?))))))
 
 (defn make-json-encoder [options]
   (fn [data ^String charset]
@@ -79,6 +79,7 @@
 
 ;; msgpack
 
+;; TODO: charset, better streaming
 (defn make-msgpack-decoder [{:keys [keywords?] :as options}]
   (let [transform (if keywords? walk/keywordize-keys identity)]
     (fn [in _]
@@ -100,6 +101,7 @@
 
 ;; YAML
 
+;; TODO: read stream + charset
 (defn make-yaml-decoder [options]
   (let [options-args (mapcat identity options)]
     (fn [s _] (apply yaml/parse-string s options-args))))
@@ -119,10 +121,10 @@
 
 (defn make-edn-decoder [options]
   (let [options (merge {:readers *data-readers*} options)]
-    (fn [x _]
+    (fn [x ^String charset]
       (if (string? x)
         (edn/read-string options x)
-        (edn/read options (PushbackReader. (InputStreamReader. x)))))))
+        (edn/read options (PushbackReader. (InputStreamReader. ^InputStream x charset)))))))
 
 (defn make-edn-encoder [_]
   (fn [data ^String charset]
@@ -140,6 +142,7 @@
 
 ;; TRANSIT
 
+;; TODO: charset
 (defn make-transit-decoder
   [type options]
   (fn [in _]
