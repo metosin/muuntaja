@@ -58,21 +58,7 @@
   (str format "; charset=" charset))
 
 ;;
-;; Protocols
-;;
-
-(defprotocol RequestFormatter
-  (negotiate-request [this request])
-  (negotiate-response [this request])
-  (decode-request? [this request])
-  (encode-response? [this request response]))
-
-(defprotocol Formatter
-  (encoder [this format])
-  (decoder [this format]))
-
-;;
-;; Content negotiation
+;; Memoizable negotiation functions
 ;;
 
 (defn- -negotiate-content-type [{:keys [consumes matchers default-charset charsets] :as formats} s]
@@ -130,33 +116,45 @@
 
                     adapters
                     default-charset
-                    default-format]
-  RequestFormatter
+                    default-format])
 
-  (negotiate-request [_ request]
-    (negotiate-content-type (extract-content-type-fn request)))
+;;
+;; Content Negotiation
+;;
 
-  (negotiate-response [_ request]
-    [(negotiate-accept (extract-accept-fn request))
-     (negotiate-accept-charset (extract-accept-charset-fn request))])
+(defn negotiate-request [formats request]
+  ((:negotiate-content-type formats)
+    ((:extract-content-type-fn formats)
+      request)))
 
-  (decode-request? [_ request]
-    (and decode?
-         (not (contains? request ::format))
-         (decode? request)))
+(defn negotiate-response [formats request]
+  [((:negotiate-accept formats)
+     ((:extract-accept-fn formats)
+       request))
+   ((:negotiate-accept-charset formats)
+     ((:extract-accept-charset-fn formats)
+       request))])
 
-  (encode-response? [_ request response]
-    (and encode?
-         (map? response)
+(defn decode-request? [formats request]
+  (if-let [decode? (:decode? formats)]
+    (and (not (contains? request ::format))
+         (decode? request))))
+
+(defn encode-response? [formats request response]
+  (if-let [encode? (:encode? formats)]
+    (and (map? response)
          (not (contains? response ::format))
-         (encode? request response)))
+         (encode? request response))))
 
-  Formatter
-  (encoder [_ format]
-    (-> format adapters :encode))
+;;
+;; encode & decode
+;;
 
-  (decoder [_ format]
-    (-> format adapters :decode)))
+(defn encoder [formats format]
+  (:encode ((:adapters formats) format)))
+
+(defn decoder [formats format]
+  (:decode ((:adapters formats) format)))
 
 (defn encode
   ([formats format data]
