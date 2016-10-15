@@ -307,7 +307,7 @@
         resp-non-serialized (api-echo-pred (assoc req ::serializable? false))
         resp-serialized (api-echo-pred (assoc req ::serializable? true))]
     (is (map? (:body resp-non-serialized)))
-    (is (instance? InputStream (:body resp-serialized)))))
+    (is (= "{\"foo\":\"bar\"}" (slurp (:body resp-serialized))))))
 
 (def custom-encoder
   (get-in m/default-options [:formats "application/json"]))
