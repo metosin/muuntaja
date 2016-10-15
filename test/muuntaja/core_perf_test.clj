@@ -42,9 +42,9 @@
    :body (slurp (m/encode (m/create) "application/transit+json" data))})
 
 (def +transit-json-request+
-  {:headers {"content-type" "application/transit+json; charset=utf-16"
+  {:headers {"content-type" "application/transit+json; charset=utf-8"
              "accept" "application/transit+json"
-             "accept-charset" "utf-16"}
+             "accept-charset" "utf-8"}
    :body "[\"^ \",\"~:kikka\",42]"})
 
 (defn byte-stream [x]
