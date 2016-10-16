@@ -6,11 +6,15 @@
             [muuntaja.json :as json]
             [muuntaja.test_utils :refer :all]
             [cheshire.core :as cheshire]
-            [ring.middleware.format-params :as ring-middleware-formatp]
-            [ring.middleware.format :as ring-middleware-format]
-            [ring.middleware.json :as rmj]
-            [muuntaja.formats :as formats])
-  (:import (java.io InputStreamReader)))
+            [ring.middleware.format-params]
+            [ring.middleware.format]
+            [ring.middleware.transit]
+            [ring.middleware.json]
+            [io.pedestal.http]
+            [io.pedestal.http.body-params]
+            [muuntaja.formats :as formats]
+            [ring.core.protocols :as protocols])
+  (:import (java.io InputStreamReader ByteArrayOutputStream ByteArrayInputStream)))
 
 ;;
 ;; start repl with `lein perf repl`
@@ -27,27 +31,49 @@
 ;; Memory:                16 GB
 ;;
 
-(def +json-request+
+(defn json-request [data]
   {:headers {"content-type" "application/json"
              "accept" "application/json"}
-   :body "{\"kikka\":42}"})
+   :body (cheshire/generate-string data)})
+
+(def +json-request+ (json-request {:kikka 42}))
+
+(defn transit-request [data]
+  {:headers {"content-type" "application/transit+json"
+             "accept" "application/transit+json"}
+   :body (slurp (m/encode (m/create) "application/transit+json" data))})
 
 (def +transit-json-request+
-  {:headers {"content-type" "application/transit+json; charset=utf-16"
+  {:headers {"content-type" "application/transit+json; charset=utf-8"
              "accept" "application/transit+json"
-             "accept-charset" "utf-16"}
+             "accept-charset" "utf-8"}
    :body "[\"^ \",\"~:kikka\",42]"})
+
+(defn byte-stream [x]
+  (ByteArrayInputStream. (.getBytes (str x))))
 
 (defrecord Hello [^String name]
   formats/EncodeJson
   (encode-json [_]
-    (str (doto (json/object) (.put "hello" name)))))
+    (byte-stream
+      (str (doto (json/object)
+             (.put "hello" name))))))
 
 (def +handler+ (fn [request] {:status 200 :body (:body-params request)}))
 (def +handler2+ (fn [_] {:status 200 :body (->Hello "yello")}))
 
 (defn handle [context handler]
   (assoc context :response (handler (:request context))))
+
+(defn ring-stream! [response]
+  (let [os (ByteArrayOutputStream. 16384)]
+    (protocols/write-body-to-stream (:body response) response os)
+    os))
+
+(defn fn-stream! [response]
+  (let [os (ByteArrayOutputStream. 16384)]
+    ((:body response) os)
+    os))
 
 ;;
 ;; naive
@@ -160,8 +186,8 @@
 
 (defn identity-encode-decode []
   (let [formats (-> m/default-options
-                    (assoc-in [:formats "application/json" :encoder] identity)
-                    (assoc-in [:formats "application/json" :decoder] identity)
+                    (assoc-in [:formats "application/json" :encoder] (fn [x _] x))
+                    (assoc-in [:formats "application/json" :decoder] (fn [x _] x))
                     (m/create))]
 
     ; 143ns
@@ -219,56 +245,79 @@
 
 (defn ring-middleware-format-e2e []
 
-  ; 9.2µs
-  (let [app (ring-middleware-formatp/wrap-restful-params +handler+ {:formats [:json-kw :edn :msgpack-kw :yaml-kw :transit-msgpack :transit-json]})
+  ; 8.5µs
+  (let [app (ring.middleware.format-params/wrap-restful-params +handler+ {:formats [:json-kw :edn :msgpack-kw :yaml-kw :transit-msgpack :transit-json]})
         request! (request-stream +json-request+)]
 
     (title "ring-middleware-format: JSON-REQUEST")
     (assert (= {:kikka 42} (:body (app (request!)))))
     (cc/quick-bench (app (request!))))
 
-  ; 7.7µs
-  (let [app (ring-middleware-formatp/wrap-restful-params +handler+ {:formats [:json-kw :edn :msgpack-kw :yaml-kw :transit-msgpack :transit-json]})
+  ; 7.8µs
+  (let [app (ring.middleware.format-params/wrap-restful-params +handler+ {:formats [:json-kw :edn :msgpack-kw :yaml-kw :transit-msgpack :transit-json]})
         request! (request-stream +transit-json-request+)]
 
     (title "ring-middleware-format: TRANSIT-REQUEST")
     (assert (= {:kikka 42} (:body (app (request!)))))
     (cc/quick-bench (app (request!))))
 
-  ; 22.0µs
-  (let [app (ring-middleware-format/wrap-restful-format +handler+ {:formats [:json-kw :edn :msgpack-kw :yaml-kw :transit-msgpack :transit-json]})
+  ; 14.4µs && 17.4µs
+  (let [app (ring.middleware.format/wrap-restful-format +handler+ {:charset "utf-8" :formats [:json-kw :edn :msgpack-kw :yaml-kw :transit-msgpack :transit-json]})
+        request! (request-stream +json-request+)]
+
+    (title "ring-middleware-format: JSON-REQUEST-RESPONSE - fixed charset")
+    (assert (= (:body +json-request+) (str (ring-stream! (app (request!))))))
+    (cc/quick-bench (app (request!)))
+    (cc/quick-bench (ring-stream! (app (request!)))))
+
+  ; 22.3µs && 24.7µs
+  (let [app (ring.middleware.format/wrap-restful-format +handler+ {:formats [:json-kw :edn :msgpack-kw :yaml-kw :transit-msgpack :transit-json]})
         request! (request-stream +json-request+)]
 
     (title "ring-middleware-format: JSON-REQUEST-RESPONSE")
-    (assert (= (:body +json-request+) (slurp (:body (app (request!))))))
-    (cc/quick-bench (app (request!))))
+    (assert (= (:body +json-request+) (str (ring-stream! (app (request!))))))
+    (cc/quick-bench (app (request!)))
+    (cc/quick-bench (ring-stream! (app (request!)))))
 
-  ; 21.7µs
-  (let [app (ring-middleware-format/wrap-restful-format +handler+ {:formats [:json-kw :edn :msgpack-kw :yaml-kw :transit-msgpack :transit-json]})
+  ; 22.5µs && 25.5µs
+  (let [app (ring.middleware.format/wrap-restful-format +handler+ {:charset "utf-8" :formats [:json-kw :edn :msgpack-kw :yaml-kw :transit-msgpack :transit-json]})
+        request! (request-stream +transit-json-request+)]
+
+    (title "ring-middleware-format: TRANSIT-REQUEST-RESPONSE - fixed charset")
+    (assert (= (:body +transit-json-request+) (str (ring-stream! (app (request!))))))
+    (cc/quick-bench (app (request!)))
+    (cc/quick-bench (ring-stream! (app (request!)))))
+
+  ; 24.7µs && 27.4µs
+  (let [app (ring.middleware.format/wrap-restful-format +handler+ {:formats [:json-kw :edn :msgpack-kw :yaml-kw :transit-msgpack :transit-json]})
         request! (request-stream +transit-json-request+)]
 
     (title "ring-middleware-format: TRANSIT-REQUEST-RESPONSE")
-    (assert (= (:body +transit-json-request+) (slurp (:body (app (request!))))))
-    (cc/quick-bench (app (request!)))))
+    (assert (= (:body +transit-json-request+) (str (ring-stream! (app (request!))))))
+    (cc/quick-bench (app (request!)))
+    (cc/quick-bench (ring-stream! (app (request!))))))
 
 (defn ring-json-e2e []
   (let [+handler+ (fn [request] {:status 200 :body (:body request)})]
 
     ; 5.2µs
-    (let [app (rmj/wrap-json-body +handler+ {:keywords? true})
+    (let [app (ring.middleware.json/wrap-json-body +handler+ {:keywords? true})
           request! (request-stream +json-request+)]
 
       (title "ring-json: JSON-REQUEST")
       (assert (= {:kikka 42} (:body (app (request!)))))
       (cc/quick-bench (app (request!))))
 
-    ; 7.7µs
-    (let [app (-> +handler+ (rmj/wrap-json-body {:keywords? true}) (rmj/wrap-json-response))
+    ; 7.9µs && 16.2µs
+    (let [app (-> +handler+
+                  (ring.middleware.json/wrap-json-body {:keywords? true})
+                  (ring.middleware.json/wrap-json-response))
           request! (request-stream +json-request+)]
 
       (title "ring-json: JSON-REQUEST-RESPONSE")
-      (assert (= (:body +json-request+) (:body (app (request!)))))
-      (cc/quick-bench (app (request!))))))
+      (assert (= (:body +json-request+) (str (ring-stream! (app (request!))))))
+      (cc/quick-bench (app (request!)))
+      (cc/quick-bench (ring-stream! (app (request!)))))))
 
 (defn muuntaja-e2e []
 
@@ -295,57 +344,206 @@
   ; 3.6µs
   ; 4.4µs (negotions)
   ; 4.2µs (content-type)
+  ; 4.2µs && 7.0µs
   (let [app (middleware/wrap-format +handler+ m/default-options)
         request! (request-stream +json-request+)]
 
     (title "muuntaja: JSON-REQUEST-RESPONSE")
-    (assert (= (:body +json-request+) (slurp (:body (app (request!))))))
-    (cc/quick-bench (app (request!))))
+    (assert (= (:body +json-request+) (str (ring-stream! (app (request!))))))
+    (cc/quick-bench (app (request!)))
+    (cc/quick-bench (ring-stream! (app (request!)))))
 
   ; 7.1µs
   ; 8.8µs (negotions)
   ; 8.2µs (content-type)
+  ; 9.4µs && 11.9µs
   (let [app (middleware/wrap-format +handler+ m/default-options)
         request! (request-stream +transit-json-request+)]
 
     (title "muuntaja: TRANSIT-REQUEST-RESPONSE")
-    (assert (= (:body +transit-json-request+) (slurp (:body (app (request!))))))
-    (cc/quick-bench (app (request!))))
+    (assert (= (:body +transit-json-request+) (str (ring-stream! (app (request!))))))
+    (cc/quick-bench (app (request!)))
+    (cc/quick-bench (ring-stream! (app (request!)))))
 
   ; 3.8µs
   ; 2.6µs Protocol (-30%)
   ; 3.3µs (negotions)
   ; 3.2µs (content-type)
+  ; 3.3µs && 5.7µs
   (let [app (middleware/wrap-format +handler2+ m/default-options)
         request! (request-stream +json-request+)]
 
     (title "muuntaja: JSON-REQUEST-RESPONSE (PROTOCOL)")
-    (assert (= "{\"hello\":\"yello\"}" (:body (app (request!)))))
-    (cc/quick-bench (app (request!)))))
+    (assert (= "{\"hello\":\"yello\"}" (str (ring-stream! (app (request!))))))
+    (cc/quick-bench (app (request!)))
+    (cc/quick-bench (ring-stream! (app (request!))))))
+
+(defn pedestal-interceptor-e2e []
+
+  ; 3.8µs && 7.2µs
+  (let [enter (:enter (io.pedestal.http.body-params/body-params))
+        handler (fn [ctx] (assoc ctx :response {:status 200 :body (-> ctx :request :json-params)}))
+        leave (:leave io.pedestal.http/json-body)
+        app (fn [ctx] (-> ctx enter handler leave :response))
+        request! (context-stream (assoc +json-request+ :content-type "application/json"))]
+
+    (title "pedestal: Interceptor JSON-REQUEST-RESPONSE")
+    (assert (= (:body +json-request+) (str (fn-stream! (app (request!))))))
+    (cc/quick-bench (app (request!)))
+    (cc/quick-bench (fn-stream! (app (request!)))))
+
+  ; 5.6µs && 11.9µs
+  (let [enter (:enter (io.pedestal.http.body-params/body-params))
+        handler (fn [ctx] (assoc ctx :response {:status 200 :body (-> ctx :request :transit-params)}))
+        leave (:leave io.pedestal.http/transit-body)
+        app (fn [ctx] (-> ctx enter handler leave :response))
+        request! (context-stream (assoc +transit-json-request+ :content-type "application/transit+json"))]
+
+    (title "pedestal: Interceptor TRANSIT-REQUEST-RESPONSE")
+    (assert (= (:body +transit-json-request+) (str (fn-stream! (app (request!))))))
+    (cc/quick-bench (app (request!)))
+    (cc/quick-bench (fn-stream! (app (request!))))))
 
 (defn interceptor-e2e []
 
   ; 3.8µs
   ; 4.7µs (negotiations)
   ; 4.6µs (content-type)
+  ; 4.4µs && 7.1µs
+  ; 3.5µs && 6.7µs (streaming)
   (let [{:keys [enter leave]} (interceptor/format-interceptor m/default-options)
         app (fn [ctx] (-> ctx enter (handle +handler+) leave :response))
         request! (context-stream +json-request+)]
 
     (title "muuntaja: Interceptor JSON-REQUEST-RESPONSE")
-    (assert (= (:body +json-request+) (slurp (:body (app (request!))))))
-    (cc/quick-bench (app (request!))))
+    (assert (= (:body +json-request+) (str (ring-stream! (app (request!))))))
+    (cc/quick-bench (app (request!)))
+    (cc/quick-bench (ring-stream! (app (request!)))))
 
   ; 7.5µs
-  ; 8.7µs (negotiations) ???
+  ; 8.7µs (negotiations)
   ; 8.5µs (content-type)
+  ; 5.5µs && 12.2µs (streaming)
   (let [{:keys [enter leave]} (interceptor/format-interceptor m/default-options)
         app (fn [ctx] (-> ctx enter (handle +handler+) leave :response))
         request! (context-stream +transit-json-request+)]
 
     (title "muuntaja: Interceptor TRANSIT-REQUEST-RESPONSE")
-    (assert (= (:body +transit-json-request+) (slurp (:body (app (request!))))))
-    (cc/quick-bench (app (request!)))))
+    (assert (= (:body +transit-json-request+) (str (ring-stream! (app (request!))))))
+    (cc/quick-bench (app (request!)))
+    (cc/quick-bench (ring-stream! (app (request!))))))
+
+;; file sizes about about the size. good enough.
+(defn e2e-json-comparison-different-payloads []
+  (doseq [file ["dev-resources/json10b.json"
+                "dev-resources/json100b.json"
+                "dev-resources/json1k.json"
+                "dev-resources/json10k.json"
+                "dev-resources/json100k.json"]
+          :let [data (cheshire/parse-string (slurp file))
+                request (json-request data)
+                request! (request-stream request)]]
+
+    (title file)
+
+    ;   22µs (10b)
+    ;   41µs (100b)
+    ;  306µs (1k)
+    ; 2200µs (10k)
+    ; 5000µs (100k)
+    (title "ring-middleware-format: JSON-REQUEST-RESPONSE")
+    (let [app (-> +handler+ (ring.middleware.format/wrap-restful-format))]
+      #_(println (str (ring-stream! (app (request!)))))
+      (cc/quick-bench (ring-stream! (app (request!)))))
+
+    ;   15µs (10b)
+    ;   18µs (100b)
+    ;   36µs (1k)
+    ;  280µs (10k)
+    ; 2500µs (100k)
+    (title "ring-json: JSON-REQUEST-RESPONSE")
+    (let [+handler+ (fn [request] {:status 200 :body (:body request)})
+          app (-> +handler+
+                  (ring.middleware.json/wrap-json-body)
+                  (ring.middleware.json/wrap-json-response))]
+      #_(println (str (ring-stream! (app (request!)))))
+      (cc/quick-bench (ring-stream! (app (request!)))))
+
+    ;    7µs (10b)
+    ;    9µs (100b)
+    ;   23µs (1k)
+    ;  215µs (10k)
+    ; 2100µs (100k)
+    (title "muuntaja: JSON-REQUEST-RESPONSE")
+    (let [app (-> +handler+ (middleware/wrap-format (assoc-in m/default-options [:formats "application/json" :encoder] [formats/make-streaming-json-encoder])))]
+      #_(println (str (ring-stream! (app (request!)))))
+      (cc/quick-bench (ring-stream! (app (request!)))))
+
+    ;    7µs (10b)
+    ;    9µs (100b)
+    ;   23µs (1k)
+    ;  215µs (10k)
+    ; 2100µs (100k)
+    (title "muuntaja: JSON-REQUEST-RESPONSE, streaming")
+    (let [app (-> +handler+ (middleware/wrap-format))]
+      #_(println (str (ring-stream! (app (request!)))))
+      (cc/quick-bench (ring-stream! (app (request!)))))))
+
+;; file sizes about about the size in JSON. Smaller with transit.
+(defn e2e-transit-comparison-different-payloads []
+  (doseq [file ["dev-resources/json10b.json"
+                "dev-resources/json100b.json"
+                "dev-resources/json1k.json"
+                "dev-resources/json10k.json"
+                "dev-resources/json100k.json"]
+          :let [data (cheshire/parse-string (slurp file))
+                request (transit-request data)
+                request! (request-stream request)]]
+
+    (title file)
+
+    ;   24µs (10b)
+    ;   34µs (100b)
+    ;   46µs (1k)
+    ;  240µs (10k)
+    ; 2000µs (100k)
+    (title "ring-middleware-format: TRANSIT-JSON-REQUEST-RESPONSE")
+    (let [app (-> +handler+ (ring.middleware.format/wrap-restful-format))]
+      #_(println (str (ring-stream! (app (request!)))))
+      (cc/quick-bench (ring-stream! (app (request!)))))
+
+    ;   21µs (10b)
+    ;   26µs (100b)
+    ;   44µs (1k)
+    ;  258µs (10k)
+    ; 2390µs (100k)
+    (title "ring-transit: TRANSIT-JSON-REQUEST-RESPONSE")
+    (let [+handler+ (fn [request] {:status 200 :body (:body request)})
+          app (-> +handler+
+                  (ring.middleware.transit/wrap-transit-body)
+                  (ring.middleware.transit/wrap-transit-response))]
+      #_(println (str (ring-stream! (app (request!)))))
+      (cc/quick-bench (ring-stream! (app (request!)))))
+
+    ;   12µs (10b)
+    ;   18µs (100b)
+    ;   31µs (1k)
+    ;  220µs (10k)
+    ; 1900µs (100k)
+    (title "muuntaja: TRANSIT-JSON-REQUEST-RESPONSE")
+    (let [app (-> +handler+ (middleware/wrap-format (assoc-in m/default-options [:formats "application/transit+json" :encoder] [(partial formats/make-transit-encoder :json)])))]
+      #_(println (str (ring-stream! (app (request!)))))
+      (cc/quick-bench (ring-stream! (app (request!)))))
+
+    ;   11µs (10b)
+    ;   17µs (100b)
+    ;   30µs (1k)
+    ;  215µs (10k)
+    ; 1900µs (100k)
+    (title "muuntaja: TRANSIT-JSON-REQUEST-RESPONSE, streaming")
+    (let [app (-> +handler+ (middleware/wrap-format))]
+      #_(println (str (ring-stream! (app (request!)))))
+      (cc/quick-bench (ring-stream! (app (request!)))))))
 
 (defn request-streams []
 
@@ -359,19 +557,6 @@
 ;; Run
 ;;
 
-(defn all []
-  (old)
-  (content-type)
-  (accept)
-  (negotiate-request)
-  (identity-encode-decode)
-  (parse-json)
-  (ring-middleware-format-e2e)
-  (ring-json-e2e)
-  (muuntaja-e2e)
-  (interceptor-e2e)
-  (request-streams))
-
 (comment
   (old)
   (content-type)
@@ -382,6 +567,9 @@
   (ring-middleware-format-e2e)
   (ring-json-e2e)
   (muuntaja-e2e)
+  (pedestal-interceptor-e2e)
   (interceptor-e2e)
   (request-streams)
+  (e2e-json-comparison-different-payloads)
+  (e2e-transit-comparison-different-payloads)
   (all))

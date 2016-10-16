@@ -7,18 +7,20 @@
   {:status 200
    :body (:body-params request)})
 
-(defn ->request [content-type accept body]
+(defn ->request [content-type accept accept-charset body]
   {:headers {"content-type" content-type
+             "accept-charset" accept-charset
              "accept" accept}
    :body body})
 
 (deftest middleware-test
-  (let [m (m/create m/default-options)
-        data {:kikka 42}]
+  (let [m (m/create)
+        data {:kikka 42}
+        edn-string (slurp (m/encode m "application/edn" data))
+        json-string (slurp (m/encode m "application/json" data))]
 
     (testing "multiple way to initialize the middleware"
-      (let [edn-string (slurp (m/encode m "application/edn" data))
-            request (->request "application/edn" "application/edn" edn-string)]
+      (let [request (->request "application/edn" "application/edn" nil edn-string)]
         (is (= "{:kikka 42}" edn-string))
         (are [app]
           (= edn-string (slurp (:body (app request))))
@@ -39,7 +41,7 @@
           (are [format]
             (let [payload (m/encode m format data)
                   decode (partial m/decode m format)
-                  request (->request format format payload)]
+                  request (->request format format nil payload)]
               (= data (-> request app :body decode)))
             "application/json"
             "application/edn"
@@ -49,16 +51,15 @@
             "application/transit+msgpack"))
 
         (testing "content-type & accept"
-          (let [json-string (slurp (m/encode m "application/json" data))
-                call (fn [content-type accept]
-                       (some-> (->request content-type accept json-string) app :body slurp))]
+          (let [call (fn [content-type accept]
+                       (some-> (->request content-type accept nil json-string) app :body slurp))]
 
             (is (= "{\"kikka\":42}" json-string))
 
             (testing "with content-type & accept"
               (is (= json-string (call "application/json" "application/json"))))
 
-            (testing "without accept, first format (JSON) is used in encode"
+            (testing "without accept, :default-format is used in encode"
               (is (= json-string (call "application/json" nil))))
 
             (testing "without content-type, body is not parsed"
@@ -75,8 +76,39 @@
           (testing "different content-type & accept"
             (let [edn-string (slurp (m/encode m "application/edn" data))
                   yaml-string (slurp (m/encode m "application/x-yaml" data))
-                  request (->request "application/edn" "application/x-yaml" edn-string)]
+                  request (->request "application/edn" "application/x-yaml" nil edn-string)]
               (is (= yaml-string (some-> request app :body slurp))))))))
+
+    (testing "without :default-format & valid accept format, response format negotiation fails"
+      (let [app (middleware/wrap-format echo (dissoc m/default-options :default-format))]
+        (try
+          (let [response (app (->request "application/json" nil nil json-string))]
+            (is (= response ::invalid)))
+          (catch Exception e
+            (is (= (-> e ex-data :type) ::m/response-format-negotiation))))))
+
+    (testing "without :default-charset"
+
+      (testing "without valid request charset, request charset negotiation fails"
+        (let [app (middleware/wrap-format echo (dissoc m/default-options :default-charset))]
+          (try
+            (let [response (app (->request "application/json" nil nil json-string))]
+              (is (= response ::invalid)))
+            (catch Exception e
+              (is (= (-> e ex-data :type) ::m/request-charset-negotiation))))))
+
+      (testing "without valid request charset, a non-matching format is ok"
+        (let [app (middleware/wrap-format echo (dissoc m/default-options :default-charset))]
+          (let [response (app (->request nil nil nil json-string))]
+            (is (= response {:status 200, :body nil})))))
+
+      (testing "without valid accept charset, response charset negotiation fails"
+        (let [app (middleware/wrap-format echo (dissoc m/default-options :default-charset))]
+          (try
+            (let [response (app (->request "application/json; charset=utf-8" nil nil json-string))]
+              (is (= response ::invalid)))
+            (catch Exception e
+              (is (= (-> e ex-data :type) ::m/response-charset-negotiation)))))))
 
     (testing "runtime options for encoding & decoding"
       (testing "forcing a content-type on a handler (bypass negotiate)"
@@ -85,7 +117,7 @@
                           ::m/content-type "application/edn"
                           :body (:body-params request)})
               app (middleware/wrap-format echo-edn)
-              request (->request "application/json" "application/json" "{\"kikka\":42}")
+              request (->request "application/json" "application/json" nil "{\"kikka\":42}")
               response (-> request app)]
           (is (= "{:kikka 42}" (-> response :body slurp)))
           (is (not (contains? response ::m/content-type)))

@@ -2,24 +2,24 @@
 
 <img src="https://raw.githubusercontent.com/wiki/metosin/muuntaja/muuntaja-small.png" align="right"/>
 
-Clojure library for fast http format negotiation - symmetric for both servers & clients.
-Standalone library, but ships with adapters for ring (async) middleware & Pedestal-style interceptors.
-Explicit & extendable, supporting out-of-the-box [JSON](http://www.json.org/), [EDN](https://github.com/edn-format/edn),
-[MessagePack](http://msgpack.org/), [YAML](http://yaml.org/) and [Transit](https://github.com/cognitect/transit-format).
+Clojure library for fast http format negotiation - symmetric for both servers & clients. Standalone library, but
+ships with adapters for ring (async) middleware & Pedestal-style interceptors. Explicit & extendable, supporting
+out-of-the-box [JSON](http://www.json.org/), [EDN](https://github.com/edn-format/edn), [MessagePack](http://msgpack.org/),
+[YAML](http://yaml.org/) and [Transit](https://github.com/cognitect/transit-format) in different flavours.
 
-Based on [ring-middleware-format](https://github.com/ngrunwald/ring-middleware-format), but a complete rewrite.
+Based on [ring-middleware-format](https://github.com/ngrunwald/ring-middleware-format), 
+but a complete rewrite - and [10x faster](#performance) (with 1k JSON messages).
 
 ## Rationale
 
 - explicit configuration, avoiding shared mutable state (e.g. multimethods)
+- symmetric encoding & decoding
+- use streaming when possible
 - fast & pragmatic by default
 - extendable & pluggable: new formats, behavior
 - typed exceptions - caught elsewhere
-- supports runtime docs (like swagger) & inspection (negotion results)
+- supports runtime docs (like swagger) & inspection (negotiation results)
 - supports runtime configuration (negotiation overrides)
-
-Content-negotiation is done for both request and response and covers format and charset. Default negotiation is
-done using `Content-type`, `Accept` and `Accept-Charset` headers.
 
 ## Latest version
 
@@ -40,13 +40,13 @@ done using `Content-type`, `Accept` and `Accept-Charset` headers.
 (def app (middleware/wrap-format echo))
 
 (app {:headers 
-      {"content-type" "application/json"
-       "accept" "application/edn"}
-      :body "{\"kikka\":42}"})
-; {:status 200
-;  :body "{:kikka 42}"
-;  :muuntaja.core/format "application/edn"
-;  :headers {"Content-Type" "application/edn; charset=utf-8"}}
+      {"content-type" "application/edn"
+       "accept" "application/json"}
+      :body "{:kikka 42}"})
+; {:status 200,
+;  :body <<StreamableResponse>>,
+;  :muuntaja.core/format "application/json",
+;  :headers {"Content-Type" "application/json; charset=utf-8"}}
 ```
 
 ### Standalone
@@ -59,7 +59,9 @@ Create a muuntaja and use it to encode & decode JSON:
 ;; with defaults
 (def m (m/create))
 
-(m/encode m "application/json" {:kikka 42})
+(->> {:kikka 42} 
+     (m/encode m "application/json")
+     slurp)
 ; "{\"kikka\":42}"
 
 (->> {:kikka 42}
@@ -82,7 +84,7 @@ With custom EDN decoder opts:
 ; {:value 42}    
 ```
 
-Function to encode Transit-json:
+Define a function to encode Transit-json:
 
 ```clj
 (def encode-transit-json (m/encoder m "application/transit+json"))
@@ -91,12 +93,29 @@ Function to encode Transit-json:
 ; "[\"^ \",\"~:kikka\",42]"
 ```
 
-## Performance
+## HTTP format negotiation
 
-* by default, over 5x faster than `[ring-middleware-format "0.7.0"]` (JSON request & response).
-* by default, faster than `[ring/ring-json "0.4.0"]` (JSON requests & responses).
+HTTP format negotiation is done for both request and response and covers format and charset. By default,
+Muuntaja allows only full matches for the format, e.g. `application/json` but one can use also regexps
+for more loose matching (like those in ring-middleware-format & ring-json). Behind the scenes, results of
+regexp matches against a given client input are memoized, giving still near constant time resolution. One
+can also force the format negotiation results with special namespaced request & response keys.
 
-There is also a new low-level JSON encoder (in `muuntaja.json`) on top of 
+* Request format & charset is negotiated using the `Content-type` header (e.g. `application/json; charset=utf-8`)
+  * If a client request format is not registered to Muuntaja, nothing happens.
+  * If a client request format is resolved, but charset is not registered to Muuntaja an exception
+  with type `:muuntaja.core/request-charset-negotiation` is thrown.
+  
+* Response format is negotiated using `Accept` header. If a format can't be negotiated `:default-format`
+  is used. If default is not defined, an exception with type `:muuntaja.core/response-format-negotiation` is thrown.
+
+* Response charset is negotiated using `Accept-Charset` header. If a charset can't be negotiated `:default-charset`
+  is used. If default is not defined, an exception with type `:muuntaja.core/response-charset-negotiation` is thrown.
+
+## Performance 
+
+
+There is also a new low-level JSON encoder (in `muuntaja.json`) directly on top of 
 [Jackson Databind](https://github.com/FasterXML/jackson-databind) and protocols supporting
 hand-crafted responses => up to 5x faster than `[cheshire "5.6.3"]`.
 
@@ -105,10 +124,6 @@ All perf test are found in this repo.
 ## API Documentation
 
 Full [API documentation](http://metosin.github.com/muuntaja) is available.
-
-## TODO
-
-* Currently, supports only single charset, defaulting to UTF-8.
 
 ## Server Spec
 
@@ -225,6 +240,7 @@ verify behavior and demonstrate differences.
 ### ring-json & ring-transit
 
 * Supports multiple formats in a single middleware
+* Returns Stream responses instead of Strings
 * Populates just the `:body-params`, not `:params` & `:json-params`/`:transit-params`
   * Because merging Persistent Maps is slow
   * if you need the `:params` add `muuntaja.middleware/wrap-params`
@@ -232,14 +248,12 @@ verify behavior and demonstrate differences.
 
 ### ring-middleware-format
 
-* Set's the `:body` to nil after consuming the body (instead of re-creating a stream)
+* Does not recreate a `:body` stream after consuming the body
 * Multiple `wrap-format` middlewares can be used in the same mw stack, rest are no-op
 * By default, encodes only collections (or responses with `:muuntaja.core/encode?` set)
 * Reads the `content-type` from request headers (as defined in the RING Spec)
-* Currently, supports only single charset, defaulting to UTF-8.
 * Does not set the `Content-Length` header (done by the adapters)
 * `:yaml-in-html` / `text/html` is not supported
-* `:json` `:edn` & `:yaml` responses are not wrapped into InputStreams, should they?
 
 ## License
 

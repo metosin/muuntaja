@@ -29,6 +29,9 @@
 (def +transit-string+ "[\"^ \",\"~:kikka\",2]")
 (def +edn-string+ "{:kikka 2}")
 
+#_(def +data+ (cheshire.core/parse-string (slurp "users.json")))
+#_(def +json-string+ (cheshire.core/generate-string +data+))
+
 (defn ^ByteArrayOutputStream stream []
   (ByteArrayOutputStream. 16384))
 
@@ -37,6 +40,8 @@
     data
     {:headers {"Content-Type" "application/json;charset=utf-8"}}
     stream))
+
+(def +charset+ "utf-8")
 
 (defn encode-json []
   (let [encode0 (formats/make-json-string-encoder {})
@@ -47,7 +52,7 @@
     (title "json: string")
     (let [call #(let [baos (stream)]
                  (with-open [writer (io/writer baos)]
-                   (.write writer ^String (encode0 +data+)))
+                   (.write writer ^String (encode0 +data+ +charset+)))
                  baos)]
 
       (assert (= +json-string+ (str (call))))
@@ -57,7 +62,7 @@
     ;; 3.1µs
     (title "json: write-to-stream")
     (let [call #(let [baos (stream)]
-                 ((encode1 +data+) baos)
+                 ((encode1 +data+ +charset+) baos)
                  baos)]
 
       (assert (= +json-string+ (str (call))))
@@ -67,7 +72,7 @@
     ;; 2.9µs
     (title "json: inputstream")
     (let [call #(let [baos (stream)
-                      is (encode2 +data+)]
+                      is (encode2 +data+ +charset+)]
                  (io/copy is baos)
                  baos)]
 
@@ -83,7 +88,7 @@
     ;; 8.1µs
     (title "ring: json: string")
     (let [call #(let [baos (stream)]
-                 (ring-write (encode0 +data+) baos)
+                 (ring-write (encode0 +data+ +charset+) baos)
                  baos)]
 
       (assert (= +json-string+ (str (call))))
@@ -97,7 +102,7 @@
                    (reify
                      protocols/StreamableResponseBody
                      (write-body-to-stream [_ _ stream]
-                       ((encode1 +data+) stream)))
+                       ((encode1 +data+ +charset+) stream)))
                    baos)
                  baos)]
       (assert (= +json-string+ (str (call))))
@@ -107,7 +112,7 @@
     ;; 3.3µs
     (title "ring: json: inputstream")
     (let [call #(let [baos (stream)]
-                 (ring-write (encode2 +data+) baos)
+                 (ring-write (encode2 +data+ +charset+) baos)
                  baos)]
 
       (assert (= +json-string+ (str (call))))
@@ -137,7 +142,7 @@
                    (reify
                      protocols/StreamableResponseBody
                      (write-body-to-stream [_ _ stream]
-                       ((encode1 +data+) stream)))
+                       ((encode1 +data+ +charset+) stream)))
                    baos)
                  baos)]
 
@@ -148,7 +153,7 @@
     ;; 7.4µs
     (title "ring: transit-json: inputstream")
     (let [call #(let [baos (stream)]
-                 (ring-write (encode2 +data+) baos)
+                 (ring-write (encode2 +data+ +charset+) baos)
                  baos)]
 
       (assert (= +transit-string+ (str (call))))
@@ -162,7 +167,7 @@
     ;; 8.8µs
     (title "ring: edn: string")
     (let [call #(let [baos (stream)]
-                 (ring-write (encode0 +data+) baos)
+                 (ring-write (encode0 +data+ +charset+) baos)
                  baos)]
 
       (assert (= +edn-string+ (str (call))))
@@ -172,7 +177,7 @@
     ;; 4.4µs
     (title "ring: edn: inputstream")
     (let [call #(let [baos (stream)]
-                 (ring-write (encode2 +data+) baos)
+                 (ring-write (encode2 +data+ +charset+) baos)
                  baos)]
 
       (assert (= +edn-string+ (str (call))))
