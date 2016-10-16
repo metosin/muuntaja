@@ -20,7 +20,8 @@
        (middleware/wrap-format
          (-> m/default-options
              m/no-encoding
-             (m/with-decoder-opts "application/json" (merge {:keywords? false} opts))))
+             (m/with-decoder-opts "application/json" (merge {:keywords? false} opts))
+             (m/with-matches "application/json" #"^application/(.+\+)?json$")))
        (middleware/wrap-exception (constantly
                                     (or
                                       (:malformed-response opts)

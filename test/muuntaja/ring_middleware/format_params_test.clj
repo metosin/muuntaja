@@ -12,14 +12,23 @@
 (defn stream [s]
   (ByteArrayInputStream. (.getBytes s "UTF-8")))
 
+(def default-options
+  (-> m/default-options
+      m/no-encoding
+      (m/with-matches "application/json" #"^application/(.+\+)?json$")
+      (m/with-matches "application/edn" #"^application/(vnd.+)?(x-)?(clojure|edn)$")
+      (m/with-matches "application/msgpack" #"^application/(vnd.+)?(x-)?msgpack$")
+      (m/with-matches "application/x-yaml" #"^(application|text)/(vnd.+)?(x-)?yaml$")
+      (m/with-matches "application/transit+json" #"^application/(vnd.+)?(x-)?transit\+json$")
+      (m/with-matches "application/transit+msgpack" #"^application/(vnd.+)?(x-)?transit\+msgpack$")))
+
 (defn wrap-api-params
   ([handler]
-   (wrap-api-params handler m/default-options))
+   (wrap-api-params handler default-options))
   ([handler opts]
    (-> handler
        (middleware/wrap-params)
-       (middleware/wrap-format
-         (-> opts m/no-encoding)))))
+       (middleware/wrap-format opts))))
 
 (defn key-fn [s]
   (-> s (string/replace #"_" "-") keyword))
@@ -28,7 +37,7 @@
   (is (= {:foo-bar "bar"}
          (:body-params ((wrap-api-params
                           identity
-                          (-> m/default-options
+                          (-> default-options
                               (m/with-formats ["application/json"])
                               (m/with-decoder-opts "application/json" {:keywords? key-fn})))
                          {:headers {"content-type" "application/json"}
@@ -36,7 +45,7 @@
   (is (= {:foo-bar "bar"}
          (:body-params ((wrap-api-params
                           identity
-                          (-> m/default-options
+                          (-> default-options
                               (m/with-decoder-opts "application/json" {:keywords? key-fn})))
                          {:headers {"content-type" "application/json"}
                           :body (stream "{\"foo_bar\":\"bar\"}")})))))
@@ -44,7 +53,7 @@
 (defn yaml-echo [opts]
   (-> identity
       (wrap-api-params
-        (-> m/default-options
+        (-> default-options
             (m/with-formats ["application/x-yaml"])
             (m/with-decoder-opts "application/x-yaml" opts)))))
 
@@ -59,7 +68,7 @@
 (def yaml-kw-echo
   (-> identity
       (wrap-api-params
-        (-> m/default-options
+        (-> default-options
             (m/with-formats ["application/x-yaml"])
             (m/with-decoder-opts "application/x-yaml" {:keywords true})))))
 
@@ -74,7 +83,7 @@
 (def msgpack-echo
   (-> identity
       (wrap-api-params
-        (-> m/default-options
+        (-> default-options
             (m/with-formats ["application/msgpack"])
             (m/with-decoder-opts "application/msgpack" {:keywords? false})))))
 
@@ -89,7 +98,7 @@
 (def msgpack-kw-echo
   (-> identity
       (wrap-api-params
-        (-> m/default-options
+        (-> default-options
             (m/with-formats ["application/msgpack"])))))
 
 (deftest augments-with-msgpack-kw-content-type
@@ -103,7 +112,7 @@
 (def clojure-echo
   (-> identity
       (wrap-api-params
-        (-> m/default-options
+        (-> default-options
             (m/with-formats ["application/edn"])))))
 
 (deftest augments-with-clojure-content-type
@@ -152,7 +161,7 @@
 (def transit-json-echo
   (-> identity
       (wrap-api-params
-        (-> m/default-options
+        (-> default-options
             (m/with-formats ["application/transit+json"])))))
 
 (deftest augments-with-transit-json-content-type
@@ -166,7 +175,7 @@
 (def transit-msgpack-echo
   (-> identity
       (wrap-api-params
-        (-> m/default-options
+        (-> default-options
             (m/with-formats ["application/transit+msgpack"])))))
 
 (deftest augments-with-transit-msgpack-content-type
@@ -202,21 +211,21 @@
 
 (deftest test-different-params-charset
   #_(testing "with fixed charset"
-    (let [req {:headers {"content-type" "application/clojure; charset=ISO-8859-1"}
-               :body (stream-iso "{:fée \"böz\"}")
-               :params {"id" 3}}
-          app (-> identity
-                  (wrap-api-params))
-          resp (app req)]
-      (is (not= {"id" 3 :fée "böz"} (:params resp)))
-      (is (not= {:fée "böz"} (:body-params resp)))))
+      (let [req {:headers {"content-type" "application/clojure; charset=ISO-8859-1"}
+                 :body (stream-iso "{:fée \"böz\"}")
+                 :params {"id" 3}}
+            app (-> identity
+                    (wrap-api-params))
+            resp (app req)]
+        (is (not= {"id" 3 :fée "böz"} (:params resp)))
+        (is (not= {:fée "böz"} (:body-params resp)))))
   (testing "with fixed charset"
     (let [req {:headers {"content-type" "application/clojure; charset=ISO-8859-1"}
                :body (stream-iso "{:fée \"böz\"}")
                :params {"id" 3}}
           app (-> identity
                   (wrap-api-params
-                    (assoc m/default-options :charsets m/available-charsets)))
+                    (assoc default-options :charsets m/available-charsets)))
           resp (app req)]
       (is (= {"id" 3 :fée "böz"} (:params resp)))
       (is (= {:fée "böz"} (:body-params resp))))))
@@ -241,7 +250,7 @@
                :headers {"content-type" content-type}}
           resp ((-> identity
                     (wrap-api-params
-                      (-> m/default-options
+                      (-> default-options
                           (m/with-formats [format])))
                     (middleware/wrap-exception (constantly {:status 999})))
                  req)]
@@ -259,7 +268,7 @@
 (def custom-transit-json-echo
   (-> identity
       (wrap-api-params
-        (-> m/default-options
+        (-> default-options
             (m/with-formats ["application/transit+json"])
             (m/with-decoder-opts "application/transit+json" {:handlers readers})))))
 

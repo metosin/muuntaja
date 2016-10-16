@@ -380,27 +380,27 @@
    :charsets #{"utf-8"}
 
    :default-format "application/json"
-   :formats {"application/json" {:matches #"application/(.+\+)?json"
+   :formats {"application/json" {;:matches #"^application/(.+\+)?json$"
                                  :decoder [formats/make-json-decoder {:keywords? true}]
                                  :encoder [formats/make-streaming-json-encoder]
                                  :encode-protocol [formats/EncodeJson formats/encode-json]}
-             "application/edn" {:matches #"^application/(vnd.+)?(x-)?(clojure|edn)"
+             "application/edn" {;:matches #"^application/(vnd.+)?(x-)?(clojure|edn)$"
                                 :decoder [formats/make-edn-decoder]
                                 :encoder [formats/make-edn-encoder]
                                 :encode-protocol [formats/EncodeEdn formats/encode-edn]}
-             "application/msgpack" {:matches #"^application/(vnd.+)?(x-)?msgpack"
+             "application/msgpack" {;:matches #"^application/(vnd.+)?(x-)?msgpack$"
                                     :decoder [formats/make-msgpack-decoder {:keywords? true}]
                                     :encoder [formats/make-msgpack-encoder]
                                     :encode-protocol [formats/EncodeMsgpack formats/encode-msgpack]}
-             "application/x-yaml" {:matches #"^(application|text)/(vnd.+)?(x-)?yaml"
+             "application/x-yaml" {;:matches #"^(application|text)/(vnd.+)?(x-)?yaml$"
                                    :decoder [formats/make-yaml-decoder {:keywords true}]
                                    :encoder [formats/make-yaml-encoder]
                                    :encode-protocol [formats/EncodeYaml formats/encode-yaml]}
-             "application/transit+json" {:matches #"^application/(vnd.+)?(x-)?transit\+json"
+             "application/transit+json" {;:matches #"^application/(vnd.+)?(x-)?transit\+json$"
                                          :decoder [(partial formats/make-transit-decoder :json)]
                                          :encoder [(partial formats/make-streaming-transit-encoder :json)]
                                          :encode-protocol [formats/EncodeTransitJson formats/encode-transit-json]}
-             "application/transit+msgpack" {:matches #"^application/(vnd.+)?(x-)?transit\+msgpack"
+             "application/transit+msgpack" {;:matches #"^application/(vnd.+)?(x-)?transit\+msgpack$"
                                             :decoder [(partial formats/make-transit-decoder :msgpack)]
                                             :encoder [(partial formats/make-streaming-transit-encoder :msgpack)]
                                             :encode-protocol [formats/EncodeTransitMessagePack formats/encode-transit-msgpack]}}})
@@ -417,6 +417,15 @@
 
 (def no-protocol-encoding
   (partial transform-format-options #(dissoc % :encode-protocol)))
+
+(defn with-matches [options format match]
+  (when-not (get-in options [:formats format])
+    (throw
+      (ex-info
+        (str "invalid format: " format)
+        {:format format
+         :formats (keys (:formats options))})))
+  (assoc-in options [:formats format :matches] match))
 
 (defn with-decoder-opts [options format opts]
   (when-not (get-in options [:formats format])

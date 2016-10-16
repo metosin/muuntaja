@@ -65,10 +65,9 @@
             (testing "without content-type, body is not parsed"
               (is (= nil (call nil nil))))
 
-            (testing "different json content-type (regexp match)"
+            (testing "different json content-type (regexp match) - don't match by default"
               (are [content-type]
-                (= json-string (call content-type nil))
-                "application/json"
+                (nil? (call content-type nil))
                 "application/json-patch+json"
                 "application/vnd.foobar+json"
                 "application/schema+json")))
@@ -78,6 +77,32 @@
                   yaml-string (slurp (m/encode m "application/x-yaml" data))
                   request (->request "application/edn" "application/x-yaml" nil edn-string)]
               (is (= yaml-string (some-> request app :body slurp))))))))
+
+    (testing "with regexp matchers"
+      (let [app (middleware/wrap-format
+                  echo
+                  (-> m/default-options
+                      (assoc-in [:formats "application/json" :matches] #"^application/(.+\+)?json$")))]
+
+        (testing "content-type & accept"
+          (let [call (fn [content-type accept]
+                       (some-> (->request content-type accept nil json-string) app :body slurp))]
+
+            (is (= "{\"kikka\":42}" json-string))
+
+            (testing "different json content-type (regexp match)"
+              (are [content-type]
+                (= json-string (call content-type nil))
+                "application/json"
+                "application/json-patch+json"
+                "application/vnd.foobar+json"
+                "application/schema+json"))
+
+            (testing "missing the regexp match"
+              (are [content-type]
+                (nil? (call content-type nil))
+                "application/jsonz"
+                "applicationz/+json"))))))
 
     (testing "without :default-format & valid accept format, response format negotiation fails"
       (let [app (middleware/wrap-format echo (dissoc m/default-options :default-format))]
