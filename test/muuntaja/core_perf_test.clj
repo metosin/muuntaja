@@ -10,6 +10,8 @@
             [ring.middleware.format]
             [ring.middleware.transit]
             [ring.middleware.json]
+            [io.pedestal.http]
+            [io.pedestal.http.body-params]
             [muuntaja.formats :as formats]
             [ring.core.protocols :as protocols])
   (:import (java.io InputStreamReader ByteArrayOutputStream ByteArrayInputStream)))
@@ -66,6 +68,11 @@
 (defn ring-stream! [response]
   (let [os (ByteArrayOutputStream. 16384)]
     (protocols/write-body-to-stream (:body response) response os)
+    os))
+
+(defn fn-stream! [response]
+  (let [os (ByteArrayOutputStream. 16384)]
+    ((:body response) os)
     os))
 
 ;;
@@ -371,12 +378,39 @@
     (cc/quick-bench (app (request!)))
     (cc/quick-bench (ring-stream! (app (request!))))))
 
+(defn pedestal-interceptor-e2e []
+
+  ; 3.8µs && 7.2µs
+  (let [enter (:enter (io.pedestal.http.body-params/body-params))
+        handler (fn [ctx] (assoc ctx :response {:status 200 :body (-> ctx :request :json-params)}))
+        leave (:leave io.pedestal.http/json-body)
+        app (fn [ctx] (-> ctx enter handler leave :response))
+        request! (context-stream (assoc +json-request+ :content-type "application/json"))]
+
+    (title "pedestal: Interceptor JSON-REQUEST-RESPONSE")
+    (assert (= (:body +json-request+) (str (fn-stream! (app (request!))))))
+    (cc/quick-bench (app (request!)))
+    (cc/quick-bench (fn-stream! (app (request!)))))
+
+  ; 5.6µs && 11.9µs
+  (let [enter (:enter (io.pedestal.http.body-params/body-params))
+        handler (fn [ctx] (assoc ctx :response {:status 200 :body (-> ctx :request :transit-params)}))
+        leave (:leave io.pedestal.http/transit-body)
+        app (fn [ctx] (-> ctx enter handler leave :response))
+        request! (context-stream (assoc +transit-json-request+ :content-type "application/transit+json"))]
+
+    (title "pedestal: Interceptor TRANSIT-REQUEST-RESPONSE")
+    (assert (= (:body +transit-json-request+) (str (fn-stream! (app (request!))))))
+    (cc/quick-bench (app (request!)))
+    (cc/quick-bench (fn-stream! (app (request!))))))
+
 (defn interceptor-e2e []
 
   ; 3.8µs
   ; 4.7µs (negotiations)
   ; 4.6µs (content-type)
   ; 4.4µs && 7.1µs
+  ; 3.5µs && 6.7µs (streaming)
   (let [{:keys [enter leave]} (interceptor/format-interceptor m/default-options)
         app (fn [ctx] (-> ctx enter (handle +handler+) leave :response))
         request! (context-stream +json-request+)]
@@ -389,7 +423,7 @@
   ; 7.5µs
   ; 8.7µs (negotiations)
   ; 8.5µs (content-type)
-  ; 10.4µs && 12.9µs
+  ; 5.5µs && 12.2µs (streaming)
   (let [{:keys [enter leave]} (interceptor/format-interceptor m/default-options)
         app (fn [ctx] (-> ctx enter (handle +handler+) leave :response))
         request! (context-stream +transit-json-request+)]
@@ -533,6 +567,7 @@
   (ring-middleware-format-e2e)
   (ring-json-e2e)
   (muuntaja-e2e)
+  (pedestal-interceptor-e2e)
   (interceptor-e2e)
   (request-streams)
   (e2e-json-comparison-different-payloads)
