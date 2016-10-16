@@ -17,10 +17,14 @@
                    :dependencies [[org.clojure/clojure "1.8.0"]
                                   [ring/ring-core "1.6.0-beta6"]
                                   [ring-middleware-format "0.7.0"]
-                                  [io.pedestal/pedestal.service "0.5.1"]
-                                  [javax.servlet/javax.servlet-api "3.1.0"]
                                   [ring-transit "0.1.6"]
                                   [ring/ring-json "0.4.0"]
+
+                                  ;; Pedestal
+                                  [io.pedestal/pedestal.service "0.5.1"]
+                                  [javax.servlet/javax.servlet-api "3.1.0"]
+                                  [org.slf4j/slf4j-log4j12 "1.7.12"]
+
                                   [criterium "0.4.4"]]}
              :1.9 {:dependencies [[org.clojure/clojure "1.9.0-alpha12"]]}
              :perf {:jvm-opts ^:replace ["-server"
