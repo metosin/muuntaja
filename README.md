@@ -8,7 +8,7 @@ out-of-the-box [JSON](http://www.json.org/), [EDN](https://github.com/edn-format
 [YAML](http://yaml.org/) and [Transit](https://github.com/cognitect/transit-format) in different flavours.
 
 Based on [ring-middleware-format](https://github.com/ngrunwald/ring-middleware-format), 
-but a complete rewrite - and [10x faster](#performance) (with 1k JSON messages).
+but a complete rewrite ([10x faster](#performance) with 1k JSON messages).
 
 ## Rationale
 
@@ -151,6 +151,7 @@ Full [API documentation](http://metosin.github.com/muuntaja) is available.
 {:extract-content-type-fn extract-content-type-ring
  :extract-accept-charset-fn extract-accept-charset-ring
  :extract-accept-fn extract-accept-ring
+
  :decode? (constantly true)
  :encode? encode-collections-with-override
 
@@ -158,27 +159,27 @@ Full [API documentation](http://metosin.github.com/muuntaja) is available.
  :charsets #{"utf-8"}
 
  :default-format "application/json"
- :formats {"application/json" {:matches #"application/(.+\+)?json"
+ :formats {"application/json" {;:matches #"^application/(.+\+)?json$"
                                :decoder [formats/make-json-decoder {:keywords? true}]
                                :encoder [formats/make-json-encoder]
                                :encode-protocol [formats/EncodeJson formats/encode-json]}
-           "application/edn" {:matches #"^application/(vnd.+)?(x-)?(clojure|edn)"
+           "application/edn" {;:matches #"^application/(vnd.+)?(x-)?(clojure|edn)$"
                               :decoder [formats/make-edn-decoder]
                               :encoder [formats/make-edn-encoder]
                               :encode-protocol [formats/EncodeEdn formats/encode-edn]}
-           "application/msgpack" {:matches #"^application/(vnd.+)?(x-)?msgpack"
+           "application/msgpack" {;:matches #"^application/(vnd.+)?(x-)?msgpack$"
                                   :decoder [formats/make-msgpack-decoder {:keywords? true}]
                                   :encoder [formats/make-msgpack-encoder]
                                   :encode-protocol [formats/EncodeMsgpack formats/encode-msgpack]}
-           "application/x-yaml" {:matches #"^(application|text)/(vnd.+)?(x-)?yaml"
+           "application/x-yaml" {;:matches #"^(application|text)/(vnd.+)?(x-)?yaml$"
                                  :decoder [formats/make-yaml-decoder {:keywords true}]
                                  :encoder [formats/make-yaml-encoder]
                                  :encode-protocol [formats/EncodeYaml formats/encode-yaml]}
-           "application/transit+json" {:matches #"^application/(vnd.+)?(x-)?transit\+json"
+           "application/transit+json" {;:matches #"^application/(vnd.+)?(x-)?transit\+json$"
                                        :decoder [(partial formats/make-transit-decoder :json)]
                                        :encoder [(partial formats/make-transit-encoder :json)]
                                        :encode-protocol [formats/EncodeTransitJson formats/encode-transit-json]}
-           "application/transit+msgpack" {:matches #"^application/(vnd.+)?(x-)?transit\+msgpack"
+           "application/transit+msgpack" {;:matches #"^application/(vnd.+)?(x-)?transit\+msgpack$"
                                           :decoder [(partial formats/make-transit-decoder :msgpack)]
                                           :encoder [(partial formats/make-transit-encoder :msgpack)]
                                           :encode-protocol [formats/EncodeTransitMessagePack formats/encode-transit-msgpack]}}}

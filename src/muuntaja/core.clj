@@ -382,7 +382,7 @@
    :default-format "application/json"
    :formats {"application/json" {;:matches #"^application/(.+\+)?json$"
                                  :decoder [formats/make-json-decoder {:keywords? true}]
-                                 :encoder [formats/make-streaming-json-encoder]
+                                 :encoder [formats/make-json-encoder]
                                  :encode-protocol [formats/EncodeJson formats/encode-json]}
              "application/edn" {;:matches #"^application/(vnd.+)?(x-)?(clojure|edn)$"
                                 :decoder [formats/make-edn-decoder]
@@ -398,11 +398,11 @@
                                    :encode-protocol [formats/EncodeYaml formats/encode-yaml]}
              "application/transit+json" {;:matches #"^application/(vnd.+)?(x-)?transit\+json$"
                                          :decoder [(partial formats/make-transit-decoder :json)]
-                                         :encoder [(partial formats/make-streaming-transit-encoder :json)]
+                                         :encoder [(partial formats/make-transit-encoder :json)]
                                          :encode-protocol [formats/EncodeTransitJson formats/encode-transit-json]}
              "application/transit+msgpack" {;:matches #"^application/(vnd.+)?(x-)?transit\+msgpack$"
                                             :decoder [(partial formats/make-transit-decoder :msgpack)]
-                                            :encoder [(partial formats/make-streaming-transit-encoder :msgpack)]
+                                            :encoder [(partial formats/make-transit-encoder :msgpack)]
                                             :encode-protocol [formats/EncodeTransitMessagePack formats/encode-transit-msgpack]}}})
 
 ;;
