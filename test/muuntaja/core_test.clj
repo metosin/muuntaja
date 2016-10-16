@@ -27,14 +27,14 @@
   (testing "non-binary-formats encoding with charsets"
     (let [m (m/create (assoc m/default-options :charsets m/available-charsets))
           data {:fée "böz"}
-          encode-decode #(slurp (m/encode m % data "ISO-8859-1"))]
+          iso-encoded #(slurp (m/encode m % data "ISO-8859-1"))]
       (testing "application/json & application/edn use the given charset"
-        (is (= "{\"f�e\":\"b�z\"}" (encode-decode "application/json")))
-        (is (= "{:f�e \"b�z\"}" (encode-decode "application/edn"))))
+        (is (= "{\"f�e\":\"b�z\"}" (iso-encoded "application/json")))
+        (is (= "{:f�e \"b�z\"}" (iso-encoded "application/edn"))))
 
       (testing "application/x-yaml & application/transit+json use the platform charset"
-        (is (= "{fée: böz}\n" (encode-decode "application/x-yaml")))
-        (is (= "[\"^ \",\"~:fée\",\"böz\"]" (encode-decode "application/transit+json"))))))
+        (is (= "{fée: böz}\n" (iso-encoded "application/x-yaml")))
+        (is (= "[\"^ \",\"~:fée\",\"böz\"]" (iso-encoded "application/transit+json"))))))
 
   (testing "all formats handle different charsets symmetrically"
     (let [m (m/create (assoc m/default-options :charsets m/available-charsets))
