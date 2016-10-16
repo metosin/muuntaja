@@ -2,7 +2,24 @@
   (:require [clojure.test :refer :all]
             [muuntaja.core :as m]
             [clojure.string :as str]
-            [muuntaja.protocols :as protocols]))
+            [muuntaja.protocols :as protocols])
+  (:import (java.nio.charset Charset)))
+
+(defn set-jvm-default-charset! [charset]
+  (System/setProperty "file.encoding" charset)
+  (doto
+    (.getDeclaredField Charset "defaultCharset")
+    (.setAccessible true)
+    (.set nil nil))
+  nil)
+
+(defmacro with-default-charset [charset & body]
+  `(let [old-charset# (str (Charset/defaultCharset))]
+     (try
+       (set-jvm-default-charset! ~charset)
+       ~@body
+       (finally
+         (set-jvm-default-charset! old-charset#)))))
 
 (deftest core-test
 
@@ -24,6 +41,14 @@
         "application/transit+json"
         "application/transit+msgpack")))
 
+  (testing "charsets"
+    (testing "default is UTF-8"
+      (is (= "UTF-8" (str (Charset/defaultCharset)))))
+    (testing "default can be changed"
+      (with-default-charset
+        "UTF-16"
+        (is (= "UTF-16" (str (Charset/defaultCharset)))))))
+
   (testing "non-binary-formats encoding with charsets"
     (let [m (m/create (assoc m/default-options :charsets m/available-charsets))
           data {:fée "böz"}
@@ -33,15 +58,23 @@
         (is (= "{:f�e \"b�z\"}" (iso-encoded "application/edn"))))
 
       (testing "application/x-yaml & application/transit+json use the platform charset"
-        (is (= "{fée: böz}\n" (iso-encoded "application/x-yaml")))
-        (is (= "[\"^ \",\"~:fée\",\"böz\"]" (iso-encoded "application/transit+json"))))))
+        (testing "utf-8"
+          (is (= "{fée: böz}\n" (iso-encoded "application/x-yaml")))
+          (is (= "[\"^ \",\"~:fée\",\"böz\"]" (iso-encoded "application/transit+json"))))
+        (testing "when default charset is ISO-8859-1"
+          (with-default-charset
+            "ISO-8859-1"
+            (testing "application/x-yaml works"
+              (is (= "{f�e: b�z}\n" (iso-encoded "application/x-yaml"))))
+            (testing "application/transit IS BROKEN"
+              (is (not= "[\"^ \",\"~:f�e\",\"b�z\"]" (iso-encoded "application/transit+json")))))))))
 
   (testing "all formats handle different charsets symmetrically"
     (let [m (m/create (assoc m/default-options :charsets m/available-charsets))
           data {:fée "böz"}
           encode-decode #(as-> data $
-                              (m/encode m % $ "ISO-8859-1")
-                              (m/decode m % $ "ISO-8859-1"))]
+                               (m/encode m % $ "ISO-8859-1")
+                               (m/decode m % $ "ISO-8859-1"))]
       (are [format]
         (= data (encode-decode format))
         "application/json"
