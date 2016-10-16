@@ -78,20 +78,19 @@
 (defprotocol EncodeMsgpack
   (encode-msgpack [this]))
 
-;; YAML
+;; YAML (note: uses default charset)
 
-;; TODO: read stream + charset
 (defn make-yaml-decoder [options]
   (let [options-args (mapcat identity options)]
-    (fn [s _] (apply yaml/parse-string s options-args))))
+    (fn [in _]
+      (apply yaml/parse-string in options-args))))
 
 (defn make-yaml-encoder [options]
   (let [options-args (mapcat identity options)]
-    (fn [data ^String charset]
+    (fn [data ^String _]
       (ByteArrayInputStream.
         (.getBytes
-          ^String (apply yaml/generate-string data options-args)
-          charset)))))
+          ^String (apply yaml/generate-string data options-args))))))
 
 (defprotocol EncodeYaml
   (encode-yaml [this]))
@@ -119,9 +118,8 @@
 (defprotocol EncodeEdn
   (encode-edn [this]))
 
-;; TRANSIT
+;; TRANSIT (note: uses default charset)
 
-;; TODO: charset
 (defn make-transit-decoder
   [type options]
   (fn [in _]

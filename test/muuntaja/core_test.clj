@@ -6,8 +6,14 @@
 
 (deftest core-test
 
+  (testing "encode & decode"
+    (let [m (m/create)
+          data {:kikka 42}]
+      (is (= "{\"kikka\":42}" (slurp (m/encode m "application/json" data))))
+      (is (= data (m/decode m "application/json" (m/encode m "application/json" data))))))
+
   (testing "symmetic encode + decode for all formats"
-    (let [m (m/create m/default-options)
+    (let [m (m/create)
           data {:kikka 42, :childs {:facts [1.2 true {:so "nested"}]}}]
       (are [format]
         (= data (m/decode m format (m/encode m format data)))
@@ -18,14 +24,39 @@
         "application/transit+json"
         "application/transit+msgpack")))
 
-  (testing "encode & decode"
-    (let [m (m/create m/default-options)
-          data {:kikka 42}]
-      (is (= "{\"kikka\":42}" (slurp (m/encode m "application/json" data))))
-      (is (= data (m/decode m "application/json" (m/encode m "application/json" data))))))
+  (testing "non-binary-formats encoding with charsets"
+    (let [m (m/create (assoc m/default-options :charsets m/available-charsets))
+          data {:fée "böz"}
+          encode-decode #(slurp (m/encode m % data "ISO-8859-1"))]
+      (testing "application/json & application/edn use the given charset"
+        (is (= "{\"f�e\":\"b�z\"}" (encode-decode "application/json")))
+        (is (= "{:f�e \"b�z\"}" (encode-decode "application/edn"))))
+
+      (testing "application/x-yaml & application/transit+json use the platform charset"
+        (is (= "{fée: böz}\n" (encode-decode "application/x-yaml")))
+        (is (= "[\"^ \",\"~:fée\",\"böz\"]" (encode-decode "application/transit+json"))))))
+
+  (testing "all formats handle different charsets symmetrically"
+    (let [m (m/create (assoc m/default-options :charsets m/available-charsets))
+          data {:fée "böz"}
+          encode-decode #(as-> data $
+                              (m/encode m % $ "ISO-8859-1")
+                              (m/decode m % $ "ISO-8859-1"))]
+      (are [format]
+        (= data (encode-decode format))
+        "application/json"
+        "application/edn"
+        ;; platform charset
+        "application/x-yaml"
+        ;; binary
+        "application/msgpack"
+        ;; platform charset
+        "application/transit+json"
+        ;; binary
+        "application/transit+msgpack")))
 
   (testing "encoder & decoder"
-    (let [m (m/create m/default-options)
+    (let [m (m/create)
           data {:kikka 42}
           json-encoder (m/encoder m "application/json")
           json-decoder (m/decoder m "application/json")]
