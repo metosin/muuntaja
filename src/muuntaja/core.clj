@@ -68,7 +68,7 @@
          (or (consumes content-type-raw)
              (some
                (fn [[name r]]
-                 (if (re-find r content-type-raw) name))
+                 (if (and r (re-find r content-type-raw)) name))
                matchers)))
        (or
          ;; if a provided charset was valid
@@ -372,6 +372,7 @@
   {:extract-content-type-fn extract-content-type-ring
    :extract-accept-charset-fn extract-accept-charset-ring
    :extract-accept-fn extract-accept-ring
+
    :decode? (constantly true)
    :encode? encode-collections-with-override
 
