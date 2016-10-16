@@ -8,7 +8,7 @@ out-of-the-box [JSON](http://www.json.org/), [EDN](https://github.com/edn-format
 [YAML](http://yaml.org/) and [Transit](https://github.com/cognitect/transit-format) in different flavours.
 
 Based on [ring-middleware-format](https://github.com/ngrunwald/ring-middleware-format), 
-but a complete rewrite - and up to [10x faster](#performance).
+but a complete rewrite - and [10x faster](#performance) (with 1k JSON messages).
 
 ## Rationale
 
@@ -124,10 +124,6 @@ All perf test are found in this repo.
 ## API Documentation
 
 Full [API documentation](http://metosin.github.com/muuntaja) is available.
-
-## TODO
-
-* Currently, supports only single charset, defaulting to UTF-8.
 
 ## Server Spec
 
@@ -252,11 +248,10 @@ verify behavior and demonstrate differences.
 
 ### ring-middleware-format
 
-* Set's the `:body` to nil after consuming the body (instead of re-creating a stream)
+* Does not recreate a `:body` stream after consuming the body
 * Multiple `wrap-format` middlewares can be used in the same mw stack, rest are no-op
 * By default, encodes only collections (or responses with `:muuntaja.core/encode?` set)
 * Reads the `content-type` from request headers (as defined in the RING Spec)
-* Currently, supports only single charset, defaulting to UTF-8.
 * Does not set the `Content-Length` header (done by the adapters)
 * `:yaml-in-html` / `text/html` is not supported
 

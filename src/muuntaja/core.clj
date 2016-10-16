@@ -297,8 +297,7 @@
         (if d?
           (-> $
               (assoc ::format ctf)
-              (assoc :body-params body)
-              (assoc :body nil))
+              (assoc :body-params body))
           $)))
 
 (defn format-request [formats request]
