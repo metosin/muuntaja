@@ -47,9 +47,11 @@
   (fn [data ^String charset]
     (protocols/->StreamableResponse
       (fn [^OutputStream output-stream]
-        (with-open [out output-stream
-                    writer (OutputStreamWriter. out charset)]
-          (json/generate-stream data writer options))))))
+        (json/generate-stream
+          data
+          (OutputStreamWriter. output-stream charset)
+          options)
+        (.flush output-stream)))))
 
 (defprotocol EncodeJson
   (encode-json [this]))
@@ -139,10 +141,10 @@
   (let [full-type (if (and (= type :json) verbose) :json-verbose type)]
     (fn [data _]
       (protocols/->StreamableResponse
-        (fn [output-stream]
-          (with-open [^OutputStream out output-stream]
-            (let [writer (transit/writer out full-type options)]
-              (transit/write writer data))))))))
+        (fn [^OutputStream output-stream]
+          (transit/write
+            (transit/writer output-stream full-type options) data)
+          (.flush output-stream))))))
 
 (defprotocol EncodeTransitJson
   (encode-transit-json [this]))
