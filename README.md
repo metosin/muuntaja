@@ -8,7 +8,7 @@ out-of-the-box [JSON](http://www.json.org/), [EDN](https://github.com/edn-format
 [YAML](http://yaml.org/) and [Transit](https://github.com/cognitect/transit-format) in different flavours.
 
 Based on [ring-middleware-format](https://github.com/ngrunwald/ring-middleware-format), 
-but a complete rewrite ([10x faster](#performance) with 1k JSON messages).
+but a complete rewrite ([and up 10x faster](https://github.com/metosin/muuntaja/wiki/Performance)).
 
 ## Rationale
 
@@ -154,10 +154,6 @@ have an `ex-data` with the following `:type` value (plus extra info to generate 
 ## Formats
 
 * see [Creating new formats](https://github.com/metosin/muuntaja/wiki/Creating-new-formats)
-
-## Performance
-
-See [wiki](https://github.com/metosin/muuntaja/wiki/Performance) for more info.
 
 ## API Documentation
 
