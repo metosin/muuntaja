@@ -42,14 +42,14 @@
     (ex-info
       "Can't negotiate on response charset"
       {:type ::response-charset-negotiation
-       :formats (:produces formats)})))
+       :charsets (:charsets formats)})))
 
 (defn- fail-on-response-format-negotiation [formats]
   (throw
     (ex-info
       "Can't negotiate on response format"
       {:type ::response-format-negotiation
-       :charsets (:charsets formats)})))
+       :formats (:produces formats)})))
 
 (defn- set-content-type [response content-type]
   (assoc-assoc response :headers "Content-Type" content-type))
