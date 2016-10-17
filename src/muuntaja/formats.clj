@@ -23,17 +23,17 @@
 
 ;; JSON
 
-(defn make-json-decoder [{:keys [keywords? bigdecimals?]}]
+(defn make-json-decoder [{:keys [key-fn array-coerce-fn bigdecimals?]}]
   (if-not bigdecimals?
     (fn [x ^String charset]
       (if (string? x)
-        (json/parse-string x keywords?)
-        (json/parse-stream (InputStreamReader. ^InputStream x charset) keywords?)))
+        (json/parse-string x key-fn array-coerce-fn)
+        (json/parse-stream (InputStreamReader. ^InputStream x charset) key-fn array-coerce-fn)))
     (fn [x ^String charset]
       (binding [parse/*use-bigdecimals?* bigdecimals?]
         (if (string? x)
-          (json/parse-string x keywords?)
-          (json/parse-stream (InputStreamReader. ^InputStream x charset) keywords?))))))
+          (json/parse-string x key-fn array-coerce-fn)
+          (json/parse-stream (InputStreamReader. ^InputStream x charset) key-fn array-coerce-fn))))))
 
 (defn make-json-encoder [options]
   (fn [data ^String charset]

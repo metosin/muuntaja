@@ -140,7 +140,7 @@
                           (m/with-decoder-opts
                             m/default-options
                             "application/json"
-                            {:keywords? false}))
+                            {:key-fn false}))
                         "application/json")]
       (is (= {:kikka true} (decode-json-kw "{\"kikka\":true}")))
       (is (= {"kikka" true} (decode-json "{\"kikka\":true}")))))

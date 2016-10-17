@@ -44,7 +44,7 @@ but a complete rewrite ([10x faster](#performance) with 1k JSON messages).
        "accept" "application/json"}
       :body "{:kikka 42}"})
 ; {:status 200,
-;  :body <<StreamableResponse>>,
+;  :body #object[java.io.ByteArrayInputStream]
 ;  :muuntaja.core/format "application/json",
 ;  :headers {"Content-Type" "application/json; charset=utf-8"}}
 ```
@@ -159,28 +159,22 @@ Full [API documentation](http://metosin.github.com/muuntaja) is available.
  :charsets #{"utf-8"}
 
  :default-format "application/json"
- :formats {"application/json" {;:matches #"^application/(.+\+)?json$"
-                               :decoder [formats/make-json-decoder {:keywords? true}]
+ :formats {"application/json" {:decoder [formats/make-json-decoder {:key-fn true}]
                                :encoder [formats/make-json-encoder]
                                :encode-protocol [formats/EncodeJson formats/encode-json]}
-           "application/edn" {;:matches #"^application/(vnd.+)?(x-)?(clojure|edn)$"
-                              :decoder [formats/make-edn-decoder]
+           "application/edn" {:decoder [formats/make-edn-decoder]
                               :encoder [formats/make-edn-encoder]
                               :encode-protocol [formats/EncodeEdn formats/encode-edn]}
-           "application/msgpack" {;:matches #"^application/(vnd.+)?(x-)?msgpack$"
-                                  :decoder [formats/make-msgpack-decoder {:keywords? true}]
+           "application/msgpack" {:decoder [formats/make-msgpack-decoder {:keywords? true}]
                                   :encoder [formats/make-msgpack-encoder]
                                   :encode-protocol [formats/EncodeMsgpack formats/encode-msgpack]}
-           "application/x-yaml" {;:matches #"^(application|text)/(vnd.+)?(x-)?yaml$"
-                                 :decoder [formats/make-yaml-decoder {:keywords true}]
+           "application/x-yaml" {:decoder [formats/make-yaml-decoder {:keywords true}]
                                  :encoder [formats/make-yaml-encoder]
                                  :encode-protocol [formats/EncodeYaml formats/encode-yaml]}
-           "application/transit+json" {;:matches #"^application/(vnd.+)?(x-)?transit\+json$"
-                                       :decoder [(partial formats/make-transit-decoder :json)]
+           "application/transit+json" {:decoder [(partial formats/make-transit-decoder :json)]
                                        :encoder [(partial formats/make-transit-encoder :json)]
                                        :encode-protocol [formats/EncodeTransitJson formats/encode-transit-json]}
-           "application/transit+msgpack" {;:matches #"^application/(vnd.+)?(x-)?transit\+msgpack$"
-                                          :decoder [(partial formats/make-transit-decoder :msgpack)]
+           "application/transit+msgpack" {:decoder [(partial formats/make-transit-decoder :msgpack)]
                                           :encoder [(partial formats/make-transit-encoder :msgpack)]
                                           :encode-protocol [formats/EncodeTransitMessagePack formats/encode-transit-msgpack]}}}
 ```

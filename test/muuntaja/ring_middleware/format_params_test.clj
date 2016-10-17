@@ -13,14 +13,8 @@
   (ByteArrayInputStream. (.getBytes s "UTF-8")))
 
 (def default-options
-  (-> m/default-options
-      m/no-encoding
-      (m/with-matches "application/json" #"^application/(.+\+)?json$")
-      (m/with-matches "application/edn" #"^application/(vnd.+)?(x-)?(clojure|edn)$")
-      (m/with-matches "application/msgpack" #"^application/(vnd.+)?(x-)?msgpack$")
-      (m/with-matches "application/x-yaml" #"^(application|text)/(vnd.+)?(x-)?yaml$")
-      (m/with-matches "application/transit+json" #"^application/(vnd.+)?(x-)?transit\+json$")
-      (m/with-matches "application/transit+msgpack" #"^application/(vnd.+)?(x-)?transit\+msgpack$")))
+  (-> m/default-options-with-format-regexps
+      m/no-encoding))
 
 (defn wrap-api-params
   ([handler]
@@ -39,14 +33,14 @@
                           identity
                           (-> default-options
                               (m/with-formats ["application/json"])
-                              (m/with-decoder-opts "application/json" {:keywords? key-fn})))
+                              (m/with-decoder-opts "application/json" {:key-fn key-fn})))
                          {:headers {"content-type" "application/json"}
                           :body (stream "{\"foo_bar\":\"bar\"}")}))))
   (is (= {:foo-bar "bar"}
          (:body-params ((wrap-api-params
                           identity
                           (-> default-options
-                              (m/with-decoder-opts "application/json" {:keywords? key-fn})))
+                              (m/with-decoder-opts "application/json" {:key-fn key-fn})))
                          {:headers {"content-type" "application/json"}
                           :body (stream "{\"foo_bar\":\"bar\"}")})))))
 

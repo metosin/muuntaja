@@ -18,10 +18,9 @@
    (-> handler
        (middleware/wrap-params)
        (middleware/wrap-format
-         (-> m/default-options
+         (-> m/default-options-with-format-regexps
              m/no-encoding
-             (m/with-decoder-opts "application/json" (merge {:keywords? false} opts))
-             (m/with-matches "application/json" #"^application/(.+\+)?json$")))
+             (m/with-decoder-opts "application/json" (merge {:key-fn false} opts))))
        (middleware/wrap-exception (constantly
                                     (or
                                       (:malformed-response opts)
@@ -89,14 +88,14 @@
                 :headers {"Content-Type" "text/plain"}
                 :body "Malformed JSON in request body."})))))
 
-  (let [handler (wrap-json-params +handler+ {:keywords? true})]
+  (let [handler (wrap-json-params +handler+ {:key-fn true})]
     (testing "keyword keys"
       (let [request {:headers {"content-type" "application/json"}
                      :body (string-input-stream "{\"foo\": \"bar\"}")}
             response (handler request)]
         (is (= {:foo "bar"} (:body response))))))
 
-  (let [handler (wrap-json-params +handler+ {:keywords? true, :bigdecimals? true})]
+  (let [handler (wrap-json-params +handler+ {:key-fn true, :bigdecimals? true})]
     (testing "bigdecimal floats"
       (let [request {:headers {"content-type" "application/json"}
                      :body (string-input-stream "{\"foo\": 5.5}")}
