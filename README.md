@@ -103,7 +103,7 @@ return a `muuntaja.protocols.StremableResponse` type, which satisifies the follo
 * `clojure.lang.IFn`, invoke the result with an OutputStream to write the results into the stream
 * `clojure.io.IOFactory`, so you can slurp the response
 
-```
+```clj
 (require '[muuntaja.formats :as formats])
 
 ;; options are just data!
@@ -220,10 +220,10 @@ verify behavior and demonstrate differences.
 
 ### Common
 
-* By default, uses Keywords in map keys
+* By default, Keywords are used in map keys
   * good default for `clojure.spec` & `Schema`
 * No in-built exception handling
-  * Exceptions have `:type` of `:muuntaja.core/decode`, catch them elsewhere
+  * Exceptions have `:type` of `:muuntaja.core/***`, catch them elsewhere
   * Add `muuntaja.middleware/wrap-exception` to catch 'em separately
 
 ### ring-json & ring-transit
