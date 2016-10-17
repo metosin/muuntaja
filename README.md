@@ -93,33 +93,71 @@ Define a function to encode Transit-json:
 ; "[\"^ \",\"~:kikka\",42]"
 ```
 
+## Streaming
+
+Muuntaja ships with streaming encoders for both JSON & Transit. With these, the encoded data
+can be lazily written to provided `OutputStream`, avoiding intermediate byte-streams. These encoders
+return a `muuntaja.protocols.StremableResponse` type, which satisifies the following protocols/interfaces:
+ 
+* `ring.protocols.StreamableResponseBody`, Ring 1.6.0 will stream these for you
+* `clojure.lang.IFn`, invoke the result with an OutputStream to write the results into the stream
+* `clojure.io.IOFactory`, so you can slurp the response
+
+```
+(require '[muuntaja.formats :as formats])
+
+;; options are just data!
+(def m 
+  (m/create
+    (assoc-in
+      m/default-options
+      [:formats "application/json" :encoder 0]
+      formats/make-streaming-json-encoder)))
+          
+(->> {:kikka 42} 
+     (m/encode m "application/json"))
+; <<StreamableResponse>>
+
+(->> {:kikka 42} 
+     (m/encode m "application/json")
+     slurp)
+; "{\"kikka\":42}"
+
+(->> {:kikka 42}
+     (m/encode m "application/json")
+     (m/decode m "application/json"))
+; {:kikka 42}
+```
+
 ## HTTP format negotiation
 
-HTTP format negotiation is done for both request and response and covers format and charset. By default,
-Muuntaja allows only full matches for the format, e.g. `application/json` but one can use also regexps
-for more loose matching (like those in ring-middleware-format & ring-json). Behind the scenes, results of
-regexp matches against a given client input are memoized, giving still near constant time resolution. One
-can also force the format negotiation results with special namespaced request & response keys.
+HTTP format negotiation is done via request headers for both request (`content-type`, including the charset)
+and response (`accept` and `accept-charset`). With the default options, a full match on the content-type is
+required, e.g. `application/json`. Adding a `:matches` regexp for formats enables more loose matching. See
+`muuntaja.core/default-options-with-format-regexps` for more info.
 
-* Request format & charset is negotiated using the `Content-type` header (e.g. `application/json; charset=utf-8`)
-  * If a client request format is not registered to Muuntaja, nothing happens.
-  * If a client request format is resolved, but charset is not registered to Muuntaja an exception
-  with type `:muuntaja.core/request-charset-negotiation` is thrown.
-  
-* Response format is negotiated using `Accept` header. If a format can't be negotiated `:default-format`
-  is used. If default is not defined, an exception with type `:muuntaja.core/response-format-negotiation` is thrown.
+Results of the negotiation are published into request & response under namespaced keys for introspection.
+These keys can also be set manually, overriding the content negotiation process.
 
-* Response charset is negotiated using `Accept-Charset` header. If a charset can't be negotiated `:default-charset`
-  is used. If default is not defined, an exception with type `:muuntaja.core/response-charset-negotiation` is thrown.
+## Exceptions
 
-## Performance 
+When something bad happens, an typed exception is thrown. You should handle it elsewhere. Thrown exceptions
+have an `ex-data` with the following `:type` value (plus extra info to generate descriptive erros to clients):
 
+* `:muuntaja.core/decode`, input can't be decoded with the negotiated `format` & `charset`.
+* `:muuntaja.core/request-charset-negotiation`, request charset is illegal.
+* `:muuntaja.core/response-charset-negotiation`, could not negotiate a charset for the response.
+* `:muutaja.core/response-format-negotiation`, could not negotiate a format for the response.
 
-There is also a new low-level JSON encoder (in `muuntaja.json`) directly on top of 
-[Jackson Databind](https://github.com/FasterXML/jackson-databind) and protocols supporting
-hand-crafted responses => up to 5x faster than `[cheshire "5.6.3"]`.
+**TODO**: should be handled via callbacks?
 
-All perf test are found in this repo.
+## Formats
+
+* see [Creating new formats](https://github.com/metosin/muuntaja/wiki/Creating-new-formats)
+
+## Performance
+
+See [wiki](https://github.com/metosin/muuntaja/wiki/Performance) for more info.
 
 ## API Documentation
 
@@ -177,46 +215,6 @@ Full [API documentation](http://metosin.github.com/muuntaja) is available.
            "application/transit+msgpack" {:decoder [(partial formats/make-transit-decoder :msgpack)]
                                           :encoder [(partial formats/make-transit-encoder :msgpack)]
                                           :encode-protocol [formats/EncodeTransitMessagePack formats/encode-transit-msgpack]}}}
-```
-
-## Formats
-
-Formats are presented as Clojure maps, registered into options under `:formats` with `content-type` as a key.
-Format maps can the following optional keys:
-
-* `:decoder` a function (or a function generator) to parse InputStreams into Clojure data structure. If the key is missing or value is `nil`, no decoding will be done.
-* `:encoder` a function (or a function generator) to encode Clojure data structures into a String or an InputStream. If the key is missing or value is `nil`, no encoding will be done.
-* `:decoder-opts` extra options maps for the decoder function generator.
-* `:encoder-opts` extra options maps for the encoder function generator.
-* `:matches` a regexp for additional matching of the content-type in request negotiation. Added for legacy support
-(both ring-middleware-format & ring-json use these), e.g. `#"application/(.+\+)?json"`. Memoized behind the hoods against content-types for stellar performance.
-* `:encode-protocol` vector tuple of protocol name and function that can be used to encode a data.
-
-### Function generators
-
-Instead of providing direct encoder/decoder functions, one can provide [Duct](https://github.com/duct-framework/duct)-style function
-generator as a vector of the following elements:
-1) a function of `options => encoder/decoder` (mandatory)
-2) default options (optional)
-
-To make overriding the default options easier in the call site, separate `:decode-opts` & `:encode-opts`
-can be used. They are merged on top of the default options.
-
-#### Decoder examples
-
-```clj
-;; a function
-{:decoder #(cheshire.core/parse-stream (java.io.InputStreamReader. %))}
-
-;; generator without opts
-{:decoder [muuntaja.formats/make-json-decoder]}
-
-;; generator with default opts
-{:decoder [muuntaja.formats/make-json-decoder {:keywords? true}]}
-
-;; generator with default & client opts
-{:decoder [muuntaja.formats/make-json-decoder {:keywords? true}]
- :decoder-opts {:keywords? false, :bigdecimals? true}}
 ```
 
 ## Differences with current solutions
