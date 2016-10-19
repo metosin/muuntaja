@@ -54,7 +54,7 @@
         (.flush output-stream)))))
 
 (defprotocol EncodeJson
-  (encode-json [this]))
+  (encode-json [this charset]))
 
 ;; msgpack
 
@@ -76,7 +76,7 @@
         (.toByteArray out-stream)))))
 
 (defprotocol EncodeMsgpack
-  (encode-msgpack [this]))
+  (encode-msgpack [this charset]))
 
 ;; YAML (note: uses default charset)
 
@@ -93,7 +93,7 @@
           ^String (apply yaml/generate-string data options-args))))))
 
 (defprotocol EncodeYaml
-  (encode-yaml [this]))
+  (encode-yaml [this charset]))
 
 ;; EDN
 
@@ -116,7 +116,7 @@
     (pr-str data)))
 
 (defprotocol EncodeEdn
-  (encode-edn [this]))
+  (encode-edn [this charset]))
 
 ;; TRANSIT (note: uses default charset)
 
@@ -145,7 +145,7 @@
           (.flush output-stream))))))
 
 (defprotocol EncodeTransitJson
-  (encode-transit-json [this]))
+  (encode-transit-json [this charset]))
 
 (defprotocol EncodeTransitMessagePack
-  (encode-transit-msgpack [this]))
+  (encode-transit-msgpack [this charset]))

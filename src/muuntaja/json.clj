@@ -3,10 +3,13 @@
   (:import [com.fasterxml.jackson.databind.node JsonNodeFactory ObjectNode ArrayNode]
            [com.fasterxml.jackson.databind ObjectMapper]
            [java.util LinkedHashMap$Entry LinkedHashMap ArrayList]
-           [java.io InputStream]))
+           [java.io InputStream ByteArrayInputStream]))
 
 (def ^JsonNodeFactory factory (JsonNodeFactory/instance))
 (def ^ObjectMapper mapper (ObjectMapper.))
+
+(defn byte-stream [x ^String charset]
+  (ByteArrayInputStream. (.getBytes (str x) charset)))
 
 (defn ^ObjectNode object []
   (.objectNode factory))

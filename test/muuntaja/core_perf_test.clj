@@ -49,15 +49,13 @@
              "accept-charset" "utf-8"}
    :body "[\"^ \",\"~:kikka\",42]"})
 
-(defn byte-stream [x]
-  (ByteArrayInputStream. (.getBytes (str x))))
-
 (defrecord Hello [^String name]
   formats/EncodeJson
-  (encode-json [_]
-    (byte-stream
-      (str (doto (json/object)
-             (.put "hello" name))))))
+  (encode-json [_ charset]
+    (json/byte-stream
+      (doto (json/object)
+        (.put "hello" name))
+      charset)))
 
 (def +handler+ (fn [request] {:status 200 :body (:body-params request)}))
 (def +handler2+ (fn [_] {:status 200 :body (->Hello "yello")}))

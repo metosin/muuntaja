@@ -213,7 +213,7 @@
         ([x charset]
          (try
            (if (and (record? x) (satisfies? p x))
-             (pf x #_charset)
+             (pf x charset)
              (g (prepare x) charset))
            (catch Exception e
              (on-exception e format type)))))

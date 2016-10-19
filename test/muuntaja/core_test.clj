@@ -2,7 +2,9 @@
   (:require [clojure.test :refer :all]
             [muuntaja.core :as m]
             [clojure.string :as str]
-            [muuntaja.protocols :as protocols])
+            [muuntaja.protocols :as protocols]
+            [muuntaja.formats :as formats]
+            [muuntaja.json :as json])
   (:import (java.nio.charset Charset)))
 
 (defn set-jvm-default-charset! [charset]
@@ -12,6 +14,14 @@
     (.setAccessible true)
     (.set nil nil))
   nil)
+
+(defrecord Hello [^String name]
+  formats/EncodeJson
+  (encode-json [_ charset]
+    (json/byte-stream
+      (doto (json/object)
+        (.put "hello" name))
+      charset)))
 
 (defmacro with-default-charset [charset & body]
   `(let [old-charset# (str (Charset/defaultCharset))]
@@ -104,6 +114,11 @@
         (is (thrown?
               Exception
               (json-decoder "{:invalid :syntax}"))))))
+
+  (testing "encode-protocol"
+    (let [encoder (m/encoder (m/create) "application/json")]
+      (is (= "{\"hello\":\"Nekala\"}" (slurp (encoder (->Hello "Nekala") "utf-8"))))
+      (is (not= "{\"hello\":\"Nekala\"}" (slurp (encoder (->Hello "Nekala") "utf-16"))))))
 
   (testing "adding new format"
     (let [format "application/upper"
