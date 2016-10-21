@@ -165,10 +165,10 @@ Full [API documentation](http://metosin.github.com/muuntaja) is available.
 
 * `:muuntaja.core/format`, format name that was used to decode the request body, e.g. `application/json`. If
    the key is already present in the request map, muuntaja middleware/interceptor will skip the decoding process.
-* `:muuntaja.core/accept`, client-negotiated format name for the response, e.g. `application/json`. Will
-   be used later in the response pipeline.
-* `:muuntaja.core/accept-charset`, client-negotiated charset for the response, e.g. `utf-8`. Will
-   be used later in the response pipeline.
+* `:muuntaja.core/request`, client-negotiated request format and charset as `muuntaja.core/FormatAndCharset` record. Will
+be used in the response pipeline.
+* `:muuntaja.core/response`, client-negotiated response format and charset as `muuntaja.core/FormatAndCharset` record. Will
+be used in the response pipeline.
 * `:body-params` decoded body is here.
 
 ### Response
@@ -185,6 +185,8 @@ Full [API documentation](http://metosin.github.com/muuntaja) is available.
 {:extract-content-type-fn extract-content-type-ring
  :extract-accept-charset-fn extract-accept-charset-ring
  :extract-accept-fn extract-accept-ring
+
+ :on-request-decode-exception on-request-decode-exception
 
  :decode? (constantly true)
  :encode? encode-collections-with-override
