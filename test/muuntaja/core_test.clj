@@ -118,7 +118,7 @@
   (testing "encode-protocol"
     (let [encoder (m/encoder (m/create) "application/json")]
       (is (= "{\"hello\":\"Nekala\"}" (slurp (encoder (->Hello "Nekala") "utf-8"))))
-      (is (not= "{\"hello\":\"Nekala\"}" (slurp (encoder (->Hello "Nekala") "utf-16"))))))
+      (is (= "{\"hello\":\"Nekala\"}" (slurp (encoder (->Hello "Nekala") "utf-16") :encoding "UTF-16")))))
 
   (testing "adding new format"
     (let [format "application/upper"
