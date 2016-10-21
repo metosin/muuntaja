@@ -14,7 +14,7 @@
             [io.pedestal.http.body-params]
             [muuntaja.formats :as formats]
             [ring.core.protocols :as protocols])
-  (:import (java.io InputStreamReader ByteArrayOutputStream ByteArrayInputStream)))
+  (:import (java.io InputStreamReader ByteArrayOutputStream)))
 
 ;;
 ;; start repl with `lein perf repl`
