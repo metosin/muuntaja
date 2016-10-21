@@ -2,7 +2,7 @@
   (:require [cheshire.core :as json]
             [cheshire.parse :as parse]
             [clj-yaml.core :as yaml]
-            [clojure.tools.reader.edn :as edn]
+            [clojure.edn :as edn]
             [clojure.walk :as walk]
             [cognitect.transit :as transit]
             [msgpack.core :as msgpack]
