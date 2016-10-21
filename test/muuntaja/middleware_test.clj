@@ -1,7 +1,8 @@
 (ns muuntaja.middleware-test
   (:require [clojure.test :refer :all]
             [muuntaja.core :as m]
-            [muuntaja.middleware :as middleware]))
+            [muuntaja.middleware :as middleware]
+            [muuntaja.core]))
 
 (defn echo [request]
   {:status 200
@@ -32,7 +33,25 @@
           (middleware/wrap-format echo m/default-options)
 
           ;; with compiled muuntaja
-          (middleware/wrap-format echo m))))
+          (middleware/wrap-format echo m)
+
+          ;; without paramters
+          (-> echo
+              (middleware/wrap-format-request)
+              (middleware/wrap-format-response)
+              (middleware/wrap-format-negotiate))
+
+          ;; with default options
+          (-> echo
+              (middleware/wrap-format-request m/default-options)
+              (middleware/wrap-format-response m/default-options)
+              (middleware/wrap-format-negotiate m/default-options))
+
+          ;; with compiled muuntaja
+          (-> echo
+              (middleware/wrap-format-request m)
+              (middleware/wrap-format-response m)
+              (middleware/wrap-format-negotiate m)))))
 
     (testing "with defaults"
       (let [app (middleware/wrap-format echo)]

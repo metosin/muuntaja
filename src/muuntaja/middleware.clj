@@ -46,3 +46,46 @@
        ([request respond raise]
         (let [req (m/format-request formats request)]
           (handler req #(respond (m/format-response formats req %)) raise)))))))
+
+;;
+;; separate mw for negotiate, request & response
+;;
+
+(defn wrap-format-request
+  ([handler]
+   (wrap-format-request handler m/default-options))
+  ([handler options-or-formats]
+   (let [formats (if (instance? Formats options-or-formats)
+                   options-or-formats
+                   (m/create options-or-formats))]
+     (fn
+       ([request]
+        (handler (m/decode-ring-request formats request)))
+       ([request respond raise]
+        (handler (m/format-request formats request) respond raise))))))
+
+(defn wrap-format-negotiate
+  ([handler]
+   (wrap-format-negotiate handler m/default-options))
+  ([handler options-or-formats]
+   (let [formats (if (instance? Formats options-or-formats)
+                   options-or-formats
+                   (m/create options-or-formats))]
+     (fn
+       ([request]
+        (handler (m/negotiate-ring-request formats request)))
+       ([request respond raise]
+        (handler (m/negotiate-ring-request formats request) respond raise))))))
+
+(defn wrap-format-response
+  ([handler]
+   (wrap-format-response handler m/default-options))
+  ([handler options-or-formats]
+   (let [formats (if (instance? Formats options-or-formats)
+                   options-or-formats
+                   (m/create options-or-formats))]
+     (fn
+       ([request]
+        (->> (handler request) (m/format-response formats request)))
+       ([request respond raise]
+        (handler request #(respond (m/format-response formats request %)) raise))))))
