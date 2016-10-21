@@ -37,21 +37,21 @@
 
           ;; without paramters
           (-> echo
-              (middleware/wrap-request-format)
-              (middleware/wrap-response-format)
-              (middleware/wrap-negotiate-format))
+              (middleware/wrap-format-request)
+              (middleware/wrap-format-response)
+              (middleware/wrap-format-negotiate))
 
           ;; with default options
           (-> echo
-              (middleware/wrap-request-format m/default-options)
-              (middleware/wrap-response-format m/default-options)
-              (middleware/wrap-negotiate-format m/default-options))
+              (middleware/wrap-format-request m/default-options)
+              (middleware/wrap-format-response m/default-options)
+              (middleware/wrap-format-negotiate m/default-options))
 
           ;; with compiled muuntaja
           (-> echo
-              (middleware/wrap-request-format m)
-              (middleware/wrap-response-format m)
-              (middleware/wrap-negotiate-format m)))))
+              (middleware/wrap-format-request m)
+              (middleware/wrap-format-response m)
+              (middleware/wrap-format-negotiate m)))))
 
     (testing "with defaults"
       (let [app (middleware/wrap-format echo)]

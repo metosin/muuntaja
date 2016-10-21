@@ -51,9 +51,9 @@
 ;; separate mw for negotiate, request & response
 ;;
 
-(defn wrap-request-format
+(defn wrap-format-request
   ([handler]
-   (wrap-request-format handler m/default-options))
+   (wrap-format-request handler m/default-options))
   ([handler options-or-formats]
    (let [formats (if (instance? Formats options-or-formats)
                    options-or-formats
@@ -64,9 +64,9 @@
        ([request respond raise]
         (handler (m/format-request formats request) respond raise))))))
 
-(defn wrap-negotiate-format
+(defn wrap-format-negotiate
   ([handler]
-   (wrap-negotiate-format handler m/default-options))
+   (wrap-format-negotiate handler m/default-options))
   ([handler options-or-formats]
    (let [formats (if (instance? Formats options-or-formats)
                    options-or-formats
@@ -77,9 +77,9 @@
        ([request respond raise]
         (handler (m/negotiate-ring-request formats request) respond raise))))))
 
-(defn wrap-response-format
+(defn wrap-format-response
   ([handler]
-   (wrap-response-format handler m/default-options))
+   (wrap-format-response handler m/default-options))
   ([handler options-or-formats]
    (let [formats (if (instance? Formats options-or-formats)
                    options-or-formats
