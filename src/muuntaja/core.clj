@@ -6,6 +6,8 @@
             [clojure.string :as str])
   (:import (java.nio.charset Charset)))
 
+(defrecord FormatAndCharset [^String format, ^String charset])
+
 (defn- throw! [formats format message]
   (throw
     (ex-info
@@ -20,13 +22,18 @@
 (defn- assoc-assoc [m k1 k2 v]
   (assoc m k1 (assoc (k1 m) k2 v)))
 
-(defn- on-request-decode-exception [^Exception e request-format request-charset request]
+(defn- on-request-decode-exception [formats
+                                    ^Exception e
+                                    ^FormatAndCharset request-format-and-charset
+                                    ^FormatAndCharset response-format-and-charset
+                                    request]
   (throw
     (ex-info
-      (str "Malformed " request-format " request.")
+      (str "Malformed " (:format request-format-and-charset) " request.")
       {:type ::decode
-       :format request-format
-       :charset request-charset
+       :default-format (:default-format formats)
+       :format (:format request-format-and-charset)
+       :charset (:charset request-format-and-charset)
        :request request}
       e)))
 
@@ -64,19 +71,20 @@
 (defn- -negotiate-content-type [{:keys [consumes matchers default-charset charsets] :as formats} s]
   (if s
     (let [[content-type-raw charset-raw] (parse/parse-content-type s)]
-      [(if content-type-raw
-         (or (consumes content-type-raw)
-             (some
-               (fn [[name r]]
-                 (if (and r (re-find r content-type-raw)) name))
-               matchers)))
-       (or
-         ;; if a provided charset was valid
-         (and charset-raw charsets (charsets charset-raw) charset-raw)
-         ;; only set default if none were set
-         (and (not charset-raw) default-charset)
-         ;; negotiation failed
-         (fail-on-request-charset-negotiation formats))])))
+      (->FormatAndCharset
+        (if content-type-raw
+          (or (consumes content-type-raw)
+              (some
+                (fn [[name r]]
+                  (if (and r (re-find r content-type-raw)) name))
+                matchers)))
+        (or
+          ;; if a provided charset was valid
+          (and charset-raw charsets (charsets charset-raw) charset-raw)
+          ;; only set default if none were set
+          (and (not charset-raw) default-charset)
+          ;; negotiation failed
+          (fail-on-request-charset-negotiation formats))))))
 
 ;; TODO: fail if no match?
 (defn- -negotiate-accept [{:keys [produces default-format]} s]
@@ -104,6 +112,8 @@
                     negotiate-accept
                     negotiate-accept-charset
 
+                    on-request-decode-exception
+
                     extract-content-type-fn
                     extract-accept-fn
                     extract-accept-charset-fn
@@ -128,12 +138,13 @@
       request)))
 
 (defn negotiate-response [formats request]
-  [((:negotiate-accept formats)
-     ((:extract-accept-fn formats)
-       request))
-   ((:negotiate-accept-charset formats)
-     ((:extract-accept-charset-fn formats)
-       request))])
+  (->FormatAndCharset
+    ((:negotiate-accept formats)
+      ((:extract-accept-fn formats)
+        request))
+    ((:negotiate-accept-charset formats)
+      ((:extract-accept-charset-fn formats)
+        request))))
 
 (defn decode-request? [formats request]
   (if-let [decode? (:decode? formats)]
@@ -276,32 +287,31 @@
 ;; Request
 ;;
 
-(defn- decode-request [formats request request-format request-charset]
+(defn- decode-request [formats request ^FormatAndCharset req-fc ^FormatAndCharset res-fc]
   (if (decode-request? formats request)
-    (if-let [decode (decoder formats request-format)]
+    (if-let [decode (decoder formats (:format req-fc))]
       (try
-        [(decode (:body request) request-charset) true]
+        [(decode (:body request) (:charset req-fc)) true]
         (catch Exception e
-          (on-request-decode-exception e request-format request-charset request))))))
+          ((:on-request-decode-exception formats) formats e req-fc res-fc request))))))
 
-(defn handle-request [formats request]
-  (let [[ctf ctc] (negotiate-request formats request)
-        [af ac] (negotiate-response formats request)
-        [body d?] (decode-request formats request ctf ctc)]
-    [body d? ctf ctc af ac]))
+(defn negotiate-ring-request [formats request]
+  (-> request
+      (assoc ::request (negotiate-request formats request))
+      (assoc ::response (negotiate-response formats request))))
 
-(defn populate-ring-request [request [body d? ctf ctc af ac]]
-  (as-> request $
-        (assoc $ ::accept af)
-        (assoc $ ::accept-charset ac)
-        (if d?
-          (-> $
-              (assoc ::format ctf)
-              (assoc :body-params body))
-          $)))
+(defn decode-ring-request [formats request]
+  (let [req-fc (::request request)
+        res-fc (::response request)
+        [body d?] (decode-request formats request req-fc res-fc)]
+    (cond-> request
+            d? (-> (assoc ::format req-fc)
+                   (assoc :body-params body)))))
 
 (defn format-request [formats request]
-  (populate-ring-request request (handle-request formats request)))
+  (->> request
+       (negotiate-ring-request formats)
+       (decode-ring-request formats)))
 
 ;;
 ;; Response
@@ -319,13 +329,13 @@
 (defn- resolve-response-format [response formats request]
   (or (if-let [ct (::content-type response)]
         ((:produces formats) ct))
-      (::accept request)
+      (-> request ::response :format)
       (:default-format formats)
       (fail-on-response-format-negotiation formats)))
 
 ;; TODO: fail is negotiation fails!
 (defn- resolve-response-charset [response formats request]
-  (or (if-let [ct (::accept-charset request)]
+  (or (if-let [ct (-> request ::response :charset)]
         ((:charsets formats) ct))
       (:default-charset formats)
       (fail-on-response-charset-negotiation formats)))
@@ -372,6 +382,8 @@
   {:extract-content-type-fn extract-content-type-ring
    :extract-accept-charset-fn extract-accept-charset-ring
    :extract-accept-fn extract-accept-ring
+
+   :on-request-decode-exception on-request-decode-exception
 
    :decode? (constantly true)
    :encode? encode-collections-with-override
