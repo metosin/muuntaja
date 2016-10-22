@@ -22,7 +22,7 @@
 (defn- assoc-assoc [m k1 k2 v]
   (assoc m k1 (assoc (k1 m) k2 v)))
 
-(defn- on-request-decode-exception [formats
+(defn- fail-on-request-decode-exception [formats
                                     ^Exception e
                                     ^FormatAndCharset request-format-and-charset
                                     ^FormatAndCharset response-format-and-charset
@@ -111,8 +111,6 @@
 (defrecord Formats [negotiate-content-type
                     negotiate-accept
                     negotiate-accept-charset
-
-                    on-request-decode-exception
 
                     extract-content-type-fn
                     extract-accept-fn
@@ -293,7 +291,7 @@
       (try
         [(decode (:body request) (:charset req-fc)) true]
         (catch Exception e
-          ((:on-request-decode-exception formats) formats e req-fc res-fc request))))))
+          (fail-on-request-decode-exception formats e req-fc res-fc request))))))
 
 (defn negotiate-ring-request [formats request]
   (-> request
@@ -340,7 +338,6 @@
       (:default-charset formats)
       (fail-on-response-charset-negotiation formats)))
 
-;; TODO: use the negotiated response charset
 (defn format-response [formats request response]
   (or
     (if (encode-response? formats request response)
@@ -382,8 +379,6 @@
   {:extract-content-type-fn extract-content-type-ring
    :extract-accept-charset-fn extract-accept-charset-ring
    :extract-accept-fn extract-accept-ring
-
-   :on-request-decode-exception on-request-decode-exception
 
    :decode? (constantly true)
    :encode? encode-collections-with-override
