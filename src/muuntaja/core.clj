@@ -197,7 +197,8 @@
 
 (defn- matchers [formats]
   (->>
-    (for [[name {:keys [matches]}] formats]
+    (for [[name {:keys [matches]}] formats
+          :when matches]
       [name matches])
     (into {})))
 
