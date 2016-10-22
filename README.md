@@ -2,13 +2,13 @@
 
 <img src="https://raw.githubusercontent.com/wiki/metosin/muuntaja/muuntaja-small.png" align="right"/>
 
-Clojure library for fast http format negotiation - symmetric for both servers & clients. Standalone library, but
+Clojure library for fast http format negotiation, encoding and decoding. Standalone library, but
 ships with adapters for ring (async) middleware & Pedestal-style interceptors. Explicit & extendable, supporting
 out-of-the-box [JSON](http://www.json.org/), [EDN](https://github.com/edn-format/edn), [MessagePack](http://msgpack.org/),
 [YAML](http://yaml.org/) and [Transit](https://github.com/cognitect/transit-format) in different flavours.
 
 Based on [ring-middleware-format](https://github.com/ngrunwald/ring-middleware-format), 
-but a complete rewrite ([and up 10x faster](https://github.com/metosin/muuntaja/wiki/Performance)).
+but a complete rewrite ([and up to 10x faster](https://github.com/metosin/muuntaja/wiki/Performance)).
 
 ## Rationale
 
@@ -24,6 +24,8 @@ but a complete rewrite ([and up 10x faster](https://github.com/metosin/muuntaja/
 ## Latest version
 
 [![Clojars Project](http://clojars.org/metosin/muuntaja/latest-version.svg)](http://clojars.org/metosin/muuntaja)
+
+[wiki](https://github.com/metosin/muuntaja/wiki) & [api-docs](http://metosin.github.com/muuntaja)
 
 ## Quickstart 
 
@@ -149,16 +151,6 @@ have an `ex-data` with the following `:type` value (plus extra info to generate 
 * `:muuntaja.core/response-charset-negotiation`, could not negotiate a charset for the response.
 * `:muutaja.core/response-format-negotiation`, could not negotiate a format for the response.
 
-**TODO**: should be handled via callbacks?
-
-## Formats
-
-* see [Creating new formats](https://github.com/metosin/muuntaja/wiki/Creating-new-formats)
-
-## API Documentation
-
-Full [API documentation](http://metosin.github.com/muuntaja) is available.
-
 ## Server Spec
 
 ### Request
@@ -185,8 +177,6 @@ be used in the response pipeline.
 {:extract-content-type-fn extract-content-type-ring
  :extract-accept-charset-fn extract-accept-charset-ring
  :extract-accept-fn extract-accept-ring
-
- :on-request-decode-exception on-request-decode-exception
 
  :decode? (constantly true)
  :encode? encode-collections-with-override
