@@ -23,10 +23,10 @@
   (assoc m k1 (assoc (k1 m) k2 v)))
 
 (defn- fail-on-request-decode-exception [formats
-                                    ^Exception e
-                                    ^FormatAndCharset request-format-and-charset
-                                    ^FormatAndCharset response-format-and-charset
-                                    request]
+                                         ^Exception e
+                                         ^FormatAndCharset request-format-and-charset
+                                         ^FormatAndCharset response-format-and-charset
+                                         request]
   (throw
     (ex-info
       (str "Malformed " (:format request-format-and-charset) " request.")
@@ -245,41 +245,51 @@
 
 (declare default-options)
 
+(defn- -create
+  [{:keys [formats default-format default-charset] :as options}]
+  (let [adapters (create-adapters formats default-charset)
+        valid-format? (key-set formats identity)
+        m (map->Formats
+            (merge
+              (dissoc options :formats)
+              {:adapters adapters
+               :consumes (key-set formats :decoder)
+               :produces (key-set formats :encoder)
+               :matchers (matchers formats)}))]
+    (when-not (or (not default-format) (valid-format? default-format))
+      (throw
+        (ex-info
+          (str "Invalid default format " default-format)
+          {:formats valid-format?
+           :default-format default-format})))
+    (-> m
+        (assoc
+          :negotiate-accept-charset
+          (parse/fast-memoize
+            (parse/cache 1000)
+            (partial -negotiate-accept-charset m)))
+        (assoc
+          :negotiate-accept
+          (parse/fast-memoize
+            (parse/cache 1000)
+            (partial -negotiate-accept m)))
+        (assoc
+          :negotiate-content-type
+          (parse/fast-memoize
+            (parse/cache 1000)
+            (partial -negotiate-content-type m))))))
+
 (defn create
+  "Creates a new Muuntaja from a given prototype:
+  - existing Muuntaja (no-op)
+  - options-map (new created)
+  - nothing (new created with default-options)"
   ([]
    (create default-options))
-  ([{:keys [formats default-format default-charset] :as options}]
-   (let [adapters (create-adapters formats default-charset)
-         valid-format? (key-set formats identity)
-         m (map->Formats
-             (merge
-               (dissoc options :formats)
-               {:adapters adapters
-                :consumes (key-set formats :decoder)
-                :produces (key-set formats :encoder)
-                :matchers (matchers formats)}))]
-     (when-not (or (not default-format) (valid-format? default-format))
-       (throw
-         (ex-info
-           (str "Invalid default format " default-format)
-           {:formats valid-format?
-            :default-format default-format})))
-     (-> m
-         (assoc
-           :negotiate-accept-charset
-           (parse/fast-memoize
-             (parse/cache 1000)
-             (partial -negotiate-accept-charset m)))
-         (assoc
-           :negotiate-accept
-           (parse/fast-memoize
-             (parse/cache 1000)
-             (partial -negotiate-accept m)))
-         (assoc
-           :negotiate-content-type
-           (parse/fast-memoize
-             (parse/cache 1000)
-             (partial -negotiate-content-type m)))))))
+  ([prototype]
+   (if (instance? Formats prototype)
+     prototype
+     (-create prototype))))
 
 ;;
 ;; Request

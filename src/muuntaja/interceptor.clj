@@ -1,13 +1,10 @@
 (ns muuntaja.interceptor
-  (:require [muuntaja.core :as m])
-  (:import [muuntaja.core Formats]))
+  (:require [muuntaja.core :as m]))
 
 (defrecord Interceptor [name enter leave])
 
-(defn format-interceptor [options-or-formats]
-  (let [formats (if (instance? Formats options-or-formats)
-                  options-or-formats
-                  (m/create options-or-formats))]
+(defn format-interceptor [prototype]
+  (let [formats (m/create prototype)]
     (map->Interceptor
       {:name ::format
        :enter (fn [ctx]

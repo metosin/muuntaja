@@ -1,6 +1,5 @@
 (ns muuntaja.middleware
-  (:require [muuntaja.core :as m])
-  (:import [muuntaja.core Formats]))
+  (:require [muuntaja.core :as m]))
 
 ; [^Exception e format request]
 (defn- default-on-exception [_ format _]
@@ -35,10 +34,8 @@
 (defn wrap-format
   ([handler]
    (wrap-format handler m/default-options))
-  ([handler options-or-formats]
-   (let [formats (if (instance? Formats options-or-formats)
-                   options-or-formats
-                   (m/create options-or-formats))]
+  ([handler prototype]
+   (let [formats (m/create prototype)]
      (fn
        ([request]
         (let [req (m/format-request formats request)]
@@ -54,10 +51,8 @@
 (defn wrap-format-request
   ([handler]
    (wrap-format-request handler m/default-options))
-  ([handler options-or-formats]
-   (let [formats (if (instance? Formats options-or-formats)
-                   options-or-formats
-                   (m/create options-or-formats))]
+  ([handler prototype]
+   (let [formats (m/create prototype)]
      (fn
        ([request]
         (handler (m/decode-ring-request formats request)))
@@ -67,10 +62,8 @@
 (defn wrap-format-negotiate
   ([handler]
    (wrap-format-negotiate handler m/default-options))
-  ([handler options-or-formats]
-   (let [formats (if (instance? Formats options-or-formats)
-                   options-or-formats
-                   (m/create options-or-formats))]
+  ([handler prototype]
+   (let [formats (m/create prototype)]
      (fn
        ([request]
         (handler (m/negotiate-ring-request formats request)))
@@ -80,10 +73,8 @@
 (defn wrap-format-response
   ([handler]
    (wrap-format-response handler m/default-options))
-  ([handler options-or-formats]
-   (let [formats (if (instance? Formats options-or-formats)
-                   options-or-formats
-                   (m/create options-or-formats))]
+  ([handler prototype]
+   (let [formats (m/create prototype)]
      (fn
        ([request]
         (->> (handler request) (m/format-response formats request)))
