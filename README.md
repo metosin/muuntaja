@@ -21,11 +21,12 @@ but a complete rewrite ([and up to 10x faster](https://github.com/metosin/muunta
 - supports runtime docs (like swagger) & inspection (negotiation results)
 - supports runtime configuration (negotiation overrides)
 
+Check the [Wiki](https://github.com/metosin/muuntaja/wiki) & [api-docs](http://metosin.github.com/muuntaja)
+for more details.
+
 ## Latest version
 
 [![Clojars Project](http://clojars.org/metosin/muuntaja/latest-version.svg)](http://clojars.org/metosin/muuntaja)
-
-[wiki](https://github.com/metosin/muuntaja/wiki) & [api-docs](http://metosin.github.com/muuntaja)
 
 ## Quickstart 
 
@@ -207,37 +208,6 @@ be used in the response pipeline.
                                           :encode-protocol [formats/EncodeTransitMessagePack formats/encode-transit-msgpack]}}}
 
 ```
-
-## Differences with current solutions
-
-Both `ring-json` and `ring-middleware-format` tests have been ported to muuntaja to
-verify behavior and demonstrate differences. 
-
-### Common
-
-* By default, Keywords are used in map keys
-  * good default for `clojure.spec` & `Schema`
-* No in-built exception handling
-  * Exceptions have `:type` of `:muuntaja.core/***`, catch them elsewhere
-  * Add `muuntaja.middleware/wrap-exception` to catch 'em separately
-
-### ring-json & ring-transit
-
-* Supports multiple formats in a single middleware
-* Returns Stream responses instead of Strings
-* Populates just the `:body-params`, not `:params` & `:json-params`/`:transit-params`
-  * Because merging Persistent Maps is slow
-  * if you need the `:params` add `muuntaja.middleware/wrap-params`
-  * If you need `:json-params`/`:transit-params`, write your own mw for these.
-
-### ring-middleware-format
-
-* Does not recreate a `:body` stream after consuming the body
-* Multiple `wrap-format` middlewares can be used in the same mw stack, rest are no-op
-* By default, encodes only collections (or responses with `:muuntaja.core/encode?` set)
-* Reads the `content-type` from request headers (as defined in the RING Spec)
-* Does not set the `Content-Length` header (done by the adapters)
-* `:yaml-in-html` / `text/html` is not supported
 
 ## License
 
