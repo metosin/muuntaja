@@ -56,31 +56,33 @@ but a complete rewrite ([and up to 10x faster](https://github.com/metosin/muunta
 Create a muuntaja and use it to encode & decode JSON:
 
 ```clj
-(require '[muuntaja.core :as m])
+(require '[muuntaja.core :as muuntaja])
 
 ;; with defaults
-(def m (m/create))
+(def m (muuntaja/create))
 
 (->> {:kikka 42} 
-     (m/encode m "application/json")
+     (muuntaja/encode m "application/json")
      slurp)
 ; "{\"kikka\":42}"
 
 (->> {:kikka 42}
-     (m/encode m "application/json")
-     (m/decode m "application/json"))
+     (muuntaja/encode m "application/json")
+     (muuntaja/decode m "application/json"))
 ; {:kikka 42}
 ```
 
 With custom EDN decoder opts:
 
 ```clj
-(-> (m/create
-      (-> m/default-options
-          (m/with-decoder-opts 
+(require '[muuntaja.options :as options])
+
+(-> (muuntaja/create
+      (-> muuntaja/default-options
+          (options/decoder-opts 
             "application/edn"
             {:readers {'INC inc}})))
-    (m/decode 
+    (muuntaja/decode 
       "application/edn" 
       "{:value #INC 41}"))
 ; {:value 42}    
@@ -89,7 +91,7 @@ With custom EDN decoder opts:
 Define a function to encode Transit-json:
 
 ```clj
-(def encode-transit-json (m/encoder m "application/transit+json"))
+(def encode-transit-json (muuntaja/encoder m "application/transit+json"))
 
 (slurp (encode-transit-json {:kikka 42}))
 ; "[\"^ \",\"~:kikka\",42]"
@@ -110,24 +112,24 @@ return a `muuntaja.protocols.StremableResponse` type, which satisifies the follo
 
 ;; options are just data!
 (def m 
-  (m/create
+  (muuntaja/create
     (assoc-in
-      m/default-options
+      muuntaja/default-options
       [:formats "application/json" :encoder 0]
       formats/make-streaming-json-encoder)))
           
 (->> {:kikka 42} 
-     (m/encode m "application/json"))
+     (muuntaja/encode m "application/json"))
 ; <<StreamableResponse>>
 
 (->> {:kikka 42} 
-     (m/encode m "application/json")
+     (muuntaja/encode m "application/json")
      slurp)
 ; "{\"kikka\":42}"
 
 (->> {:kikka 42}
-     (m/encode m "application/json")
-     (m/decode m "application/json"))
+     (muuntaja/encode m "application/json")
+     (muuntaja/decode m "application/json"))
 ; {:kikka 42}
 ```
 
@@ -174,12 +176,12 @@ be used in the response pipeline.
 ### Default options
 
 ```clj
-{:extract-content-type-fn extract-content-type-ring
- :extract-accept-charset-fn extract-accept-charset-ring
- :extract-accept-fn extract-accept-ring
+{:extract-content-type-fn muuntaja/extract-content-type-ring
+ :extract-accept-charset-fn muuntaja/extract-accept-charset-ring
+ :extract-accept-fn muuntaja/extract-accept-ring
 
  :decode? (constantly true)
- :encode? encode-collections-with-override
+ :encode? muuntaja/encode-collections-with-override
 
  :default-charset "utf-8"
  :charsets #{"utf-8"}
@@ -203,6 +205,7 @@ be used in the response pipeline.
            "application/transit+msgpack" {:decoder [(partial formats/make-transit-decoder :msgpack)]
                                           :encoder [(partial formats/make-transit-encoder :msgpack)]
                                           :encode-protocol [formats/EncodeTransitMessagePack formats/encode-transit-msgpack]}}}
+
 ```
 
 ## Differences with current solutions
