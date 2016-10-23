@@ -15,7 +15,7 @@
 
 (def default-options
   (-> options/default-options-with-format-regexps
-      options/with-no-encoding))
+      options/no-encoding))
 
 (defn wrap-api-params
   ([handler]
@@ -33,15 +33,15 @@
          (:body-params ((wrap-api-params
                           identity
                           (-> default-options
-                              (options/with-formats ["application/json"])
-                              (options/with-decoder-opts "application/json" {:key-fn key-fn})))
+                              (options/formats ["application/json"])
+                              (options/decoder-opts "application/json" {:key-fn key-fn})))
                          {:headers {"content-type" "application/json"}
                           :body (stream "{\"foo_bar\":\"bar\"}")}))))
   (is (= {:foo-bar "bar"}
          (:body-params ((wrap-api-params
                           identity
                           (-> default-options
-                              (options/with-decoder-opts "application/json" {:key-fn key-fn})))
+                              (options/decoder-opts "application/json" {:key-fn key-fn})))
                          {:headers {"content-type" "application/json"}
                           :body (stream "{\"foo_bar\":\"bar\"}")})))))
 
@@ -49,8 +49,8 @@
   (-> identity
       (wrap-api-params
         (-> default-options
-            (options/with-formats ["application/x-yaml"])
-            (options/with-decoder-opts "application/x-yaml" opts)))))
+            (options/formats ["application/x-yaml"])
+            (options/decoder-opts "application/x-yaml" opts)))))
 
 (deftest augments-with-yaml-content-type
   (let [req {:headers {"content-type" "application/x-yaml; charset=UTF-8"}
@@ -64,8 +64,8 @@
   (-> identity
       (wrap-api-params
         (-> default-options
-            (options/with-formats ["application/x-yaml"])
-            (options/with-decoder-opts "application/x-yaml" {:keywords true})))))
+            (options/formats ["application/x-yaml"])
+            (options/decoder-opts "application/x-yaml" {:keywords true})))))
 
 (deftest augments-with-yaml-kw-content-type
   (let [req {:headers {"content-type" "application/x-yaml; charset=UTF-8"}
@@ -79,8 +79,8 @@
   (-> identity
       (wrap-api-params
         (-> default-options
-            (options/with-formats ["application/msgpack"])
-            (options/with-decoder-opts "application/msgpack" {:keywords? false})))))
+            (options/formats ["application/msgpack"])
+            (options/decoder-opts "application/msgpack" {:keywords? false})))))
 
 (deftest augments-with-msgpack-content-type
   (let [req {:headers {"content-type" "application/msgpack"}
@@ -94,7 +94,7 @@
   (-> identity
       (wrap-api-params
         (-> default-options
-            (options/with-formats ["application/msgpack"])))))
+            (options/formats ["application/msgpack"])))))
 
 (deftest augments-with-msgpack-kw-content-type
   (let [req {:headers {"content-type" "application/msgpack"}
@@ -108,7 +108,7 @@
   (-> identity
       (wrap-api-params
         (-> default-options
-            (options/with-formats ["application/edn"])))))
+            (options/formats ["application/edn"])))))
 
 (deftest augments-with-clojure-content-type
   (let [req {:headers {"content-type" "application/clojure; charset=UTF-8"}
@@ -157,7 +157,7 @@
   (-> identity
       (wrap-api-params
         (-> default-options
-            (options/with-formats ["application/transit+json"])))))
+            (options/formats ["application/transit+json"])))))
 
 (deftest augments-with-transit-json-content-type
   (let [req {:headers {"content-type" "application/transit+json"}
@@ -171,7 +171,7 @@
   (-> identity
       (wrap-api-params
         (-> default-options
-            (options/with-formats ["application/transit+msgpack"])))))
+            (options/formats ["application/transit+msgpack"])))))
 
 (deftest augments-with-transit-msgpack-content-type
   (let [req {:headers {"content-type" "application/transit+msgpack"}
@@ -246,7 +246,7 @@
           resp ((-> identity
                     (wrap-api-params
                       (-> default-options
-                          (options/with-formats [format])))
+                          (options/formats [format])))
                     (middleware/wrap-exception (constantly {:status 999})))
                  req)]
       (= 999 (:status resp)))
@@ -264,8 +264,8 @@
   (-> identity
       (wrap-api-params
         (-> default-options
-            (options/with-formats ["application/transit+json"])
-            (options/with-decoder-opts "application/transit+json" {:handlers readers})))))
+            (options/formats ["application/transit+json"])
+            (options/decoder-opts "application/transit+json" {:handlers readers})))))
 
 (def transit-body "[\"^ \", \"~:p\", [\"~#Point\",[1,2]]]")
 

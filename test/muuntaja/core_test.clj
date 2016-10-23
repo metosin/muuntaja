@@ -145,7 +145,7 @@
           Exception
           (m/create
             (-> m/default-options
-                (options/with-formats ["kikka"]))))))
+                (options/formats ["kikka"]))))))
 
   (testing "overriding adapter options"
     (let [decode-json-kw (m/decoder
@@ -153,7 +153,7 @@
                            "application/json")
           decode-json (m/decoder
                         (m/create
-                          (options/with-decoder-opts
+                          (options/decoder-opts
                             m/default-options
                             "application/json"
                             {:key-fn false}))
@@ -166,9 +166,9 @@
           Exception
           (m/create
             (-> m/default-options
-                (options/with-decoder-opts "application/jsonz" {:keywords? false})))))
+                (options/decoder-opts "application/jsonz" {:keywords? false})))))
     (is (thrown?
           Exception
           (m/create
             (-> m/default-options
-                (options/with-encoder-opts "application/jsonz" {:keywords? false})))))))
+                (options/encoder-opts "application/jsonz" {:keywords? false})))))))

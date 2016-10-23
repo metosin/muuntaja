@@ -5,13 +5,13 @@
 (defn transform-format-options [f options]
   (update options :formats #(into (empty %) (map (fn [[k v]] [k (f v)]) %))))
 
-(def with-no-decoding (partial transform-format-options #(dissoc % :decoder)))
-(def with-no-encoding (partial transform-format-options #(dissoc % :encoder)))
+(def no-decoding (partial transform-format-options #(dissoc % :decoder)))
+(def no-encoding (partial transform-format-options #(dissoc % :encoder)))
 
 (def no-protocol-encoding
   (partial transform-format-options #(dissoc % :encode-protocol)))
 
-(defn with-decoder-opts [options format opts]
+(defn decoder-opts [options format opts]
   (when-not (get-in options [:formats format])
     (throw
       (ex-info
@@ -20,7 +20,7 @@
          :formats (keys (:formats options))})))
   (assoc-in options [:formats format :decoder-opts] opts))
 
-(defn with-encoder-opts [options format opts]
+(defn encoder-opts [options format opts]
   (when-not (get-in options [:formats format])
     (throw
       (ex-info
@@ -29,7 +29,7 @@
          :formats (keys (:formats options))})))
   (assoc-in options [:formats format :encoder-opts] opts))
 
-(defn with-formats [options formats]
+(defn formats [options formats]
   (let [existing-formats (-> options :formats keys set)
         future-formats (set formats)]
     (when-let [diff (seq (set/difference future-formats existing-formats))]

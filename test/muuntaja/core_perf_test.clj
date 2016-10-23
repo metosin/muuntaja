@@ -323,7 +323,7 @@
   ; 2.3µs
   ; 2.6µs (negotions)
   ; 2.6µs (content-type)
-  (let [app (middleware/wrap-format +handler+ (-> m/default-options options/with-no-encoding))
+  (let [app (middleware/wrap-format +handler+ (-> m/default-options options/no-encoding))
         request! (request-stream +json-request+)]
 
     (title "muuntaja: JSON-REQUEST")
@@ -333,7 +333,7 @@
   ; 3.6µs
   ; 4.2µs (negotions)
   ; 4.1µs (content-type)
-  (let [app (middleware/wrap-format +handler+ (-> m/default-options options/with-no-encoding))
+  (let [app (middleware/wrap-format +handler+ (-> m/default-options options/no-encoding))
         request! (request-stream +transit-json-request+)]
 
     (title "muuntaja: TRANSIT-REQUEST")

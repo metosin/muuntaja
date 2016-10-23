@@ -20,8 +20,8 @@
        (middleware/wrap-params)
        (middleware/wrap-format
          (-> options/default-options-with-format-regexps
-             options/with-no-encoding
-             (options/with-decoder-opts "application/json" (merge {:key-fn false} opts))))
+             options/no-encoding
+             (options/decoder-opts "application/json" (merge {:key-fn false} opts))))
        (middleware/wrap-exception (constantly
                                     (or
                                       (:malformed-response opts)
@@ -41,8 +41,8 @@
    (-> handler
        (middleware/wrap-format
          (-> m/default-options
-             options/with-no-decoding
-             (options/with-encoder-opts "application/json" opts)))
+             options/no-decoding
+             (options/encoder-opts "application/json" opts)))
        (middleware/wrap-exception (constantly
                                     (or
                                       (:malformed-response opts)
