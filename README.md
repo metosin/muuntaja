@@ -75,9 +75,11 @@ Create a muuntaja and use it to encode & decode JSON:
 With custom EDN decoder opts:
 
 ```clj
+(require '[muuntaja.options :as options])
+
 (-> (m/create
       (-> m/default-options
-          (m/with-decoder-opts 
+          (options/decoder-opts 
             "application/edn"
             {:readers {'INC inc}})))
     (m/decode 
