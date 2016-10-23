@@ -2,6 +2,7 @@
   (:require [clojure.test :refer :all]
             [muuntaja.core :as m]
             [muuntaja.middleware :as middleware]
+            [muuntaja.options :as options]
             [cheshire.core :as json]
             [clj-yaml.core :as yaml]
             [clojure.walk :refer [keywordize-keys]]
@@ -9,7 +10,7 @@
             [msgpack.core :as msgpack]
             [clojure.java.io :as io]
             [clojure.string :as str])
-  (:import [java.io ByteArrayInputStream InputStream]))
+  (:import [java.io ByteArrayInputStream]))
 
 (defn stream [s]
   (ByteArrayInputStream. (.getBytes s "UTF-8")))
@@ -20,7 +21,7 @@
   ([handler opts]
    (-> handler
        (middleware/wrap-format
-         (-> opts m/no-decoding)))))
+         (-> opts options/with-no-decoding)))))
 
 (def api-echo
   (wrap-api-response identity))
@@ -52,8 +53,8 @@
         resp ((wrap-api-response
                 identity
                 (-> m/default-options
-                    (m/with-formats ["application/json"])
-                    (m/with-encoder-opts "application/json" {:pretty true}))) req)]
+                    (options/with-formats ["application/json"])
+                    (options/with-encoder-opts "application/json" {:pretty true}))) req)]
     (is (.contains (slurp (:body resp)) "\n "))))
 
 (deftest returns-correct-charset
@@ -85,7 +86,7 @@
         resp2 ((-> identity
                    (wrap-api-response
                      (-> m/default-options
-                         (m/with-encoder-opts "application/json" {:key-fn (comp str/upper-case name)}))))
+                         (options/with-encoder-opts "application/json" {:key-fn (comp str/upper-case name)}))))
                 req)]
     (is (= "{\"FOO-BAR\":\"bar\"}"
            (slurp (:body resp2))))))
@@ -94,7 +95,7 @@
   (wrap-api-response
     identity
     (-> m/default-options
-        (m/with-formats ["application/msgpack"]))))
+        (options/with-formats ["application/msgpack"]))))
 
 (deftest format-msgpack-hashmap
   (let [body {:foo "bar"}
@@ -109,7 +110,7 @@
   (wrap-api-response
     identity
     (-> m/default-options
-        (m/with-formats ["application/edn"]))))
+        (options/with-formats ["application/edn"]))))
 
 (deftest format-clojure-hashmap
   (let [body {:foo "bar"}
@@ -124,7 +125,7 @@
   (wrap-api-response
     identity
     (-> m/default-options
-        (m/with-formats ["application/x-yaml"]))))
+        (options/with-formats ["application/x-yaml"]))))
 
 (deftest format-yaml-hashmap
   (let [body {:foo "bar"}
@@ -153,7 +154,7 @@
   (wrap-api-response
     identity
     (-> m/default-options
-        (m/with-formats ["application/transit+json"]))))
+        (options/with-formats ["application/transit+json"]))))
 
 (deftest format-transit-json-hashmap
   (let [body {:foo "bar"}
@@ -168,7 +169,7 @@
   (wrap-api-response
     identity
     (-> m/default-options
-        (m/with-formats ["application/transit+msgpack"]))))
+        (options/with-formats ["application/transit+msgpack"]))))
 
 (deftest format-transit-msgpack-hashmap
   (let [body {:foo "bar"}
@@ -319,7 +320,7 @@
        :body {:foo "bar"}})
     (-> m/default-options
         (assoc-in [:formats "application/vnd.mixradio.something+json"] custom-encoder)
-        (m/with-formats ["application/vnd.mixradio.something+json" "application/json"]))))
+        (options/with-formats ["application/vnd.mixradio.something+json" "application/json"]))))
 
 (deftest custom-content-type-test
   (let [resp (custom-content-type {:body {:foo "bar"} :headers {"accept" "application/vnd.mixradio.something+json"}})]
@@ -336,14 +337,14 @@
   (wrap-api-response
     identity
     (-> m/default-options
-        (m/with-formats ["application/transit+json"])
-        (m/with-encoder-opts "application/transit+json" {:handlers writers}))))
+        (options/with-formats ["application/transit+json"])
+        (options/with-encoder-opts "application/transit+json" {:handlers writers}))))
 
 (def custom-api-transit-echo
   (wrap-api-response
     identity
     (-> m/default-options
-        (m/with-encoder-opts "application/transit+json" {:handlers writers}))))
+        (options/with-encoder-opts "application/transit+json" {:handlers writers}))))
 
 (def transit-resp {:body (Point. 1 2)})
 

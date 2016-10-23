@@ -6,6 +6,7 @@
             [msgpack.core :as msgpack]
             [clojure.string :as string]
             [muuntaja.core :as m]
+            [muuntaja.options :as options]
             [muuntaja.middleware :as middleware])
   (:import [java.io ByteArrayInputStream ByteArrayOutputStream]))
 
@@ -13,8 +14,8 @@
   (ByteArrayInputStream. (.getBytes s "UTF-8")))
 
 (def default-options
-  (-> m/default-options-with-format-regexps
-      m/no-encoding))
+  (-> options/default-options-with-format-regexps
+      options/with-no-encoding))
 
 (defn wrap-api-params
   ([handler]
@@ -32,15 +33,15 @@
          (:body-params ((wrap-api-params
                           identity
                           (-> default-options
-                              (m/with-formats ["application/json"])
-                              (m/with-decoder-opts "application/json" {:key-fn key-fn})))
+                              (options/with-formats ["application/json"])
+                              (options/with-decoder-opts "application/json" {:key-fn key-fn})))
                          {:headers {"content-type" "application/json"}
                           :body (stream "{\"foo_bar\":\"bar\"}")}))))
   (is (= {:foo-bar "bar"}
          (:body-params ((wrap-api-params
                           identity
                           (-> default-options
-                              (m/with-decoder-opts "application/json" {:key-fn key-fn})))
+                              (options/with-decoder-opts "application/json" {:key-fn key-fn})))
                          {:headers {"content-type" "application/json"}
                           :body (stream "{\"foo_bar\":\"bar\"}")})))))
 
@@ -48,8 +49,8 @@
   (-> identity
       (wrap-api-params
         (-> default-options
-            (m/with-formats ["application/x-yaml"])
-            (m/with-decoder-opts "application/x-yaml" opts)))))
+            (options/with-formats ["application/x-yaml"])
+            (options/with-decoder-opts "application/x-yaml" opts)))))
 
 (deftest augments-with-yaml-content-type
   (let [req {:headers {"content-type" "application/x-yaml; charset=UTF-8"}
@@ -63,8 +64,8 @@
   (-> identity
       (wrap-api-params
         (-> default-options
-            (m/with-formats ["application/x-yaml"])
-            (m/with-decoder-opts "application/x-yaml" {:keywords true})))))
+            (options/with-formats ["application/x-yaml"])
+            (options/with-decoder-opts "application/x-yaml" {:keywords true})))))
 
 (deftest augments-with-yaml-kw-content-type
   (let [req {:headers {"content-type" "application/x-yaml; charset=UTF-8"}
@@ -78,8 +79,8 @@
   (-> identity
       (wrap-api-params
         (-> default-options
-            (m/with-formats ["application/msgpack"])
-            (m/with-decoder-opts "application/msgpack" {:keywords? false})))))
+            (options/with-formats ["application/msgpack"])
+            (options/with-decoder-opts "application/msgpack" {:keywords? false})))))
 
 (deftest augments-with-msgpack-content-type
   (let [req {:headers {"content-type" "application/msgpack"}
@@ -93,7 +94,7 @@
   (-> identity
       (wrap-api-params
         (-> default-options
-            (m/with-formats ["application/msgpack"])))))
+            (options/with-formats ["application/msgpack"])))))
 
 (deftest augments-with-msgpack-kw-content-type
   (let [req {:headers {"content-type" "application/msgpack"}
@@ -107,7 +108,7 @@
   (-> identity
       (wrap-api-params
         (-> default-options
-            (m/with-formats ["application/edn"])))))
+            (options/with-formats ["application/edn"])))))
 
 (deftest augments-with-clojure-content-type
   (let [req {:headers {"content-type" "application/clojure; charset=UTF-8"}
@@ -156,7 +157,7 @@
   (-> identity
       (wrap-api-params
         (-> default-options
-            (m/with-formats ["application/transit+json"])))))
+            (options/with-formats ["application/transit+json"])))))
 
 (deftest augments-with-transit-json-content-type
   (let [req {:headers {"content-type" "application/transit+json"}
@@ -170,7 +171,7 @@
   (-> identity
       (wrap-api-params
         (-> default-options
-            (m/with-formats ["application/transit+msgpack"])))))
+            (options/with-formats ["application/transit+msgpack"])))))
 
 (deftest augments-with-transit-msgpack-content-type
   (let [req {:headers {"content-type" "application/transit+msgpack"}
@@ -245,7 +246,7 @@
           resp ((-> identity
                     (wrap-api-params
                       (-> default-options
-                          (m/with-formats [format])))
+                          (options/with-formats [format])))
                     (middleware/wrap-exception (constantly {:status 999})))
                  req)]
       (= 999 (:status resp)))
@@ -263,8 +264,8 @@
   (-> identity
       (wrap-api-params
         (-> default-options
-            (m/with-formats ["application/transit+json"])
-            (m/with-decoder-opts "application/transit+json" {:handlers readers})))))
+            (options/with-formats ["application/transit+json"])
+            (options/with-decoder-opts "application/transit+json" {:handlers readers})))))
 
 (def transit-body "[\"^ \", \"~:p\", [\"~#Point\",[1,2]]]")
 
