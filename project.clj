@@ -1,4 +1,4 @@
-(defproject metosin/muuntaja "0.1.0-SNAPSHOT"
+(defproject metosin/muuntaja "0.1.0"
   :description "Snappy lib for encoding/decoding http api formats"
   :url "https://github.com/metosin/muuntaja"
   :license {:name "Eclipse Public License - v 1.0"

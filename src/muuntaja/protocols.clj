@@ -11,7 +11,7 @@
   (applyTo [this args]
     (AFn/applyToHelper this args)))
 
-;; only when ring 1.6.0+ is used
+;; HACK: only when ring 1.6.0+ is used. Remove when 1.6.0 ships.
 (when (find-ns 'ring.core.protocols)
   (require '[ring.core.protocols])
   (eval
