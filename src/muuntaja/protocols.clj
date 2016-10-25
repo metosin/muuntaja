@@ -5,15 +5,19 @@
            (java.io ByteArrayOutputStream ByteArrayInputStream InputStreamReader BufferedReader InputStream Writer)))
 
 (deftype StreamableResponse [f]
-  protocols/StreamableResponseBody
-  (write-body-to-stream [_ _ output-stream]
-    (f output-stream))
   IFn
   (invoke [_ output-stream]
     (f output-stream)
     output-stream)
   (applyTo [this args]
     (AFn/applyToHelper this args)))
+
+;; only when ring 1.6.0+ is used
+(when (ns-resolve 'ring.core.protocols 'StreamableResponseBody)
+  (extend-protocol protocols/StreamableResponseBody
+    StreamableResponse
+    (write-body-to-stream [this _ output-stream]
+      ((.f this) output-stream))))
 
 (extend StreamableResponse
   io/IOFactory
