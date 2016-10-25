@@ -1,6 +1,5 @@
 (ns muuntaja.protocols
-  (:require [clojure.java.io :as io]
-            [ring.core.protocols :as protocols])
+  (:require [clojure.java.io :as io])
   (:import (clojure.lang IFn AFn)
            (java.io ByteArrayOutputStream ByteArrayInputStream InputStreamReader BufferedReader InputStream Writer)))
 
@@ -13,11 +12,13 @@
     (AFn/applyToHelper this args)))
 
 ;; only when ring 1.6.0+ is used
-(when (ns-resolve 'ring.core.protocols 'StreamableResponseBody)
-  (extend-protocol protocols/StreamableResponseBody
-    StreamableResponse
-    (write-body-to-stream [this _ output-stream]
-      ((.f this) output-stream))))
+(when (find-ns 'ring.core.protocols)
+  (require '[ring.core.protocols])
+  (eval
+    '(extend-protocol ring.core.protocols/StreamableResponseBody
+       StreamableResponse
+       (write-body-to-stream [this _ output-stream]
+         ((.f this) output-stream)))))
 
 (extend StreamableResponse
   io/IOFactory
@@ -47,7 +48,7 @@
   (as-input-stream [this] this)
 
   StreamableResponse
-  (as-input-stream[this]
+  (as-input-stream [this]
     (io/make-input-stream this nil))
 
   String
