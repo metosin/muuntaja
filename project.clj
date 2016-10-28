@@ -1,5 +1,5 @@
-(defproject metosin/muuntaja "0.1.0"
-  :description "Snappy lib for encoding/decoding http api formats"
+(defproject metosin/muuntaja "0.2.0-SNAPSHOT"
+  :description "Clojure library for fast http format negotiation, encoding and decoding."
   :url "https://github.com/metosin/muuntaja"
   :license {:name "Eclipse Public License - v 1.0"
             :url "http://www.eclipse.org/legal/epl-v10.html"
@@ -23,7 +23,7 @@
                                   ;; Pedestal
                                   [io.pedestal/pedestal.service "0.5.1"]
                                   [javax.servlet/javax.servlet-api "3.1.0"]
-                                  [org.slf4j/slf4j-log4j12 "1.7.12"]
+                                  [org.slf4j/slf4j-log4j12 "1.7.21"]
 
                                   [criterium "0.4.4"]]}
              :1.9 {:dependencies [[org.clojure/clojure "1.9.0-alpha12"]]}

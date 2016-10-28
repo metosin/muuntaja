@@ -13,7 +13,7 @@ but a complete rewrite ([and up to 10x faster](https://github.com/metosin/muunta
 ## Rationale
 
 - explicit configuration, avoiding shared mutable state (e.g. multimethods)
-- symmetric encoding & decoding
+- symmetric encoding & decoding when possible
 - use streaming when possible
 - fast & pragmatic by default
 - extendable & pluggable: new formats, behavior
