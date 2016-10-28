@@ -7,7 +7,8 @@
             [cognitect.transit :as transit]
             [msgpack.core :as msgpack]
             [clojure.java.io :as io]
-            [muuntaja.protocols :as protocols])
+            [muuntaja.protocols :as protocols]
+            [msgpack.clojure-extensions])
   (:import (java.io ByteArrayOutputStream DataInputStream DataOutputStream InputStreamReader PushbackReader InputStream ByteArrayInputStream OutputStreamWriter OutputStream)))
 
 (defn- slurp-to-bytes ^bytes [^InputStream in]
