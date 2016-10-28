@@ -123,8 +123,10 @@
 (defn make-transit-decoder
   [type options]
   (fn [in _]
-    (let [reader (transit/reader in type options)]
-      (transit/read reader))))
+    ;; https://github.com/cognitect/transit-clj/issues/34
+    (if (protocols/available? in)
+      (let [reader (transit/reader (protocols/as-input-stream in) type options)]
+        (transit/read reader)))))
 
 (defn make-transit-encoder [type {:keys [verbose] :as options}]
   (let [full-type (if (and (= type :json) verbose) :json-verbose type)]
