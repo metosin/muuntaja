@@ -4,8 +4,7 @@
             [clojure.string :as str]
             [muuntaja.protocols :as protocols]
             [muuntaja.formats :as formats]
-            [muuntaja.json :as json]
-            [muuntaja.options :as options])
+            [muuntaja.json :as json])
   (:import (java.nio.charset Charset)))
 
 (defn set-jvm-default-charset! [charset]
@@ -145,7 +144,7 @@
           Exception
           (m/create
             (-> m/default-options
-                (options/formats ["kikka"]))))))
+                (m/select-formats ["kikka"]))))))
 
   (testing "overriding adapter options"
     (let [decode-json-kw (m/decoder
@@ -153,9 +152,9 @@
                            "application/json")
           decode-json (m/decoder
                         (m/create
-                          (options/decoder-opts
+                          (assoc-in
                             m/default-options
-                            "application/json"
+                            [:formats "application/json" :decoder-opts]
                             {:key-fn false}))
                         "application/json")]
       (is (= {:kikka true} (decode-json-kw "{\"kikka\":true}")))
@@ -166,9 +165,13 @@
           Exception
           (m/create
             (-> m/default-options
-                (options/decoder-opts "application/jsonz" {:keywords? false})))))
+                (assoc-in
+                  [:formats "application/jsonz" :encoder-opts]
+                  {:keywords? false})))))
     (is (thrown?
           Exception
           (m/create
             (-> m/default-options
-                (options/encoder-opts "application/jsonz" {:keywords? false})))))))
+                (assoc-in
+                  [:formats "application/jsonz" :decoder-opts]
+                  {:keywords? false})))))))

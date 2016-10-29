@@ -76,17 +76,14 @@ Create a muuntaja and use it to encode & decode JSON:
 With custom EDN decoder opts:
 
 ```clj
-(require '[muuntaja.options :as options])
-
 (-> (muuntaja/create
-      (-> muuntaja/default-options
-          (options/decoder-opts 
-            "application/edn"
-            {:readers {'INC inc}})))
-    (muuntaja/decode 
-      "application/edn" 
-      "{:value #INC 41}"))
-; {:value 42}    
+      (assoc-in
+        muuntaja/default-options
+        [:formats "application/edn" :decoder-opts]
+        {:readers {'INC inc}}))
+    (muuntaja/decode
+      "application/edn"
+      "{:value #INC 41}")); {:value 42}    
 ```
 
 Define a function to encode Transit-json:

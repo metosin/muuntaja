@@ -1,7 +1,6 @@
 (ns muuntaja.ring-json.json-test
   (:require [clojure.test :refer :all]
             [muuntaja.core :as m]
-            [muuntaja.options :as options]
             [muuntaja.middleware :as middleware]
             [ring.util.io :refer [string-input-stream]]))
 
@@ -19,9 +18,15 @@
    (-> handler
        (middleware/wrap-params)
        (middleware/wrap-format
-         (-> options/default-options-with-format-regexps
-             options/no-encoding
-             (options/decoder-opts "application/json" (merge {:key-fn false} opts))))
+         (-> m/default-options
+             (m/select-formats
+               ["application/json"])
+             (update-in
+               [:formats "application/json"]
+               merge
+               {:matches #"^application/(.+\+)?json$"
+                :encoder nil
+                :decoder-opts (merge {:key-fn false} opts)})))
        (middleware/wrap-exception (constantly
                                     (or
                                       (:malformed-response opts)
@@ -41,8 +46,10 @@
    (-> handler
        (middleware/wrap-format
          (-> m/default-options
-             options/no-decoding
-             (options/encoder-opts "application/json" opts)))
+             (m/transform-formats #(dissoc %2 :decoder))
+             (assoc-in
+               [:formats "application/json" :encoder-opts]
+               opts)))
        (middleware/wrap-exception (constantly
                                     (or
                                       (:malformed-response opts)

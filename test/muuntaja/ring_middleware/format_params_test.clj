@@ -6,7 +6,6 @@
             [msgpack.core :as msgpack]
             [clojure.string :as string]
             [muuntaja.core :as m]
-            [muuntaja.options :as options]
             [muuntaja.middleware :as middleware])
   (:import [java.io ByteArrayInputStream ByteArrayOutputStream]))
 
@@ -14,8 +13,15 @@
   (ByteArrayInputStream. (.getBytes s "UTF-8")))
 
 (def default-options
-  (-> options/default-options-with-format-regexps
-      options/no-encoding))
+  (-> m/default-options
+      (assoc-in [:formats "application/json" :matches] #"^application/(.+\+)?json$")
+      (assoc-in [:formats "application/edn" :matches] #"^application/(vnd.+)?(x-)?(clojure|edn)$")
+      (assoc-in [:formats "application/msgpack" :matches] #"^application/(vnd.+)?(x-)?msgpack$")
+      (assoc-in [:formats "application/x-yaml" :matches] #"^(application|text)/(vnd.+)?(x-)?yaml$")
+      (assoc-in [:formats "application/transit+json" :matches] #"^application/(vnd.+)?(x-)?transit\+json$")
+      (assoc-in [:formats "application/transit+msgpack" :matches] #"^application/(vnd.+)?(x-)?transit\+msgpack$")
+      (m/transform-formats
+        #(dissoc %2 :encoder))))
 
 (defn wrap-api-params
   ([handler]
@@ -33,15 +39,19 @@
          (:body-params ((wrap-api-params
                           identity
                           (-> default-options
-                              (options/formats ["application/json"])
-                              (options/decoder-opts "application/json" {:key-fn key-fn})))
+                              (m/select-formats ["application/json"])
+                              (assoc-in
+                                [:formats "application/json" :decoder-opts]
+                                {:key-fn key-fn})))
                          {:headers {"content-type" "application/json"}
                           :body (stream "{\"foo_bar\":\"bar\"}")}))))
   (is (= {:foo-bar "bar"}
          (:body-params ((wrap-api-params
                           identity
                           (-> default-options
-                              (options/decoder-opts "application/json" {:key-fn key-fn})))
+                              (assoc-in
+                                [:formats "application/json" :decoder-opts]
+                                {:key-fn key-fn})))
                          {:headers {"content-type" "application/json"}
                           :body (stream "{\"foo_bar\":\"bar\"}")})))))
 
@@ -49,8 +59,10 @@
   (-> identity
       (wrap-api-params
         (-> default-options
-            (options/formats ["application/x-yaml"])
-            (options/decoder-opts "application/x-yaml" opts)))))
+            (m/select-formats ["application/x-yaml"])
+            (assoc-in
+              [:formats "application/x-yaml" :decoder-opts]
+              opts)))))
 
 (deftest augments-with-yaml-content-type
   (let [req {:headers {"content-type" "application/x-yaml; charset=UTF-8"}
@@ -64,8 +76,10 @@
   (-> identity
       (wrap-api-params
         (-> default-options
-            (options/formats ["application/x-yaml"])
-            (options/decoder-opts "application/x-yaml" {:keywords true})))))
+            (m/select-formats ["application/x-yaml"])
+            (assoc-in
+              [:formats "application/x-yaml" :decoder-opts]
+              {:keywords true})))))
 
 (deftest augments-with-yaml-kw-content-type
   (let [req {:headers {"content-type" "application/x-yaml; charset=UTF-8"}
@@ -79,8 +93,10 @@
   (-> identity
       (wrap-api-params
         (-> default-options
-            (options/formats ["application/msgpack"])
-            (options/decoder-opts "application/msgpack" {:keywords? false})))))
+            (m/select-formats ["application/msgpack"])
+            (assoc-in
+              [:formats "application/msgpack" :decoder-opts]
+              {:keywords? false})))))
 
 (deftest augments-with-msgpack-content-type
   (let [req {:headers {"content-type" "application/msgpack"}
@@ -94,7 +110,7 @@
   (-> identity
       (wrap-api-params
         (-> default-options
-            (options/formats ["application/msgpack"])))))
+            (m/select-formats ["application/msgpack"])))))
 
 (deftest augments-with-msgpack-kw-content-type
   (let [req {:headers {"content-type" "application/msgpack"}
@@ -108,7 +124,7 @@
   (-> identity
       (wrap-api-params
         (-> default-options
-            (options/formats ["application/edn"])))))
+            (m/select-formats ["application/edn"])))))
 
 (deftest augments-with-clojure-content-type
   (let [req {:headers {"content-type" "application/clojure; charset=UTF-8"}
@@ -157,7 +173,7 @@
   (-> identity
       (wrap-api-params
         (-> default-options
-            (options/formats ["application/transit+json"])))))
+            (m/select-formats ["application/transit+json"])))))
 
 (deftest augments-with-transit-json-content-type
   (let [req {:headers {"content-type" "application/transit+json"}
@@ -171,7 +187,7 @@
   (-> identity
       (wrap-api-params
         (-> default-options
-            (options/formats ["application/transit+msgpack"])))))
+            (m/select-formats ["application/transit+msgpack"])))))
 
 (deftest augments-with-transit-msgpack-content-type
   (let [req {:headers {"content-type" "application/transit+msgpack"}
@@ -246,7 +262,7 @@
           resp ((-> identity
                     (wrap-api-params
                       (-> default-options
-                          (options/formats [format])))
+                          (m/select-formats [format])))
                     (middleware/wrap-exception (constantly {:status 999})))
                  req)]
       (= 999 (:status resp)))
@@ -264,8 +280,10 @@
   (-> identity
       (wrap-api-params
         (-> default-options
-            (options/formats ["application/transit+json"])
-            (options/decoder-opts "application/transit+json" {:handlers readers})))))
+            (m/select-formats ["application/transit+json"])
+            (assoc-in
+              [:formats "application/transit+json" :decoder-opts]
+              {:handlers readers})))))
 
 (def transit-body "[\"^ \", \"~:p\", [\"~#Point\",[1,2]]]")
 

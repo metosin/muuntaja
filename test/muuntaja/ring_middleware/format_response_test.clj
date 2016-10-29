@@ -2,7 +2,6 @@
   (:require [clojure.test :refer :all]
             [muuntaja.core :as m]
             [muuntaja.middleware :as middleware]
-            [muuntaja.options :as options]
             [cheshire.core :as json]
             [clj-yaml.core :as yaml]
             [clojure.walk :refer [keywordize-keys]]
@@ -21,7 +20,7 @@
   ([handler opts]
    (-> handler
        (middleware/wrap-format
-         (-> opts options/no-decoding)))))
+         (m/transform-formats opts #(dissoc %2 :decoder))))))
 
 (def api-echo
   (wrap-api-response identity))
@@ -53,8 +52,10 @@
         resp ((wrap-api-response
                 identity
                 (-> m/default-options
-                    (options/formats ["application/json"])
-                    (options/encoder-opts "application/json" {:pretty true}))) req)]
+                    (m/select-formats ["application/json"])
+                    (assoc-in
+                      [:formats "application/json" :encoder-opts]
+                      {:pretty true}))) req)]
     (is (.contains (slurp (:body resp)) "\n "))))
 
 (deftest returns-correct-charset
@@ -86,7 +87,9 @@
         resp2 ((-> identity
                    (wrap-api-response
                      (-> m/default-options
-                         (options/encoder-opts "application/json" {:key-fn (comp str/upper-case name)}))))
+                         (assoc-in
+                           [:formats "application/json" :encoder-opts]
+                           {:key-fn (comp str/upper-case name)}))))
                 req)]
     (is (= "{\"FOO-BAR\":\"bar\"}"
            (slurp (:body resp2))))))
@@ -95,7 +98,7 @@
   (wrap-api-response
     identity
     (-> m/default-options
-        (options/formats ["application/msgpack"]))))
+        (m/select-formats ["application/msgpack"]))))
 
 (deftest format-msgpack-hashmap
   (let [body {:foo "bar"}
@@ -110,7 +113,7 @@
   (wrap-api-response
     identity
     (-> m/default-options
-        (options/formats ["application/edn"]))))
+        (m/select-formats ["application/edn"]))))
 
 (deftest format-clojure-hashmap
   (let [body {:foo "bar"}
@@ -125,7 +128,7 @@
   (wrap-api-response
     identity
     (-> m/default-options
-        (options/formats ["application/x-yaml"]))))
+        (m/select-formats ["application/x-yaml"]))))
 
 (deftest format-yaml-hashmap
   (let [body {:foo "bar"}
@@ -154,7 +157,7 @@
   (wrap-api-response
     identity
     (-> m/default-options
-        (options/formats ["application/transit+json"]))))
+        (m/select-formats ["application/transit+json"]))))
 
 (deftest format-transit-json-hashmap
   (let [body {:foo "bar"}
@@ -169,7 +172,7 @@
   (wrap-api-response
     identity
     (-> m/default-options
-        (options/formats ["application/transit+msgpack"]))))
+        (m/select-formats ["application/transit+msgpack"]))))
 
 (deftest format-transit-msgpack-hashmap
   (let [body {:foo "bar"}
@@ -320,7 +323,7 @@
        :body {:foo "bar"}})
     (-> m/default-options
         (assoc-in [:formats "application/vnd.mixradio.something+json"] custom-encoder)
-        (options/formats ["application/vnd.mixradio.something+json" "application/json"]))))
+        (m/select-formats ["application/vnd.mixradio.something+json" "application/json"]))))
 
 (deftest custom-content-type-test
   (let [resp (custom-content-type {:body {:foo "bar"} :headers {"accept" "application/vnd.mixradio.something+json"}})]
@@ -337,14 +340,18 @@
   (wrap-api-response
     identity
     (-> m/default-options
-        (options/formats ["application/transit+json"])
-        (options/encoder-opts "application/transit+json" {:handlers writers}))))
+        (m/select-formats ["application/transit+json"])
+        (assoc-in
+          [:formats "application/transit+json" :encoder-opts]
+          {:handlers writers}))))
 
 (def custom-api-transit-echo
   (wrap-api-response
     identity
     (-> m/default-options
-        (options/encoder-opts "application/transit+json" {:handlers writers}))))
+        (assoc-in
+          [:formats "application/transit+json" :encoder-opts]
+          {:handlers writers}))))
 
 (def transit-resp {:body (Point. 1 2)})
 

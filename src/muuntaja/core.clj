@@ -238,10 +238,16 @@
 
 (defn- create-adapters [formats default-charset]
   (->> (for [[format {:keys [decoder decoder-opts encoder encoder-opts encode-protocol]}] formats]
-         [format (map->Adapter
-                   (merge
-                     (if decoder {:decode (create-coder format ::decode decoder decoder-opts default-charset nil)})
-                     (if encoder {:encode (create-coder format ::encode encoder encoder-opts default-charset encode-protocol)})))])
+         (if-not (or encoder decoder)
+           (throw
+             (ex-info
+               (str "invalid format: " format)
+               {:format format
+                :formats (keys formats)}))
+           [format (map->Adapter
+                     (merge
+                       (if decoder {:decode (create-coder format ::decode decoder decoder-opts default-charset nil)})
+                       (if encoder {:encode (create-coder format ::encode encoder encoder-opts default-charset encode-protocol)})))]))
        (into {})))
 
 (declare default-options)
@@ -416,6 +422,27 @@
              "application/transit+msgpack" {:decoder [(partial formats/make-transit-decoder :msgpack)]
                                             :encoder [(partial formats/make-transit-encoder :msgpack)]
                                             :encode-protocol [formats/EncodeTransitMessagePack formats/encode-transit-msgpack]}}})
+
+;;
+;; transforming options
+;;
+
+(defn transform-formats [options f]
+  (update options :formats #(into (empty %) (map (fn [[k v]] [k (f k v)]) %))))
+
+(defn select-formats [options formats]
+  (let [existing-formats (-> options :formats keys set)
+        future-formats (set formats)]
+    (when-let [diff (seq (set/difference future-formats existing-formats))]
+      (throw
+        (ex-info
+          (str "invalid formats: " diff)
+          {:invalid (seq diff)
+           :formats (seq formats)
+           :existing (seq existing-formats)})))
+    (-> options
+        (update :formats select-keys formats)
+        (assoc :default-format (first formats)))))
 
 ;;
 ;; request helpers
