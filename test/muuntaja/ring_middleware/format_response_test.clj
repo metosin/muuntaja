@@ -62,15 +62,16 @@
   (testing "with fixed charset"
     (let [body {:foo "bârçï"}
           req {:body body :headers {"accept-charset" "utf8; q=0.8 , utf-16"}}
-          resp ((wrap-api-response identity) req)]
+          resp ((-> identity
+                    (wrap-api-response
+                      (assoc m/default-options :charsets #{"utf-8"}))) req)]
       (is (not (.contains (get-in resp [:headers "Content-Type"]) "utf-16")))
       #_(is (not= 32 (Integer/parseInt (get-in resp [:headers "Content-Length"]))))))
-  (testing "with fixed charset"
+  (testing "with defaults charsets "
     (let [body {:foo "bârçï"}
           req {:body body :headers {"accept-charset" "utf8; q=0.8 , utf-16"}}
           resp ((-> identity
-                    (wrap-api-response
-                      (assoc m/default-options :charsets m/available-charsets))) req)]
+                    (wrap-api-response m/default-options)) req)]
       (is (.contains (get-in resp [:headers "Content-Type"]) "utf-16"))
       #_(is (= 32 (Integer/parseInt (get-in resp [:headers "Content-Length"])))))))
 

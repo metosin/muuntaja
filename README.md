@@ -182,7 +182,7 @@ be used in the response pipeline.
  :encode? muuntaja/encode-collections-with-override
 
  :default-charset "utf-8"
- :charsets #{"utf-8"}
+ :charsets muuntaja/available-charsets
 
  :default-format "application/json"
  :formats {"application/json" {:decoder [formats/make-json-decoder {:key-fn true}]

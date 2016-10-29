@@ -401,7 +401,7 @@
    :encode? encode-collections-with-override
 
    :default-charset "utf-8"
-   :charsets #{"utf-8"}
+   :charsets available-charsets
 
    :default-format "application/json"
    :formats {"application/json" {:decoder [formats/make-json-decoder {:key-fn true}]
