@@ -3,6 +3,14 @@
   (:import (clojure.lang IFn AFn)
            (java.io ByteArrayOutputStream ByteArrayInputStream InputStreamReader BufferedReader InputStream Writer)))
 
+(defmacro when-ns [ns & body]
+  `(try
+     (eval
+       '(do
+          (require ~ns)
+          ~@body))
+     (catch Exception ~'_)))
+
 (deftype StreamableResponse [f]
   IFn
   (invoke [_ output-stream]
@@ -11,14 +19,13 @@
   (applyTo [this args]
     (AFn/applyToHelper this args)))
 
-;; HACK: only when ring 1.6.0+ is used. Remove when 1.6.0 ships.
-(when (find-ns 'ring.core.protocols)
-  (require '[ring.core.protocols])
-  (eval
-    '(extend-protocol ring.core.protocols/StreamableResponseBody
-       StreamableResponse
-       (write-body-to-stream [this _ output-stream]
-         ((.f this) output-stream)))))
+;; only when ring 1.6.0+ is used. Remove when 1.6.0 ships.
+(when-ns
+  'ring.core.protocols
+  (extend-protocol ring.core.protocols/StreamableResponseBody
+    StreamableResponse
+    (write-body-to-stream [this _ output-stream]
+      ((.f this) output-stream))))
 
 (extend StreamableResponse
   io/IOFactory
