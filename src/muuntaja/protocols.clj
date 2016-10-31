@@ -19,7 +19,7 @@
   (applyTo [this args]
     (AFn/applyToHelper this args)))
 
-;; only when ring 1.6.0+ is used. Remove when 1.6.0 ships.
+;; only when ring 1.6.0+ is used.
 (when-ns
   'ring.core.protocols
   (extend-protocol ring.core.protocols/StreamableResponseBody
