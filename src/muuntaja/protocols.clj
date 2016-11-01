@@ -61,13 +61,3 @@
   String
   (as-input-stream [this]
     (ByteArrayInputStream. (.getBytes this "utf-8"))))
-
-(defprotocol Available
-  (available? [this]))
-
-(extend-protocol Available
-  InputStream
-  (available? [is] (pos? (.available is)))
-
-  StreamableResponse
-  (available? [_] true))
