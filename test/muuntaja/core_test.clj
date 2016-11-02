@@ -5,7 +5,8 @@
             [muuntaja.protocols :as protocols]
             [muuntaja.formats :as formats]
             [muuntaja.json :as json])
-  (:import (java.nio.charset Charset)))
+  (:import (java.nio.charset Charset)
+           (java.io ByteArrayInputStream)))
 
 (defn set-jvm-default-charset! [charset]
   (System/setProperty "file.encoding" charset)
@@ -58,6 +59,29 @@
       (with-default-charset
         "UTF-16"
         (is (= "UTF-16" (str (Charset/defaultCharset)))))))
+
+  ;; TODO: should these behave in same way?
+  (testing "decode with empty input"
+    (let [m (m/create)
+          no-data (fn [] (ByteArrayInputStream. (byte-array 0)))]
+      (testing "some formats return nil"
+        (are [format]
+          (= nil (m/decode m format (no-data)))
+          "application/json"
+          #_"application/edn"
+          "application/x-yaml"
+          #_"application/msgpack"
+          #_"application/transit+json"
+          #_"application/transit+msgpack"))
+      (testing "some formats fail"
+        (are [format]
+          (thrown-with-msg? Exception #"Malformed" (m/decode m format (no-data)))
+          #_"application/json"
+          "application/edn"
+          #_"application/x-yaml"
+          "application/msgpack"
+          "application/transit+json"
+          "application/transit+msgpack"))))
 
   (testing "non-binary-formats encoding with charsets"
     (let [m (m/create (assoc m/default-options :charsets m/available-charsets))
