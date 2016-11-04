@@ -41,19 +41,19 @@
   (title "encode: cheshire")
   (let [encode (fn [] (cheshire/generate-string {"hello" "world"}))]
     (assert (= +json+ (encode)))
-    (cc/quick-bench (encode)))
+    (cc/bench (encode)))
 
   ;; 183ns
   (title "encode: muuntaja.json")
   (let [encode (fn [] (str (doto (json/object) (.put "hello" "world"))))]
     (assert (= +json+ (encode)))
-    (cc/quick-bench (encode)))
+    (cc/bench (encode)))
 
   ;; 82ns
   (title "encode: str")
   (let [encode (fn [] (str "{\"hello\":\"" "world" "\"}"))]
     (assert (= +json+ (encode)))
-    (cc/quick-bench (encode))))
+    (cc/bench (encode))))
 
 (defn decode-perf []
 
@@ -61,19 +61,19 @@
   (title "decode: cheshire")
   (let [decode (fn [] (cheshire/parse-string-strict +json+))]
     (assert (= +data+ (decode)))
-    (cc/quick-bench (decode)))
+    (cc/bench (decode)))
 
   ;; 319ns
   (title "decode: muuntaja.json")
   (let [decode (fn [] (json/decode-map +json+))]
     (assert (= +data+ (decode)))
-    (cc/quick-bench (decode)))
+    (cc/bench (decode)))
 
   ;; 246ns
   (title "decode: jackson")
   (let [decode (fn [] (.readValue json/mapper +json+ Map))]
     (assert (= +data+ (decode)))
-    (cc/quick-bench (decode))))
+    (cc/bench (decode))))
 
 (comment
   (encode-perf)

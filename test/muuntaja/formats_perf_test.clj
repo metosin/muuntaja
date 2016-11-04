@@ -56,7 +56,7 @@
                  baos)]
 
       (assert (= +json-string+ (str (call))))
-      (cc/quick-bench
+      (cc/bench
         (call)))
 
     ;; 3.1µs
@@ -66,7 +66,7 @@
                  baos)]
 
       (assert (= +json-string+ (str (call))))
-      (cc/quick-bench
+      (cc/bench
         (call)))
 
     ;; 2.9µs
@@ -77,7 +77,7 @@
                  baos)]
 
       (assert (= +json-string+ (str (call))))
-      (cc/quick-bench
+      (cc/bench
         (call)))))
 
 (defn encode-json-ring []
@@ -92,7 +92,7 @@
                  baos)]
 
       (assert (= +json-string+ (str (call))))
-      (cc/quick-bench
+      (cc/bench
         (call)))
 
     ;; 3.0µs
@@ -106,7 +106,7 @@
                    baos)
                  baos)]
       (assert (= +json-string+ (str (call))))
-      (cc/quick-bench
+      (cc/bench
         (call)))
 
     ;; 3.3µs
@@ -116,7 +116,7 @@
                  baos)]
 
       (assert (= +json-string+ (str (call))))
-      (cc/quick-bench
+      (cc/bench
         (call)))
 
     ;; 2.4µs
@@ -128,7 +128,7 @@
                  baos)]
 
       (assert (= +json-string+ (str (call))))
-      (cc/quick-bench
+      (cc/bench
         (call)))))
 
 (defn encode-transit-ring []
@@ -147,7 +147,7 @@
                  baos)]
 
       (assert (= +transit-string+ (str (call))))
-      (cc/quick-bench
+      (cc/bench
         (call)))
 
     ;; 7.4µs
@@ -157,7 +157,7 @@
                  baos)]
 
       (assert (= +transit-string+ (str (call))))
-      (cc/quick-bench
+      (cc/bench
         (call)))))
 
 (defn encode-edn-ring []
@@ -171,7 +171,7 @@
                  baos)]
 
       (assert (= +edn-string+ (str (call))))
-      (cc/quick-bench
+      (cc/bench
         (call)))
 
     ;; 4.4µs
@@ -181,7 +181,7 @@
                  baos)]
 
       (assert (= +edn-string+ (str (call))))
-      (cc/quick-bench
+      (cc/bench
         (call)))))
 
 (comment
