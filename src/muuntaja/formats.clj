@@ -9,7 +9,7 @@
             [clojure.java.io :as io]
             [muuntaja.protocols :as protocols]
             [msgpack.clojure-extensions])
-  (:import (java.io ByteArrayOutputStream DataInputStream DataOutputStream InputStreamReader PushbackReader InputStream ByteArrayInputStream OutputStreamWriter OutputStream EOFException)))
+  (:import (java.io ByteArrayOutputStream DataInputStream DataOutputStream InputStreamReader PushbackReader InputStream ByteArrayInputStream OutputStreamWriter OutputStream)))
 
 (defn- slurp-to-bytes ^bytes [^InputStream in]
   (if in
@@ -124,11 +124,8 @@
 (defn make-transit-decoder
   [type options]
   (fn [in _]
-    ;; https://github.com/cognitect/transit-clj/issues/34
-    (try
-      (let [reader (transit/reader (protocols/as-input-stream in) type options)]
-        (transit/read reader))
-      (catch EOFException _ nil))))
+    (let [reader (transit/reader in type options)]
+      (transit/read reader))))
 
 (defn make-transit-encoder [type {:keys [verbose] :as options}]
   (let [full-type (if (and (= type :json) verbose) :json-verbose type)]
