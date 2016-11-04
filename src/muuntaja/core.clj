@@ -306,7 +306,7 @@
   (if (decode-request? formats request)
     (if-let [decode (decoder formats (:format req-fc))]
       (try
-        [(decode (:body request) (:charset req-fc)) true]
+        (decode (:body request) (:charset req-fc))
         (catch Exception e
           (fail-on-request-decode-exception formats e req-fc res-fc request))))))
 
@@ -318,10 +318,10 @@
 (defn decode-ring-request [formats request]
   (let [req-fc (::request request)
         res-fc (::response request)
-        [body d?] (decode-request formats request req-fc res-fc)]
+        body (decode-request formats request req-fc res-fc)]
     (cond-> request
-            d? (-> (assoc ::format req-fc)
-                   (assoc :body-params body)))))
+            body (-> (assoc ::format req-fc)
+                     (assoc :body-params body)))))
 
 (defn format-request [formats request]
   (->> request
