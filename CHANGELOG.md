@@ -17,6 +17,12 @@
       (assoc-in [:formats "application/transit+msgpack" :matches] #"^application/(vnd.+)?(x-)?transit\+msgpack$"))
 ```
 
+* Updated deps:
+
+```clj
+[com.cognitect/transit-clj "0.8.293"] is available but we use "0.8.290"
+```
+
 ## 0.1.0 (25.10.2016)
 
 Initial public version.
