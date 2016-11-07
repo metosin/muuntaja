@@ -206,7 +206,9 @@ be used in the response pipeline.
 
 ```
 
-## YourKit
+## Profiling
+
+<img src="https://raw.githubusercontent.com/wiki/metosin/muuntaja/yklogo.png"/>
 
 YourKit supports open source projects with its full-featured Java Profiler.
 YourKit, LLC is the creator of <a href="https://www.yourkit.com/java/profiler/index.jsp">YourKit Java Profiler</a>
