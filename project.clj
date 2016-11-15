@@ -6,7 +6,7 @@
             :distribution :repo
             :comments "same as Clojure"}
   :dependencies [[cheshire "5.6.3" :exclusions [com.fasterxml.jackson.core/jackson-core]]
-                 [com.fasterxml.jackson.core/jackson-databind "2.8.4"]
+                 [com.fasterxml.jackson.core/jackson-databind "2.8.5"]
                  [circleci/clj-yaml "0.5.5"]
                  [clojure-msgpack "1.2.0" :exclusions [org.clojure/clojure]]
                  [com.cognitect/transit-clj "0.8.293"]]

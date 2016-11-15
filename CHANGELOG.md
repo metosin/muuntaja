@@ -1,6 +1,5 @@
 ## 0.2.0-SNAPSHOT
 
-* `application/transit+json|msgpack` doesn't fail on empty input, see https://github.com/cognitect/transit-clj/issues/34.
 * **BREAKING**: `muuntaja.options` namespace is thrown away. 
   * new helpers in `muuntaja.core`: `transform-formats` & `select-formats`
   * `muuntaja.options/default-options-with-format-regexps` can be copy-pasted from below:
@@ -21,6 +20,7 @@
 
 ```clj
 [com.cognitect/transit-clj "0.8.293"] is available but we use "0.8.290"
+[com.fasterxml.jackson.core/jackson-databind "2.8.5"] is available but we use "2.8.4"
 ```
 
 ## 0.1.0 (25.10.2016)
