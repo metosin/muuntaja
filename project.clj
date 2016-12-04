@@ -9,8 +9,8 @@
                  [com.fasterxml.jackson.core/jackson-databind "2.8.5"]
                  [circleci/clj-yaml "0.5.5"]
                  [clojure-msgpack "1.2.0" :exclusions [org.clojure/clojure]]
-                 [com.cognitect/transit-clj "0.8.293"]]
-  :plugins [[lein-codox "0.10.1"]]
+                 [com.cognitect/transit-clj "0.8.295"]]
+  :plugins [[lein-codox "0.10.2"]]
   :codox {:src-uri "http://github.com/metosin/muuntaja/blob/master/{filepath}#L{line}"
           :defaults {:doc/format :markdown}}
   :profiles {:dev {:jvm-opts ^:replace ["-server"]
