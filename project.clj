@@ -9,7 +9,7 @@
                  [com.fasterxml.jackson.core/jackson-databind "2.8.5"]
                  [circleci/clj-yaml "0.5.5"]
                  [clojure-msgpack "1.2.0" :exclusions [org.clojure/clojure]]
-                 [com.cognitect/transit-clj "0.8.295"]]
+                 [com.cognitect/transit-clj "0.8.297"]]
   :plugins [[lein-codox "0.10.2"]]
   :codox {:src-uri "http://github.com/metosin/muuntaja/blob/master/{filepath}#L{line}"
           :defaults {:doc/format :markdown}}
@@ -23,7 +23,7 @@
                                   ;; Pedestal
                                   [io.pedestal/pedestal.service "0.5.1"]
                                   [javax.servlet/javax.servlet-api "3.1.0"]
-                                  [org.slf4j/slf4j-log4j12 "1.7.21"]
+                                  [org.slf4j/slf4j-log4j12 "1.7.22"]
 
                                   [criterium "0.4.4"]]}
              :1.9 {:dependencies [[org.clojure/clojure "1.9.0-alpha12"]]}
