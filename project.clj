@@ -5,6 +5,8 @@
             :url "http://www.eclipse.org/legal/epl-v10.html"
             :distribution :repo
             :comments "same as Clojure"}
+  :source-paths ["src/clj"]
+  :java-source-paths ["src/java"]
   :dependencies [[cheshire "5.6.3" :exclusions [com.fasterxml.jackson.core/jackson-core]]
                  [com.fasterxml.jackson.core/jackson-databind "2.8.5"]
                  [circleci/clj-yaml "0.5.5"]
