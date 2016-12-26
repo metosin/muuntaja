@@ -50,6 +50,7 @@
     (assert (= +json+ (encode)))
     (cc/bench (encode)))
 
+  ;; 193ns
   (title "encode: muuntaja.jackson")
   (let [encode (fn [] (jackson/to-json {"hello" "world"}))]
     (assert (= +json+ (encode)))
@@ -75,6 +76,7 @@
     (assert (= +data+ (decode)))
     (cc/bench (decode)))
 
+  ;; 464ns
   (title "decode: muuntaja.jackson")
   (let [decode (fn [] (jackson/from-json +json+))]
     (assert (= +data+ (decode)))
