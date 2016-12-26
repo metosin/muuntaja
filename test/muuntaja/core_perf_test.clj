@@ -493,6 +493,20 @@
       (cc/bench (ring-stream! (app (request!)))))
 
     ;    7µs (10b)
+    ;    8µs (100b)
+    ;   18µs (1k)
+    ;  144µs (10k)
+    ; 1360µs (100k)
+    (title "muuntaja: JSON-REQUEST-RESPONSE, jackson")
+    (let [app (-> +handler+ (middleware/wrap-format (update-in
+                                                      m/default-options
+                                                      [:formats "application/json"]
+                                                      merge {:encoder [formats/make-muuntaja-json-encoder]
+                                                             :decoder [formats/make-muuntaja-json-decoder]})))]
+      #_(println (str (ring-stream! (app (request!)))))
+      (cc/bench (ring-stream! (app (request!)))))
+
+    ;    7µs (10b)
     ;    9µs (100b)
     ;   22µs (1k)
     ;  215µs (10k)

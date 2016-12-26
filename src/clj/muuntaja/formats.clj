@@ -1,6 +1,7 @@
 (ns muuntaja.formats
   (:require [cheshire.core :as json]
             [cheshire.parse :as parse]
+            [muuntaja.jackson :as jackson]
             [clj-yaml.core :as yaml]
             [clojure.edn :as edn]
             [clojure.walk :as walk]
@@ -22,7 +23,7 @@
             (recur))))
       (.toByteArray out))))
 
-;; JSON
+;; JSON (Cheshire)
 
 (defn make-json-decoder [{:keys [key-fn array-coerce-fn bigdecimals?]}]
   (if-not bigdecimals?
@@ -56,6 +57,17 @@
 
 (defprotocol EncodeJson
   (encode-json [this charset]))
+
+;; JSON (Jackson) - experimental
+
+(defn ^:no-doc make-muuntaja-json-decoder [{:keys [key-fn array-coerce-fn bigdecimals?] :as options}]
+  (assert (not (seq options)) (str "Muuntaja JSON doesn't yet allow options:" options))
+  (fn [x ^String charset]
+    (jackson/from-json x)))
+
+(defn ^:no-doc make-muuntaja-json-encoder [options]
+  (fn [data ^String charset]
+    (ByteArrayInputStream. (.getBytes (jackson/to-json data) charset))))
 
 ;; msgpack
 

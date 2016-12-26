@@ -1,13 +1,14 @@
 (ns muuntaja.jackson
   "Experimental Jackson-based JSON encoding/decoding."
   (:import
-   com.fasterxml.jackson.databind.ObjectMapper
-   com.fasterxml.jackson.databind.module.SimpleModule
-   (muuntaja.jackson
-    KeywordSerializer
-    KeywordKeyDeserializer
-    PersistentHashMapDeserializer
-    PersistentVectorDeserializer)))
+    com.fasterxml.jackson.databind.ObjectMapper
+    com.fasterxml.jackson.databind.module.SimpleModule
+    (muuntaja.jackson
+      KeywordSerializer
+      KeywordKeyDeserializer
+      PersistentHashMapDeserializer
+      PersistentVectorDeserializer)
+    (java.io ByteArrayInputStream InputStream)))
 
 (set! *warn-on-reflection* true)
 
@@ -26,5 +27,8 @@
 
 (def ^ObjectMapper +mapper+ (make-mapper))
 
-(defn from-json [^String data] (.readValue +mapper+ data Object))
+(defn from-json [data]
+  (if (string? data)
+    (.readValue +mapper+ ^String data ^Class Object)
+    (.readValue +mapper+ ^InputStream data ^Class Object)))
 (defn to-json [object] (.writeValueAsString +mapper+ object))
