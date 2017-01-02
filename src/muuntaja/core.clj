@@ -6,6 +6,8 @@
             [clojure.string :as str])
   (:import (java.nio.charset Charset)))
 
+(set! *warn-on-reflection* true)
+
 (defrecord FormatAndCharset [^String format, ^String charset])
 
 (defn- throw! [formats format message]
@@ -22,7 +24,7 @@
 (defn- assoc-assoc [m k1 k2 v]
   (assoc m k1 (assoc (k1 m) k2 v)))
 
-(defn- fail-on-request-decode-exception [formats
+(defn- fail-on-request-decode-exception [m
                                          ^Exception e
                                          ^FormatAndCharset request-format-and-charset
                                          ^FormatAndCharset response-format-and-charset
@@ -31,7 +33,7 @@
     (ex-info
       (str "Malformed " (:format request-format-and-charset) " request.")
       {:type ::decode
-       :default-format (:default-format formats)
+       :default-format (:default-format m)
        :format (:format request-format-and-charset)
        :charset (:charset request-format-and-charset)
        :request request}
@@ -108,49 +110,51 @@
 
 (defrecord Adapter [encode decode])
 
-(defrecord Formats [negotiate-content-type
-                    negotiate-accept
-                    negotiate-accept-charset
+(defrecord Muuntaja [negotiate-content-type
+                     negotiate-accept
+                     negotiate-accept-charset
 
-                    extract-content-type-fn
-                    extract-accept-fn
-                    extract-accept-charset-fn
+                     extract-content-type-fn
+                     extract-accept-fn
+                     extract-accept-charset-fn
 
-                    encode?
-                    decode?
+                     encode?
+                     decode?
 
-                    consumes
-                    matchers
+                     produces
+                     consumes
+                     matchers
 
-                    adapters
-                    default-charset
-                    default-format])
+                     adapters
+                     charsets
+                     default-charset
+                     default-format])
 
 ;;
 ;; Content Negotiation
 ;;
 
-(defn negotiate-request [formats request]
-  ((:negotiate-content-type formats)
-    ((:extract-content-type-fn formats)
+(defn negotiate-request [^Muuntaja m request]
+  ((.negotiate_content_type m)
+    ((.extract_content_type_fn m)
       request)))
 
-(defn negotiate-response [formats request]
+(defn negotiate-response [^Muuntaja m request]
   (->FormatAndCharset
-    ((:negotiate-accept formats)
-      ((:extract-accept-fn formats)
+    ((.negotiate_accept m)
+      ((.extract_accept_fn m)
         request))
-    ((:negotiate-accept-charset formats)
-      ((:extract-accept-charset-fn formats)
+    ((.negotiate_accept_charset m)
+      ((.extract_accept_charset_fn m)
         request))))
 
-(defn decode-request? [formats request]
-  (if-let [decode? (:decode? formats)]
+(defn decode-request? [^Muuntaja m request]
+  (if-let [decode? (.decode_QMARK_ m)]
     (and (not (contains? request ::format))
          (decode? request))))
 
-(defn encode-response? [formats request response]
-  (if-let [encode? (:encode? formats)]
+(defn encode-response? [^Muuntaja m request response]
+  (if-let [encode? (.encode_QMARK_ m)]
     (and (map? response)
          (not (contains? response ::format))
          (encode? request response))))
@@ -159,31 +163,33 @@
 ;; encode & decode
 ;;
 
-(defn encoder [formats format]
-  (:encode ((:adapters formats) format)))
+(defn encoder [^Muuntaja m format]
+  (if-let [^Adapter adapter ((.adapters m) format)]
+    (.-encode adapter)))
 
-(defn decoder [formats format]
-  (:decode ((:adapters formats) format)))
+(defn decoder [^Muuntaja m format]
+  (if-let [^Adapter adapter ((.adapters m) format)]
+    (.-decode adapter)))
 
 (defn encode
-  ([formats format data]
-   (if-let [encode (encoder formats format)]
+  ([^Muuntaja m format data]
+   (if-let [encode (encoder m format)]
      (encode data)
-     (throw! formats format "invalid encode format")))
-  ([formats format data charset]
-   (if-let [encode (encoder formats format)]
+     (throw! m format "invalid encode format")))
+  ([^Muuntaja m format data charset]
+   (if-let [encode (encoder m format)]
      (encode data charset)
-     (throw! formats format "invalid encode format"))))
+     (throw! m format "invalid encode format"))))
 
 (defn decode
-  ([formats format data]
-   (if-let [decode (decoder formats format)]
+  ([^Muuntaja m format data]
+   (if-let [decode (decoder m format)]
      (decode data)
-     (throw! formats format "invalid decode format")))
-  ([formats format data charset]
-   (if-let [decode (decoder formats format)]
+     (throw! m format "invalid decode format")))
+  ([^Muuntaja m format data charset]
+   (if-let [decode (decoder m format)]
      (decode data charset)
-     (throw! formats format "invalid decode format"))))
+     (throw! m format "invalid decode format"))))
 
 ;;
 ;; Creation
@@ -256,7 +262,7 @@
   [{:keys [formats default-format default-charset] :as options}]
   (let [adapters (create-adapters formats default-charset)
         valid-format? (key-set formats identity)
-        m (map->Formats
+        m (map->Muuntaja
             (merge
               (dissoc options :formats)
               {:adapters adapters
@@ -294,7 +300,7 @@
   ([]
    (create default-options))
   ([prototype]
-   (if (instance? Formats prototype)
+   (if (instance? Muuntaja prototype)
      prototype
      (-create prototype))))
 
@@ -302,31 +308,31 @@
 ;; Request
 ;;
 
-(defn- decode-request [formats request ^FormatAndCharset req-fc ^FormatAndCharset res-fc]
-  (if (decode-request? formats request)
-    (if-let [decode (decoder formats (:format req-fc))]
+(defn- decode-request [^Muuntaja m request ^FormatAndCharset req-fc ^FormatAndCharset res-fc]
+  (if (decode-request? m request)
+    (if-let [decode (decoder m (if req-fc (.-format req-fc)))]
       (try
-        (decode (:body request) (:charset req-fc))
+        (decode (:body request) (.-charset req-fc))
         (catch Exception e
-          (fail-on-request-decode-exception formats e req-fc res-fc request))))))
+          (fail-on-request-decode-exception m e req-fc res-fc request))))))
 
-(defn negotiate-ring-request [formats request]
+(defn negotiate-ring-request [^Muuntaja m request]
   (-> request
-      (assoc ::request (negotiate-request formats request))
-      (assoc ::response (negotiate-response formats request))))
+      (assoc ::request (negotiate-request m request))
+      (assoc ::response (negotiate-response m request))))
 
-(defn decode-ring-request [formats request]
+(defn decode-ring-request [^Muuntaja m request]
   (let [req-fc (::request request)
         res-fc (::response request)
-        body (decode-request formats request req-fc res-fc)]
+        body (decode-request m request req-fc res-fc)]
     (cond-> request
             body (-> (assoc ::format req-fc)
                      (assoc :body-params body)))))
 
-(defn format-request [formats request]
+(defn format-request [^Muuntaja m request]
   (->> request
-       (negotiate-ring-request formats)
-       (decode-ring-request formats)))
+       (negotiate-ring-request m)
+       (decode-ring-request m)))
 
 ;;
 ;; Response
@@ -341,26 +347,26 @@
           (set-content-type $ (content-type format charset))
           $)))
 
-(defn- resolve-response-format [response formats request]
+(defn- resolve-response-format [response ^Muuntaja m request]
   (or (if-let [ct (::content-type response)]
-        ((:produces formats) ct))
+        ((.produces m) ct))
       (-> request ::response :format)
-      (:default-format formats)
-      (fail-on-response-format-negotiation formats)))
+      (.default_format m)
+      (fail-on-response-format-negotiation m)))
 
 ;; TODO: fail is negotiation fails!
-(defn- resolve-response-charset [response formats request]
+(defn- resolve-response-charset [response ^Muuntaja m request]
   (or (if-let [ct (-> request ::response :charset)]
-        ((:charsets formats) ct))
-      (:default-charset formats)
-      (fail-on-response-charset-negotiation formats)))
+        ((.charsets m) ct))
+      (.default_charset m)
+      (fail-on-response-charset-negotiation m)))
 
-(defn format-response [formats request response]
+(defn format-response [^Muuntaja m request response]
   (or
-    (if (encode-response? formats request response)
-      (if-let [format (resolve-response-format response formats request)]
-        (if-let [charset (resolve-response-charset response formats request)]
-          (if-let [encoder (encoder formats format)]
+    (if (encode-response? m request response)
+      (if-let [format (resolve-response-format response m request)]
+        (if-let [charset (resolve-response-charset response m request)]
+          (if-let [encoder (encoder m format)]
             (handle-response response format encoder charset)))))
     response))
 
