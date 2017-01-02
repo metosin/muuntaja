@@ -164,29 +164,29 @@
     (cc/bench (m/negotiate-response m +transit-json-request+))))
 
 (defn negotiate-request []
-  (let [formats (-> m/default-options
-                    (assoc :decode? false)
-                    (m/create))]
+  (let [m (-> m/default-options
+              (assoc :decode? false)
+              (m/create))]
 
     ; 179ns
     ; 187ns (records)
     ; 278ns (+charset)
     (title "Negotiate Request: JSON")
     (cc/bench
-      (m/format-request formats +json-request+))
+      (m/format-request m +json-request+))
 
     ; 211ns
     ; 226ns (records)
     ; 278ns (+charset)
     (title "Negotiate Request: Transit")
     (cc/bench
-      (m/format-request formats +transit-json-request+))))
+      (m/format-request m +transit-json-request+))))
 
 (defn identity-encode-decode []
-  (let [formats (-> m/default-options
-                    (assoc-in [:formats "application/json" :encoder] (fn [x _] x))
-                    (assoc-in [:formats "application/json" :decoder] (fn [x _] x))
-                    (m/create))]
+  (let [m (-> m/default-options
+              (assoc-in [:formats "application/json" :encoder] (fn [x _] x))
+              (assoc-in [:formats "application/json" :decoder] (fn [x _] x))
+              (m/create))]
 
     ; 143ns
     (title "naive - JSON identity")
@@ -202,15 +202,15 @@
     ; 540ns (content-type)
     (title "request-format - JSON identity")
     (cc/bench
-      (m/format-request formats +json-request+))
+      (m/format-request m +json-request+))
 
     ; 670ns
     ; 873ns (+charset)
     ; 706ns (content-type)
     (title "requset-format & response-format - JSON identity")
     (let [wrap (fn [request]
-                 (let [req (m/format-request formats request)]
-                   (->> (+handler+ req) (m/format-response formats req))))]
+                 (let [req (m/format-request m request)]
+                   (->> (+handler+ req) (m/format-response m req))))]
       (cc/bench
         (wrap +json-request+)))))
 
