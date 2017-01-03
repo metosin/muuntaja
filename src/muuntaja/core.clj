@@ -2,14 +2,13 @@
   (:require [muuntaja.parse :as parse]
             [muuntaja.formats :as formats]
             [muuntaja.protocols :as protocols]
+            [muuntaja.records :as records]
             [clojure.set :as set]
             [clojure.string :as str])
-  (:import (java.nio.charset Charset)
-           (java.io Writer)))
+  (:import (muuntaja.records FormatAndCharset Adapter Muuntaja)
+           (java.nio.charset Charset)))
 
 (set! *warn-on-reflection* true)
-
-(defrecord FormatAndCharset [^String format, ^String charset])
 
 (defn- throw! [formats format message]
   (throw
@@ -74,7 +73,7 @@
 (defn- -negotiate-content-type [{:keys [consumes matchers default-charset charsets] :as formats} s]
   (if s
     (let [[content-type-raw charset-raw] (parse/parse-content-type s)]
-      (->FormatAndCharset
+      (records/->FormatAndCharset
         (if content-type-raw
           (or (consumes content-type-raw)
               (some
@@ -106,36 +105,6 @@
     default-charset))
 
 ;;
-;; Records
-;;
-
-(defrecord Adapter [encode decode])
-
-(defrecord Muuntaja [negotiate-content-type
-                     negotiate-accept
-                     negotiate-accept-charset
-
-                     extract-content-type
-                     extract-accept
-                     extract-accept-charset
-
-                     encode-response-body?
-                     decode-request-body?
-
-                     produces
-                     consumes
-                     matchers
-
-                     adapters
-                     charsets
-                     default-charset
-                     default-format])
-
-(defmethod print-method Muuntaja
-  [this ^Writer w]
-  (.write w (str "#Muuntaja" (select-keys this [:produces :consumes :default-charset :default-format]))))
-
-;;
 ;; Content Negotiation
 ;;
 
@@ -145,7 +114,7 @@
       request)))
 
 (defn negotiate-response [^Muuntaja m request]
-  (->FormatAndCharset
+  (records/->FormatAndCharset
     ((.negotiate_accept m)
       ((.extract_accept m)
         request))
@@ -255,7 +224,7 @@
                (str "invalid format: " format)
                {:format format
                 :formats (keys formats)}))
-           [format (map->Adapter
+           [format (records/map->Adapter
                      (merge
                        (if decoder {:decode (create-coder format ::decode decoder decoder-opts default-charset nil)})
                        (if encoder {:encode (create-coder format ::encode encoder encoder-opts default-charset encode-protocol)})))]))
@@ -276,7 +245,7 @@
   [{:keys [formats default-format default-charset http] :as options}]
   (let [adapters (create-adapters formats default-charset)
         valid-format? (key-set formats identity)
-        m (map->Muuntaja
+        m (records/map->Muuntaja
             (merge
               (dissoc options :formats :http)
               ;; TODO: don't copy here.
