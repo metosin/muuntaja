@@ -115,12 +115,12 @@
                      negotiate-accept
                      negotiate-accept-charset
 
-                     extract-content-type-fn
-                     extract-accept-fn
-                     extract-accept-charset-fn
+                     extract-content-type
+                     extract-accept
+                     extract-accept-charset
 
-                     encode?
-                     decode?
+                     encode-response-body?
+                     decode-request-body?
 
                      produces
                      consumes
@@ -141,25 +141,25 @@
 
 (defn negotiate-request [^Muuntaja m request]
   ((.negotiate_content_type m)
-    ((.extract_content_type_fn m)
+    ((.extract_content_type m)
       request)))
 
 (defn negotiate-response [^Muuntaja m request]
   (->FormatAndCharset
     ((.negotiate_accept m)
-      ((.extract_accept_fn m)
+      ((.extract_accept m)
         request))
     ((.negotiate_accept_charset m)
-      ((.extract_accept_charset_fn m)
+      ((.extract_accept_charset m)
         request))))
 
 (defn decode-request? [^Muuntaja m request]
-  (if-let [decode? (.decode_QMARK_ m)]
+  (if-let [decode? (.decode_request_body_QMARK_ m)]
     (and (not (contains? request ::format))
          (decode? request))))
 
 (defn encode-response? [^Muuntaja m request response]
-  (if-let [encode? (.encode_QMARK_ m)]
+  (if-let [encode? (.encode_response_body_QMARK_ m)]
     (and (map? response)
          (not (contains? response ::format))
          (encode? request response))))
@@ -261,15 +261,26 @@
                        (if encoder {:encode (create-coder format ::encode encoder encoder-opts default-charset encode-protocol)})))]))
        (into {})))
 
+(defn- http-options [options]
+  (when options
+    (assert (:extract-content-type options))
+    (assert (:extract-accept-charset options))
+    (assert (:extract-accept options))
+    (assert (:decode-request-body? options))
+    (assert (:encode-response-body? options))
+    options))
+
 (declare default-options)
 
 (defn- -create
-  [{:keys [formats default-format default-charset] :as options}]
+  [{:keys [formats default-format default-charset http] :as options}]
   (let [adapters (create-adapters formats default-charset)
         valid-format? (key-set formats identity)
         m (map->Muuntaja
             (merge
-              (dissoc options :formats)
+              (dissoc options :formats :http)
+              ;; TODO: don't copy here.
+              (http-options http)
               {:adapters adapters
                :consumes (key-set formats :decoder)
                :produces (key-set formats :encoder)
@@ -404,12 +415,11 @@
   (into #{} (map str/lower-case (.keySet (Charset/availableCharsets)))))
 
 (def default-options
-  {:extract-content-type-fn extract-content-type-ring
-   :extract-accept-charset-fn extract-accept-charset-ring
-   :extract-accept-fn extract-accept-ring
-
-   :decode? (constantly true)
-   :encode? encode-collections-with-override
+  {:http {:extract-content-type extract-content-type-ring
+          :extract-accept-charset extract-accept-charset-ring
+          :extract-accept extract-accept-ring
+          :decode-request-body? (constantly true)
+          :encode-response-body? encode-collections-with-override}
 
    :default-charset "utf-8"
    :charsets available-charsets

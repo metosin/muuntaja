@@ -7,7 +7,7 @@ ships with adapters for ring (async) middleware & Pedestal-style interceptors. E
 out-of-the-box [JSON](http://www.json.org/), [EDN](https://github.com/edn-format/edn), [MessagePack](http://msgpack.org/),
 [YAML](http://yaml.org/) and [Transit](https://github.com/cognitect/transit-format) in different flavours.
 
-Based on [ring-middleware-format](https://github.com/ngrunwald/ring-middleware-format), 
+Based on [ring-middleware-format](https://github.com/ngrunwald/ring-middleware-format),
 but a complete rewrite ([and up to 10x faster](https://github.com/metosin/muuntaja/wiki/Performance)).
 
 ## Rationale
@@ -28,7 +28,7 @@ for more details.
 
 [![Clojars Project](http://clojars.org/metosin/muuntaja/latest-version.svg)](http://clojars.org/metosin/muuntaja)
 
-## Quickstart 
+## Quickstart
 
 ### Ring
 
@@ -42,7 +42,7 @@ for more details.
 ; with defaults
 (def app (middleware/wrap-format echo))
 
-(app {:headers 
+(app {:headers
       {"content-type" "application/edn"
        "accept" "application/json"}
       :body "{:kikka 42}"})
@@ -62,7 +62,7 @@ Create a muuntaja and use it to encode & decode JSON:
 ;; with defaults
 (def m (muuntaja/create))
 
-(->> {:kikka 42} 
+(->> {:kikka 42}
      (muuntaja/encode m "application/json")
      slurp)
 ; "{\"kikka\":42}"
@@ -83,7 +83,7 @@ With custom EDN decoder opts:
         {:readers {'INC inc}}))
     (muuntaja/decode
       "application/edn"
-      "{:value #INC 41}")); {:value 42}    
+      "{:value #INC 41}")); {:value 42}
 ```
 
 Define a function to encode Transit-json:
@@ -100,7 +100,7 @@ Define a function to encode Transit-json:
 Muuntaja ships with streaming encoders for both JSON & Transit. With these, the encoded data
 can be lazily written to provided `OutputStream`, avoiding intermediate byte-streams. These encoders
 return a `muuntaja.protocols.StremableResponse` type, which satisifies the following protocols/interfaces:
- 
+
 * `ring.protocols.StreamableResponseBody`, Ring 1.6.0 will stream these for you
 * `clojure.lang.IFn`, invoke the result with an OutputStream to write the results into the stream
 * `clojure.io.IOFactory`, so you can slurp the response
@@ -109,18 +109,18 @@ return a `muuntaja.protocols.StremableResponse` type, which satisifies the follo
 (require '[muuntaja.formats :as formats])
 
 ;; options are just data!
-(def m 
+(def m
   (muuntaja/create
     (assoc-in
       muuntaja/default-options
       [:formats "application/json" :encoder 0]
       formats/make-streaming-json-encoder)))
-          
-(->> {:kikka 42} 
+
+(->> {:kikka 42}
      (muuntaja/encode m "application/json"))
 ; <<StreamableResponse>>
 
-(->> {:kikka 42} 
+(->> {:kikka 42}
      (muuntaja/encode m "application/json")
      slurp)
 ; "{\"kikka\":42}"
@@ -174,12 +174,11 @@ be used in the response pipeline.
 ### Default options
 
 ```clj
-{:extract-content-type-fn muuntaja/extract-content-type-ring
- :extract-accept-charset-fn muuntaja/extract-accept-charset-ring
- :extract-accept-fn muuntaja/extract-accept-ring
-
- :decode? (constantly true)
- :encode? muuntaja/encode-collections-with-override
+{:http {:extract-content-type extract-content-type-ring
+        :extract-accept-charset extract-accept-charset-ring
+        :extract-accept extract-accept-ring
+        :decode-request-body? (constantly true)
+        :encode-reseponse-body? encode-collections-with-override}
 
  :default-charset "utf-8"
  :charsets muuntaja/available-charsets

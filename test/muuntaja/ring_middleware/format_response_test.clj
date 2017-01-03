@@ -305,7 +305,7 @@
   (wrap-api-response
     identity
     (-> m/default-options
-        (assoc :encode? ::serializable?))))
+        (assoc-in [:http :encode-response-body?] ::serializable?))))
 
 (deftest custom-predicate
   (let [req {:body {:foo "bar"}}

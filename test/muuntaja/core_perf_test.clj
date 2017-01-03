@@ -167,7 +167,7 @@
 
 (defn negotiate-request []
   (let [m (-> m/default-options
-              (assoc :decode? false)
+              (assoc :decode-request-body? false)
               (m/create))]
 
     ; 179ns

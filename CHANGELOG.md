@@ -1,10 +1,16 @@
 ## 0.2.0-SNAPSHOT
 
-* **BREAKING**: `muuntaja.options` namespace is thrown away. 
+* **BREAKING**: move and rename http-negotiation keys from top level to `:http` in options:
+  * `:extract-content-type-fn` =>  `:extract-content-type`
+  * `::extract-accept-charset-fn` => `:extract-accept-charset`
+  * `:extract-accept-fn` => `:extract-accept`
+  * `:decode?` => `:decode-request-body?`
+  * `:encode?` => `:encode-response-body?`
+* **BREAKING**: `muuntaja.options` namespace is thrown away.
   * new helpers in `muuntaja.core`: `transform-formats` & `select-formats`
   * `muuntaja.options/default-options-with-format-regexps` can be copy-pasted from below:
 * default-options support all JVM registered charsets (instead of just `utf-8`)
-  
+
 ```clj
 (def default-options-with-format-regexps
   (-> m/default-options
