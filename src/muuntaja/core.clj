@@ -4,7 +4,8 @@
             [muuntaja.protocols :as protocols]
             [clojure.set :as set]
             [clojure.string :as str])
-  (:import (java.nio.charset Charset)))
+  (:import (java.nio.charset Charset)
+           (java.io Writer)))
 
 (set! *warn-on-reflection* true)
 
@@ -129,6 +130,10 @@
                      charsets
                      default-charset
                      default-format])
+
+(defmethod print-method Muuntaja
+  [this ^Writer w]
+  (.write w (str "#Muuntaja" (select-keys this [:produces :consumes :default-charset :default-format]))))
 
 ;;
 ;; Content Negotiation
