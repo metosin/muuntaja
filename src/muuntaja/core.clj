@@ -350,13 +350,13 @@
 (defn- resolve-response-format [response ^Muuntaja m request]
   (or (if-let [ct (::content-type response)]
         ((.produces m) ct))
-      (-> request ::response :format)
+      (some-> request ::response :format)
       (.default_format m)
       (fail-on-response-format-negotiation m)))
 
 ;; TODO: fail is negotiation fails!
 (defn- resolve-response-charset [response ^Muuntaja m request]
-  (or (if-let [ct (-> request ::response :charset)]
+  (or (if-let [ct (some-> request ::response :charset)]
         ((.charsets m) ct))
       (.default_charset m)
       (fail-on-response-charset-negotiation m)))
