@@ -1,5 +1,6 @@
 (ns muuntaja.core
   (:require [muuntaja.parse :as parse]
+            [muuntaja.util :as util]
             [muuntaja.formats :as formats]
             [muuntaja.protocols :as protocols]
             [muuntaja.records :as records]
@@ -9,20 +10,6 @@
            (java.nio.charset Charset)))
 
 (set! *warn-on-reflection* true)
-
-(defn- throw! [formats format message]
-  (throw
-    (ex-info
-      (str message ": " format)
-      {:formats (-> formats :formats keys)
-       :format format})))
-
-(defn- some-value [pred c]
-  (let [f (fn [x] (if (pred x) x))]
-    (some f c)))
-
-(defn- assoc-assoc [m k1 k2 v]
-  (assoc m k1 (assoc (k1 m) k2 v)))
 
 ;;
 ;; encode & decode
@@ -40,21 +27,21 @@
   ([^Muuntaja m format data]
    (if-let [encode (encoder m format)]
      (encode data)
-     (throw! m format "invalid encode format")))
+     (util/throw! m format "invalid encode format")))
   ([^Muuntaja m format data charset]
    (if-let [encode (encoder m format)]
      (encode data charset)
-     (throw! m format "invalid encode format"))))
+     (util/throw! m format "invalid encode format"))))
 
 (defn decode
   ([^Muuntaja m format data]
    (if-let [decode (decoder m format)]
      (decode data)
-     (throw! m format "invalid decode format")))
+     (util/throw! m format "invalid decode format")))
   ([^Muuntaja m format data charset]
    (if-let [decode (decoder m format)]
      (decode data charset)
-     (throw! m format "invalid decode format"))))
+     (util/throw! m format "invalid decode format"))))
 
 ;;
 ;; Creation
@@ -287,7 +274,7 @@
        :formats (:produces formats)})))
 
 (defn- set-content-type [response content-type]
-  (assoc-assoc response :headers "Content-Type" content-type))
+  (util/assoc-assoc response :headers "Content-Type" content-type))
 
 (defn- content-type [format charset]
   (str format "; charset=" charset))
@@ -317,7 +304,7 @@
 ;; TODO: fail if no match?
 (defn- -negotiate-accept [{:keys [produces default-format]} s]
   (or
-    (some-value
+    (util/some-value
       produces
       (parse/parse-accept s))
     default-format))
@@ -325,7 +312,7 @@
 ;; TODO: fail if no match?
 (defn- -negotiate-accept-charset [{:keys [default-charset charsets]} s]
   (or
-    (some-value
+    (util/some-value
       (or charsets identity)
       (parse/parse-accept-charset s))
     default-charset))
