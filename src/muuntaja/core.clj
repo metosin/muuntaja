@@ -9,8 +9,6 @@
   (:import (muuntaja.records FormatAndCharset Adapter Muuntaja)
            (java.nio.charset Charset)))
 
-(set! *warn-on-reflection* true)
-
 ;;
 ;; encode & decode
 ;;
@@ -108,20 +106,11 @@
                        (if encoder {:encode (create-coder format ::encode encoder encoder-opts default-charset encode-protocol)})))]))
        (into {})))
 
-(defn- http-options [options]
-  (when options
-    (assert (:extract-content-type options))
-    (assert (:extract-accept-charset options))
-    (assert (:extract-accept options))
-    (assert (:decode-request-body? options))
-    (assert (:encode-response-body? options))
-    options))
-
 (declare default-options)
-(declare memoized-http-negotiation)
+(declare http-create)
 
 (defn- -create
-  [{:keys [formats default-format default-charset http] :as options}]
+  [{:keys [formats default-format default-charset] :as options}]
   (let [adapters (create-adapters formats default-charset)
         valid-format? (key-set formats identity)]
     (when-not (or (not default-format) (valid-format? default-format))
@@ -132,15 +121,13 @@
            :default-format default-format})))
     (->
       (merge
-        (dissoc options :formats :http)
-        ;; TODO: don't copy here.
-        (http-options http)
+        (dissoc options :formats)
         {:adapters adapters
          :consumes (key-set formats :decoder)
          :produces (key-set formats :encoder)
          :matchers (matchers formats)})
       (records/map->Muuntaja)
-      (memoized-http-negotiation))))
+      (http-create))))
 
 (defn create
   "Creates a new Muuntaja from a given prototype:
@@ -317,8 +304,10 @@
       (parse/parse-accept-charset s))
     default-charset))
 
-(defn memoized-http-negotiation [^Muuntaja m]
+(defn http-create [^Muuntaja m]
   (-> m
+      (merge (:http m))
+      (dissoc :http)
       (assoc
         :negotiate-accept-charset
         (parse/fast-memoize
