@@ -7,6 +7,8 @@
             [clojure.java.io :as io])
   (:import (java.io ByteArrayOutputStream ByteArrayInputStream)))
 
+(set! *warn-on-reflection* true)
+
 ;;
 ;; start repl with `lein perf repl`
 ;; perf measured with the following setup:

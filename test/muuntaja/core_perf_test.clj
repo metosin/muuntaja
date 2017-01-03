@@ -16,6 +16,8 @@
             [ring.core.protocols :as protocols])
   (:import (java.io InputStreamReader ByteArrayOutputStream)))
 
+(set! *warn-on-reflection* true)
+
 ;;
 ;; start repl with `lein perf repl`
 ;; perf measured with the following setup:
@@ -435,72 +437,74 @@
     (cc/bench (app (request!)))
     (cc/bench (ring-stream! (app (request!))))))
 
+(defmacro bench [& body]
+  `(let [result# (cc/benchmark ~@body {})
+         mean# (-> result# :mean first (* 1000000000) long)]
+     (cc/report-result result#)
+     mean#))
+
+(defmacro report-bench [acc type size tool & body]
+  `(do
+     (title (str ~type " (" ~size ") - " ~tool))
+     (swap! ~acc assoc-in [~type ~size ~tool] (bench ~@body))))
+
 ;; file sizes about about the size. good enough.
 (defn e2e-json-comparison-different-payloads []
-  (doseq [file ["dev-resources/json10b.json"
-                "dev-resources/json100b.json"
-                "dev-resources/json1k.json"
-                "dev-resources/json10k.json"
-                "dev-resources/json100k.json"]
-          :let [data (cheshire/parse-string (slurp file))
-                request (json-request data)
-                request! (request-stream request)]]
+  (let [results (atom {})]
+    (doseq [size ["10b" "100b" "1k" "10k" "100k"]
+            :let [file (str "dev-resources/json" size ".json")
+                  data (cheshire/parse-string (slurp file))
+                  request (json-request data)
+                  request! (request-stream request)]]
 
-    (title file)
+      (title file)
 
-    ;   22µs (10b)
-    ;   40µs (100b)
-    ;  269µs (1k)
-    ; 2200µs (10k)
-    ; 4730µs (100k)
-    (title "ring-middleware-format: JSON-REQUEST-RESPONSE")
-    (let [app (-> +handler+ (ring.middleware.format/wrap-restful-format))]
-      #_(println (str (ring-stream! (app (request!)))))
-      (cc/bench (ring-stream! (app (request!)))))
+      ;   22µs (10b)
+      ;   40µs (100b)
+      ;  269µs (1k)
+      ; 2200µs (10k)
+      ; 4730µs (100k)
+      (let [app (-> +handler+ (ring.middleware.format/wrap-restful-format))]
+        (report-bench results :json size "r-m-f (defaults)" (ring-stream! (app (request!)))))
 
-    ;   19µs (10b)
-    ;   24µs (100b)
-    ;   39µs (1k)
-    ;  260µs (10k)
-    ; 2340µs (100k)
-    (title "ring-middleware-format: JSON-REQUEST-RESPONSE (tuned)")
-    (let [app (-> +handler+ (ring.middleware.format/wrap-restful-format {:formats [:json-kw :edn :msgpack :yaml :transit-msgpack :transit-json]
-                                                                         :charset ring.middleware.format-params/get-or-default-charset}))]
-      #_(println (str (ring-stream! (app (request!)))))
-      (cc/bench (ring-stream! (app (request!)))))
+      ;   19µs (10b)
+      ;   24µs (100b)
+      ;   39µs (1k)
+      ;  260µs (10k)
+      ; 2340µs (100k)
+      (let [app (-> +handler+ (ring.middleware.format/wrap-restful-format {:formats [:json-kw :edn :msgpack :yaml :transit-msgpack :transit-json]
+                                                                           :charset ring.middleware.format-params/get-or-default-charset}))]
+        (report-bench results :json size "r-m-f (tuned)" (ring-stream! (app (request!)))))
 
-    ;   15µs (10b)
-    ;   18µs (100b)
-    ;   35µs (1k)
-    ;  270µs (10k)
-    ; 2500µs (100k)
-    (title "ring-json: JSON-REQUEST-RESPONSE")
-    (let [+handler+ (fn [request] {:status 200 :body (:body request)})
-          app (-> +handler+
-                  (ring.middleware.json/wrap-json-body)
-                  (ring.middleware.json/wrap-json-response))]
-      #_(println (str (ring-stream! (app (request!)))))
-      (cc/bench (ring-stream! (app (request!)))))
+      ;   15µs (10b)
+      ;   18µs (100b)
+      ;   35µs (1k)
+      ;  270µs (10k)
+      ; 2500µs (100k)
+      (let [+handler+ (fn [request] {:status 200 :body (:body request)})
+            app (-> +handler+
+                    (ring.middleware.json/wrap-json-body)
+                    (ring.middleware.json/wrap-json-response))]
+        (report-bench results :json size "ring-json" (ring-stream! (app (request!)))))
 
-    ;    7µs (10b)
-    ;    9µs (100b)
-    ;   23µs (1k)
-    ;  215µs (10k)
-    ; 2100µs (100k)
-    (title "muuntaja: JSON-REQUEST-RESPONSE")
-    (let [app (-> +handler+ (middleware/wrap-format))]
-      #_(println (str (ring-stream! (app (request!)))))
-      (cc/bench (ring-stream! (app (request!)))))
+      ;    7µs (10b)
+      ;    9µs (100b)
+      ;   23µs (1k)
+      ;  215µs (10k)
+      ; 2100µs (100k)
+      (let [app (-> +handler+ (middleware/wrap-format))]
+        (report-bench results :json size "muuntaja" (ring-stream! (app (request!)))))
 
-    ;    7µs (10b)
-    ;    9µs (100b)
-    ;   22µs (1k)
-    ;  215µs (10k)
-    ; 2100µs (100k)
-    (title "muuntaja: JSON-REQUEST-RESPONSE, streaming")
-    (let [app (-> +handler+ (middleware/wrap-format (assoc-in m/default-options [:formats "application/json" :encoder] [formats/make-streaming-json-encoder])))]
-      #_(println (str (ring-stream! (app (request!)))))
-      (cc/bench (ring-stream! (app (request!)))))))
+      ;    7µs (10b)
+      ;    9µs (100b)
+      ;   22µs (1k)
+      ;  215µs (10k)
+      ; 2100µs (100k)
+      #_(let [app (-> +handler+ (middleware/wrap-format (assoc-in m/default-options [:formats "application/json" :encoder] [formats/make-streaming-json-encoder])))]
+        (report-bench results :json size "muuntaja (streaming)" (ring-stream! (app (request!))))))
+
+    (spit "json-results.edn" (pr-str @results))
+    @results))
 
 ;; file sizes about about the size in JSON. Smaller with transit.
 (defn e2e-transit-comparison-different-payloads []
@@ -618,3 +622,12 @@
   (e2e-transit-comparison-different-payloads)
   (e2e-muuntaja-json)
   (all))
+
+
+(comment
+  (doseq [[type results] (read-string (slurp "json-results.edn"))
+          [size data] results
+          :let [min-value (->> data vals (apply min))
+                _ (printf "\n\u001B[35m%s (%s)\u001B[0m\n\n" type size)]
+          [k v] data]
+    (printf "\t%20s\t%10sns %5s\n" k v (-> (/ v min-value) (- 1) (* 100) int))))
