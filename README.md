@@ -107,7 +107,7 @@ return a `muuntaja.protocols.StremableResponse` type, which satisifies the follo
 * `clojure.io.IOFactory`, so you can slurp the response
 
 ```clj
-(require '[muuntaja.formats :as formats])
+(require '[muuntaja.format.json :as json-format])
 
 ;; options are just data!
 (def m
@@ -115,7 +115,7 @@ return a `muuntaja.protocols.StremableResponse` type, which satisifies the follo
     (assoc-in
       muuntaja/default-options
       [:formats "application/json" :encoder 0]
-      formats/make-streaming-json-encoder)))
+      json-format/make-streaming-json-encoder)))
 
 (->> {:kikka 42}
      (muuntaja/encode m "application/json"))

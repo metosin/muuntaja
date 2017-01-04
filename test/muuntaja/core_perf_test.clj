@@ -3,7 +3,6 @@
             [muuntaja.core :as m]
             [muuntaja.middleware :as middleware]
             [muuntaja.interceptor :as interceptor]
-            [muuntaja.json :as json]
             [muuntaja.test_utils :refer :all]
             [cheshire.core :as cheshire]
             [ring.middleware.format-params]
@@ -12,7 +11,9 @@
             [ring.middleware.json]
             [io.pedestal.http]
             [io.pedestal.http.body-params]
-            [muuntaja.formats :as formats]
+            [muuntaja.json :as json]
+            [muuntaja.format.json :as json-format]
+            [muuntaja.format.transit :as transit]
             [ring.core.protocols :as protocols])
   (:import (java.io InputStreamReader ByteArrayOutputStream)))
 
@@ -52,7 +53,7 @@
    :body "[\"^ \",\"~:kikka\",42]"})
 
 (defrecord Hello [^String name]
-  formats/EncodeJson
+  json-format/EncodeJson
   (encode-json [_ charset]
     (json/byte-stream
       (doto (json/object)
@@ -437,11 +438,22 @@
     (cc/bench (app (request!)))
     (cc/bench (ring-stream! (app (request!))))))
 
+(defn mean [result]
+  (-> result :mean first (* 1000000000) long))
+
+(defn save-results! [file results]
+  (let [data (-> (for [[k v] results]
+                   [k (-> v
+                          (update :outliners (partial into {}))
+                          (dissoc :results))])
+                 (into {}))]
+    (spit file (pr-str data))
+    results))
+
 (defmacro bench [& body]
-  `(let [result# (cc/benchmark ~@body {})
-         mean# (-> result# :mean first (* 1000000000) long)]
+  `(let [result# (cc/quick-benchmark ~@body {})]
      (cc/report-result result#)
-     mean#))
+     result#))
 
 (defmacro report-bench [acc type size tool & body]
   `(do
@@ -503,8 +515,7 @@
       #_(let [app (-> +handler+ (middleware/wrap-format (assoc-in m/default-options [:formats "application/json" :encoder] [formats/make-streaming-json-encoder])))]
         (report-bench results :json size "muuntaja (streaming)" (ring-stream! (app (request!))))))
 
-    (spit "perf/json-results.edn" (pr-str @results))
-    @results))
+    (save-results! "perf/json-results.edn" @results)))
 
 ;; file sizes about about the size in JSON. Smaller with transit.
 (defn e2e-transit-comparison-different-payloads []
@@ -559,7 +570,7 @@
     ;  220µs (10k)
     ; 1900µs (100k)
     (title "muuntaja: TRANSIT-JSON-REQUEST-RESPONSE")
-    (let [app (-> +handler+ (middleware/wrap-format (assoc-in m/default-options [:formats "application/transit+json" :encoder] [(partial formats/make-transit-encoder :json)])))]
+    (let [app (-> +handler+ (middleware/wrap-format (assoc-in m/default-options [:formats "application/transit+json" :encoder] [(partial transit/make-transit-encoder :json)])))]
       #_(println (str (ring-stream! (app (request!)))))
       (cc/bench (ring-stream! (app (request!)))))
 
@@ -574,7 +585,7 @@
       (cc/bench (ring-stream! (app (request!)))))))
 
 (defrecord Json10b [^Long imu]
-  formats/EncodeJson
+  json-format/EncodeJson
   (encode-json [_ charset]
     (json/byte-stream
       (doto (json/object)
@@ -627,7 +638,7 @@
 (comment
   (doseq [[type results] (read-string (slurp "perf/json-results.edn"))
           [size data] results
-          :let [min-value (->> data vals (apply min))
+          :let [min-value (->> data vals (map mean) (apply min))
                 _ (printf "\n\u001B[35m%s (%s)\u001B[0m\n\n" type size)]
           [k v] data]
     (printf "\t%20s\t%10sns %5s\n" k v (-> (/ v min-value) (- 1) (* 100) int))))

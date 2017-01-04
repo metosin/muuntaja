@@ -3,7 +3,7 @@
             [muuntaja.core :as m]
             [clojure.string :as str]
             [muuntaja.protocols :as protocols]
-            [muuntaja.formats :as formats]
+            [muuntaja.format.json :as json-format]
             [muuntaja.json :as json])
   (:import (java.nio.charset Charset)
            (java.io ByteArrayInputStream)))
@@ -17,7 +17,7 @@
   nil)
 
 (defrecord Hello [^String name]
-  formats/EncodeJson
+  json-format/EncodeJson
   (encode-json [_ charset]
     (json/byte-stream
       (doto (json/object)

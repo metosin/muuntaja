@@ -1,7 +1,11 @@
 (ns muuntaja.formats-perf-test
   (:require [criterium.core :as cc]
             [muuntaja.test_utils :refer :all]
-            [muuntaja.formats :as formats]
+            [muuntaja.format.json :as json-format]
+            [muuntaja.format.edn :as edn-format]
+            [muuntaja.format.msgpack :as msgpack-format]
+            [muuntaja.format.transit :as transit-format]
+            [muuntaja.format.yaml :as yaml-format]
             [muuntaja.json]
             [ring.core.protocols :as protocols]
             [clojure.java.io :as io])
@@ -43,9 +47,9 @@
 (def +charset+ "utf-8")
 
 (defn encode-json []
-  (let [encode0 (formats/make-json-string-encoder {})
-        encode1 (formats/make-streaming-json-encoder {})
-        encode2 (formats/make-json-encoder {})]
+  (let [encode0 (json-format/make-json-string-encoder {})
+        encode1 (json-format/make-streaming-json-encoder {})
+        encode2 (json-format/make-json-encoder {})]
 
     ;; 4.7µs
     (title "json: string")
@@ -80,9 +84,9 @@
         (call)))))
 
 (defn encode-json-ring []
-  (let [encode0 (formats/make-json-string-encoder {})
-        encode1 (formats/make-streaming-json-encoder {})
-        encode2 (formats/make-json-encoder {})]
+  (let [encode0 (json-format/make-json-string-encoder {})
+        encode1 (json-format/make-streaming-json-encoder {})
+        encode2 (json-format/make-json-encoder {})]
 
     ;; 8.1µs
     (title "ring: json: string")
@@ -131,8 +135,8 @@
         (call)))))
 
 (defn encode-transit-ring []
-  (let [encode1 (formats/make-streaming-transit-encoder :json {})
-        encode2 (formats/make-transit-encoder :json {})]
+  (let [encode1 (transit-format/make-streaming-transit-encoder :json {})
+        encode2 (transit-format/make-transit-encoder :json {})]
 
     ;; 6.6µs
     (title "ring: transit-json: write-to-stream")
@@ -160,8 +164,8 @@
         (call)))))
 
 (defn encode-edn-ring []
-  (let [encode1 (formats/make-edn-string-encoder {})
-        encode2 (formats/make-edn-encoder {})]
+  (let [encode1 (edn-format/make-edn-string-encoder {})
+        encode2 (edn-format/make-edn-encoder {})]
 
     ;; 8.8µs
     (title "ring: edn: string")

@@ -1,11 +1,15 @@
 (ns muuntaja.core
-  (:require [muuntaja.parse :as parse]
+  (:require [clojure.set :as set]
+            [clojure.string :as str]
+            [muuntaja.parse :as parse]
             [muuntaja.util :as util]
-            [muuntaja.formats :as formats]
             [muuntaja.protocols :as protocols]
             [muuntaja.records :as records]
-            [clojure.set :as set]
-            [clojure.string :as str])
+            [muuntaja.format.json :as json-format]
+            [muuntaja.format.edn :as edn-format]
+            [muuntaja.format.msgpack :as msgpack-format]
+            [muuntaja.format.transit :as transit-format]
+            [muuntaja.format.yaml :as yaml-format])
   (:import (muuntaja.records FormatAndCharset Adapter Muuntaja)
            (java.nio.charset Charset)))
 
@@ -201,24 +205,24 @@
    :charsets available-charsets
 
    :default-format "application/json"
-   :formats {"application/json" {:decoder [formats/make-json-decoder {:key-fn true}]
-                                 :encoder [formats/make-json-encoder]
-                                 :encode-protocol [formats/EncodeJson formats/encode-json]}
-             "application/edn" {:decoder [formats/make-edn-decoder]
-                                :encoder [formats/make-edn-encoder]
-                                :encode-protocol [formats/EncodeEdn formats/encode-edn]}
-             "application/msgpack" {:decoder [formats/make-msgpack-decoder {:keywords? true}]
-                                    :encoder [formats/make-msgpack-encoder]
-                                    :encode-protocol [formats/EncodeMsgpack formats/encode-msgpack]}
-             "application/x-yaml" {:decoder [formats/make-yaml-decoder {:keywords true}]
-                                   :encoder [formats/make-yaml-encoder]
-                                   :encode-protocol [formats/EncodeYaml formats/encode-yaml]}
-             "application/transit+json" {:decoder [(partial formats/make-transit-decoder :json)]
-                                         :encoder [(partial formats/make-transit-encoder :json)]
-                                         :encode-protocol [formats/EncodeTransitJson formats/encode-transit-json]}
-             "application/transit+msgpack" {:decoder [(partial formats/make-transit-decoder :msgpack)]
-                                            :encoder [(partial formats/make-transit-encoder :msgpack)]
-                                            :encode-protocol [formats/EncodeTransitMessagePack formats/encode-transit-msgpack]}}})
+   :formats {"application/json" {:decoder [json-format/make-json-decoder {:key-fn true}]
+                                 :encoder [json-format/make-json-encoder]
+                                 :encode-protocol [json-format/EncodeJson json-format/encode-json]}
+             "application/edn" {:decoder [edn-format/make-edn-decoder]
+                                :encoder [edn-format/make-edn-encoder]
+                                :encode-protocol [edn-format/EncodeEdn edn-format/encode-edn]}
+             "application/msgpack" {:decoder [msgpack-format/make-msgpack-decoder {:keywords? true}]
+                                    :encoder [msgpack-format/make-msgpack-encoder]
+                                    :encode-protocol [msgpack-format/EncodeMsgpack msgpack-format/encode-msgpack]}
+             "application/x-yaml" {:decoder [yaml-format/make-yaml-decoder {:keywords true}]
+                                   :encoder [yaml-format/make-yaml-encoder]
+                                   :encode-protocol [yaml-format/EncodeYaml yaml-format/encode-yaml]}
+             "application/transit+json" {:decoder [(partial transit-format/make-transit-decoder :json)]
+                                         :encoder [(partial transit-format/make-transit-encoder :json)]
+                                         :encode-protocol [transit-format/EncodeTransitJson transit-format/encode-transit-json]}
+             "application/transit+msgpack" {:decoder [(partial transit-format/make-transit-decoder :msgpack)]
+                                            :encoder [(partial transit-format/make-transit-encoder :msgpack)]
+                                            :encode-protocol [transit-format/EncodeTransitMessagePack transit-format/encode-transit-msgpack]}}})
 
 ;;
 ;; HTTP stuff
