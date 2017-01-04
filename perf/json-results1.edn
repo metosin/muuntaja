@@ -1,0 +1,1248 @@
+{:json
+ {"10b"
+  {"r-m-f (defaults)"
+   {:overhead 1.3863228292794252E-9,
+    :samples
+    (100149989 102650365 100968449 99193481 100916382 99735322),
+    :runtime-details
+    {:spec-vendor "Oracle Corporation",
+     :spec-name "Java Virtual Machine Specification",
+     :vm-version "25.31-b07",
+     :name "38727@Tommis-MacBook-Pro.local",
+     :clojure-version-string "1.8.0",
+     :java-runtime-version "1.8.0_31-b13",
+     :java-version "1.8.0_31",
+     :vm-name "Java HotSpot(TM) 64-Bit Server VM",
+     :vm-vendor "Oracle Corporation",
+     :clojure-version
+     {:major 1, :minor 8, :incremental 0, :qualifier nil},
+     :spec-version "1.8",
+     :sun-arch-data-model "64",
+     :input-arguments
+     ["-Dfile.encoding=UTF-8"
+      "-Xmx4096m"
+      "-Dclojure.compiler.direct-linking=true"
+      "-Dclojure.compile.path=/Users/tommi/projects/metosin/muuntaja/target/classes"
+      "-Dmuuntaja.version=0.2.0-SNAPSHOT"
+      "-Dclojure.debug=false"]},
+    :mean
+    [2.3914668686628643E-5
+     (2.37380641634981E-5 2.4188064044676808E-5)],
+    :final-gc-time 301299765,
+    :execution-count 4208,
+    :variance
+    [9.316711482569864E-14
+     (2.4352802106082943E-14 1.7996451609849275E-13)],
+    :os-details
+    {:arch "x86_64",
+     :available-processors 8,
+     :name "Mac OS X",
+     :version "10.12.2"},
+    :tail-quantile 0.025,
+    :outlier-variance 0.13888888888888848,
+    :outliers
+    {:low-severe 0, :low-mild 0, :high-mild 0, :high-severe 0},
+    :warmup-time 5066390321,
+    :lower-q
+    [2.3572595294676808E-5
+     (2.3572595294676808E-5 2.3601008673954373E-5)],
+    :warmup-executions 207312,
+    :sample-count 6,
+    :upper-q
+    [2.4342589620960077E-5
+     (2.3959263991207226E-5 2.4394098146387834E-5)],
+    :total-time 0.603613988,
+    :sample-variance [8.322335849542147E-14 (0.0 0.0)],
+    :options
+    {:max-gc-attempts 100,
+     :samples 6,
+     :target-execution-time 100000000,
+     :warmup-jit-period 5000000000,
+     :tail-quantile 0.025,
+     :bootstrap-size 500,
+     :overhead 1.3863228292794252E-9},
+    :sample-mean
+    [2.3907398130544994E-5
+     (2.3041944361439564E-5 2.4772851899650424E-5)]},
+   "r-m-f (tuned)"
+   {:overhead 1.3863228292794252E-9,
+    :samples
+    (101870488 101350472 101502714 103121660 100711734 102377679),
+    :runtime-details
+    {:spec-vendor "Oracle Corporation",
+     :spec-name "Java Virtual Machine Specification",
+     :vm-version "25.31-b07",
+     :name "38727@Tommis-MacBook-Pro.local",
+     :clojure-version-string "1.8.0",
+     :java-runtime-version "1.8.0_31-b13",
+     :java-version "1.8.0_31",
+     :vm-name "Java HotSpot(TM) 64-Bit Server VM",
+     :vm-vendor "Oracle Corporation",
+     :clojure-version
+     {:major 1, :minor 8, :incremental 0, :qualifier nil},
+     :spec-version "1.8",
+     :sun-arch-data-model "64",
+     :input-arguments
+     ["-Dfile.encoding=UTF-8"
+      "-Xmx4096m"
+      "-Dclojure.compiler.direct-linking=true"
+      "-Dclojure.compile.path=/Users/tommi/projects/metosin/muuntaja/target/classes"
+      "-Dmuuntaja.version=0.2.0-SNAPSHOT"
+      "-Dclojure.debug=false"]},
+    :mean
+    [1.839469280337248E-5 (1.82926110809997E-5 1.851067913279133E-5)],
+    :final-gc-time 266133571,
+    :execution-count 5535,
+    :variance
+    [2.9051415334519904E-14
+     (7.634625538801395E-15 4.7830868115990054E-14)],
+    :os-details
+    {:arch "x86_64",
+     :available-processors 8,
+     :name "Mac OS X",
+     :version "10.12.2"},
+    :tail-quantile 0.025,
+    :outlier-variance 0.13888888888888876,
+    :outliers
+    {:low-severe 0, :low-mild 0, :high-mild 0, :high-severe 0},
+    :warmup-time 5000893493,
+    :lower-q
+    [1.8195435230352305E-5
+     (1.8195435230352305E-5 1.8310835049683832E-5)],
+    :warmup-executions 268657,
+    :sample-count 6,
+    :upper-q
+    [1.8602576964769647E-5
+     (1.839647990063234E-5 1.863083288166215E-5)],
+    :total-time 0.610934747,
+    :sample-variance [2.3222299029680327E-14 (0.0 0.0)],
+    :options
+    {:max-gc-attempts 100,
+     :samples 6,
+     :target-execution-time 100000000,
+     :warmup-jit-period 5000000000,
+     :tail-quantile 0.025,
+     :bootstrap-size 500,
+     :overhead 1.3863228292794252E-9},
+    :sample-mean
+    [1.839610800963565E-5
+     (1.793894207557328E-5 1.8853273943698025E-5)]},
+   "ring-json"
+   {:overhead 1.3863228292794252E-9,
+    :samples
+    (101161558 102272344 101339786 100848139 100017774 98712631),
+    :runtime-details
+    {:spec-vendor "Oracle Corporation",
+     :spec-name "Java Virtual Machine Specification",
+     :vm-version "25.31-b07",
+     :name "38727@Tommis-MacBook-Pro.local",
+     :clojure-version-string "1.8.0",
+     :java-runtime-version "1.8.0_31-b13",
+     :java-version "1.8.0_31",
+     :vm-name "Java HotSpot(TM) 64-Bit Server VM",
+     :vm-vendor "Oracle Corporation",
+     :clojure-version
+     {:major 1, :minor 8, :incremental 0, :qualifier nil},
+     :spec-version "1.8",
+     :sun-arch-data-model "64",
+     :input-arguments
+     ["-Dfile.encoding=UTF-8"
+      "-Xmx4096m"
+      "-Dclojure.compiler.direct-linking=true"
+      "-Dclojure.compile.path=/Users/tommi/projects/metosin/muuntaja/target/classes"
+      "-Dmuuntaja.version=0.2.0-SNAPSHOT"
+      "-Dclojure.debug=false"]},
+    :mean
+    [1.3604477770270272E-5
+     (1.3446811914414416E-5 1.3717471373873876E-5)],
+    :final-gc-time 282068191,
+    :execution-count 7400,
+    :variance
+    [3.103103543906801E-14
+     (6.9638289190260514E-15 6.170711781041646E-14)],
+    :os-details
+    {:arch "x86_64",
+     :available-processors 8,
+     :name "Mac OS X",
+     :version "10.12.2"},
+    :tail-quantile 0.025,
+    :outlier-variance 0.13888888888888865,
+    :outliers
+    {:low-severe 0, :low-mild 0, :high-mild 0, :high-severe 0},
+    :warmup-time 5004675092,
+    :lower-q
+    [1.3339544729729731E-5
+     (1.3339544729729731E-5 1.3515915405405406E-5)],
+    :warmup-executions 362825,
+    :sample-count 6,
+    :upper-q
+    [1.380182375E-5 (1.3670480810810812E-5 1.3820587027027028E-5)],
+    :total-time 0.604352232,
+    :sample-variance [2.7493711313915294E-14 (0.0 0.0)],
+    :options
+    {:max-gc-attempts 100,
+     :samples 6,
+     :target-execution-time 100000000,
+     :warmup-jit-period 5000000000,
+     :tail-quantile 0.025,
+     :bootstrap-size 500,
+     :overhead 1.3863228292794252E-9},
+    :sample-mean
+    [1.3611536756756759E-5
+     (1.3114099924761743E-5 1.4108973588751772E-5)]},
+   "muuntaja"
+   {:overhead 1.3863228292794252E-9,
+    :samples
+    (102373143 100845767 100047139 99911611 100059280 99175269),
+    :runtime-details
+    {:spec-vendor "Oracle Corporation",
+     :spec-name "Java Virtual Machine Specification",
+     :vm-version "25.31-b07",
+     :name "38727@Tommis-MacBook-Pro.local",
+     :clojure-version-string "1.8.0",
+     :java-runtime-version "1.8.0_31-b13",
+     :java-version "1.8.0_31",
+     :vm-name "Java HotSpot(TM) 64-Bit Server VM",
+     :vm-vendor "Oracle Corporation",
+     :clojure-version
+     {:major 1, :minor 8, :incremental 0, :qualifier nil},
+     :spec-version "1.8",
+     :sun-arch-data-model "64",
+     :input-arguments
+     ["-Dfile.encoding=UTF-8"
+      "-Xmx4096m"
+      "-Dclojure.compiler.direct-linking=true"
+      "-Dclojure.compile.path=/Users/tommi/projects/metosin/muuntaja/target/classes"
+      "-Dmuuntaja.version=0.2.0-SNAPSHOT"
+      "-Dclojure.debug=false"]},
+    :mean
+    [6.271207672288154E-6 (6.229603445763066E-6 6.33012299604414E-6)],
+    :final-gc-time 282733589,
+    :execution-count 16010,
+    :variance
+    [5.423845529741928E-15
+     (7.881010629110526E-16 1.1969094253485406E-14)],
+    :os-details
+    {:arch "x86_64",
+     :available-processors 8,
+     :name "Mac OS X",
+     :version "10.12.2"},
+    :tail-quantile 0.025,
+    :outlier-variance 0.13888888888888884,
+    :outliers
+    {:low-severe 0, :low-mild 0, :high-mild 1, :high-severe 0},
+    :warmup-time 5064484433,
+    :lower-q
+    [6.194582698313555E-6
+     (6.194582698313555E-6 6.2405753279200506E-6)],
+    :warmup-executions 790110,
+    :sample-count 6,
+    :upper-q
+    [6.376259220799501E-6 (6.249704083385385E-6 6.39432498438476E-6)],
+    :total-time 0.602412209,
+    :sample-variance [4.737098272715121E-15 (0.0 0.0)],
+    :options
+    {:max-gc-attempts 100,
+     :samples 6,
+     :target-execution-time 100000000,
+     :warmup-jit-period 5000000000,
+     :tail-quantile 0.025,
+     :bootstrap-size 500,
+     :overhead 1.3863228292794252E-9},
+    :sample-mean
+    [6.271207672288154E-6
+     (6.0647279288399494E-6 6.477687415736358E-6)]}},
+  "100b"
+  {"r-m-f (defaults)"
+   {:overhead 1.3863228292794252E-9,
+    :samples
+    (99532493 102798398 100410682 101620205 102796830 102508100),
+    :runtime-details
+    {:spec-vendor "Oracle Corporation",
+     :spec-name "Java Virtual Machine Specification",
+     :vm-version "25.31-b07",
+     :name "38727@Tommis-MacBook-Pro.local",
+     :clojure-version-string "1.8.0",
+     :java-runtime-version "1.8.0_31-b13",
+     :java-version "1.8.0_31",
+     :vm-name "Java HotSpot(TM) 64-Bit Server VM",
+     :vm-vendor "Oracle Corporation",
+     :clojure-version
+     {:major 1, :minor 8, :incremental 0, :qualifier nil},
+     :spec-version "1.8",
+     :sun-arch-data-model "64",
+     :input-arguments
+     ["-Dfile.encoding=UTF-8"
+      "-Xmx4096m"
+      "-Dclojure.compiler.direct-linking=true"
+      "-Dclojure.compile.path=/Users/tommi/projects/metosin/muuntaja/target/classes"
+      "-Dmuuntaja.version=0.2.0-SNAPSHOT"
+      "-Dclojure.debug=false"]},
+    :mean
+    [4.593605336951606E-5
+     (4.5395540554801754E-5 4.629444715814866E-5)],
+    :final-gc-time 280355633,
+    :execution-count 2211,
+    :variance
+    [4.255587154028521E-13
+     (1.7735063938880413E-13 6.184313961315844E-13)],
+    :os-details
+    {:arch "x86_64",
+     :available-processors 8,
+     :name "Mac OS X",
+     :version "10.12.2"},
+    :tail-quantile 0.025,
+    :outlier-variance 0.13888888888888884,
+    :outliers
+    {:low-severe 0, :low-mild 0, :high-mild 0, :high-severe 0},
+    :warmup-time 5405124321,
+    :lower-q
+    [4.501695748530077E-5 (4.501695748530077E-5 4.541414834916328E-5)],
+    :warmup-executions 117085,
+    :sample-count 6,
+    :upper-q
+    [4.649336499321574E-5 (4.596119629127092E-5 4.649407417458164E-5)],
+    :total-time 0.609666708,
+    :sample-variance [3.838352952951621E-13 (0.0 0.0)],
+    :options
+    {:max-gc-attempts 100,
+     :samples 6,
+     :target-execution-time 100000000,
+     :warmup-jit-period 5000000000,
+     :tail-quantile 0.025,
+     :bootstrap-size 500,
+     :overhead 1.3863228292794252E-9},
+    :sample-mean
+    [4.595708638625057E-5
+     (4.4098453109442995E-5 4.781571966305814E-5)]},
+   "r-m-f (tuned)"
+   {:overhead 1.3863228292794252E-9,
+    :samples (101046545 99562227 99461341 99998959 100023710 99005603),
+    :runtime-details
+    {:spec-vendor "Oracle Corporation",
+     :spec-name "Java Virtual Machine Specification",
+     :vm-version "25.31-b07",
+     :name "38727@Tommis-MacBook-Pro.local",
+     :clojure-version-string "1.8.0",
+     :java-runtime-version "1.8.0_31-b13",
+     :java-version "1.8.0_31",
+     :vm-name "Java HotSpot(TM) 64-Bit Server VM",
+     :vm-vendor "Oracle Corporation",
+     :clojure-version
+     {:major 1, :minor 8, :incremental 0, :qualifier nil},
+     :spec-version "1.8",
+     :sun-arch-data-model "64",
+     :input-arguments
+     ["-Dfile.encoding=UTF-8"
+      "-Xmx4096m"
+      "-Dclojure.compiler.direct-linking=true"
+      "-Dclojure.compile.path=/Users/tommi/projects/metosin/muuntaja/target/classes"
+      "-Dmuuntaja.version=0.2.0-SNAPSHOT"
+      "-Dclojure.debug=false"]},
+    :mean
+    [2.2458367146498727E-5
+     (2.2365233393312343E-5 2.2589552181736394E-5)],
+    :final-gc-time 289281421,
+    :execution-count 4446,
+    :variance
+    [2.5764333863120937E-14
+     (5.072526118267588E-15 5.619415454744671E-14)],
+    :os-details
+    {:arch "x86_64",
+     :available-processors 8,
+     :name "Mac OS X",
+     :version "10.12.2"},
+    :tail-quantile 0.025,
+    :outlier-variance 0.13888888888888876,
+    :outliers
+    {:low-severe 0, :low-mild 0, :high-mild 1, :high-severe 0},
+    :warmup-time 5043241616,
+    :lower-q
+    [2.2268466711650925E-5
+     (2.2268466711650925E-5 2.2370971884840307E-5)],
+    :warmup-executions 223127,
+    :sample-count 6,
+    :upper-q
+    [2.2698064946018895E-5
+     (2.2481649544534414E-5 2.2727517993702206E-5)],
+    :total-time 0.599098385,
+    :sample-variance [2.4596238093194137E-14 (0.0 0.0)],
+    :options
+    {:max-gc-attempts 100,
+     :samples 6,
+     :target-execution-time 100000000,
+     :warmup-jit-period 5000000000,
+     :tail-quantile 0.025,
+     :bootstrap-size 500,
+     :overhead 1.3863228292794252E-9},
+    :sample-mean
+    [2.2458329022342182E-5
+     (2.1987833387039633E-5 2.2928824657644727E-5)]},
+   "ring-json"
+   {:overhead 1.3863228292794252E-9,
+    :samples
+    (101532451 100537196 99554328 100754274 99396377 101171587),
+    :runtime-details
+    {:spec-vendor "Oracle Corporation",
+     :spec-name "Java Virtual Machine Specification",
+     :vm-version "25.31-b07",
+     :name "38727@Tommis-MacBook-Pro.local",
+     :clojure-version-string "1.8.0",
+     :java-runtime-version "1.8.0_31-b13",
+     :java-version "1.8.0_31",
+     :vm-name "Java HotSpot(TM) 64-Bit Server VM",
+     :vm-vendor "Oracle Corporation",
+     :clojure-version
+     {:major 1, :minor 8, :incremental 0, :qualifier nil},
+     :spec-version "1.8",
+     :sun-arch-data-model "64",
+     :input-arguments
+     ["-Dfile.encoding=UTF-8"
+      "-Xmx4096m"
+      "-Dclojure.compiler.direct-linking=true"
+      "-Dclojure.compile.path=/Users/tommi/projects/metosin/muuntaja/target/classes"
+      "-Dmuuntaja.version=0.2.0-SNAPSHOT"
+      "-Dclojure.debug=false"]},
+    :mean
+    [1.7042760163980777E-5
+     (1.6930106050325137E-5 1.7141143143907268E-5)],
+    :final-gc-time 406714122,
+    :execution-count 5895,
+    :variance
+    [2.4420341935668516E-14
+     (1.0237178917959016E-14 3.272771040599135E-14)],
+    :os-details
+    {:arch "x86_64",
+     :available-processors 8,
+     :name "Mac OS X",
+     :version "10.12.2"},
+    :tail-quantile 0.025,
+    :outlier-variance 0.13888888888888887,
+    :outliers
+    {:low-severe 0, :low-mild 0, :high-mild 0, :high-severe 0},
+    :warmup-time 5449311532,
+    :lower-q
+    [1.68611326547922E-5 (1.68611326547922E-5 1.6887926717557255E-5)],
+    :warmup-executions 313743,
+    :sample-count 6,
+    :upper-q
+    [1.7206985390161155E-5
+     (1.708687688719254E-5 1.7223486174724344E-5)],
+    :total-time 0.602946213,
+    :sample-variance [2.126452419526328E-14 (0.0 0.0)],
+    :options
+    {:max-gc-attempts 100,
+     :samples 6,
+     :target-execution-time 100000000,
+     :warmup-jit-period 5000000000,
+     :tail-quantile 0.025,
+     :bootstrap-size 500,
+     :overhead 1.3863228292794252E-9},
+    :sample-mean
+    [1.7046825360474982E-5
+     (1.6609354541154003E-5 1.748429617979596E-5)]},
+   "muuntaja"
+   {:overhead 1.3863228292794252E-9,
+    :samples
+    (100711471 104096816 101315305 102071293 104293438 103168399),
+    :runtime-details
+    {:spec-vendor "Oracle Corporation",
+     :spec-name "Java Virtual Machine Specification",
+     :vm-version "25.31-b07",
+     :name "38727@Tommis-MacBook-Pro.local",
+     :clojure-version-string "1.8.0",
+     :java-runtime-version "1.8.0_31-b13",
+     :java-version "1.8.0_31",
+     :vm-name "Java HotSpot(TM) 64-Bit Server VM",
+     :vm-vendor "Oracle Corporation",
+     :clojure-version
+     {:major 1, :minor 8, :incremental 0, :qualifier nil},
+     :spec-version "1.8",
+     :sun-arch-data-model "64",
+     :input-arguments
+     ["-Dfile.encoding=UTF-8"
+      "-Xmx4096m"
+      "-Dclojure.compiler.direct-linking=true"
+      "-Dclojure.compile.path=/Users/tommi/projects/metosin/muuntaja/target/classes"
+      "-Dmuuntaja.version=0.2.0-SNAPSHOT"
+      "-Dclojure.debug=false"]},
+    :mean
+    [9.389222318814055E-6 (9.278127928257687E-6 9.489272648243045E-6)],
+    :final-gc-time 258920665,
+    :execution-count 10928,
+    :variance
+    [2.1426673998377596E-14
+     (1.0137042392119205E-14 2.9958991698710396E-14)],
+    :os-details
+    {:arch "x86_64",
+     :available-processors 8,
+     :name "Mac OS X",
+     :version "10.12.2"},
+    :tail-quantile 0.025,
+    :outlier-variance 0.1388888888888889,
+    :outliers
+    {:low-severe 0, :low-mild 0, :high-mild 0, :high-severe 0},
+    :warmup-time 5313336190,
+    :lower-q
+    [9.215910596632503E-6 (9.215910596632503E-6 9.271166270131772E-6)],
+    :warmup-executions 563866,
+    :sample-count 6,
+    :upper-q
+    [9.530820655655197E-6 (9.428190039348463E-6 9.543689421669106E-6)],
+    :total-time 0.615656722,
+    :sample-variance [1.8300347296398174E-14 (0.0 0.0)],
+    :options
+    {:max-gc-attempts 100,
+     :samples 6,
+     :target-execution-time 100000000,
+     :warmup-jit-period 5000000000,
+     :tail-quantile 0.025,
+     :bootstrap-size 500,
+     :overhead 1.3863228292794252E-9},
+    :sample-mean
+    [9.38959129453392E-6
+     (8.983754965864857E-6 9.795427623202981E-6)]}},
+  "1k"
+  {"r-m-f (defaults)"
+   {:overhead 1.3863228292794252E-9,
+    :samples
+    (105421618 101607831 100633408 100743932 100614741 100320941),
+    :runtime-details
+    {:spec-vendor "Oracle Corporation",
+     :spec-name "Java Virtual Machine Specification",
+     :vm-version "25.31-b07",
+     :name "38727@Tommis-MacBook-Pro.local",
+     :clojure-version-string "1.8.0",
+     :java-runtime-version "1.8.0_31-b13",
+     :java-version "1.8.0_31",
+     :vm-name "Java HotSpot(TM) 64-Bit Server VM",
+     :vm-vendor "Oracle Corporation",
+     :clojure-version
+     {:major 1, :minor 8, :incremental 0, :qualifier nil},
+     :spec-version "1.8",
+     :sun-arch-data-model "64",
+     :input-arguments
+     ["-Dfile.encoding=UTF-8"
+      "-Xmx4096m"
+      "-Dclojure.compiler.direct-linking=true"
+      "-Dclojure.compile.path=/Users/tommi/projects/metosin/muuntaja/target/classes"
+      "-Dmuuntaja.version=0.2.0-SNAPSHOT"
+      "-Dclojure.debug=false"]},
+    :mean
+    [2.996327409046215E-4
+     (2.9685392625368733E-4 3.063243913470994E-4)],
+    :final-gc-time 268219279,
+    :execution-count 339,
+    :variance
+    [3.348339724301399E-11
+     (1.2214936463358746E-12 6.528472353890985E-11)],
+    :os-details
+    {:arch "x86_64",
+     :available-processors 8,
+     :name "Mac OS X",
+     :version "10.12.2"},
+    :tail-quantile 0.025,
+    :outlier-variance 0.13888888888888878,
+    :outliers
+    {:low-severe 0, :low-mild 0, :high-mild 0, :high-severe 1},
+    :warmup-time 5739064618,
+    :lower-q
+    [2.959319793510325E-4
+     (2.959319793510325E-4 2.9679864601769916E-4)],
+    :warmup-executions 18571,
+    :sample-count 6,
+    :upper-q
+    [3.0925341371681417E-4
+     (2.9713898672566376E-4 3.109782241887906E-4)],
+    :total-time 0.609342471,
+    :sample-variance [3.28358640616798E-11 (0.0 0.0)],
+    :options
+    {:max-gc-attempts 100,
+     :samples 6,
+     :target-execution-time 100000000,
+     :warmup-jit-period 5000000000,
+     :tail-quantile 0.025,
+     :bootstrap-size 500,
+     :overhead 1.3863228292794252E-9},
+    :sample-mean
+    [2.995784026548673E-4
+     (2.8238762674000185E-4 3.1676917856973273E-4)]},
+   "r-m-f (tuned)"
+   {:overhead 1.3863228292794252E-9,
+    :samples
+    (99921472 101110259 100433732 100539492 101227550 100801375),
+    :runtime-details
+    {:spec-vendor "Oracle Corporation",
+     :spec-name "Java Virtual Machine Specification",
+     :vm-version "25.31-b07",
+     :name "38727@Tommis-MacBook-Pro.local",
+     :clojure-version-string "1.8.0",
+     :java-runtime-version "1.8.0_31-b13",
+     :java-version "1.8.0_31",
+     :vm-name "Java HotSpot(TM) 64-Bit Server VM",
+     :vm-vendor "Oracle Corporation",
+     :clojure-version
+     {:major 1, :minor 8, :incremental 0, :qualifier nil},
+     :spec-version "1.8",
+     :sun-arch-data-model "64",
+     :input-arguments
+     ["-Dfile.encoding=UTF-8"
+      "-Xmx4096m"
+      "-Dclojure.compiler.direct-linking=true"
+      "-Dclojure.compile.path=/Users/tommi/projects/metosin/muuntaja/target/classes"
+      "-Dmuuntaja.version=0.2.0-SNAPSHOT"
+      "-Dclojure.debug=false"]},
+    :mean
+    [3.738296076247061E-5 (3.724476407971284E-5 3.751292090605273E-5)],
+    :final-gc-time 300028021,
+    :execution-count 2693,
+    :variance
+    [3.6708241817602683E-14
+     (1.156044245991824E-14 6.665608789757496E-14)],
+    :os-details
+    {:arch "x86_64",
+     :available-processors 8,
+     :name "Mac OS X",
+     :version "10.12.2"},
+    :tail-quantile 0.025,
+    :outlier-variance 0.13888888888888867,
+    :outliers
+    {:low-severe 0, :low-mild 0, :high-mild 0, :high-severe 0},
+    :warmup-time 5318132982,
+    :lower-q
+    [3.710414853323431E-5 (3.710414853323431E-5 3.729436761975492E-5)],
+    :warmup-executions 140899,
+    :sample-count 6,
+    :upper-q
+    [3.75836942536205E-5 (3.743088562940958E-5 3.7589138507241E-5)],
+    :total-time 0.60403388,
+    :sample-variance [3.185401780361741E-14 (0.0 0.0)],
+    :options
+    {:max-gc-attempts 100,
+     :samples 6,
+     :target-execution-time 100000000,
+     :warmup-jit-period 5000000000,
+     :tail-quantile 0.025,
+     :bootstrap-size 500,
+     :overhead 1.3863228292794252E-9},
+    :sample-mean
+    [3.738296076247061E-5
+     (3.6847529945060404E-5 3.7918391579880804E-5)]},
+   "ring-json"
+   {:overhead 1.3863228292794252E-9,
+    :samples (98876143 98731143 99449851 98987167 101625735 98656014),
+    :runtime-details
+    {:spec-vendor "Oracle Corporation",
+     :spec-name "Java Virtual Machine Specification",
+     :vm-version "25.31-b07",
+     :name "38727@Tommis-MacBook-Pro.local",
+     :clojure-version-string "1.8.0",
+     :java-runtime-version "1.8.0_31-b13",
+     :java-version "1.8.0_31",
+     :vm-name "Java HotSpot(TM) 64-Bit Server VM",
+     :vm-vendor "Oracle Corporation",
+     :clojure-version
+     {:major 1, :minor 8, :incremental 0, :qualifier nil},
+     :spec-version "1.8",
+     :sun-arch-data-model "64",
+     :input-arguments
+     ["-Dfile.encoding=UTF-8"
+      "-Xmx4096m"
+      "-Dclojure.compiler.direct-linking=true"
+      "-Dclojure.compile.path=/Users/tommi/projects/metosin/muuntaja/target/classes"
+      "-Dmuuntaja.version=0.2.0-SNAPSHOT"
+      "-Dclojure.debug=false"]},
+    :mean
+    [3.2872308090828924E-5
+     (3.268436833112875E-5 3.330330831128748E-5)],
+    :final-gc-time 312196887,
+    :execution-count 3024,
+    :variance
+    [1.4108103540401072E-13
+     (2.1513298346656214E-15 2.710153415372098E-13)],
+    :os-details
+    {:arch "x86_64",
+     :available-processors 8,
+     :name "Mac OS X",
+     :version "10.12.2"},
+    :tail-quantile 0.025,
+    :outlier-variance 0.13888888888888887,
+    :outliers
+    {:low-severe 0, :low-mild 0, :high-mild 0, :high-severe 1},
+    :warmup-time 5282293878,
+    :lower-q
+    [3.2624343253968257E-5 (3.2624343253968257E-5 3.26491875E-5)],
+    :warmup-executions 159122,
+    :sample-count 6,
+    :upper-q
+    [3.3497326058201057E-5
+     (3.2729262235449736E-5 3.360639384920635E-5)],
+    :total-time 0.596326053,
+    :sample-variance [1.4000019573586561E-13 (0.0 0.0)],
+    :options
+    {:max-gc-attempts 100,
+     :samples 6,
+     :target-execution-time 100000000,
+     :warmup-jit-period 5000000000,
+     :tail-quantile 0.025,
+     :bootstrap-size 500,
+     :overhead 1.3863228292794252E-9},
+    :sample-mean
+    [3.286629480820106E-5
+     (3.174379680747999E-5 3.398879280892213E-5)]},
+   "muuntaja"
+   {:overhead 1.3863228292794252E-9,
+    :samples
+    (100290059 100531487 102094140 100880460 100782724 102344493),
+    :runtime-details
+    {:spec-vendor "Oracle Corporation",
+     :spec-name "Java Virtual Machine Specification",
+     :vm-version "25.31-b07",
+     :name "38727@Tommis-MacBook-Pro.local",
+     :clojure-version-string "1.8.0",
+     :java-runtime-version "1.8.0_31-b13",
+     :java-version "1.8.0_31",
+     :vm-name "Java HotSpot(TM) 64-Bit Server VM",
+     :vm-vendor "Oracle Corporation",
+     :clojure-version
+     {:major 1, :minor 8, :incremental 0, :qualifier nil},
+     :spec-version "1.8",
+     :sun-arch-data-model "64",
+     :input-arguments
+     ["-Dfile.encoding=UTF-8"
+      "-Xmx4096m"
+      "-Dclojure.compiler.direct-linking=true"
+      "-Dclojure.compile.path=/Users/tommi/projects/metosin/muuntaja/target/classes"
+      "-Dmuuntaja.version=0.2.0-SNAPSHOT"
+      "-Dclojure.debug=false"]},
+    :mean
+    [2.326981684686757E-5 (2.315339575185952E-5 2.343614235871482E-5)],
+    :final-gc-time 268168953,
+    :execution-count 4347,
+    :variance
+    [4.261912721479868E-14
+     (2.061482478294506E-14 6.211704452247514E-14)],
+    :os-details
+    {:arch "x86_64",
+     :available-processors 8,
+     :name "Mac OS X",
+     :version "10.12.2"},
+    :tail-quantile 0.025,
+    :outlier-variance 0.1388888888888889,
+    :outliers
+    {:low-severe 0, :low-mild 0, :high-mild 0, :high-severe 0},
+    :warmup-time 5126969543,
+    :lower-q
+    [2.3071097078444906E-5
+     (2.3071097078444906E-5 2.312663607085346E-5)],
+    :warmup-executions 219180,
+    :sample-count 6,
+    :upper-q
+    [2.3501607746721876E-5
+     (2.3206915113871634E-5 2.3543706694271913E-5)],
+    :total-time 0.606923363,
+    :sample-variance [3.860758117001842E-14 (0.0 0.0)],
+    :options
+    {:max-gc-attempts 100,
+     :samples 6,
+     :target-execution-time 100000000,
+     :warmup-jit-period 5000000000,
+     :tail-quantile 0.025,
+     :bootstrap-size 500,
+     :overhead 1.3863228292794252E-9},
+    :sample-mean
+    [2.326981684686757E-5
+     (2.2680352487868517E-5 2.3859281205866623E-5)]}},
+  "10k"
+  {"r-m-f (defaults)"
+   {:overhead 1.3863228292794252E-9,
+    :samples
+    (100491082 100876133 101192313 101044034 101380548 101182973),
+    :runtime-details
+    {:spec-vendor "Oracle Corporation",
+     :spec-name "Java Virtual Machine Specification",
+     :vm-version "25.31-b07",
+     :name "38727@Tommis-MacBook-Pro.local",
+     :clojure-version-string "1.8.0",
+     :java-runtime-version "1.8.0_31-b13",
+     :java-version "1.8.0_31",
+     :vm-name "Java HotSpot(TM) 64-Bit Server VM",
+     :vm-vendor "Oracle Corporation",
+     :clojure-version
+     {:major 1, :minor 8, :incremental 0, :qualifier nil},
+     :spec-version "1.8",
+     :sun-arch-data-model "64",
+     :input-arguments
+     ["-Dfile.encoding=UTF-8"
+      "-Xmx4096m"
+      "-Dclojure.compiler.direct-linking=true"
+      "-Dclojure.compile.path=/Users/tommi/projects/metosin/muuntaja/target/classes"
+      "-Dmuuntaja.version=0.2.0-SNAPSHOT"
+      "-Dclojure.debug=false"]},
+    :mean
+    [0.002295525772727273
+     (0.0022894260795454546 0.0022999058863636362)],
+    :final-gc-time 298307491,
+    :execution-count 44,
+    :variance
+    [5.242682108092281E-11
+     (8.597835043474468E-12 1.0780147761413507E-10)],
+    :os-details
+    {:arch "x86_64",
+     :available-processors 8,
+     :name "Mac OS X",
+     :version "10.12.2"},
+    :tail-quantile 0.025,
+    :outlier-variance 0.13888888888888878,
+    :outliers
+    {:low-severe 0, :low-mild 0, :high-mild 0, :high-severe 0},
+    :warmup-time 5140906837,
+    :lower-q
+    [0.002283888227272727
+     (0.002283888227272727 0.0022926393863636364)],
+    :warmup-executions 2156,
+    :sample-count 6,
+    :upper-q
+    [0.002303542071022727
+     (0.002299218309659091 0.0023041033636363637)],
+    :total-time 0.606167083,
+    :sample-variance [5.0300305622193526E-11 (0.0 0.0)],
+    :options
+    {:max-gc-attempts 100,
+     :samples 6,
+     :target-execution-time 100000000,
+     :warmup-jit-period 5000000000,
+     :tail-quantile 0.025,
+     :bootstrap-size 500,
+     :overhead 1.3863228292794252E-9},
+    :sample-mean
+    [0.002296087435606061
+     (0.0022748106230957303 0.002317364248116391)]},
+   "r-m-f (tuned)"
+   {:overhead 1.3863228292794252E-9,
+    :samples (99465317 97936564 97946560 99787762 99489034 102873172),
+    :runtime-details
+    {:spec-vendor "Oracle Corporation",
+     :spec-name "Java Virtual Machine Specification",
+     :vm-version "25.31-b07",
+     :name "38727@Tommis-MacBook-Pro.local",
+     :clojure-version-string "1.8.0",
+     :java-runtime-version "1.8.0_31-b13",
+     :java-version "1.8.0_31",
+     :vm-name "Java HotSpot(TM) 64-Bit Server VM",
+     :vm-vendor "Oracle Corporation",
+     :clojure-version
+     {:major 1, :minor 8, :incremental 0, :qualifier nil},
+     :spec-version "1.8",
+     :sun-arch-data-model "64",
+     :input-arguments
+     ["-Dfile.encoding=UTF-8"
+      "-Xmx4096m"
+      "-Dclojure.compiler.direct-linking=true"
+      "-Dclojure.compile.path=/Users/tommi/projects/metosin/muuntaja/target/classes"
+      "-Dmuuntaja.version=0.2.0-SNAPSHOT"
+      "-Dclojure.debug=false"]},
+    :mean
+    [2.566634845360825E-4 (2.540170824742268E-4 2.61567131443299E-4)],
+    :final-gc-time 293905779,
+    :execution-count 388,
+    :variance
+    [2.441338910165912E-11
+     (4.2050265100772376E-12 4.843313367261137E-11)],
+    :os-details
+    {:arch "x86_64",
+     :available-processors 8,
+     :name "Mac OS X",
+     :version "10.12.2"},
+    :tail-quantile 0.025,
+    :outlier-variance 0.13888888888888878,
+    :outliers
+    {:low-severe 0, :low-mild 0, :high-mild 1, :high-severe 0},
+    :warmup-time 5782183908,
+    :lower-q
+    [2.52413824742268E-4 (2.52413824742268E-4 2.5290633537371134E-4)],
+    :warmup-executions 22237,
+    :sample-count 6,
+    :upper-q
+    [2.640467905927835E-4 (2.564150360824742E-4 2.651370412371134E-4)],
+    :total-time 0.597498409,
+    :sample-variance [2.162626941185142E-11 (0.0 0.0)],
+    :options
+    {:max-gc-attempts 100,
+     :samples 6,
+     :target-execution-time 100000000,
+     :warmup-jit-period 5000000000,
+     :tail-quantile 0.025,
+     :bootstrap-size 500,
+     :overhead 1.3863228292794252E-9},
+    :sample-mean
+    [2.566573921821306E-4 (2.427061762958122E-4 2.70608608068449E-4)]},
+   "ring-json"
+   {:overhead 1.3863228292794252E-9,
+    :samples
+    (99024798 99921463 104369923 101086835 98644331 102358742),
+    :runtime-details
+    {:spec-vendor "Oracle Corporation",
+     :spec-name "Java Virtual Machine Specification",
+     :vm-version "25.31-b07",
+     :name "38727@Tommis-MacBook-Pro.local",
+     :clojure-version-string "1.8.0",
+     :java-runtime-version "1.8.0_31-b13",
+     :java-version "1.8.0_31",
+     :vm-name "Java HotSpot(TM) 64-Bit Server VM",
+     :vm-vendor "Oracle Corporation",
+     :clojure-version
+     {:major 1, :minor 8, :incremental 0, :qualifier nil},
+     :spec-version "1.8",
+     :sun-arch-data-model "64",
+     :input-arguments
+     ["-Dfile.encoding=UTF-8"
+      "-Xmx4096m"
+      "-Dclojure.compiler.direct-linking=true"
+      "-Dclojure.compile.path=/Users/tommi/projects/metosin/muuntaja/target/classes"
+      "-Dmuuntaja.version=0.2.0-SNAPSHOT"
+      "-Dclojure.debug=false"]},
+    :mean
+    [2.8981925766283527E-4
+     (2.8578880411877394E-4 2.960607346743295E-4)],
+    :final-gc-time 270990241,
+    :execution-count 348,
+    :variance
+    [4.2714215286615624E-11
+     (1.3136534526833152E-11 7.4332499097558E-11)],
+    :os-details
+    {:arch "x86_64",
+     :available-processors 8,
+     :name "Mac OS X",
+     :version "10.12.2"},
+    :tail-quantile 0.025,
+    :outlier-variance 0.13888888888888856,
+    :outliers
+    {:low-severe 0, :low-mild 0, :high-mild 0, :high-severe 0},
+    :warmup-time 5078620177,
+    :lower-q
+    [2.834607212643678E-4 (2.834607212643678E-4 2.843380574712644E-4)],
+    :warmup-executions 17443,
+    :sample-count 6,
+    :upper-q
+    [2.9873430172413796E-4
+     (2.900608146551724E-4 2.9991357183908044E-4)],
+    :total-time 0.605406092,
+    :sample-variance [3.924751423411503E-11 (0.0 0.0)],
+    :options
+    {:max-gc-attempts 100,
+     :samples 6,
+     :target-execution-time 100000000,
+     :warmup-jit-period 5000000000,
+     :tail-quantile 0.025,
+     :bootstrap-size 500,
+     :overhead 1.3863228292794252E-9},
+    :sample-mean
+    [2.8994544636015327E-4
+     (2.711510953975093E-4 3.087397973227972E-4)]},
+   "muuntaja"
+   {:overhead 1.3863228292794252E-9,
+    :samples
+    (99589293 100408648 100270829 110183579 99783023 104435777),
+    :runtime-details
+    {:spec-vendor "Oracle Corporation",
+     :spec-name "Java Virtual Machine Specification",
+     :vm-version "25.31-b07",
+     :name "38727@Tommis-MacBook-Pro.local",
+     :clojure-version-string "1.8.0",
+     :java-runtime-version "1.8.0_31-b13",
+     :java-version "1.8.0_31",
+     :vm-name "Java HotSpot(TM) 64-Bit Server VM",
+     :vm-vendor "Oracle Corporation",
+     :clojure-version
+     {:major 1, :minor 8, :incremental 0, :qualifier nil},
+     :spec-version "1.8",
+     :sun-arch-data-model "64",
+     :input-arguments
+     ["-Dfile.encoding=UTF-8"
+      "-Xmx4096m"
+      "-Dclojure.compiler.direct-linking=true"
+      "-Dclojure.compile.path=/Users/tommi/projects/metosin/muuntaja/target/classes"
+      "-Dmuuntaja.version=0.2.0-SNAPSHOT"
+      "-Dclojure.debug=false"]},
+    :mean
+    [2.2880250595238097E-4
+     (2.233256603422619E-4 2.364828835565476E-4)],
+    :final-gc-time 234967810,
+    :execution-count 448,
+    :variance
+    [8.996667782589242E-11
+     (1.6070821252351765E-11 1.6372720371459198E-10)],
+    :os-details
+    {:arch "x86_64",
+     :available-processors 8,
+     :name "Mac OS X",
+     :version "10.12.2"},
+    :tail-quantile 0.025,
+    :outlier-variance 0.1388888888888889,
+    :outliers
+    {:low-severe 0, :low-mild 0, :high-mild 0, :high-severe 0},
+    :warmup-time 5757622516,
+    :lower-q
+    [2.2229752901785715E-4
+     (2.2229752901785715E-4 2.2272996205357143E-4)],
+    :warmup-executions 24914,
+    :sample-count 6,
+    :upper-q
+    [2.432181085379464E-4
+     (2.2408799246651786E-4 2.459454888392857E-4)],
+    :total-time 0.614671149,
+    :sample-variance [8.765518455681948E-11 (0.0 0.0)],
+    :options
+    {:max-gc-attempts 100,
+     :samples 6,
+     :target-execution-time 100000000,
+     :warmup-jit-period 5000000000,
+     :tail-quantile 0.025,
+     :bootstrap-size 500,
+     :overhead 1.3863228292794252E-9},
+    :sample-mean
+    [2.2867230245535714E-4
+     (2.0058499818792388E-4 2.567596067227904E-4)]}},
+  "100k"
+  {"r-m-f (defaults)"
+   {:overhead 1.3863228292794252E-9,
+    :samples
+    (103559457 106732707 103370354 103745615 104004345 103267937),
+    :runtime-details
+    {:spec-vendor "Oracle Corporation",
+     :spec-name "Java Virtual Machine Specification",
+     :vm-version "25.31-b07",
+     :name "38727@Tommis-MacBook-Pro.local",
+     :clojure-version-string "1.8.0",
+     :java-runtime-version "1.8.0_31-b13",
+     :java-version "1.8.0_31",
+     :vm-name "Java HotSpot(TM) 64-Bit Server VM",
+     :vm-vendor "Oracle Corporation",
+     :clojure-version
+     {:major 1, :minor 8, :incremental 0, :qualifier nil},
+     :spec-version "1.8",
+     :sun-arch-data-model "64",
+     :input-arguments
+     ["-Dfile.encoding=UTF-8"
+      "-Xmx4096m"
+      "-Dclojure.compiler.direct-linking=true"
+      "-Dclojure.compile.path=/Users/tommi/projects/metosin/muuntaja/target/classes"
+      "-Dmuuntaja.version=0.2.0-SNAPSHOT"
+      "-Dclojure.debug=false"]},
+    :mean
+    [0.005205694666666667 (0.005174640958333334 0.005266270216666666)],
+    :final-gc-time 224066440,
+    :execution-count 20,
+    :variance
+    [4.290852924597767E-9
+     (1.0553564176466528E-10 8.533858452141682E-9)],
+    :os-details
+    {:arch "x86_64",
+     :available-processors 8,
+     :name "Mac OS X",
+     :version "10.12.2"},
+    :tail-quantile 0.025,
+    :outlier-variance 0.13888888888888884,
+    :outliers
+    {:low-severe 0, :low-mild 0, :high-mild 0, :high-severe 1},
+    :warmup-time 5352775764,
+    :lower-q [0.00516339685 (0.00516339685 0.0051685177)],
+    :warmup-executions 1006,
+    :sample-count 6,
+    :upper-q [0.005317966025 (0.00518728075 0.0053366353500000005)],
+    :total-time 0.624680415,
+    :sample-variance [4.290852924597748E-9 (0.0 0.0)],
+    :options
+    {:max-gc-attempts 100,
+     :samples 6,
+     :target-execution-time 100000000,
+     :warmup-jit-period 5000000000,
+     :tail-quantile 0.025,
+     :bootstrap-size 500,
+     :overhead 1.3863228292794252E-9},
+    :sample-mean
+    [0.005205670125 (0.005009156318051532 0.0054021839319484686)]},
+   "r-m-f (tuned)"
+   {:overhead 1.3863228292794252E-9,
+    :samples
+    (105281889 108848996 107351668 105705053 107892375 107291729),
+    :runtime-details
+    {:spec-vendor "Oracle Corporation",
+     :spec-name "Java Virtual Machine Specification",
+     :vm-version "25.31-b07",
+     :name "38727@Tommis-MacBook-Pro.local",
+     :clojure-version-string "1.8.0",
+     :java-runtime-version "1.8.0_31-b13",
+     :java-version "1.8.0_31",
+     :vm-name "Java HotSpot(TM) 64-Bit Server VM",
+     :vm-vendor "Oracle Corporation",
+     :clojure-version
+     {:major 1, :minor 8, :incremental 0, :qualifier nil},
+     :spec-version "1.8",
+     :sun-arch-data-model "64",
+     :input-arguments
+     ["-Dfile.encoding=UTF-8"
+      "-Xmx4096m"
+      "-Dclojure.compiler.direct-linking=true"
+      "-Dclojure.compile.path=/Users/tommi/projects/metosin/muuntaja/target/classes"
+      "-Dmuuntaja.version=0.2.0-SNAPSHOT"
+      "-Dclojure.debug=false"]},
+    :mean
+    [0.0024335646136363636 (0.00241109065530303 0.002455023253787879)],
+    :final-gc-time 228763526,
+    :execution-count 44,
+    :variance
+    [1.0676662092476093E-9
+     (3.603632486860875E-10 1.6641093764442135E-9)],
+    :os-details
+    {:arch "x86_64",
+     :available-processors 8,
+     :name "Mac OS X",
+     :version "10.12.2"},
+    :tail-quantile 0.025,
+    :outlier-variance 0.13888888888888878,
+    :outliers
+    {:low-severe 0, :low-mild 0, :high-mild 0, :high-severe 0},
+    :warmup-time 5102257011,
+    :lower-q
+    [0.0023927702045454546
+     (0.0023927702045454546 0.002402387568181818)],
+    :warmup-executions 2176,
+    :sample-count 6,
+    :upper-q
+    [0.0024695870454545456
+     (0.0024396403551136363 0.002473840818181818)],
+    :total-time 0.64237171,
+    :sample-variance [9.328161805185259E-10 (0.0 0.0)],
+    :options
+    {:max-gc-attempts 100,
+     :samples 6,
+     :target-execution-time 100000000,
+     :warmup-jit-period 5000000000,
+     :tail-quantile 0.025,
+     :bootstrap-size 500,
+     :overhead 1.3863228292794252E-9},
+    :sample-mean
+    [0.0024332261742424244
+     (0.0023416000555607584 0.00252485229292409)]},
+   "ring-json"
+   {:overhead 1.3863228292794252E-9,
+    :samples
+    (102747441 102780241 102347299 102912838 102629058 103069914),
+    :runtime-details
+    {:spec-vendor "Oracle Corporation",
+     :spec-name "Java Virtual Machine Specification",
+     :vm-version "25.31-b07",
+     :name "38727@Tommis-MacBook-Pro.local",
+     :clojure-version-string "1.8.0",
+     :java-runtime-version "1.8.0_31-b13",
+     :java-version "1.8.0_31",
+     :vm-name "Java HotSpot(TM) 64-Bit Server VM",
+     :vm-vendor "Oracle Corporation",
+     :clojure-version
+     {:major 1, :minor 8, :incremental 0, :qualifier nil},
+     :spec-version "1.8",
+     :sun-arch-data-model "64",
+     :input-arguments
+     ["-Dfile.encoding=UTF-8"
+      "-Xmx4096m"
+      "-Dclojure.compiler.direct-linking=true"
+      "-Dclojure.compile.path=/Users/tommi/projects/metosin/muuntaja/target/classes"
+      "-Dmuuntaja.version=0.2.0-SNAPSHOT"
+      "-Dclojure.debug=false"]},
+    :mean
+    [0.002568670408333333
+     (0.002563327654166667 0.0025729902708333335)],
+    :final-gc-time 234353229,
+    :execution-count 40,
+    :variance
+    [4.427306638574965E-11
+     (9.282574140104421E-12 8.072651949416632E-11)],
+    :os-details
+    {:arch "x86_64",
+     :available-processors 8,
+     :name "Mac OS X",
+     :version "10.12.2"},
+    :tail-quantile 0.025,
+    :outlier-variance 0.1388888888888888,
+    :outliers
+    {:low-severe 0, :low-mild 0, :high-mild 0, :high-severe 0},
+    :warmup-time 5131855461,
+    :lower-q [0.002558682475 (0.002558682475 0.00256572645)],
+    :warmup-executions 1971,
+    :sample-count 6,
+    :upper-q [0.002575842621875 (0.002569403525 0.00257674785)],
+    :total-time 0.616486791,
+    :sample-variance [3.8318528919186755E-11 (0.0 0.0)],
+    :options
+    {:max-gc-attempts 100,
+     :samples 6,
+     :target-execution-time 100000000,
+     :warmup-jit-period 5000000000,
+     :tail-quantile 0.025,
+     :bootstrap-size 500,
+     :overhead 1.3863228292794252E-9},
+    :sample-mean
+    [0.0025686949625 (0.0025501243739182483 0.002587265551081752)]},
+   "muuntaja"
+   {:overhead 1.3863228292794252E-9,
+    :samples
+    (101828793 103057605 101135070 113130856 101628730 103361075),
+    :runtime-details
+    {:spec-vendor "Oracle Corporation",
+     :spec-name "Java Virtual Machine Specification",
+     :vm-version "25.31-b07",
+     :name "38727@Tommis-MacBook-Pro.local",
+     :clojure-version-string "1.8.0",
+     :java-runtime-version "1.8.0_31-b13",
+     :java-version "1.8.0_31",
+     :vm-name "Java HotSpot(TM) 64-Bit Server VM",
+     :vm-vendor "Oracle Corporation",
+     :clojure-version
+     {:major 1, :minor 8, :incremental 0, :qualifier nil},
+     :spec-version "1.8",
+     :sun-arch-data-model "64",
+     :input-arguments
+     ["-Dfile.encoding=UTF-8"
+      "-Xmx4096m"
+      "-Dclojure.compiler.direct-linking=true"
+      "-Dclojure.compile.path=/Users/tommi/projects/metosin/muuntaja/target/classes"
+      "-Dmuuntaja.version=0.2.0-SNAPSHOT"
+      "-Dclojure.debug=false"]},
+    :mean
+    [0.0022169530177304966
+     (0.002171406145390071 0.0023355979929078016)],
+    :final-gc-time 226273199,
+    :execution-count 47,
+    :variance
+    [9.427068548998943E-9
+     (2.539380382384343E-10 1.8297392696562872E-8)],
+    :os-details
+    {:arch "x86_64",
+     :available-processors 8,
+     :name "Mac OS X",
+     :version "10.12.2"},
+    :tail-quantile 0.025,
+    :outlier-variance 0.1388888888888885,
+    :outliers
+    {:low-severe 0, :low-mild 0, :high-mild 0, :high-severe 1},
+    :warmup-time 5212962552,
+    :lower-q [0.00215181 (0.00215181 0.002156923125)],
+    :warmup-executions 2366,
+    :sample-count 6,
+    :upper-q
+    [0.0023802489281914896 (0.002192715 0.0024070394893617023)],
+    :total-time 0.624142129,
+    :sample-variance [9.344534464789028E-9 (0.0 0.0)],
+    :options
+    {:max-gc-attempts 100,
+     :samples 6,
+     :target-execution-time 100000000,
+     :warmup-jit-period 5000000000,
+     :tail-quantile 0.025,
+     :bootstrap-size 500,
+     :overhead 1.3863228292794252E-9},
+    :sample-mean
+    [0.002213269960992908
+     (0.0019232685641288562 0.00250327135785696)]}}}}
