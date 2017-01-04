@@ -1,21 +1,28 @@
-(ns muuntaja.jackson-test
-  (:require [clojure.test :refer :all]
-            [muuntaja.jackson :as jackson]
+(ns muuntaja.json-test
+  (:require [clojure.test :refer [deftest is testing]]
+            [muuntaja.json :as json]
             [cheshire.core :as cheshire]
-            [cheshire.generate]
             [cheshire.generate :as generate])
   (:import (java.util UUID Date)
            (java.sql Timestamp)
            (com.fasterxml.jackson.core JsonGenerator)))
 
+(defn stays-same? [x] (= x (-> x json/to-json json/from-json)))
+
+(defn make-canonical [x] (-> x json/from-json json/to-json))
+(defn canonical= [x y] (= (make-canonical x) (make-canonical y)))
+
+(def +kw-mapper+ (json/make-mapper {:keywordize? true}))
+
+(deftest simple-roundrobin-test
+  (is (stays-same? {"hello" "world"}))
+  (is (stays-same? [1 2 3]))
+  (is (= "0.75" (json/to-json 3/4))))
+
 (deftest options-tests
-  (is (= {"hello" "world"}
-         (jackson/from-json
-           (jackson/to-json {"hello" "world"}))))
-  #_(is (= {:hello "world"}
-           (jackson/from-json
-             (jackson/to-json {"hello" "world"})
-             {:key-fn true}))))
+  (let [data {:hello "world"}]
+    (is (= {"hello" "world"} (-> data json/to-json json/from-json)))
+    (is (= {:hello "world"} (-> data (json/to-json) (json/from-json +kw-mapper+))))))
 
 (deftest roundrobin-tests
   (let [data {:numbers {:integer (int 1)
@@ -60,16 +67,11 @@
                   :timestamp "1970-01-01T00:00:00Z"}]
 
     (testing "cheshire"
-      (is (= expected (cheshire/parse-string
-                        (cheshire/generate-string data)
-                        true))))
+      (is (= expected (cheshire/parse-string (cheshire/generate-string data) true))))
 
-    #_(testing "jackson"
-        (is (= (cheshire/generate-string data)
-               (jackson/to-json data)))
-        (is (= expected (jackson/from-json
-                          (jackson/to-json data)
-                          {:key-fn true}))))))
+    (testing "muuntaja.json"
+      (is (canonical= (cheshire/generate-string data) (json/to-json data)))
+      (is (= expected (json/from-json (json/to-json data) +kw-mapper+))))))
 
 (defrecord StringLike [value])
 
@@ -88,10 +90,10 @@
                (cheshire/generate-string data)
                true))))
 
-    #_(testing "jackson"
+    #_(testing "muuntaja.json"
         (is (= (cheshire/generate-string data)
-               (jackson/to-json data)))
+               (json/to-json data)))
         (is (= expected
-               (jackson/from-json
-                 (jackson/to-json data)
+               (json/from-json
+                 (json/to-json data)
                  {:key-fn true}))))))

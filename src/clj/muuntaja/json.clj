@@ -1,52 +1,50 @@
 (ns muuntaja.json
-  {:doc "experimental json encoding & decoding, not for prod usage", :no-doc true}
-  (:import [com.fasterxml.jackson.databind.node JsonNodeFactory ObjectNode ArrayNode]
-           [com.fasterxml.jackson.databind ObjectMapper]
-           [java.util LinkedHashMap$Entry LinkedHashMap ArrayList]
-           [java.io InputStream ByteArrayInputStream]))
+  "Jackson-based JSON encoding and decoding."
+  (:import
+    com.fasterxml.jackson.databind.ObjectMapper
+    com.fasterxml.jackson.databind.ser.std.StdSerializer
+    com.fasterxml.jackson.databind.module.SimpleModule
+    (muuntaja.jackson
+      DateSerializer
+      KeywordSerializer
+      KeywordKeyDeserializer
+      PersistentHashMapDeserializer
+      PersistentVectorDeserializer
+      SymbolSerializer
+      RatioSerializer)
+    (java.io ByteArrayInputStream InputStream)))
 
-(def ^JsonNodeFactory factory (JsonNodeFactory/instance))
-(def ^ObjectMapper mapper (ObjectMapper.))
+(set! *warn-on-reflection* true)
 
-(defn byte-stream [x ^String charset]
-  (ByteArrayInputStream. (.getBytes (str x) charset)))
+(defn make-clojure-module [{:keys [keywordize?]}]
+  (doto (SimpleModule. "Clojure")
+    (.addDeserializer java.util.List (PersistentVectorDeserializer.))
+    (.addDeserializer java.util.Map (PersistentHashMapDeserializer.))
+    (.addSerializer clojure.lang.Keyword (KeywordSerializer. false))
+    (.addSerializer clojure.lang.Ratio (RatioSerializer.))
+    (.addSerializer clojure.lang.Symbol (SymbolSerializer.))
+    (.addSerializer java.util.Date (DateSerializer.))
+    (.addKeySerializer clojure.lang.Keyword (KeywordSerializer. true))
+    (cond->
+      ;; This key deserializer decodes the map keys into Clojure keywords.
+      keywordize? (.addKeyDeserializer Object (KeywordKeyDeserializer.)))))
 
-(defn ^ObjectNode object []
-  (.objectNode factory))
+(defn ^ObjectMapper make-mapper
+  ([] (make-mapper {}))
+  ([options]
+   (doto (ObjectMapper.)
+     (.registerModule (make-clojure-module options)))))
 
-(defn ^ArrayNode array []
-  (.arrayNode factory))
+(def ^ObjectMapper +default-mapper+ (make-mapper))
 
-(declare clojurify)
+(defn from-json
+  ([data] (from-json data +default-mapper+))
+  ([data ^ObjectMapper mapper]
+   (if (string? data)
+     (.readValue mapper ^String data ^Class Object)
+     (.readValue mapper ^InputStream data ^Class Object))))
 
-(defn- mapify [^LinkedHashMap data]
-  (let [acc (transient {})
-        iter (.iterator (.entrySet data))]
-    (loop []
-      (if (.hasNext iter)
-        (let [entry ^LinkedHashMap$Entry (.next iter)]
-          (assoc! acc (.getKey entry) (clojurify (.getValue entry)))
-          (recur))
-        (persistent! acc)))))
+(defn to-json
+  ([object] (to-json object +default-mapper+))
+  ([object ^ObjectMapper mapper] (.writeValueAsString mapper object)))
 
-(defn- vectorify [^Iterable data]
-  (let [acc (transient [])
-        iter (.iterator data)]
-    (loop []
-      (if (.hasNext iter)
-        (let [object (.next iter)]
-          (conj! acc (clojurify object))
-          (recur))
-        (persistent! acc)))))
-
-(defn- clojurify [data]
-  (cond
-    (instance? LinkedHashMap data) (mapify data)
-    (instance? ArrayList data) (vectorify data)
-    :else data))
-
-(defn decode-map [x]
-  (clojurify
-    (if (string? x)
-      (.readValue mapper ^String x LinkedHashMap)
-      (.readValue mapper ^InputStream x LinkedHashMap))))
