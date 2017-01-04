@@ -17,7 +17,8 @@
 
 (set! *warn-on-reflection* true)
 
-(defn make-clojure-module [{:keys [keywordize? encoders]}]
+(defn make-clojure-module
+  [{:keys [keywordize? encoders]}]
   (doto (SimpleModule. "Clojure")
     (.addDeserializer java.util.List (PersistentVectorDeserializer.))
     (.addDeserializer java.util.Map (PersistentHashMapDeserializer.))

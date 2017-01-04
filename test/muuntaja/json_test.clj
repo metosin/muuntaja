@@ -7,9 +7,7 @@
            (java.sql Timestamp)
            (com.fasterxml.jackson.core JsonGenerator)))
 
-(defn stays-same?
-  ([x] (= x (-> x json/to-json json/from-json)))
-  ([x m] (= x (-> x (json/to-json m) (json/from-json m)))))
+(defn stays-same? [x] (= x (-> x json/to-json json/from-json)))
 
 (defn make-canonical [x] (-> x json/from-json json/to-json))
 (defn canonical= [x y] (= (make-canonical x) (make-canonical y)))
