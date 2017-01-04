@@ -2,7 +2,7 @@
 
 * **BREAKING**: move and rename http-negotiation keys from top level to `:http` in options:
   * `:extract-content-type-fn` =>  `:extract-content-type`
-  * `::extract-accept-charset-fn` => `:extract-accept-charset`
+  * `:extract-accept-charset-fn` => `:extract-accept-charset`
   * `:extract-accept-fn` => `:extract-accept`
   * `:decode?` => `:decode-request-body?`
   * `:encode?` => `:encode-response-body?`
