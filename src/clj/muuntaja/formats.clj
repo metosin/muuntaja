@@ -1,6 +1,7 @@
 (ns muuntaja.formats
-  (:require [cheshire.core :as json]
+  (:require [cheshire.core :as cheshire]
             [cheshire.parse :as parse]
+            [muuntaja.json :as json]
             [clj-yaml.core :as yaml]
             [clojure.edn :as edn]
             [clojure.walk :as walk]
@@ -22,33 +23,33 @@
             (recur))))
       (.toByteArray out))))
 
-;; JSON
+;; JSON (Cheshire)
 
 (defn make-json-decoder [{:keys [key-fn array-coerce-fn bigdecimals?]}]
   (if-not bigdecimals?
     (fn [x ^String charset]
       (if (string? x)
-        (json/parse-string x key-fn array-coerce-fn)
-        (json/parse-stream (InputStreamReader. ^InputStream x charset) key-fn array-coerce-fn)))
+        (cheshire/parse-string x key-fn array-coerce-fn)
+        (cheshire/parse-stream (InputStreamReader. ^InputStream x charset) key-fn array-coerce-fn)))
     (fn [x ^String charset]
       (binding [parse/*use-bigdecimals?* bigdecimals?]
         (if (string? x)
-          (json/parse-string x key-fn array-coerce-fn)
-          (json/parse-stream (InputStreamReader. ^InputStream x charset) key-fn array-coerce-fn))))))
+          (cheshire/parse-string x key-fn array-coerce-fn)
+          (cheshire/parse-stream (InputStreamReader. ^InputStream x charset) key-fn array-coerce-fn))))))
 
 (defn make-json-encoder [options]
   (fn [data ^String charset]
-    (ByteArrayInputStream. (.getBytes (json/generate-string data options) charset))))
+    (ByteArrayInputStream. (.getBytes (cheshire/generate-string data options) charset))))
 
 (defn make-json-string-encoder [options]
   (fn [data _]
-    (json/generate-string data options)))
+    (cheshire/generate-string data options)))
 
 (defn make-streaming-json-encoder [options]
   (fn [data ^String charset]
     (protocols/->StreamableResponse
       (fn [^OutputStream output-stream]
-        (json/generate-stream
+        (cheshire/generate-stream
           data
           (OutputStreamWriter. output-stream charset)
           options)
@@ -56,6 +57,17 @@
 
 (defprotocol EncodeJson
   (encode-json [this charset]))
+
+;; JSON (Jackson) - experimental
+
+(defn ^:no-doc make-muuntaja-json-decoder [{:keys [key-fn array-coerce-fn bigdecimals?] :as options}]
+  (assert (not (seq options)) (str "Muuntaja JSON doesn't yet allow options:" options))
+  (fn [x ^String charset]
+    (json/from-json x)))
+
+(defn ^:no-doc make-muuntaja-json-encoder [options]
+  (fn [data ^String charset]
+    (ByteArrayInputStream. (.getBytes (json/to-json data) charset))))
 
 ;; msgpack
 
