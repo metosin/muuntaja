@@ -8,6 +8,8 @@
   (:import (java.nio.charset Charset)
            (java.io ByteArrayInputStream)))
 
+(defn- to-byte-stream [x charset] (ByteArrayInputStream. (.getBytes x charset)))
+
 (defn set-jvm-default-charset! [charset]
   (System/setProperty "file.encoding" charset)
   (doto
@@ -19,10 +21,7 @@
 (defrecord Hello [^String name]
   json-format/EncodeJson
   (encode-json [_ charset]
-    (json/byte-stream
-      (doto (json/object)
-        (.put "hello" name))
-      charset)))
+    (to-byte-stream (json/to-json {"hello" name}) charset)))
 
 (defmacro with-default-charset [charset & body]
   `(let [old-charset# (str (Charset/defaultCharset))]

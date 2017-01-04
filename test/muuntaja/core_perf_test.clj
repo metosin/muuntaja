@@ -16,7 +16,7 @@
             [muuntaja.format.transit :as transit]
             [ring.core.protocols :as protocols]
             [clojure.java.io :as io])
-  (:import (java.io InputStreamReader ByteArrayOutputStream File)))
+  (:import (java.io InputStreamReader ByteArrayOutputStream ByteArrayInputStream File)))
 
 (set! *warn-on-reflection* true)
 
@@ -53,13 +53,12 @@
              "accept-charset" "utf-8"}
    :body "[\"^ \",\"~:kikka\",42]"})
 
+(defn- to-byte-stream [x charset] (ByteArrayInputStream. (.getBytes x charset)))
+
 (defrecord Hello [^String name]
   json-format/EncodeJson
   (encode-json [_ charset]
-    (json/byte-stream
-      (doto (json/object)
-        (.put "hello" name))
-      charset)))
+    (to-byte-stream (json/to-json {"hello" name}) charset)))
 
 (def +handler+ (fn [request] {:status 200 :body (:body-params request)}))
 (def +handler2+ (fn [_] {:status 200 :body (->Hello "yello")}))
@@ -601,10 +600,7 @@
 (defrecord Json10b [^Long imu]
   json-format/EncodeJson
   (encode-json [_ charset]
-    (json/byte-stream
-      (doto (json/object)
-        (.put "imu" imu))
-      charset)))
+    (to-byte-stream (json/to-json {:imu imu}) charset)))
 
 (defn e2e-muuntaja-json []
   (let [data (->Json10b 42)

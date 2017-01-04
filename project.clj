@@ -5,12 +5,16 @@
             :url "http://www.eclipse.org/legal/epl-v10.html"
             :distribution :repo
             :comments "same as Clojure"}
+  :source-paths ["src/clj"]
+  :javac-options ["-Xlint:unchecked"]
+  :java-source-paths ["src/java"]
   :dependencies [[cheshire "5.6.3" :exclusions [com.fasterxml.jackson.core/jackson-core]]
                  [com.fasterxml.jackson.core/jackson-databind "2.8.5"]
                  [circleci/clj-yaml "0.5.5"]
                  [clojure-msgpack "1.2.0" :exclusions [org.clojure/clojure]]
                  [com.cognitect/transit-clj "0.8.297"]]
-  :plugins [[lein-codox "0.10.2"]]
+  :plugins [[lein-codox "0.10.2"]
+            [lein-virgil "0.1.4"]]
   :codox {:src-uri "http://github.com/metosin/muuntaja/blob/master/{filepath}#L{line}"
           :defaults {:doc/format :markdown}}
   :profiles {:dev {:jvm-opts ^:replace ["-server"]
@@ -21,7 +25,7 @@
                                   [ring/ring-json "0.4.0"]
 
                                   ;; Pedestal
-                                  [io.pedestal/pedestal.service "0.5.1"]
+                                  [io.pedestal/pedestal.service "0.5.1" :exclusions [org.ow2.asm/asm-all]]
                                   [javax.servlet/javax.servlet-api "3.1.0"]
                                   [org.slf4j/slf4j-log4j12 "1.7.22"]
 
