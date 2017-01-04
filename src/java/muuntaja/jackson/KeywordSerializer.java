@@ -8,7 +8,7 @@ import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import java.io.IOException;
 
 public class KeywordSerializer extends StdSerializer<Keyword> {
-    private boolean writeFieldName;
+    private final boolean writeFieldName;
 
     public KeywordSerializer(boolean writeFieldName) {
         super(KeywordSerializer.class, true);

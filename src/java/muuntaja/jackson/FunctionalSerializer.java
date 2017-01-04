@@ -8,7 +8,7 @@ import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import java.io.IOException;
 
 public class FunctionalSerializer<T> extends StdSerializer<T> {
-    private IFn encoder;
+    private final IFn encoder;
 
     public FunctionalSerializer(IFn encoderFunction) {
         super(FunctionalSerializer.class, true);

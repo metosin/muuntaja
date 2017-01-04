@@ -9,7 +9,7 @@ import java.util.SimpleTimeZone;
 import java.text.SimpleDateFormat;
 
 public class DateSerializer extends StdSerializer<Date> {
-    private SimpleDateFormat formatter;
+    private final SimpleDateFormat formatter;
 
     public DateSerializer() {
         super(DateSerializer.class, true);
