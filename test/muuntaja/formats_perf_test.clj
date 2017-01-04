@@ -123,7 +123,7 @@
     (title "ring: json: inputstream (muuntaja.json)")
     (let [call #(let [baos (stream)]
                  (ring-write
-                   (ByteArrayInputStream. (.getBytes (str (doto (muuntaja.json/object) (.put "kikka" 2)))))
+                  (ByteArrayInputStream. (.getBytes (muuntaja.json/to-json {"kikka" 2})))
                    baos)
                  baos)]
 

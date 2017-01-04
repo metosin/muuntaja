@@ -3,9 +3,9 @@
             [clojure.test :refer :all]
             [muuntaja.test_utils :refer :all]
             [muuntaja.json :as json]
-            [muuntaja.jackson :as jackson]
             [cheshire.core :as cheshire])
-  (:import [java.util Map]))
+  (:import com.fasterxml.jackson.databind.ObjectMapper
+           [java.util Map]))
 
 (set! *warn-on-reflection* true)
 
@@ -24,14 +24,6 @@
 ;; Memory:                16 GB
 ;;
 
-(deftest encode-json
-  (is (= "{\"list\":[42,true]}"
-         (.toString
-           (doto (json/object)
-             (.put "list" (doto (json/array)
-                            (.add 42)
-                            (.add true))))))))
-
 (def ^String +json+ (cheshire.core/generate-string {"hello" "world"}))
 
 (def +data+ (cheshire.core/parse-string +json+))
@@ -44,15 +36,9 @@
     (assert (= +json+ (encode)))
     (cc/bench (encode)))
 
-  ;; 183ns
-  (title "encode: muuntaja.json")
-  (let [encode (fn [] (str (doto (json/object) (.put "hello" "world"))))]
-    (assert (= +json+ (encode)))
-    (cc/bench (encode)))
-
   ;; 193ns
-  (title "encode: muuntaja.jackson")
-  (let [encode (fn [] (jackson/to-json {"hello" "world"}))]
+  (title "encode: muuntaja.json")
+  (let [encode (fn [] (json/to-json {"hello" "world"}))]
     (assert (= +json+ (encode)))
     (cc/bench (encode)))
 
@@ -70,21 +56,16 @@
     (assert (= +data+ (decode)))
     (cc/bench (decode)))
 
-  ;; 319ns
-  (title "decode: muuntaja.json")
-  (let [decode (fn [] (json/decode-map +json+))]
-    (assert (= +data+ (decode)))
-    (cc/bench (decode)))
-
   ;; 464ns
-  (title "decode: muuntaja.jackson")
-  (let [decode (fn [] (jackson/from-json +json+))]
+  (title "decode: muuntaja.json")
+  (let [decode (fn [] (json/from-json +json+))]
     (assert (= +data+ (decode)))
     (cc/bench (decode)))
 
   ;; 246ns
   (title "decode: jackson")
-  (let [decode (fn [] (.readValue json/mapper +json+ Map))]
+  (let [mapper (ObjectMapper.)
+        decode (fn [] (.readValue mapper +json+ Map))]
     (assert (= +data+ (decode)))
     (cc/bench (decode))))
 
@@ -97,7 +78,7 @@
           :let [data (cheshire/parse-string (slurp file))
                 json (cheshire/generate-string data)]]
     (let [encode-cheshire (fn [] (cheshire/generate-string data))
-          encode-muuntaja (fn [] (jackson/to-json data))]
+          encode-muuntaja (fn [] (json/to-json data))]
 
       (title file)
 
@@ -128,7 +109,7 @@
           :let [data (cheshire/parse-string (slurp file))
                 json (cheshire/generate-string data)]]
     (let [decode-cheshire (fn [] (cheshire/parse-string json))
-          decode-muuntaja (fn [] (jackson/from-json json))]
+          decode-muuntaja (fn [] (json/from-json json))]
 
       (title file)
 

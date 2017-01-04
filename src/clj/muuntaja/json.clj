@@ -13,7 +13,7 @@
       PersistentVectorDeserializer
       SymbolSerializer
       RatioSerializer)
-    (java.io ByteArrayInputStream InputStream)))
+    (java.io InputStream)))
 
 (set! *warn-on-reflection* true)
 
@@ -49,7 +49,6 @@
      (.readValue mapper ^String data ^Class Object)
      (.readValue mapper ^InputStream data ^Class Object))))
 
-(defn to-json
+(defn ^String to-json
   ([object] (to-json object +default-mapper+))
   ([object ^ObjectMapper mapper] (.writeValueAsString mapper object)))
-

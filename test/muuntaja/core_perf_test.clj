@@ -14,7 +14,7 @@
             [io.pedestal.http.body-params]
             [muuntaja.formats :as formats]
             [ring.core.protocols :as protocols])
-  (:import (java.io InputStreamReader ByteArrayOutputStream)))
+  (:import (java.io InputStreamReader ByteArrayOutputStream ByteArrayInputStream)))
 
 ;;
 ;; start repl with `lein perf repl`
@@ -49,13 +49,12 @@
              "accept-charset" "utf-8"}
    :body "[\"^ \",\"~:kikka\",42]"})
 
+(defn- to-byte-stream [x charset] (ByteArrayInputStream. (.getBytes x charset)))
+
 (defrecord Hello [^String name]
   formats/EncodeJson
   (encode-json [_ charset]
-    (json/byte-stream
-      (doto (json/object)
-        (.put "hello" name))
-      charset)))
+    (to-byte-stream (json/to-json {"hello" name}) charset)))
 
 (def +handler+ (fn [request] {:status 200 :body (:body-params request)}))
 (def +handler2+ (fn [_] {:status 200 :body (->Hello "yello")}))
@@ -586,10 +585,7 @@
 (defrecord Json10b [^Long imu]
   formats/EncodeJson
   (encode-json [_ charset]
-    (json/byte-stream
-      (doto (json/object)
-        (.put "imu" imu))
-      charset)))
+    (to-byte-stream (json/to-json {:imu imu}) charset)))
 
 (defn e2e-muuntaja-json []
   (let [data (->Json10b 42)
