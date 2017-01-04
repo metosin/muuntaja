@@ -20,6 +20,7 @@ public class PersistentHashMapDeserializer extends StdDeserializer<Map<String,Ob
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public Map<String, Object> deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JsonProcessingException {
         ITransientMap t = PersistentHashMap.EMPTY.asTransient();
         JavaType object = ctxt.constructType(Object.class);
@@ -31,6 +32,8 @@ public class PersistentHashMapDeserializer extends StdDeserializer<Map<String,Ob
             Object value = valueDeser.deserialize(p, ctxt);
             t = t.assoc(key, value);
         }
+
+        // t.persistent() returns a PersistentHashMap, which is a Map.
         return (Map<String,Object>)t.persistent();
     }
 }
