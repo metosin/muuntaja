@@ -36,7 +36,7 @@
     (assert (= +json+ (encode)))
     (cc/bench (encode)))
 
-  ;; 193ns
+  ;; 249ns
   (title "encode: muuntaja.json")
   (let [encode (fn [] (json/to-json {"hello" "world"}))]
     (assert (= +json+ (encode)))
@@ -56,7 +56,7 @@
     (assert (= +data+ (decode)))
     (cc/bench (decode)))
 
-  ;; 464ns
+  ;; 416ns
   (title "decode: muuntaja.json")
   (let [decode (fn [] (json/from-json +json+))]
     (assert (= +data+ (decode)))
