@@ -7,7 +7,9 @@
            (java.sql Timestamp)
            (com.fasterxml.jackson.core JsonGenerator)))
 
-(defn stays-same? [x] (= x (-> x json/to-json json/from-json)))
+(defn stays-same?
+  ([x] (= x (-> x json/to-json json/from-json)))
+  ([x m] (= x (-> x (json/to-json m) (json/from-json m)))))
 
 (defn make-canonical [x] (-> x json/from-json json/to-json))
 (defn canonical= [x y] (= (make-canonical x) (make-canonical y)))
@@ -75,25 +77,23 @@
 
 (defrecord StringLike [value])
 
-(generate/add-encoder
-  StringLike
-  (fn [x ^JsonGenerator jg]
-    (.writeString jg (str (:value x)))))
+(defn serialize-stringlike
+  [x ^JsonGenerator jg]
+  (.writeString jg (str (:value x))))
+
+(generate/add-encoder StringLike serialize-stringlike)
 
 (deftest custom-encoders
   (let [data {:like (StringLike. "boss")}
-        expected {:like "boss"}]
+        expected {:like "boss"}
+        mapper (json/make-mapper {:keywordize? true
+                                  :encoders {StringLike serialize-stringlike}})]
 
     (testing "cheshire"
-      (is (= expected
-             (cheshire/parse-string
+      (is (= expected (cheshire/parse-string
                (cheshire/generate-string data)
                true))))
 
-    #_(testing "muuntaja.json"
-        (is (= (cheshire/generate-string data)
-               (json/to-json data)))
-        (is (= expected
-               (json/from-json
-                 (json/to-json data)
-                 {:key-fn true}))))))
+    (testing "muuntaja.json"
+      (is (canonical= (cheshire/generate-string data) (json/to-json data mapper)))
+      (is (= expected (-> data (json/to-json mapper) (json/from-json mapper)))))))

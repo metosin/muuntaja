@@ -6,6 +6,7 @@
     com.fasterxml.jackson.databind.module.SimpleModule
     (muuntaja.jackson
       DateSerializer
+      FunctionalSerializer
       KeywordSerializer
       KeywordKeyDeserializer
       PersistentHashMapDeserializer
@@ -16,7 +17,7 @@
 
 (set! *warn-on-reflection* true)
 
-(defn make-clojure-module [{:keys [keywordize?]}]
+(defn make-clojure-module [{:keys [keywordize? encoders]}]
   (doto (SimpleModule. "Clojure")
     (.addDeserializer java.util.List (PersistentVectorDeserializer.))
     (.addDeserializer java.util.Map (PersistentHashMapDeserializer.))
@@ -25,6 +26,9 @@
     (.addSerializer clojure.lang.Symbol (SymbolSerializer.))
     (.addSerializer java.util.Date (DateSerializer.))
     (.addKeySerializer clojure.lang.Keyword (KeywordSerializer. true))
+    (as-> module
+        (doseq [[cls encoder-fn] encoders]
+          (.addSerializer module cls (FunctionalSerializer. encoder-fn))))
     (cond->
       ;; This key deserializer decodes the map keys into Clojure keywords.
       keywordize? (.addKeyDeserializer Object (KeywordKeyDeserializer.)))))
