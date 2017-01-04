@@ -503,7 +503,7 @@
       #_(let [app (-> +handler+ (middleware/wrap-format (assoc-in m/default-options [:formats "application/json" :encoder] [formats/make-streaming-json-encoder])))]
         (report-bench results :json size "muuntaja (streaming)" (ring-stream! (app (request!))))))
 
-    (spit "json-results.edn" (pr-str @results))
+    (spit "perf/json-results.edn" (pr-str @results))
     @results))
 
 ;; file sizes about about the size in JSON. Smaller with transit.
@@ -625,7 +625,7 @@
 
 
 (comment
-  (doseq [[type results] (read-string (slurp "json-results.edn"))
+  (doseq [[type results] (read-string (slurp "perf/json-results.edn"))
           [size data] results
           :let [min-value (->> data vals (apply min))
                 _ (printf "\n\u001B[35m%s (%s)\u001B[0m\n\n" type size)]
