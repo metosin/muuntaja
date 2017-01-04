@@ -53,7 +53,8 @@
              "accept-charset" "utf-8"}
    :body "[\"^ \",\"~:kikka\",42]"})
 
-(defn- to-byte-stream [x charset] (ByteArrayInputStream. (.getBytes x charset)))
+(defn- to-byte-stream [^String x ^String charset]
+  (ByteArrayInputStream. (.getBytes x charset)))
 
 (defrecord Hello [^String name]
   json-format/EncodeJson
