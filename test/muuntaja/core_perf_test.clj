@@ -521,13 +521,18 @@
       (let [app (-> +handler+ (middleware/wrap-format))]
         (report-bench results :json size "muuntaja" (ring-stream! (app (request!)))))
 
-      ;    7µs (10b)
-      ;    9µs (100b)
-      ;   22µs (1k)
-      ;  215µs (10k)
-      ; 2100µs (100k)
-      #_(let [app (-> +handler+ (middleware/wrap-format (assoc-in m/default-options [:formats "application/json" :encoder] [formats/make-streaming-json-encoder])))]
-          (report-bench results :json size "muuntaja (streaming)" (ring-stream! (app (request!))))))
+      ;    4µs (10b)
+      ;    6µs (100b)
+      ;   16µs (1k)
+      ;  153µs (10k)
+      ; 1500µs (100k)
+      (let [app (-> +handler+ (middleware/wrap-format
+                                (assoc-in
+                                  m/default-options
+                                  [:formats "application/json"]
+                                  {:encoder [json-format/make-muuntaja-json-encoder {:keywords? true}]
+                                   :decoder [json-format/make-muuntaja-json-decoder]})))]
+          (report-bench results :json size "muuntaja (jackson)" (ring-stream! (app (request!))))))
 
     (save-results! (format "perf/json-results%s.edn" (next-number)) @results)))
 

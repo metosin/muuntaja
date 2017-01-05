@@ -41,10 +41,10 @@
 
 ;; muuntaja.json - experimental
 
-(defn ^:no-doc make-muuntaja-json-decoder [{:keys [key-fn array-coerce-fn bigdecimals?] :as options}]
-  (assert (not (seq options)) (str "Muuntaja JSON doesn't yet allow options:" options))
-  (fn [x ^String charset]
-    (json/from-json x)))
+(defn ^:no-doc make-muuntaja-json-decoder [{:keys [keywords?]}]
+  (let [mapper (json/make-mapper {:keywordize? keywords?})]
+    (fn [x ^String charset]
+      (json/from-json x mapper))))
 
 (defn ^:no-doc make-muuntaja-json-encoder [options]
   (fn [data ^String charset]
