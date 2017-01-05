@@ -50,6 +50,16 @@
   (fn [data ^String charset]
     (ByteArrayInputStream. (.getBytes (json/to-json data) charset))))
 
+(defn make-streaming-muuntaja-json-encoder [{:keys [keywords?]}]
+  (let [mapper (json/make-mapper {:keywordize? keywords?})]
+    (fn [data ^String charset]
+      (protocols/->StreamableResponse
+        (fn [^OutputStream output-stream]
+          (json/write-to
+            data
+            (OutputStreamWriter. output-stream charset)
+            mapper))))))
+
 ;;
 ;; format
 ;;
@@ -68,3 +78,6 @@
   {:decoder [make-muuntaja-json-decoder {:keywords? true}]
    :encoder [make-muuntaja-json-encoder]
    :encode-protocol [EncodeJson encode-json]})
+
+(def streaming-muuntaja-json-format
+  (assoc muuntaja-json-format :encoder [make-streaming-muuntaja-json-encoder]))

@@ -2,7 +2,6 @@
   "Jackson-based JSON encoding and decoding."
   (:import
     com.fasterxml.jackson.databind.ObjectMapper
-    com.fasterxml.jackson.databind.ser.std.StdSerializer
     com.fasterxml.jackson.databind.module.SimpleModule
     (muuntaja.jackson
       DateSerializer
@@ -13,7 +12,7 @@
       PersistentVectorDeserializer
       SymbolSerializer
       RatioSerializer)
-    (java.io InputStream)))
+    (java.io InputStream Writer)))
 
 (set! *warn-on-reflection* true)
 
@@ -52,3 +51,9 @@
 (defn ^String to-json
   ([object] (to-json object +default-mapper+))
   ([object ^ObjectMapper mapper] (.writeValueAsString mapper object)))
+
+(defn ^String write-to
+  ([object ^Writer writer]
+   (write-to object writer +default-mapper+))
+  ([object ^Writer writer ^ObjectMapper mapper]
+   (.writeValue mapper writer object)))

@@ -533,6 +533,18 @@
                                   json-format/muuntaja-json-format)))]
         (report-bench results :json size "muuntaja (jackson)" (ring-stream! (app (request!)))))
 
+      ;    4µs (10b)
+      ;    6µs (100b)
+      ;   15µs (1k)
+      ;  144µs (10k)
+      ; 1460µs (100k)
+      (let [app (-> +handler+ (middleware/wrap-format
+                                (assoc-in
+                                  m/default-options
+                                  [:formats "application/json"]
+                                  json-format/streaming-muuntaja-json-format)))]
+        (report-bench results :json size "muuntaja (streaming)" (ring-stream! (app (request!))))))
+
     (save-results! (format "perf/json-results%s.edn" (next-number)) @results)))
 
 ;; file sizes about about the size in JSON. Smaller with transit.
