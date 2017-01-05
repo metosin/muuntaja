@@ -13,8 +13,7 @@
                  [circleci/clj-yaml "0.5.5"]
                  [clojure-msgpack "1.2.0" :exclusions [org.clojure/clojure]]
                  [com.cognitect/transit-clj "0.8.297"]]
-  :plugins [[lein-codox "0.10.2"]
-            [lein-virgil "0.1.4"]]
+  :plugins [[lein-codox "0.10.2"]]
   :codox {:src-uri "http://github.com/metosin/muuntaja/blob/master/{filepath}#L{line}"
           :defaults {:doc/format :markdown}}
   :profiles {:dev {:jvm-opts ^:replace ["-server"]
