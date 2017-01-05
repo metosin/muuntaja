@@ -24,8 +24,7 @@
                                   [ring/ring-json "0.4.0"]
 
                                   ;; Pedestal
-                                  [io.pedestal/pedestal.service "0.5.1" :exclusions [org.ow2.asm/asm-all
-                                                                                     org.clojure/tools.reader
+                                  [io.pedestal/pedestal.service "0.5.1" :exclusions [org.clojure/tools.reader
                                                                                      org.clojure/core.memoize]]
                                   [javax.servlet/javax.servlet-api "3.1.0"]
                                   [org.slf4j/slf4j-log4j12 "1.7.22"]
