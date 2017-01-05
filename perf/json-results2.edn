@@ -1,14 +1,73 @@
 {:json
  {"10b"
   {"r-m-f (defaults)"
-   {:overhead 1.7731915371855393E-9,
+   {:overhead 1.7381553169279887E-9,
     :samples
-    (110740581 106193326 102302484 97245076 98322301 99087841),
+    (1021345215
+     1030785151
+     996268755
+     1017748020
+     1009748007
+     1033007641
+     1022737989
+     1004003333
+     995852557
+     1016238524
+     1013400268
+     1012942375
+     1000121578
+     996813788
+     1002235482
+     994008639
+     1007526251
+     1013790378
+     1006188432
+     1016185623
+     1025077855
+     1024770890
+     1015303180
+     1010350257
+     1020280778
+     1027464456
+     1025459334
+     1009330319
+     1030159203
+     1004944653
+     1012402779
+     1009620518
+     999248344
+     1009359401
+     1014285226
+     1022659194
+     1007219334
+     1015912975
+     1030366940
+     1023809311
+     1020379356
+     1027486407
+     1034190302
+     1027479444
+     1032132868
+     1029951925
+     1034925802
+     1016137333
+     1027922886
+     1006240480
+     1046190681
+     1051379697
+     1020801729
+     1021962057
+     1030422292
+     1011302206
+     1034486915
+     1022615980
+     1038458636
+     1010076384),
     :runtime-details
     {:spec-vendor "Oracle Corporation",
      :spec-name "Java Virtual Machine Specification",
      :vm-version "25.31-b07",
-     :name "54365@Tommis-MacBook-Pro.local",
+     :name "61433@Tommis-MacBook-Pro.local",
      :clojure-version-string "1.8.0",
      :java-runtime-version "1.8.0_31-b13",
      :java-version "1.8.0_31",
@@ -20,58 +79,116 @@
      :sun-arch-data-model "64",
      :input-arguments
      ["-Dfile.encoding=UTF-8"
-      "-Xmx4096m"
-      "-Dclojure.compiler.direct-linking=true"
       "-Dclojure.compile.path=/Users/tommi/projects/metosin/muuntaja/target/classes"
       "-Dmuuntaja.version=0.2.0-SNAPSHOT"
       "-Dclojure.debug=false"]},
     :mean
-    [2.363829021329021E-5
-     (2.2853711557711556E-5 2.4711383344883344E-5)],
-    :final-gc-time 197107088,
-    :execution-count 4329,
+    [2.3483534574521248E-5
+     (2.3409381423310812E-5 2.3560720457113864E-5)],
+    :final-gc-time 202164515,
+    :execution-count 43359,
     :variance
-    [1.6330268721236834E-12
-     (5.804233725799299E-13 2.621789232356057E-12)],
+    [8.60243291300341E-14
+     (6.220464336804916E-14 1.207085425661543E-13)],
     :os-details
     {:arch "x86_64",
      :available-processors 8,
      :name "Mac OS X",
      :version "10.12.2"},
     :tail-quantile 0.025,
-    :outlier-variance 0.14191496486671115,
+    :outlier-variance 0.01638888888888895,
     :outliers
     {:low-severe 0, :low-mild 0, :high-mild 0, :high-severe 0},
-    :warmup-time 5324835753,
+    :warmup-time 10030503921,
     :lower-q
-    [2.246363501963502E-5
-     (2.246363501963502E-5 2.2712474243474242E-5)],
-    :warmup-executions 223640,
-    :sample-count 6,
+    [2.296760896238382E-5
+     (2.2925082197467655E-5 2.301644876726862E-5)],
+    :warmup-executions 388543,
+    :sample-count 60,
     :upper-q
-    [2.53374494975745E-5
-     (2.3539074526449525E-5 2.5581099792099793E-5)],
-    :total-time 0.613891609,
-    :sample-variance [1.4737517393748645E-12 (0.0 0.0)],
+    [2.404386539415116E-5
+     (2.3855393893424667E-5 2.4248245969694874E-5)],
+    :total-time 61.093516333,
+    :sample-variance [8.436707827550937E-14 (0.0 0.0)],
     :options
     {:max-gc-attempts 100,
-     :samples 6,
-     :target-execution-time 100000000,
-     :warmup-jit-period 5000000000,
+     :samples 60,
+     :target-execution-time 1000000000,
+     :warmup-jit-period 10000000000,
      :tail-quantile 0.025,
-     :bootstrap-size 500,
-     :overhead 1.7731915371855393E-9},
+     :bootstrap-size 1000,
+     :overhead 1.7381553169279887E-9},
     :sample-mean
-    [2.3634850581350583E-5
-     (1.999290526951876E-5 2.7276795893182405E-5)]},
+    [2.3483596766914983E-5
+     (2.2612216422587902E-5 2.4354977111242067E-5)]},
    "r-m-f (tuned)"
-   {:overhead 1.7731915371855393E-9,
-    :samples (92550147 95738322 92763140 109391938 109180987 92182011),
+   {:overhead 1.7381553169279887E-9,
+    :samples
+    (1003312311
+     1004027055
+     1016740425
+     1012453608
+     1004734147
+     1004957146
+     999686361
+     1006143361
+     1008388888
+     1005001682
+     1000378763
+     1008468430
+     1001755161
+     1005851578
+     1007735303
+     1009982156
+     1006755793
+     1004988628
+     1017809635
+     1029681415
+     1015153786
+     1001856660
+     1002985922
+     1010482330
+     1001955137
+     999865280
+     1007517387
+     1005302069
+     1009392762
+     1005773505
+     1001410332
+     1002462611
+     1009913979
+     1000956817
+     1010099404
+     1005245823
+     1006243040
+     1002442832
+     1007128458
+     1005348343
+     1013826771
+     1001398242
+     1005586470
+     997487219
+     1004370637
+     1015256274
+     1002981420
+     1006420092
+     1015833124
+     999040248
+     1003488782
+     1025403824
+     1018782216
+     1009965183
+     1015954197
+     1005488149
+     1004980716
+     1007535884
+     1023187880
+     1023642195),
     :runtime-details
     {:spec-vendor "Oracle Corporation",
      :spec-name "Java Virtual Machine Specification",
      :vm-version "25.31-b07",
-     :name "54365@Tommis-MacBook-Pro.local",
+     :name "61433@Tommis-MacBook-Pro.local",
      :clojure-version-string "1.8.0",
      :java-runtime-version "1.8.0_31-b13",
      :java-version "1.8.0_31",
@@ -83,59 +200,116 @@
      :sun-arch-data-model "64",
      :input-arguments
      ["-Dfile.encoding=UTF-8"
-      "-Xmx4096m"
-      "-Dclojure.compiler.direct-linking=true"
       "-Dclojure.compile.path=/Users/tommi/projects/metosin/muuntaja/target/classes"
       "-Dmuuntaja.version=0.2.0-SNAPSHOT"
       "-Dclojure.debug=false"]},
     :mean
-    [1.952383692926894E-5
-     (1.8426593659276858E-5 2.1069742445236212E-5)],
-    :final-gc-time 207527401,
-    :execution-count 5052,
+    [1.8058907061504096E-5
+     (1.8029985739327267E-5 1.809044932780286E-5)],
+    :final-gc-time 209977698,
+    :execution-count 55812,
     :variance
-    [2.801981692589838E-12
-     (1.1017046133502791E-13 3.4046725034009257E-12)],
+    [1.56917037084173E-14
+     (1.0040208678856894E-14 2.6187926758606043E-14)],
     :os-details
     {:arch "x86_64",
      :available-processors 8,
      :name "Mac OS X",
      :version "10.12.2"},
     :tail-quantile 0.025,
-    :outlier-variance 0.1568258458385653,
+    :outlier-variance 0.016388888888888887,
     :outliers
-    {:low-severe 0, :low-mild 0, :high-mild 0, :high-severe 0},
-    :warmup-time 5264773007,
+    {:low-severe 0, :low-mild 0, :high-mild 4, :high-severe 0},
+    :warmup-time 10258640535,
     :lower-q
-    [1.8246637173396677E-5
-     (1.8246637173396677E-5 1.831950653206651E-5)],
-    :warmup-executions 273318,
-    :sample-count 6,
+    [1.790009761341647E-5
+     (1.7872271536587114E-5 1.791925006136673E-5)],
+    :warmup-executions 561793,
+    :sample-count 60,
     :upper-q
-    [2.1611438440221696E-5
-     (1.8876964420031672E-5 2.1653194378463975E-5)],
-    :total-time 0.591806545,
-    :sample-variance [2.7306318430172817E-12 (0.0 0.0)],
+    [1.8353602282663228E-5
+     (1.8245542894449223E-5 1.844910440407081E-5)],
+    :total-time 60.471017846,
+    :sample-variance [1.502969147991397E-14 (0.0 0.0)],
     :options
     {:max-gc-attempts 100,
-     :samples 6,
-     :target-execution-time 100000000,
-     :warmup-jit-period 5000000000,
+     :samples 60,
+     :target-execution-time 1000000000,
+     :warmup-jit-period 10000000000,
      :tail-quantile 0.025,
-     :bootstrap-size 500,
-     :overhead 1.7731915371855393E-9},
+     :bootstrap-size 1000,
+     :overhead 1.7381553169279887E-9},
     :sample-mean
-    [1.952383692926894E-5
-     (1.456644985671191E-5 2.4481224001825967E-5)]},
+    [1.8057949857258894E-5
+     (1.769016293073862E-5 1.8425736783779163E-5)]},
    "ring-json"
-   {:overhead 1.7731915371855393E-9,
+   {:overhead 1.7381553169279887E-9,
     :samples
-    (99110157 101440054 109299762 100297734 102565561 108900428),
+    (997308644
+     1014136723
+     994676732
+     1024568077
+     995238332
+     1014382526
+     1014831598
+     1016640606
+     1006014332
+     1002461468
+     1014884259
+     995584436
+     1007640020
+     1017744177
+     1001905147
+     1015682652
+     1005289086
+     1014844906
+     1021992040
+     1009604766
+     1004625781
+     993530655
+     1013687407
+     1017134811
+     1188318947
+     1387394839
+     1145102543
+     999979883
+     1021619030
+     1005331698
+     1140160828
+     1161339719
+     1019233831
+     1000314795
+     1024668397
+     1004978529
+     1024746565
+     996576369
+     998480052
+     1002789011
+     1002901194
+     1127605467
+     1000408642
+     1007355326
+     998388288
+     1008207142
+     1004923635
+     998300770
+     1006021659
+     997722938
+     999708125
+     993293030
+     1008105971
+     999146006
+     1079319362
+     1011338396
+     1001201268
+     1005463680
+     1022217694
+     1010812090),
     :runtime-details
     {:spec-vendor "Oracle Corporation",
      :spec-name "Java Virtual Machine Specification",
      :vm-version "25.31-b07",
-     :name "54365@Tommis-MacBook-Pro.local",
+     :name "61433@Tommis-MacBook-Pro.local",
      :clojure-version-string "1.8.0",
      :java-runtime-version "1.8.0_31-b13",
      :java-version "1.8.0_31",
@@ -147,59 +321,114 @@
      :sun-arch-data-model "64",
      :input-arguments
      ["-Dfile.encoding=UTF-8"
-      "-Xmx4096m"
-      "-Dclojure.compiler.direct-linking=true"
       "-Dclojure.compile.path=/Users/tommi/projects/metosin/muuntaja/target/classes"
       "-Dmuuntaja.version=0.2.0-SNAPSHOT"
       "-Dclojure.debug=false"]},
     :mean
-    [1.4015956929599065E-5
-     (1.3619350493843866E-5 1.4450126933658055E-5)],
-    :final-gc-time 206236490,
-    :execution-count 7391,
+    [1.4064522015790435E-5 (1.3889671783954E-5 1.4364749544541805E-5)],
+    :final-gc-time 198295445,
+    :execution-count 73040,
     :variance
-    [3.8943812700092277E-13
-     (1.9805208051768054E-13 5.557919701252241E-13)],
+    [7.906293313111082E-13
+     (2.468463116038453E-13 2.607127908964942E-12)],
     :os-details
     {:arch "x86_64",
      :available-processors 8,
      :name "Mac OS X",
      :version "10.12.2"},
     :tail-quantile 0.025,
-    :outlier-variance 0.1388888888888887,
+    :outlier-variance 0.4681124694204881,
     :outliers
-    {:low-severe 0, :low-mild 0, :high-mild 0, :high-severe 0},
-    :warmup-time 5001358603,
+    {:low-severe 0, :low-mild 0, :high-mild 0, :high-severe 7},
+    :warmup-time 10210931977,
     :lower-q
-    [1.3409573400081182E-5
-     (1.3409573400081182E-5 1.3570252198619946E-5)],
-    :warmup-executions 329401,
-    :sample-count 6,
+    [1.3602555517524645E-5
+     (1.3599302163198249E-5 1.3627124860008217E-5)],
+    :warmup-executions 701416,
+    :sample-count 60,
     :upper-q
-    [1.4734194019753756E-5
-     (1.3858053392639699E-5 1.4788223785685295E-5)],
-    :total-time 0.621613696,
-    :sample-variance [3.5653096959157317E-13 (0.0 0.0)],
+    [1.5956240970358706E-5 (1.5124172605763966E-5 1.8995000533954E-5)],
+    :total-time 61.6178849,
+    :sample-variance [7.570137926371105E-13 (0.0 0.0)],
     :options
     {:max-gc-attempts 100,
-     :samples 6,
-     :target-execution-time 100000000,
-     :warmup-jit-period 5000000000,
+     :samples 60,
+     :target-execution-time 1000000000,
+     :warmup-jit-period 10000000000,
      :tail-quantile 0.025,
-     :bootstrap-size 500,
-     :overhead 1.7731915371855393E-9},
+     :bootstrap-size 1000,
+     :overhead 1.7381553169279887E-9},
     :sample-mean
-    [1.4017356604879811E-5
-     (1.2226050174833807E-5 1.5808663034925817E-5)]},
+    [1.4060305973895584E-5
+     (1.1450109787067093E-5 1.6670502160724076E-5)]},
    "muuntaja"
-   {:overhead 1.7731915371855393E-9,
+   {:overhead 1.7381553169279887E-9,
     :samples
-    (111947047 108685274 99136269 100762322 98292590 102115385),
+    (1007919709
+     1007703164
+     1014047500
+     1028018126
+     1002130566
+     984821003
+     982073061
+     1004485406
+     992614457
+     996745876
+     986865318
+     1003350647
+     986804217
+     1006799642
+     988456378
+     1011616097
+     1008692921
+     1004964622
+     1016455170
+     983497510
+     1010082420
+     1010826249
+     993850996
+     1006035388
+     1005798552
+     998181915
+     988915321
+     1004517432
+     1001077218
+     1009116257
+     1005257773
+     1001310016
+     995764446
+     1003097706
+     990914099
+     991931186
+     1016847283
+     1013230687
+     1019156664
+     991354399
+     1009595671
+     999561607
+     1004808490
+     1001575055
+     999502405
+     986205335
+     998331892
+     992013885
+     1003615209
+     995110025
+     1005542102
+     991582869
+     1013161355
+     980686153
+     998508035
+     989775835
+     1057604661
+     1045589038
+     995919296
+     986960355),
     :runtime-details
     {:spec-vendor "Oracle Corporation",
      :spec-name "Java Virtual Machine Specification",
      :vm-version "25.31-b07",
-     :name "54365@Tommis-MacBook-Pro.local",
+     :name "61433@Tommis-MacBook-Pro.local",
      :clojure-version-string "1.8.0",
      :java-runtime-version "1.8.0_31-b13",
      :java-version "1.8.0_31",
@@ -211,57 +440,113 @@
      :sun-arch-data-model "64",
      :input-arguments
      ["-Dfile.encoding=UTF-8"
-      "-Xmx4096m"
-      "-Dclojure.compiler.direct-linking=true"
       "-Dclojure.compile.path=/Users/tommi/projects/metosin/muuntaja/target/classes"
       "-Dmuuntaja.version=0.2.0-SNAPSHOT"
       "-Dclojure.debug=false"]},
     :mean
-    [6.389048925793308E-6 (6.175712608552496E-6 6.647436504506729E-6)],
-    :final-gc-time 205899397,
-    :execution-count 16198,
+    [6.378406144633272E-6 (6.358661175927694E-6 6.40424627246303E-6)],
+    :final-gc-time 205792590,
+    :execution-count 157110,
     :variance
-    [1.291246004840083E-13
-     (5.58273754281475E-14 2.1318042992147504E-13)],
+    [7.886464880984125E-15
+     (4.233997454313012E-15 1.5587389708085874E-14)],
     :os-details
     {:arch "x86_64",
      :available-processors 8,
      :name "Mac OS X",
      :version "10.12.2"},
     :tail-quantile 0.025,
-    :outlier-variance 0.1437985861957544,
+    :outlier-variance 0.016388888888889043,
     :outliers
-    {:low-severe 0, :low-mild 0, :high-mild 0, :high-severe 0},
-    :warmup-time 5042010423,
+    {:low-severe 0, :low-mild 0, :high-mild 1, :high-severe 1},
+    :warmup-time 10059872877,
     :lower-q
-    [6.068192986788492E-6 (6.068192986788492E-6 6.120278367699717E-6)],
-    :warmup-executions 792223,
-    :sample-count 6,
+    [6.250862841321368E-6 (6.242035217363631E-6 6.274349370822991E-6)],
+    :warmup-executions 1459996,
+    :sample-count 60,
     :upper-q
-    [6.8352938171379185E-6
-     (6.293755533090506E-6 6.911164773428819E-6)],
-    :total-time 0.620938887,
-    :sample-variance [1.1724458054137885E-13 (0.0 0.0)],
+    [6.568243296893896E-6 (6.469703838075234E-6 6.731618999427154E-6)],
+    :total-time 60.13097667,
+    :sample-variance [7.682519417131576E-15 (0.0 0.0)],
     :options
     {:max-gc-attempts 100,
-     :samples 6,
-     :target-execution-time 100000000,
-     :warmup-jit-period 5000000000,
+     :samples 60,
+     :target-execution-time 1000000000,
+     :warmup-jit-period 10000000000,
      :tail-quantile 0.025,
-     :bootstrap-size 500,
-     :overhead 1.7731915371855393E-9},
+     :bootstrap-size 1000,
+     :overhead 1.7381553169279887E-9},
     :sample-mean
-    [6.389048925793308E-6
-     (5.36181904651973E-6 7.4162788050668865E-6)]},
+    [6.378861590605309E-6
+     (6.115911643364043E-6 6.641811537846574E-6)]},
    "muuntaja (jackson)"
-   {:overhead 1.7731915371855393E-9,
+   {:overhead 1.7381553169279887E-9,
     :samples
-    (99598636 100504687 97849160 105568251 98387988 102329691),
+    (1001000175
+     1054825997
+     994561839
+     1011790017
+     1007683219
+     1000686406
+     998301153
+     1014040249
+     1010895939
+     1024479570
+     999602553
+     1000403171
+     1025985286
+     1009431150
+     999978314
+     1000913230
+     1001594199
+     1033800776
+     1010160039
+     1001984616
+     1012499280
+     1035075848
+     1029750900
+     1007676886
+     999401931
+     1002614885
+     1010386127
+     1004228027
+     1006992043
+     1010154200
+     1010909044
+     1000684595
+     1007550677
+     989750158
+     1022352066
+     993523324
+     1013652993
+     994658146
+     1018983125
+     1006291422
+     996394787
+     1005645036
+     1009477602
+     1009644878
+     1015792316
+     998741879
+     1031085394
+     1028111193
+     1021383641
+     1024209091
+     1031242204
+     1053077877
+     1053612508
+     1039178031
+     1072185599
+     1054813579
+     1066201373
+     1036847519
+     1042845457
+     1014129326),
     :runtime-details
     {:spec-vendor "Oracle Corporation",
      :spec-name "Java Virtual Machine Specification",
      :vm-version "25.31-b07",
-     :name "54365@Tommis-MacBook-Pro.local",
+     :name "61433@Tommis-MacBook-Pro.local",
      :clojure-version-string "1.8.0",
      :java-runtime-version "1.8.0_31-b13",
      :java-version "1.8.0_31",
@@ -273,59 +558,114 @@
      :sun-arch-data-model "64",
      :input-arguments
      ["-Dfile.encoding=UTF-8"
-      "-Xmx4096m"
-      "-Dclojure.compiler.direct-linking=true"
       "-Dclojure.compile.path=/Users/tommi/projects/metosin/muuntaja/target/classes"
       "-Dmuuntaja.version=0.2.0-SNAPSHOT"
       "-Dclojure.debug=false"]},
     :mean
-    [4.00439275391143E-6 (3.93897832140016E-6 4.108672255369929E-6)],
-    :final-gc-time 215992734,
-    :execution-count 25140,
+    [3.986313228545655E-6 (3.969077523663843E-6 4.00751938474009E-6)],
+    :final-gc-time 199501016,
+    :execution-count 254960,
     :variance
-    [1.3331544818982612E-14
-     (2.477647480634252E-15 2.7043222323714933E-14)],
+    [5.835446688591601E-15
+     (3.969148429980195E-15 8.779618557393394E-15)],
     :os-details
     {:arch "x86_64",
      :available-processors 8,
      :name "Mac OS X",
      :version "10.12.2"},
     :tail-quantile 0.025,
-    :outlier-variance 0.13888888888888873,
+    :outlier-variance 0.07840868731082969,
     :outliers
-    {:low-severe 0, :low-mild 0, :high-mild 0, :high-severe 0},
-    :warmup-time 5000284945,
+    {:low-severe 0, :low-mild 0, :high-mild 2, :high-severe 0},
+    :warmup-time 10015560272,
     :lower-q
-    [3.892170246618934E-6
-     (3.892170246618934E-6 3.9136033412887834E-6)],
-    :warmup-executions 1044241,
-    :sample-count 6,
+    [3.896781157828679E-6 (3.881982106997177E-6 3.907820886217446E-6)],
+    :warmup-executions 2471806,
+    :sample-count 60,
     :upper-q
-    [4.174037609387431E-6
-     (3.993294774264121E-6 4.1992144391408115E-6)],
-    :total-time 0.604238413,
-    :sample-variance [1.2999391996787084E-14 (0.0 0.0)],
+    [4.160621944030437E-6 (4.130365065108253E-6 4.205309064166928E-6)],
+    :total-time 60.983872865,
+    :sample-variance [5.622220312515455E-15 (0.0 0.0)],
     :options
     {:max-gc-attempts 100,
-     :samples 6,
-     :target-execution-time 100000000,
-     :warmup-jit-period 5000000000,
+     :samples 60,
+     :target-execution-time 1000000000,
+     :warmup-jit-period 10000000000,
      :tail-quantile 0.025,
-     :bootstrap-size 500,
-     :overhead 1.7731915371855393E-9},
+     :bootstrap-size 1000,
+     :overhead 1.7381553169279887E-9},
     :sample-mean
-    [4.005823475205516E-6
-     (3.663778846580707E-6 4.3478681038303256E-6)]}},
+    [3.986499376699614E-6
+     (3.7615549773191465E-6 4.2114437760800815E-6)]}},
   "100b"
   {"r-m-f (defaults)"
-   {:overhead 1.7731915371855393E-9,
+   {:overhead 1.7381553169279887E-9,
     :samples
-    (101165473 102684799 99254433 101608241 104191225 102532069),
+    (1032553643
+     1017095479
+     1022829606
+     1027536035
+     1053940043
+     1001843948
+     1014186252
+     1001537176
+     1078118008
+     1002890937
+     1002662980
+     1023452718
+     1017959345
+     1010020007
+     1006357136
+     1002411146
+     1020084402
+     1004787625
+     1009686884
+     1033572079
+     1010285337
+     1053944012
+     1009686889
+     1004370402
+     1019897200
+     1021679139
+     1004272792
+     1023252300
+     1021633458
+     1015161586
+     1012534264
+     1012555770
+     1005073735
+     1010948935
+     1009228034
+     1014726083
+     1015425335
+     1024045749
+     1002104178
+     1014776728
+     1004878929
+     1023107577
+     1017571642
+     1015024755
+     1022235946
+     1009465674
+     1041119574
+     1016292707
+     1009273905
+     1012525401
+     1020090051
+     1001860119
+     994499612
+     1032661547
+     1002400754
+     1014108220
+     1013856703
+     1014494916
+     1006846402
+     1011859688),
     :runtime-details
     {:spec-vendor "Oracle Corporation",
      :spec-name "Java Virtual Machine Specification",
      :vm-version "25.31-b07",
-     :name "54365@Tommis-MacBook-Pro.local",
+     :name "61433@Tommis-MacBook-Pro.local",
      :clojure-version-string "1.8.0",
      :java-runtime-version "1.8.0_31-b13",
      :java-version "1.8.0_31",
@@ -337,56 +677,115 @@
      :sun-arch-data-model "64",
      :input-arguments
      ["-Dfile.encoding=UTF-8"
-      "-Xmx4096m"
-      "-Dclojure.compiler.direct-linking=true"
       "-Dclojure.compile.path=/Users/tommi/projects/metosin/muuntaja/target/classes"
       "-Dmuuntaja.version=0.2.0-SNAPSHOT"
       "-Dclojure.debug=false"]},
     :mean
-    [4.479230445617121E-5 (4.418185268249781E-5 4.523488756962767E-5)],
-    :final-gc-time 232575945,
-    :execution-count 2274,
+    [4.167824426534323E-5 (4.155439502002926E-5 4.183987554174699E-5)],
+    :final-gc-time 214253063,
+    :execution-count 24381,
     :variance
-    [6.926995579746781E-13
-     (2.1283007753610004E-13 1.4139367851834327E-12)],
+    [3.5757878442079476E-13
+     (1.8327769442738833E-13 7.242122798742264E-13)],
     :os-details
     {:arch "x86_64",
      :available-processors 8,
      :name "Mac OS X",
      :version "10.12.2"},
     :tail-quantile 0.025,
-    :outlier-variance 0.13888888888888862,
+    :outlier-variance 0.016388888888889085,
     :outliers
-    {:low-severe 0, :low-mild 0, :high-mild 0, :high-severe 0},
-    :warmup-time 5001349463,
+    {:low-severe 0, :low-mild 0, :high-mild 2, :high-severe 1},
+    :warmup-time 10056349127,
     :lower-q
-    [4.364750791556728E-5 (4.364750791556728E-5 4.382767700087951E-5)],
-    :warmup-executions 110819,
-    :sample-count 6,
+    [4.1078593002748043E-5
+     (4.0789943480579143E-5 4.110202333169271E-5)],
+    :warmup-executions 239661,
+    :sample-count 60,
     :upper-q
-    [4.573567359278804E-5 (4.508886059806509E-5 4.581848065083553E-5)],
-    :total-time 0.61143624,
-    :sample-variance [5.371644811055181E-13 (0.0 0.0)],
+    [4.322792514663057E-5
+     (4.237268044378819E-5 4.4219597555473525E-5)],
+    :total-time 60.973301497,
+    :sample-variance [3.413121362279983E-13 (0.0 0.0)],
     :options
     {:max-gc-attempts 100,
-     :samples 6,
-     :target-execution-time 100000000,
-     :warmup-jit-period 5000000000,
+     :samples 60,
+     :target-execution-time 1000000000,
+     :warmup-jit-period 10000000000,
      :tail-quantile 0.025,
-     :bootstrap-size 500,
-     :overhead 1.7731915371855393E-9},
+     :bootstrap-size 1000,
+     :overhead 1.7381553169279887E-9},
     :sample-mean
-    [4.4813562005277046E-5
-     (4.261481683360534E-5 4.701230717694876E-5)]},
+    [4.168088641223357E-5
+     (3.9928228651559236E-5 4.343354417290791E-5)]},
    "r-m-f (tuned)"
-   {:overhead 1.7731915371855393E-9,
+   {:overhead 1.7381553169279887E-9,
     :samples
-    (105429532 101686477 104566385 104279707 104000091 104549988),
+    (1016735911
+     1017200589
+     1016007463
+     1025286679
+     1032239070
+     1024119263
+     1024833673
+     1012587243
+     1012551995
+     1008790078
+     1020516287
+     1024027783
+     995399955
+     1061969828
+     1156339661
+     1313416437
+     1137933709
+     1057689122
+     1051493563
+     1056490065
+     1007440164
+     1011679875
+     1128891848
+     1109135306
+     1071449928
+     1004605298
+     1205532760
+     1174089740
+     1061281666
+     1052882110
+     1087338086
+     1047657963
+     1043087479
+     1085111356
+     1216859359
+     1222221676
+     1187360319
+     1015244211
+     1016858222
+     1010475252
+     1001186557
+     1013585894
+     1009715975
+     1028568622
+     1113300646
+     1187616619
+     1026297044
+     1079756812
+     1179578978
+     1087481334
+     1151834036
+     1153966486
+     1108057274
+     1141702304
+     1080855506
+     1066265826
+     1006416131
+     1123404017
+     1055235329
+     1160765791),
     :runtime-details
     {:spec-vendor "Oracle Corporation",
      :spec-name "Java Virtual Machine Specification",
      :vm-version "25.31-b07",
-     :name "54365@Tommis-MacBook-Pro.local",
+     :name "61433@Tommis-MacBook-Pro.local",
      :clojure-version-string "1.8.0",
      :java-runtime-version "1.8.0_31-b13",
      :java-version "1.8.0_31",
@@ -398,122 +797,237 @@
      :sun-arch-data-model "64",
      :input-arguments
      ["-Dfile.encoding=UTF-8"
-      "-Xmx4096m"
-      "-Dclojure.compiler.direct-linking=true"
       "-Dclojure.compile.path=/Users/tommi/projects/metosin/muuntaja/target/classes"
       "-Dmuuntaja.version=0.2.0-SNAPSHOT"
       "-Dclojure.debug=false"]},
     :mean
-    [2.2145661238825033E-5
-     (2.182862643678161E-5 2.2298208918688805E-5)],
-    :final-gc-time 210902465,
-    :execution-count 4698,
+    [2.2391193367919824E-5
+     (2.204882804381879E-5 2.2844145323893097E-5)],
+    :final-gc-time 344348322,
+    :execution-count 48092,
     :variance
-    [7.297965077922656E-14
-     (3.765657530684196E-15 1.5522933235570935E-13)],
+    [2.2335016356507306E-12
+     (1.522386525094524E-12 3.662708903246654E-12)],
     :os-details
     {:arch "x86_64",
      :available-processors 8,
      :name "Mac OS X",
      :version "10.12.2"},
     :tail-quantile 0.025,
-    :outlier-variance 0.1388888888888887,
-    :outliers
-    {:low-severe 1, :low-mild 0, :high-mild 1, :high-severe 0},
-    :warmup-time 5078438353,
-    :lower-q
-    [2.1644631119625373E-5
-     (2.1644631119625373E-5 2.2137098978288634E-5)],
-    :warmup-executions 227614,
-    :sample-count 6,
-    :upper-q
-    [2.241796275010643E-5 (2.224695676351639E-5 2.244136483610047E-5)],
-    :total-time 0.62451218,
-    :sample-variance [7.297965077922646E-14 (0.0 0.0)],
-    :options
-    {:max-gc-attempts 100,
-     :samples 6,
-     :target-execution-time 100000000,
-     :warmup-jit-period 5000000000,
-     :tail-quantile 0.025,
-     :bootstrap-size 500,
-     :overhead 1.7731915371855393E-9},
-    :sample-mean
-    [2.2155249751667376E-5
-     (2.1344807368142774E-5 2.296569213519198E-5)]},
-   "ring-json"
-   {:overhead 1.7731915371855393E-9,
-    :samples
-    (112957583 102956730 100122738 103173708 105749687 104066164),
-    :runtime-details
-    {:spec-vendor "Oracle Corporation",
-     :spec-name "Java Virtual Machine Specification",
-     :vm-version "25.31-b07",
-     :name "54365@Tommis-MacBook-Pro.local",
-     :clojure-version-string "1.8.0",
-     :java-runtime-version "1.8.0_31-b13",
-     :java-version "1.8.0_31",
-     :vm-name "Java HotSpot(TM) 64-Bit Server VM",
-     :vm-vendor "Oracle Corporation",
-     :clojure-version
-     {:major 1, :minor 8, :incremental 0, :qualifier nil},
-     :spec-version "1.8",
-     :sun-arch-data-model "64",
-     :input-arguments
-     ["-Dfile.encoding=UTF-8"
-      "-Xmx4096m"
-      "-Dclojure.compiler.direct-linking=true"
-      "-Dclojure.compile.path=/Users/tommi/projects/metosin/muuntaja/target/classes"
-      "-Dmuuntaja.version=0.2.0-SNAPSHOT"
-      "-Dclojure.debug=false"]},
-    :mean
-    [1.7881377384816902E-5
-     (1.744137912181787E-5 1.852311808759041E-5)],
-    :final-gc-time 195478744,
-    :execution-count 5853,
-    :variance
-    [5.68071637813903E-13
-     (5.300372504682006E-14 1.4425984560746052E-12)],
-    :os-details
-    {:arch "x86_64",
-     :available-processors 8,
-     :name "Mac OS X",
-     :version "10.12.2"},
-    :tail-quantile 0.025,
-    :outlier-variance 0.1388888888888888,
+    :outlier-variance 0.5010618788191952,
     :outliers
     {:low-severe 0, :low-mild 0, :high-mild 1, :high-severe 0},
-    :warmup-time 5613830735,
+    :warmup-time 10128262274,
     :lower-q
-    [1.7106225525371603E-5
-     (1.7106225525371603E-5 1.7590420297283446E-5)],
-    :warmup-executions 297156,
-    :sample-count 6,
+    [2.0818151813191385E-5
+     (2.0697828225068618E-5 2.094818606005157E-5)],
+    :warmup-executions 480034,
+    :sample-count 60,
     :upper-q
-    [1.9109201371091747E-5
-     (1.7756276225867077E-5 1.9299091576969077E-5)],
-    :total-time 0.62902661,
-    :sample-variance [5.598596923185466E-13 (0.0 0.0)],
+    [2.5302739728021292E-5
+     (2.468935205439574E-5 2.7310497317641188E-5)],
+    :total-time 64.600422173,
+    :sample-variance [2.2049519420627813E-12 (0.0 0.0)],
     :options
     {:max-gc-attempts 100,
-     :samples 6,
-     :target-execution-time 100000000,
-     :warmup-jit-period 5000000000,
+     :samples 60,
+     :target-execution-time 1000000000,
+     :warmup-jit-period 10000000000,
      :tail-quantile 0.025,
-     :bootstrap-size 500,
-     :overhead 1.7731915371855393E-9},
+     :bootstrap-size 1000,
+     :overhead 1.7381553169279887E-9},
     :sample-mean
-    [1.791180050116749E-5
-     (1.5667087327760492E-5 2.015651367457449E-5)]},
+    [2.23877922083368E-5
+     (1.7933068032973636E-5 2.684251638369997E-5)]},
+   "ring-json"
+   {:overhead 1.7381553169279887E-9,
+    :samples
+    (1083691140
+     1041822801
+     1118830308
+     1005130807
+     1005044236
+     1005684367
+     1018431270
+     1040714698
+     1214732908
+     1120727300
+     1129760322
+     1187707276
+     1065232122
+     1047767314
+     1125194278
+     1202929372
+     1083646480
+     1065312696
+     1089628529
+     1061840377
+     1083716874
+     1096109637
+     1078550782
+     1296437625
+     1122304229
+     1115919450
+     1173281073
+     1105995875
+     1162734929
+     1101202550
+     1055637579
+     1068361764
+     1028118999
+     1079793083
+     1052558124
+     1102908910
+     1014584553
+     1113106093
+     1127584667
+     1042432317
+     1012790682
+     1027252642
+     1016367645
+     1006470309
+     1026236296
+     1005663551
+     1006699616
+     1019798589
+     1025117623
+     1023699055
+     1003870804
+     1001880723
+     1028160418
+     1010859637
+     1107854774
+     1156211888
+     1020828027
+     1091629901
+     1174793353
+     1173253609),
+    :runtime-details
+    {:spec-vendor "Oracle Corporation",
+     :spec-name "Java Virtual Machine Specification",
+     :vm-version "25.31-b07",
+     :name "61433@Tommis-MacBook-Pro.local",
+     :clojure-version-string "1.8.0",
+     :java-runtime-version "1.8.0_31-b13",
+     :java-version "1.8.0_31",
+     :vm-name "Java HotSpot(TM) 64-Bit Server VM",
+     :vm-vendor "Oracle Corporation",
+     :clojure-version
+     {:major 1, :minor 8, :incremental 0, :qualifier nil},
+     :spec-version "1.8",
+     :sun-arch-data-model "64",
+     :input-arguments
+     ["-Dfile.encoding=UTF-8"
+      "-Dclojure.compile.path=/Users/tommi/projects/metosin/muuntaja/target/classes"
+      "-Dmuuntaja.version=0.2.0-SNAPSHOT"
+      "-Dclojure.debug=false"]},
+    :mean
+    [1.8422116556864083E-5
+     (1.8162033139329805E-5 1.8719423862718322E-5)],
+    :final-gc-time 220878622,
+    :execution-count 58590,
+    :variance
+    [1.2641152848262225E-12
+     (8.77294024720817E-13 2.066317226086552E-12)],
+    :os-details
+    {:arch "x86_64",
+     :available-processors 8,
+     :name "Mac OS X",
+     :version "10.12.2"},
+    :tail-quantile 0.025,
+    :outlier-variance 0.45144105648239397,
+    :outliers
+    {:low-severe 0, :low-mild 0, :high-mild 1, :high-severe 0},
+    :warmup-time 10280181596,
+    :lower-q
+    [1.713382495306366E-5
+     (1.7099858730158732E-5 1.7159649435057177E-5)],
+    :warmup-executions 549418,
+    :sample-count 60,
+    :upper-q
+    [2.0531308619218296E-5
+     (2.002527859703021E-5 2.212728494623656E-5)],
+    :total-time 64.674606856,
+    :sample-variance [1.214557099762172E-12 (0.0 0.0)],
+    :options
+    {:max-gc-attempts 100,
+     :samples 60,
+     :target-execution-time 1000000000,
+     :warmup-jit-period 10000000000,
+     :tail-quantile 0.025,
+     :bootstrap-size 1000,
+     :overhead 1.7381553169279887E-9},
+    :sample-mean
+    [1.8397510057461457E-5
+     (1.5091301670523397E-5 2.1703718444399515E-5)]},
    "muuntaja"
-   {:overhead 1.7731915371855393E-9,
+   {:overhead 1.7381553169279887E-9,
     :samples
-    (113309090 100395458 106954938 104637659 101168134 100174036),
+    (1052952039
+     1014689669
+     981644106
+     970798455
+     1044556550
+     1061408499
+     982540627
+     985493893
+     956303928
+     956432352
+     970534702
+     1062007713
+     1078865993
+     1052392604
+     1025689594
+     940558169
+     938680921
+     901925594
+     961743383
+     946604354
+     916951520
+     1018319704
+     1000306079
+     1010207504
+     969986168
+     1056584349
+     959874625
+     910373018
+     970582174
+     935424353
+     959054818
+     921487863
+     942936693
+     924618444
+     914251517
+     910750635
+     947179475
+     942264964
+     922261514
+     921268587
+     897942015
+     949109378
+     923077815
+     942310780
+     923662142
+     978480084
+     917892673
+     949877908
+     921637110
+     912133221
+     929487514
+     913940511
+     959063048
+     920879530
+     914676255
+     925076389
+     922457298
+     910267314
+     909151738
+     924148497),
     :runtime-details
     {:spec-vendor "Oracle Corporation",
      :spec-name "Java Virtual Machine Specification",
      :vm-version "25.31-b07",
-     :name "54365@Tommis-MacBook-Pro.local",
+     :name "61433@Tommis-MacBook-Pro.local",
      :clojure-version-string "1.8.0",
      :java-runtime-version "1.8.0_31-b13",
      :java-version "1.8.0_31",
@@ -525,57 +1039,114 @@
      :sun-arch-data-model "64",
      :input-arguments
      ["-Dfile.encoding=UTF-8"
-      "-Xmx4096m"
-      "-Dclojure.compiler.direct-linking=true"
       "-Dclojure.compile.path=/Users/tommi/projects/metosin/muuntaja/target/classes"
       "-Dmuuntaja.version=0.2.0-SNAPSHOT"
       "-Dclojure.debug=false"]},
     :mean
-    [9.60543217999448E-6 (9.32392992546241E-6 1.003393460323303E-5)],
-    :final-gc-time 210486339,
-    :execution-count 10867,
+    [9.665381059941153E-6 (9.548227560992015E-6 9.80390792030265E-6)],
+    :final-gc-time 198783031,
+    :execution-count 99125,
     :variance
-    [2.2717038140846204E-13
-     (5.1745631776958494E-14 4.1259390392310433E-13)],
+    [2.3434292227491967E-13
+     (1.5791528387502756E-13 3.242915721485933E-13)],
     :os-details
     {:arch "x86_64",
      :available-processors 8,
      :name "Mac OS X",
      :version "10.12.2"},
     :tail-quantile 0.025,
-    :outlier-variance 0.1388888888888885,
+    :outlier-variance 0.36807847891751194,
     :outliers
-    {:low-severe 0, :low-mild 0, :high-mild 0, :high-severe 0},
-    :warmup-time 5446722941,
+    {:low-severe 0, :low-mild 0, :high-mild 1, :high-severe 0},
+    :warmup-time 11365166892,
     :lower-q
-    [9.218186804085764E-6 (9.218186804085764E-6 9.23856243673507E-6)],
-    :warmup-executions 543766,
-    :sample-count 6,
+    [9.09887106179067E-6 (9.058683631778059E-6 9.183531131399748E-6)],
+    :warmup-executions 1120006,
+    :sample-count 60,
     :upper-q
-    [1.0327152031379407E-5
-     (9.589028101131867E-6 1.0426897027698537E-5)],
-    :total-time 0.626639315,
-    :sample-variance [2.206533188547025E-13 (0.0 0.0)],
+    [1.0707778047919294E-5
+     (1.0601474345271123E-5 1.0883894002522069E-5)],
+    :total-time 57.485778369,
+    :sample-variance [2.311711385487657E-13 (0.0 0.0)],
     :options
     {:max-gc-attempts 100,
-     :samples 6,
-     :target-execution-time 100000000,
-     :warmup-jit-period 5000000000,
+     :samples 60,
+     :target-execution-time 1000000000,
+     :warmup-jit-period 10000000000,
      :tail-quantile 0.025,
-     :bootstrap-size 500,
-     :overhead 1.7731915371855393E-9},
+     :bootstrap-size 1000,
+     :overhead 1.7381553169279887E-9},
     :sample-mean
-    [9.610737630747523E-6
-     (8.201525130912128E-6 1.1019950130582917E-5)]},
+    [9.665536505926861E-6
+     (8.223128710974652E-6 1.1107944300879069E-5)]},
    "muuntaja (jackson)"
-   {:overhead 1.7731915371855393E-9,
+   {:overhead 1.7381553169279887E-9,
     :samples
-    (101603654 101215953 99683694 100547607 100465804 99344353),
+    (1017117617
+     1014100635
+     1004695291
+     1008014538
+     1015702981
+     1005656520
+     1008668552
+     1001443974
+     1009354257
+     1040980487
+     1010276577
+     1011478059
+     1004235451
+     998317968
+     999299865
+     998640960
+     999409486
+     1014034206
+     1012906832
+     1006139746
+     1013474838
+     1015069709
+     997278972
+     1007847469
+     1007043033
+     1024866552
+     1029483149
+     1007530992
+     1020219291
+     1017156815
+     1005207480
+     1005089899
+     1002075578
+     1008486374
+     1011663745
+     1031360828
+     1007146544
+     1005145593
+     997839136
+     1026391450
+     1042533503
+     999028930
+     1016236797
+     1005950408
+     1007959916
+     1005787938
+     1031206589
+     1011480806
+     1031063605
+     1020326875
+     1002347034
+     1013272694
+     997217123
+     1005999270
+     1011316887
+     1016156178
+     1010750316
+     1004218311
+     1010670362
+     1007646010),
     :runtime-details
     {:spec-vendor "Oracle Corporation",
      :spec-name "Java Virtual Machine Specification",
      :vm-version "25.31-b07",
-     :name "54365@Tommis-MacBook-Pro.local",
+     :name "61433@Tommis-MacBook-Pro.local",
      :clojure-version-string "1.8.0",
      :java-runtime-version "1.8.0_31-b13",
      :java-version "1.8.0_31",
@@ -587,58 +1158,115 @@
      :sun-arch-data-model "64",
      :input-arguments
      ["-Dfile.encoding=UTF-8"
-      "-Xmx4096m"
-      "-Dclojure.compiler.direct-linking=true"
       "-Dclojure.compile.path=/Users/tommi/projects/metosin/muuntaja/target/classes"
       "-Dmuuntaja.version=0.2.0-SNAPSHOT"
       "-Dclojure.debug=false"]},
     :mean
-    [5.754171736556675E-6 (5.716565116101436E-6 5.791121114039108E-6)],
-    :final-gc-time 201701061,
-    :execution-count 17456,
+    [5.6133037525951755E-6
+     (5.599404523098445E-6 5.628440454474804E-6)],
+    :final-gc-time 202027616,
+    :execution-count 180142,
     :variance
-    [2.7959199608888966E-15
-     (9.648949421625796E-16 4.121354401648036E-15)],
+    [3.2963713820042452E-15
+     (2.053306681950588E-15 5.172302840956721E-15)],
     :os-details
     {:arch "x86_64",
      :available-processors 8,
      :name "Mac OS X",
      :version "10.12.2"},
     :tail-quantile 0.025,
-    :outlier-variance 0.1388888888888887,
+    :outlier-variance 0.016388888888889126,
     :outliers
-    {:low-severe 0, :low-mild 0, :high-mild 0, :high-severe 0},
-    :warmup-time 5008664019,
+    {:low-severe 0, :low-mild 0, :high-mild 5, :high-severe 0},
+    :warmup-time 10040808535,
     :lower-q
-    [5.691129296516957E-6 (5.691129296516957E-6 5.710569087992667E-6)],
-    :warmup-executions 730936,
-    :sample-count 6,
+    [5.536071388127145E-6 (5.535728053424521E-6 5.542690706220649E-6)],
+    :warmup-executions 1766401,
+    :sample-count 60,
     :upper-q
-    [5.81299542420944E-6
-     (5.7594741994156736E-6 5.8205576306141155E-6)],
-    :total-time 0.602861065,
-    :sample-variance [2.4500090218525916E-15 (0.0 0.0)],
+    [5.752894302550212E-6 (5.712162479876987E-6 5.787287267822052E-6)],
+    :total-time 60.672021001,
+    :sample-variance [3.2634734805636406E-15 (0.0 0.0)],
     :options
     {:max-gc-attempts 100,
-     :samples 6,
-     :target-execution-time 100000000,
-     :warmup-jit-period 5000000000,
+     :samples 60,
+     :target-execution-time 1000000000,
+     :warmup-jit-period 10000000000,
      :tail-quantile 0.025,
-     :bootstrap-size 500,
-     :overhead 1.7731915371855393E-9},
+     :bootstrap-size 1000,
+     :overhead 1.7381553169279887E-9},
     :sample-mean
-    [5.756006196532234E-6
-     (5.60751349907989E-6 5.904498893984577E-6)]}},
+    [5.6133514117566515E-6
+     (5.441970953929417E-6 5.784731869583887E-6)]}},
   "1k"
   {"r-m-f (defaults)"
-   {:overhead 1.7731915371855393E-9,
+   {:overhead 1.7381553169279887E-9,
     :samples
-    (100451296 103016793 99727251 101381596 100173088 102556103),
+    (1018798767
+     1010002514
+     1020874698
+     1017343070
+     1034129019
+     1017072840
+     1012713144
+     1013654411
+     1034157889
+     1023931381
+     1069885007
+     1066446395
+     1020748822
+     1015621555
+     1015355344
+     1027314881
+     1027651099
+     1026165774
+     1037415282
+     1032776017
+     1038775900
+     1008461803
+     1019809881
+     1046493025
+     1020500529
+     1024293993
+     1026254967
+     1015625383
+     1025467266
+     1025266871
+     1041507499
+     1020477770
+     1020564636
+     1031892175
+     1023506357
+     1020343038
+     1036233704
+     1089786793
+     1079605796
+     1017459069
+     1013062845
+     1028269018
+     1015990782
+     1023335083
+     1026304325
+     1027950343
+     1023454934
+     1013580592
+     1070826174
+     1040182487
+     1065368858
+     1054964240
+     1068770849
+     1069440733
+     1092890292
+     1027662470
+     1022947886
+     1019252017
+     1010463115
+     1038338669),
     :runtime-details
     {:spec-vendor "Oracle Corporation",
      :spec-name "Java Virtual Machine Specification",
      :vm-version "25.31-b07",
-     :name "54365@Tommis-MacBook-Pro.local",
+     :name "61433@Tommis-MacBook-Pro.local",
      :clojure-version-string "1.8.0",
      :java-runtime-version "1.8.0_31-b13",
      :java-version "1.8.0_31",
@@ -650,59 +1278,115 @@
      :sun-arch-data-model "64",
      :input-arguments
      ["-Dfile.encoding=UTF-8"
-      "-Xmx4096m"
-      "-Dclojure.compiler.direct-linking=true"
       "-Dclojure.compile.path=/Users/tommi/projects/metosin/muuntaja/target/classes"
       "-Dmuuntaja.version=0.2.0-SNAPSHOT"
       "-Dclojure.debug=false"]},
     :mean
-    [3.0015696834817014E-4
-     (2.97543803165183E-4 3.0301705044510387E-4)],
-    :final-gc-time 214313764,
-    :execution-count 337,
+    [2.9059213300028147E-4
+     (2.8931628272352007E-4 2.921825817431279E-4)],
+    :final-gc-time 197095892,
+    :execution-count 3553,
     :variance
-    [1.784134565478405E-11
-     (9.618083651200608E-12 2.6293570446394438E-11)],
+    [3.466811493254385E-11
+     (2.1956240142437867E-11 5.1915206824615085E-11)],
     :os-details
     {:arch "x86_64",
      :available-processors 8,
      :name "Mac OS X",
      :version "10.12.2"},
     :tail-quantile 0.025,
-    :outlier-variance 0.13888888888888878,
+    :outlier-variance 0.09365683142207594,
     :outliers
-    {:low-severe 0, :low-mild 0, :high-mild 0, :high-severe 0},
-    :warmup-time 5677279206,
+    {:low-severe 0, :low-mild 0, :high-mild 8, :high-severe 0},
+    :warmup-time 11167690212,
     :lower-q
-    [2.9592656083086055E-4
-     (2.9592656083086055E-4 2.961951235163205E-4)],
-    :warmup-executions 18841,
-    :sample-count 6,
+    [2.8426752434562345E-4
+     (2.8383388770053476E-4 2.850771888474529E-4)],
+    :warmup-executions 39751,
+    :sample-count 60,
     :upper-q
-    [3.0508128597922854E-4
-     (3.004905296735905E-4 3.0568781305637983E-4)],
-    :total-time 0.607306127,
-    :sample-variance [1.5770056361061285E-11 (0.0 0.0)],
+    [3.053618968266254E-4 (3.010621944413172E-4 3.075964795947087E-4)],
+    :total-time 61.927440076,
+    :sample-variance [3.3492640900279556E-11 (0.0 0.0)],
     :options
     {:max-gc-attempts 100,
-     :samples 6,
-     :target-execution-time 100000000,
-     :warmup-jit-period 5000000000,
+     :samples 60,
+     :target-execution-time 1000000000,
+     :warmup-jit-period 10000000000,
      :tail-quantile 0.025,
-     :bootstrap-size 500,
-     :overhead 1.7731915371855393E-9},
+     :bootstrap-size 1000,
+     :overhead 1.7381553169279887E-9},
     :sample-mean
-    [3.0034922205736896E-4
-     (2.884357629774228E-4 3.122626811373151E-4)]},
+    [2.9049366767989495E-4
+     (2.731318196186281E-4 3.078555157411618E-4)]},
    "r-m-f (tuned)"
-   {:overhead 1.7731915371855393E-9,
+   {:overhead 1.7381553169279887E-9,
     :samples
-    (99830817 99690515 100986819 101962152 102313262 104133131),
+    (1016387630
+     1050878244
+     1004053190
+     1017031955
+     1024243849
+     1005197046
+     1018310251
+     1019413655
+     1021114643
+     1010378332
+     1006545156
+     1021496887
+     1034621345
+     1006406833
+     1011019886
+     1014982978
+     996662567
+     1001570239
+     1019599801
+     1009813296
+     1051468959
+     1007915084
+     1012018944
+     1018607394
+     1009348829
+     1009789430
+     1008351850
+     1014897099
+     1011841172
+     1003338814
+     1025075370
+     1013770927
+     1016285188
+     1030748336
+     1034038343
+     1011998568
+     1020052753
+     1023776424
+     1030072855
+     1013639427
+     1010346121
+     1024708565
+     1022099709
+     1016309155
+     1028018459
+     1027326998
+     997268329
+     1015524643
+     1002714695
+     1050358585
+     1026567413
+     1199094683
+     1175689380
+     1076480129
+     1129309228
+     1090615146
+     1016851031
+     1013197153
+     1021416528
+     997086937),
     :runtime-details
     {:spec-vendor "Oracle Corporation",
      :spec-name "Java Virtual Machine Specification",
      :vm-version "25.31-b07",
-     :name "54365@Tommis-MacBook-Pro.local",
+     :name "61433@Tommis-MacBook-Pro.local",
      :clojure-version-string "1.8.0",
      :java-runtime-version "1.8.0_31-b13",
      :java-version "1.8.0_31",
@@ -714,59 +1398,114 @@
      :sun-arch-data-model "64",
      :input-arguments
      ["-Dfile.encoding=UTF-8"
-      "-Xmx4096m"
-      "-Dclojure.compiler.direct-linking=true"
       "-Dclojure.compile.path=/Users/tommi/projects/metosin/muuntaja/target/classes"
       "-Dmuuntaja.version=0.2.0-SNAPSHOT"
       "-Dclojure.debug=false"]},
     :mean
-    [3.710460432663011E-5
-     (3.670399792809263E-5 3.7568898476538696E-5)],
-    :final-gc-time 218734860,
-    :execution-count 2735,
+    [3.6241382935892015E-5
+     (3.598042525810169E-5 3.671678408412116E-5)],
+    :final-gc-time 202297142,
+    :execution-count 28348,
     :variance
-    [4.1395276184376865E-13
-     (1.3880001740234576E-13 7.753336657962933E-13)],
+    [1.8330028798898685E-12
+     (6.658197947179014E-13 4.24211826275965E-12)],
     :os-details
     {:arch "x86_64",
      :available-processors 8,
      :name "Mac OS X",
      :version "10.12.2"},
     :tail-quantile 0.025,
-    :outlier-variance 0.13888888888888867,
+    :outlier-variance 0.23833740568667428,
     :outliers
-    {:low-severe 0, :low-mild 0, :high-mild 0, :high-severe 0},
-    :warmup-time 7893574897,
+    {:low-severe 0, :low-mild 0, :high-mild 3, :high-severe 5},
+    :warmup-time 10368498760,
     :lower-q
-    [3.6449914076782456E-5
-     (3.6449914076782456E-5 3.650916014625229E-5)],
-    :warmup-executions 212305,
-    :sample-count 6,
+    [3.517309640891774E-5 (3.5158126393396364E-5 3.53504252716241E-5)],
+    :warmup-executions 290742,
+    :sample-count 60,
     :upper-q
-    [3.7975048857404025E-5
-     (3.7280494332723954E-5 3.8074270932358324E-5)],
-    :total-time 0.608916696,
-    :sample-variance [3.7782190812837827E-13 (0.0 0.0)],
+    [4.048140619885E-5 (3.7544773304113166E-5 4.2299092810780304E-5)],
+    :total-time 61.617746436,
+    :sample-variance [1.7282591891879403E-12 (0.0 0.0)],
     :options
     {:max-gc-attempts 100,
-     :samples 6,
-     :target-execution-time 100000000,
-     :warmup-jit-period 5000000000,
+     :samples 60,
+     :target-execution-time 1000000000,
+     :warmup-jit-period 10000000000,
      :tail-quantile 0.025,
-     :bootstrap-size 500,
-     :overhead 1.7731915371855393E-9},
+     :bootstrap-size 1000,
+     :overhead 1.7381553169279887E-9},
     :sample-mean
-    [3.710644095063986E-5
-     (3.526242436363327E-5 3.895045753764644E-5)]},
+    [3.622698040778891E-5
+     (3.228308224699781E-5 4.017087856858002E-5)]},
    "ring-json"
-   {:overhead 1.7731915371855393E-9,
+   {:overhead 1.7381553169279887E-9,
     :samples
-    (101518614 104131303 100001786 101842001 103554840 102762462),
+    (992379074
+     1015040775
+     995624211
+     997925473
+     998642551
+     1012920645
+     990895971
+     981949257
+     996099746
+     995415663
+     1025647448
+     1000967668
+     993758674
+     990099204
+     990187015
+     1008881842
+     998380817
+     993683852
+     1006743181
+     996328342
+     999918679
+     991853447
+     997887028
+     984845564
+     1006622817
+     1032682863
+     1001965074
+     1009162236
+     1000726766
+     1002756778
+     1007579155
+     993327273
+     993492412
+     1009619754
+     990698688
+     994841383
+     1003934989
+     995998130
+     999182609
+     998592188
+     991835571
+     995606231
+     994855572
+     999029756
+     1017962147
+     1006862559
+     993091730
+     999256553
+     1002051945
+     1023984450
+     1003583161
+     1002536087
+     1019841687
+     995888199
+     1021545025
+     996873510
+     1013386470
+     996254460
+     988087556
+     989851284),
     :runtime-details
     {:spec-vendor "Oracle Corporation",
      :spec-name "Java Virtual Machine Specification",
      :vm-version "25.31-b07",
-     :name "54365@Tommis-MacBook-Pro.local",
+     :name "61433@Tommis-MacBook-Pro.local",
      :clojure-version-string "1.8.0",
      :java-runtime-version "1.8.0_31-b13",
      :java-version "1.8.0_31",
@@ -778,185 +1517,356 @@
      :sun-arch-data-model "64",
      :input-arguments
      ["-Dfile.encoding=UTF-8"
-      "-Xmx4096m"
-      "-Dclojure.compiler.direct-linking=true"
       "-Dclojure.compile.path=/Users/tommi/projects/metosin/muuntaja/target/classes"
       "-Dmuuntaja.version=0.2.0-SNAPSHOT"
       "-Dclojure.debug=false"]},
     :mean
-    [3.331327001194743E-5 (3.286673042250462E-5 3.366293456066037E-5)],
-    :final-gc-time 215984085,
-    :execution-count 3069,
+    [3.281547677935166E-5
+     (3.2739645607362234E-5 3.290392542407153E-5)],
+    :final-gc-time 198382686,
+    :execution-count 30498,
     :variance
-    [2.679418836811511E-13
-     (7.631899374928048E-14 4.984897032678358E-13)],
+    [1.1830838629786563E-13
+     (7.823054755980768E-14 1.8169038220617772E-13)],
     :os-details
     {:arch "x86_64",
      :available-processors 8,
      :name "Mac OS X",
      :version "10.12.2"},
     :tail-quantile 0.025,
-    :outlier-variance 0.13888888888888867,
-    :outliers
-    {:low-severe 0, :low-mild 0, :high-mild 0, :high-severe 0},
-    :warmup-time 5567851231,
-    :lower-q
-    [3.258448550016292E-5
-     (3.258448550016292E-5 3.3078727272727275E-5)],
-    :warmup-executions 165048,
-    :sample-count 6,
-    :upper-q
-    [3.38742906076898E-5 (3.344653123981753E-5 3.393004333659172E-5)],
-    :total-time 0.613811006,
-    :sample-variance [2.387630341394869E-13 (0.0 0.0)],
-    :options
-    {:max-gc-attempts 100,
-     :samples 6,
-     :target-execution-time 100000000,
-     :warmup-jit-period 5000000000,
-     :tail-quantile 0.025,
-     :bootstrap-size 500,
-     :overhead 1.7731915371855393E-9},
-    :sample-mean
-    [3.333393103073748E-5 (3.18680294967812E-5 3.479983256469376E-5)]},
-   "muuntaja"
-   {:overhead 1.7731915371855393E-9,
-    :samples
-    (102375349 105661506 102245546 104889058 104911841 106122755),
-    :runtime-details
-    {:spec-vendor "Oracle Corporation",
-     :spec-name "Java Virtual Machine Specification",
-     :vm-version "25.31-b07",
-     :name "54365@Tommis-MacBook-Pro.local",
-     :clojure-version-string "1.8.0",
-     :java-runtime-version "1.8.0_31-b13",
-     :java-version "1.8.0_31",
-     :vm-name "Java HotSpot(TM) 64-Bit Server VM",
-     :vm-vendor "Oracle Corporation",
-     :clojure-version
-     {:major 1, :minor 8, :incremental 0, :qualifier nil},
-     :spec-version "1.8",
-     :sun-arch-data-model "64",
-     :input-arguments
-     ["-Dfile.encoding=UTF-8"
-      "-Xmx4096m"
-      "-Dclojure.compiler.direct-linking=true"
-      "-Dclojure.compile.path=/Users/tommi/projects/metosin/muuntaja/target/classes"
-      "-Dmuuntaja.version=0.2.0-SNAPSHOT"
-      "-Dclojure.debug=false"]},
-    :mean
-    [2.3715399454669397E-5
-     (2.344239589487238E-5 2.3956561879875786E-5)],
-    :final-gc-time 208983198,
-    :execution-count 4401,
-    :variance
-    [1.5570680102478231E-13
-     (7.845204820710215E-14 2.1751039306205874E-13)],
-    :os-details
-    {:arch "x86_64",
-     :available-processors 8,
-     :name "Mac OS X",
-     :version "10.12.2"},
-    :tail-quantile 0.025,
-    :outlier-variance 0.13888888888888876,
-    :outliers
-    {:low-severe 0, :low-mild 0, :high-mild 0, :high-severe 0},
-    :warmup-time 5374054890,
-    :lower-q
-    [2.3232344012724385E-5
-     (2.3232344012724385E-5 2.330742672119973E-5)],
-    :warmup-executions 229582,
-    :sample-count 6,
-    :upper-q
-    [2.4078934503521928E-5
-     (2.383753536128153E-5 2.4113327652806184E-5)],
-    :total-time 0.626206055,
-    :sample-variance [1.4244615052959483E-13 (0.0 0.0)],
-    :options
-    {:max-gc-attempts 100,
-     :samples 6,
-     :target-execution-time 100000000,
-     :warmup-jit-period 5000000000,
-     :tail-quantile 0.025,
-     :bootstrap-size 500,
-     :overhead 1.7731915371855393E-9},
-    :sample-mean
-    [2.371453665833523E-5
-     (2.2582275489361234E-5 2.4846797827309222E-5)]},
-   "muuntaja (jackson)"
-   {:overhead 1.7731915371855393E-9,
-    :samples
-    (102994998 104858314 104573557 102929920 114475984 107357319),
-    :runtime-details
-    {:spec-vendor "Oracle Corporation",
-     :spec-name "Java Virtual Machine Specification",
-     :vm-version "25.31-b07",
-     :name "54365@Tommis-MacBook-Pro.local",
-     :clojure-version-string "1.8.0",
-     :java-runtime-version "1.8.0_31-b13",
-     :java-version "1.8.0_31",
-     :vm-name "Java HotSpot(TM) 64-Bit Server VM",
-     :vm-vendor "Oracle Corporation",
-     :clojure-version
-     {:major 1, :minor 8, :incremental 0, :qualifier nil},
-     :spec-version "1.8",
-     :sun-arch-data-model "64",
-     :input-arguments
-     ["-Dfile.encoding=UTF-8"
-      "-Xmx4096m"
-      "-Dclojure.compiler.direct-linking=true"
-      "-Dclojure.compile.path=/Users/tommi/projects/metosin/muuntaja/target/classes"
-      "-Dmuuntaja.version=0.2.0-SNAPSHOT"
-      "-Dclojure.debug=false"]},
-    :mean
-    [1.4050385112198564E-5
-     (1.3749960587223915E-5 1.466957432879249E-5)],
-    :final-gc-time 208740561,
-    :execution-count 7561,
-    :variance
-    [3.521559904304297E-13
-     (2.0244321488118725E-14 6.410538319833448E-13)],
-    :os-details
-    {:arch "x86_64",
-     :available-processors 8,
-     :name "Mac OS X",
-     :version "10.12.2"},
-    :tail-quantile 0.025,
-    :outlier-variance 0.1388888888888888,
+    :outlier-variance 0.016388888888888935,
     :outliers
     {:low-severe 0, :low-mild 0, :high-mild 1, :high-severe 0},
-    :warmup-time 5005018650,
+    :warmup-time 10133178215,
     :lower-q
-    [1.3613268086231982E-5
-     (1.3613268086231982E-5 1.3645148690649387E-5)],
-    :warmup-executions 339707,
-    :sample-count 6,
+    [3.229213600891862E-5 (3.219716889632107E-5 3.246013004131419E-5)],
+    :warmup-executions 310682,
+    :sample-count 60,
     :upper-q
-    [1.4981321948155007E-5
-     (1.3863605260547549E-5 1.5140323237666978E-5)],
-    :total-time 0.637190092,
-    :sample-variance [3.3319682368215085E-13 (0.0 0.0)],
+    [3.357546232539839E-5 (3.336840813741885E-5 3.386067489671454E-5)],
+    :total-time 60.049643195,
+    :sample-variance [1.147675955054978E-13 (0.0 0.0)],
     :options
     {:max-gc-attempts 100,
-     :samples 6,
-     :target-execution-time 100000000,
-     :warmup-jit-period 5000000000,
+     :samples 60,
+     :target-execution-time 1000000000,
+     :warmup-jit-period 10000000000,
      :tail-quantile 0.025,
-     :bootstrap-size 500,
-     :overhead 1.7731915371855393E-9},
+     :bootstrap-size 1000,
+     :overhead 1.7381553169279887E-9},
     :sample-mean
-    [1.4045542741259977E-5
-     (1.2313846632487032E-5 1.5777238850032924E-5)]}},
+    [3.281616455450631E-5
+     (3.179984356212769E-5 3.383248554688494E-5)]},
+   "muuntaja"
+   {:overhead 1.7381553169279887E-9,
+    :samples
+    (980483976
+     984544846
+     984689069
+     986286179
+     970447522
+     995029588
+     997929283
+     987880345
+     991644715
+     975976806
+     972365645
+     987798143
+     990226395
+     994085901
+     991400611
+     981713054
+     992456258
+     970348036
+     977701125
+     984254911
+     982615648
+     986582903
+     982528277
+     976425083
+     1002086066
+     988822121
+     980512883
+     993086417
+     974692804
+     995964534
+     971134522
+     991680985
+     974700253
+     979665677
+     990814192
+     984474383
+     976306118
+     977165874
+     980950386
+     983364883
+     987773173
+     981832713
+     970943977
+     976312822
+     983784765
+     1005356835
+     974067551
+     977093673
+     983508863
+     996302536
+     990343703
+     986657126
+     999799734
+     999480570
+     989742846
+     983356133
+     987015936
+     996900169
+     985294565
+     986164192),
+    :runtime-details
+    {:spec-vendor "Oracle Corporation",
+     :spec-name "Java Virtual Machine Specification",
+     :vm-version "25.31-b07",
+     :name "61433@Tommis-MacBook-Pro.local",
+     :clojure-version-string "1.8.0",
+     :java-runtime-version "1.8.0_31-b13",
+     :java-version "1.8.0_31",
+     :vm-name "Java HotSpot(TM) 64-Bit Server VM",
+     :vm-vendor "Oracle Corporation",
+     :clojure-version
+     {:major 1, :minor 8, :incremental 0, :qualifier nil},
+     :spec-version "1.8",
+     :sun-arch-data-model "64",
+     :input-arguments
+     ["-Dfile.encoding=UTF-8"
+      "-Dclojure.compile.path=/Users/tommi/projects/metosin/muuntaja/target/classes"
+      "-Dmuuntaja.version=0.2.0-SNAPSHOT"
+      "-Dclojure.debug=false"]},
+    :mean
+    [2.28173713066537E-5
+     (2.2766182523526097E-5 2.2868379806541762E-5)],
+    :final-gc-time 202777443,
+    :execution-count 43179,
+    :variance
+    [3.905727030193505E-14
+     (2.850335691502793E-14 5.131659347690722E-14)],
+    :os-details
+    {:arch "x86_64",
+     :available-processors 8,
+     :name "Mac OS X",
+     :version "10.12.2"},
+    :tail-quantile 0.025,
+    :outlier-variance 0.016388888888889053,
+    :outliers
+    {:low-severe 0, :low-mild 0, :high-mild 0, :high-severe 0},
+    :warmup-time 10013657388,
+    :lower-q
+    [2.2474988350818686E-5
+     (2.2472684314134188E-5 2.250444209974756E-5)],
+    :warmup-executions 436739,
+    :sample-count 60,
+    :upper-q
+    [2.3179055916070317E-5 (2.30935542318025E-5 2.328346731049816E-5)],
+    :total-time 59.112568299,
+    :sample-variance [3.8228607322599533E-14 (0.0 0.0)],
+    :options
+    {:max-gc-attempts 100,
+     :samples 60,
+     :target-execution-time 1000000000,
+     :warmup-jit-period 10000000000,
+     :tail-quantile 0.025,
+     :bootstrap-size 1000,
+     :overhead 1.7381553169279887E-9},
+    :sample-mean
+    [2.281686633896107E-5
+     (2.2230302219786197E-5 2.3403430458135942E-5)]},
+   "muuntaja (jackson)"
+   {:overhead 1.7381553169279887E-9,
+    :samples
+    (1032015204
+     1004297186
+     1010178292
+     997533772
+     990351843
+     1034626504
+     1042845516
+     1037355578
+     1022570579
+     1009749871
+     1024839504
+     1021890089
+     1015651803
+     1067783670
+     1053194718
+     1050343889
+     1027062590
+     1039740288
+     1012476760
+     992816952
+     998195150
+     996466633
+     1025439305
+     1002034077
+     997124176
+     1019303686
+     1007808778
+     1005119736
+     1004118307
+     995801107
+     1030043422
+     1007219015
+     996467880
+     1010914467
+     1014170021
+     983531077
+     1000054559
+     1012883613
+     1043613762
+     1001385762
+     991947520
+     993461456
+     1014747468
+     991586267
+     1004268592
+     1005735048
+     1003897160
+     997302225
+     997085946
+     999067470
+     1004922792
+     986645042
+     1004868087
+     993657121
+     1001291148
+     1013466655
+     990354120
+     988567147
+     993198376
+     1002321024),
+    :runtime-details
+    {:spec-vendor "Oracle Corporation",
+     :spec-name "Java Virtual Machine Specification",
+     :vm-version "25.31-b07",
+     :name "61433@Tommis-MacBook-Pro.local",
+     :clojure-version-string "1.8.0",
+     :java-runtime-version "1.8.0_31-b13",
+     :java-version "1.8.0_31",
+     :vm-name "Java HotSpot(TM) 64-Bit Server VM",
+     :vm-vendor "Oracle Corporation",
+     :clojure-version
+     {:major 1, :minor 8, :incremental 0, :qualifier nil},
+     :spec-version "1.8",
+     :sun-arch-data-model "64",
+     :input-arguments
+     ["-Dfile.encoding=UTF-8"
+      "-Dclojure.compile.path=/Users/tommi/projects/metosin/muuntaja/target/classes"
+      "-Dmuuntaja.version=0.2.0-SNAPSHOT"
+      "-Dclojure.debug=false"]},
+    :mean
+    [1.3704441385851627E-5
+     (1.364805645965036E-5 1.3770442008980654E-5)],
+    :final-gc-time 199355436,
+    :execution-count 73714,
+    :variance
+    [6.263066823589065E-14
+     (4.145708286533876E-14 9.734283915435696E-14)],
+    :os-details
+    {:arch "x86_64",
+     :available-processors 8,
+     :name "Mac OS X",
+     :version "10.12.2"},
+    :tail-quantile 0.025,
+    :outlier-variance 0.07791030449930252,
+    :outliers
+    {:low-severe 0, :low-mild 0, :high-mild 1, :high-severe 0},
+    :warmup-time 10157867621,
+    :lower-q
+    [1.3384771440974578E-5
+     (1.3342527565998319E-5 1.3435088585614673E-5)],
+    :warmup-executions 741937,
+    :sample-count 60,
+    :upper-q
+    [1.424890643568386E-5
+     (1.4105058577746425E-5 1.4485493529044686E-5)],
+    :total-time 60.617409805,
+    :sample-variance [6.159992109664978E-14 (0.0 0.0)],
+    :options
+    {:max-gc-attempts 100,
+     :samples 60,
+     :target-execution-time 1000000000,
+     :warmup-jit-period 10000000000,
+     :tail-quantile 0.025,
+     :bootstrap-size 1000,
+     :overhead 1.7381553169279887E-9},
+    :sample-mean
+    [1.3705539835264218E-5
+     (1.2960959893370907E-5 1.4450119777157531E-5)]}},
   "10k"
   {"r-m-f (defaults)"
-   {:overhead 1.7731915371855393E-9,
+   {:overhead 1.7381553169279887E-9,
     :samples
-    (106450415 99512029 101980944 101938248 105961832 107390439),
+    (1052263986
+     1065251380
+     1035880776
+     1055697496
+     1039524503
+     1036045047
+     1034700854
+     1037917023
+     1022928027
+     1042560185
+     1035110496
+     1059004735
+     1065532062
+     1061421599
+     1046118757
+     1061937654
+     1053057629
+     1036574975
+     1074042721
+     1043265322
+     1032910518
+     1051814521
+     1044027515
+     1058127153
+     1069873317
+     1061316121
+     1052882825
+     1049526462
+     1053554579
+     1051292350
+     1041355259
+     1055925742
+     1046019357
+     1082995033
+     1047570415
+     1050083965
+     1062074095
+     1048431265
+     1052074464
+     1080916091
+     1047176890
+     1050192279
+     1038203748
+     1065030426
+     1033897530
+     1036251338
+     1037795061
+     1047357210
+     1051690188
+     1063014879
+     1056919923
+     1079108174
+     1030344755
+     1027137027
+     1047175522
+     1062477005
+     1035903322
+     1063172896
+     1042313749
+     1063257708),
     :runtime-details
     {:spec-vendor "Oracle Corporation",
      :spec-name "Java Virtual Machine Specification",
      :vm-version "25.31-b07",
-     :name "54365@Tommis-MacBook-Pro.local",
+     :name "61433@Tommis-MacBook-Pro.local",
      :clojure-version-string "1.8.0",
      :java-runtime-version "1.8.0_31-b13",
      :java-version "1.8.0_31",
@@ -968,57 +1878,114 @@
      :sun-arch-data-model "64",
      :input-arguments
      ["-Dfile.encoding=UTF-8"
-      "-Xmx4096m"
-      "-Dclojure.compiler.direct-linking=true"
       "-Dclojure.compile.path=/Users/tommi/projects/metosin/muuntaja/target/classes"
       "-Dmuuntaja.version=0.2.0-SNAPSHOT"
       "-Dclojure.debug=false"]},
     :mean
-    [0.002257939170289855
-     (0.002204409822463768 0.0023029872608695654)],
-    :final-gc-time 207536742,
-    :execution-count 46,
+    [0.002249773947608851 (0.002243215915810136 0.002257418079264811)],
+    :final-gc-time 206795025,
+    :execution-count 467,
     :variance
-    [5.42270068015211E-9 (2.679551739989034E-9 8.169611781108065E-9)],
+    [8.450601590335674E-10
+     (6.079810814353076E-10 1.1875496758656507E-9)],
     :os-details
     {:arch "x86_64",
      :available-processors 8,
      :name "Mac OS X",
      :version "10.12.2"},
     :tail-quantile 0.025,
-    :outlier-variance 0.13888888888888873,
+    :outlier-variance 0.01638888888888902,
     :outliers
     {:low-severe 0, :low-mild 0, :high-mild 0, :high-severe 0},
-    :warmup-time 7386106125,
+    :warmup-time 16698709393,
     :lower-q
-    [0.00216330497826087 (0.00216330497826087 0.0022160488695652176)],
-    :warmup-executions 3331,
-    :sample-count 6,
+    [0.002199436888650964 (0.002190424040685225 0.002212803744539615)],
+    :warmup-executions 7697,
+    :sample-count 60,
     :upper-q
-    [0.002330692676630435
-     (0.0022927004565217396 0.0023345747608695656)],
-    :total-time 0.623233907,
-    :sample-variance [4.699420680958683E-9 (0.0 0.0)],
+    [0.0023127565961991435
+     (0.0022865336635438972 0.0023190471798715208)],
+    :total-time 63.030025904,
+    :sample-variance [8.213414084831736E-10 (0.0 0.0)],
     :options
     {:max-gc-attempts 100,
-     :samples 6,
-     :target-execution-time 100000000,
-     :warmup-jit-period 5000000000,
+     :samples 60,
+     :target-execution-time 1000000000,
+     :warmup-jit-period 10000000000,
      :tail-quantile 0.025,
-     :bootstrap-size 500,
-     :overhead 1.7731915371855393E-9},
+     :bootstrap-size 1000,
+     :overhead 1.7381553169279887E-9},
     :sample-mean
-    [0.002258093865942029
-     (0.0020524369036756668 0.002463750828208392)]},
+    [0.002249465592576731
+     (0.0021634884288857337 0.0023354427562677286)]},
    "r-m-f (tuned)"
-   {:overhead 1.7731915371855393E-9,
+   {:overhead 1.7381553169279887E-9,
     :samples
-    (91331368 100882856 103516730 110229399 100068762 105259297),
+    (1019394195
+     1026702383
+     1019854116
+     1025047083
+     1031057106
+     1061708200
+     1013135155
+     1024951197
+     1013781361
+     1044986043
+     1024885670
+     1062241555
+     1012687046
+     1004946669
+     1033904472
+     1034164212
+     1023744971
+     1007072600
+     1015289859
+     1021530819
+     1006538534
+     1018448036
+     1016549916
+     1021460144
+     1010277790
+     1011890080
+     1010349326
+     1024950752
+     1006225558
+     1010305594
+     1018537030
+     1024261592
+     1023974231
+     1012055338
+     1028584018
+     1058965784
+     1018272140
+     1014105702
+     1018043304
+     1021066816
+     1030578097
+     1058905434
+     1034168756
+     1018728096
+     1026333172
+     1016694859
+     1022530911
+     1012052954
+     1011874531
+     1028804272
+     1007499982
+     1019801420
+     1019609039
+     1019182856
+     1013425387
+     1020755013
+     1027239304
+     1024675970
+     1022698302
+     1009875453),
     :runtime-details
     {:spec-vendor "Oracle Corporation",
      :spec-name "Java Virtual Machine Specification",
      :vm-version "25.31-b07",
-     :name "54365@Tommis-MacBook-Pro.local",
+     :name "61433@Tommis-MacBook-Pro.local",
      :clojure-version-string "1.8.0",
      :java-runtime-version "1.8.0_31-b13",
      :java-version "1.8.0_31",
@@ -1030,57 +1997,116 @@
      :sun-arch-data-model "64",
      :input-arguments
      ["-Dfile.encoding=UTF-8"
-      "-Xmx4096m"
-      "-Dclojure.compiler.direct-linking=true"
       "-Dclojure.compile.path=/Users/tommi/projects/metosin/muuntaja/target/classes"
       "-Dmuuntaja.version=0.2.0-SNAPSHOT"
       "-Dclojure.debug=false"]},
     :mean
-    [2.667826636045495E-4
-     (2.5571564829396327E-4 2.7758656342957136E-4)],
-    :final-gc-time 219124041,
-    :execution-count 381,
+    [2.492746858321144E-4
+     (2.4856018703884285E-4 2.5020771052738504E-4)],
+    :final-gc-time 208806956,
+    :execution-count 4102,
     :variance
-    [3.456636300710761E-10
-     (9.665721975044111E-11 6.370349475248627E-10)],
+    [1.0484161796832539E-11
+     (5.6620726572342E-12 1.7386227805263277E-11)],
     :os-details
     {:arch "x86_64",
      :available-processors 8,
      :name "Mac OS X",
      :version "10.12.2"},
     :tail-quantile 0.025,
-    :outlier-variance 0.1517721025941172,
+    :outlier-variance 0.016388888888888755,
     :outliers
-    {:low-severe 0, :low-mild 1, :high-mild 0, :high-severe 0},
-    :warmup-time 5563259933,
+    {:low-severe 0, :low-mild 0, :high-mild 5, :high-severe 0},
+    :warmup-time 11247816762,
     :lower-q
-    [2.3971487664041998E-4
-     (2.3971487664041998E-4 2.626476692913386E-4)],
-    :warmup-executions 22555,
-    :sample-count 6,
+    [2.4530120867869337E-4
+     (2.449894366162848E-4 2.4561189224768407E-4)],
+    :warmup-executions 45445,
+    :sample-count 60,
     :upper-q
-    [2.87113688648294E-4 (2.7083332217847774E-4 2.893160078740158E-4)],
-    :total-time 0.611288412,
-    :sample-variance [2.746736402966224E-10 (0.0 0.0)],
+    [2.585024100804486E-4
+     (2.5346716157362265E-4 2.5895698561677235E-4)],
+    :total-time 61.341380205,
+    :sample-variance [1.0065150372432851E-11 (0.0 0.0)],
     :options
     {:max-gc-attempts 100,
-     :samples 6,
-     :target-execution-time 100000000,
-     :warmup-jit-period 5000000000,
+     :samples 60,
+     :target-execution-time 1000000000,
+     :warmup-jit-period 10000000000,
      :tail-quantile 0.025,
-     :bootstrap-size 500,
-     :overhead 1.7731915371855393E-9},
+     :bootstrap-size 1000,
+     :overhead 1.7381553169279887E-9},
     :sample-mean
-    [2.674052545931759E-4
-     (2.1768541184735054E-4 3.1712509733900125E-4)]},
+    [2.492336267064847E-4
+     (2.3971594036200494E-4 2.5875131305096437E-4)]},
    "ring-json"
-   {:overhead 1.7731915371855393E-9,
-    :samples (96813494 95450694 99845774 94097483 96511850 91090915),
+   {:overhead 1.7381553169279887E-9,
+    :samples
+    (1011866586
+     1011359203
+     1014581731
+     1013557141
+     1008127252
+     1002368943
+     995201018
+     1000053968
+     999138190
+     994221340
+     1012053176
+     1045496483
+     1026674369
+     1000156363
+     1006983125
+     1005474289
+     1004531213
+     998576886
+     996730653
+     998554912
+     1026141576
+     1026081954
+     1018108188
+     1021074653
+     1021711154
+     1018417393
+     1054117315
+     1045351910
+     1023101984
+     1027922576
+     1025651629
+     1021270629
+     1058795347
+     1057298714
+     1014961657
+     997546500
+     1011018698
+     1006409972
+     989643122
+     994868774
+     1003880165
+     996620725
+     996833431
+     1001457106
+     1013645168
+     998201863
+     997933059
+     995676854
+     989839318
+     998323770
+     996229450
+     989892087
+     1005477378
+     996198359
+     999765314
+     1001101268
+     992940512
+     1002208681
+     993539084
+     991906562),
     :runtime-details
     {:spec-vendor "Oracle Corporation",
      :spec-name "Java Virtual Machine Specification",
      :vm-version "25.31-b07",
-     :name "54365@Tommis-MacBook-Pro.local",
+     :name "61433@Tommis-MacBook-Pro.local",
      :clojure-version-string "1.8.0",
      :java-runtime-version "1.8.0_31-b13",
      :java-version "1.8.0_31",
@@ -1092,59 +2118,115 @@
      :sun-arch-data-model "64",
      :input-arguments
      ["-Dfile.encoding=UTF-8"
-      "-Xmx4096m"
-      "-Dclojure.compiler.direct-linking=true"
       "-Dclojure.compile.path=/Users/tommi/projects/metosin/muuntaja/target/classes"
       "-Dmuuntaja.version=0.2.0-SNAPSHOT"
       "-Dclojure.debug=false"]},
     :mean
-    [2.8877571299093654E-4
-     (2.8193603877139977E-4 2.9432839526686807E-4)],
-    :final-gc-time 214747874,
-    :execution-count 331,
+    [2.945695242048439E-4
+     (2.934257006322343E-4 2.9595986989106125E-4)],
+    :final-gc-time 234256482,
+    :execution-count 3427,
     :variance
-    [9.925018946665479E-11
-     (2.3731354321799377E-11 1.7540259517219002E-10)],
+    [2.447832535564391E-11
+     (1.5371320104528756E-11 3.8786767753154504E-11)],
     :os-details
     {:arch "x86_64",
      :available-processors 8,
      :name "Mac OS X",
      :version "10.12.2"},
     :tail-quantile 0.025,
-    :outlier-variance 0.13888888888888887,
+    :outlier-variance 0.06256386823240677,
     :outliers
-    {:low-severe 0, :low-mild 0, :high-mild 0, :high-severe 0},
-    :warmup-time 6044779545,
+    {:low-severe 0, :low-mild 0, :high-mild 3, :high-severe 0},
+    :warmup-time 10986388423,
     :lower-q
-    [2.7519913897280967E-4
-     (2.7519913897280967E-4 2.842824259818731E-4)],
-    :warmup-executions 19957,
-    :sample-count 6,
+    [2.8883551736212437E-4
+     (2.8877826728917425E-4 2.8943874000583606E-4)],
+    :warmup-executions 37993,
+    :sample-count 60,
     :upper-q
-    [3.0038982930513593E-4
-     (2.9117584743202415E-4 3.0164886404833837E-4)],
-    :total-time 0.57381021,
-    :sample-variance [7.83763700886483E-11 (0.0 0.0)],
+    [3.0807923824773854E-4
+     (3.0261831816457546E-4 3.0895691479428073E-4)],
+    :total-time 60.56687074,
+    :sample-variance [2.422073159784621E-11 (0.0 0.0)],
     :options
     {:max-gc-attempts 100,
-     :samples 6,
-     :target-execution-time 100000000,
-     :warmup-jit-period 5000000000,
+     :samples 60,
+     :target-execution-time 1000000000,
+     :warmup-jit-period 10000000000,
      :tail-quantile 0.025,
-     :bootstrap-size 500,
-     :overhead 1.7731915371855393E-9},
+     :bootstrap-size 1000,
+     :overhead 1.7381553169279887E-9},
     :sample-mean
-    [2.889275981873112E-4
-     (2.623684692332616E-4 3.1548672714136076E-4)]},
+    [2.945572937457446E-4 (2.7979292500269923E-4 3.0932166248879E-4)]},
    "muuntaja"
-   {:overhead 1.7731915371855393E-9,
+   {:overhead 1.7381553169279887E-9,
     :samples
-    (111200013 111569302 110679872 115580644 105102700 106990481),
+    (1005724019
+     998527630
+     1010384670
+     1005443309
+     1003878474
+     1013574369
+     1014059164
+     1007295423
+     999130629
+     1008715508
+     1006775688
+     1009815120
+     1014602879
+     1010511397
+     1008818464
+     1008508070
+     1004894310
+     1002374377
+     1018268069
+     1010763751
+     1004324510
+     1008052327
+     1014901968
+     1020224059
+     1027760184
+     1022733274
+     1017134539
+     1019445208
+     1021824228
+     1013769713
+     1016906090
+     1011758768
+     1001962264
+     1004729777
+     1005088239
+     1010638066
+     998821502
+     1008101416
+     1009082002
+     997806761
+     1007136825
+     1012849000
+     1005314140
+     1006005535
+     998597311
+     1006943641
+     1000541605
+     999615132
+     1005446412
+     1002981996
+     994843213
+     1000558235
+     1007840063
+     1006412876
+     1000753050
+     1009944008
+     1019295068
+     1005235965
+     1009363578
+     999680780),
     :runtime-details
     {:spec-vendor "Oracle Corporation",
      :spec-name "Java Virtual Machine Specification",
      :vm-version "25.31-b07",
-     :name "54365@Tommis-MacBook-Pro.local",
+     :name "61433@Tommis-MacBook-Pro.local",
      :clojure-version-string "1.8.0",
      :java-runtime-version "1.8.0_31-b13",
      :java-version "1.8.0_31",
@@ -1156,59 +2238,116 @@
      :sun-arch-data-model "64",
      :input-arguments
      ["-Dfile.encoding=UTF-8"
-      "-Xmx4096m"
-      "-Dclojure.compiler.direct-linking=true"
       "-Dclojure.compile.path=/Users/tommi/projects/metosin/muuntaja/target/classes"
       "-Dmuuntaja.version=0.2.0-SNAPSHOT"
       "-Dclojure.debug=false"]},
     :mean
-    [2.319034463157895E-4
-     (2.2580680842105265E-4 2.3743856771929827E-4)],
-    :final-gc-time 210004467,
-    :execution-count 475,
+    [2.3367318383932023E-4
+     (2.3329032324449596E-4 2.3407894778679033E-4)],
+    :final-gc-time 222591178,
+    :execution-count 4315,
     :variance
-    [6.830354565580731E-11
-     (2.288153942777925E-11 1.1680595967918984E-10)],
+    [2.656846704484078E-12
+     (1.9032951526028674E-12 3.717946419184301E-12)],
     :os-details
     {:arch "x86_64",
      :available-processors 8,
      :name "Mac OS X",
      :version "10.12.2"},
     :tail-quantile 0.025,
-    :outlier-variance 0.1388888888888888,
+    :outlier-variance 0.016388888888888772,
     :outliers
-    {:low-severe 0, :low-mild 0, :high-mild 0, :high-severe 0},
-    :warmup-time 5392373959,
+    {:low-severe 0, :low-mild 0, :high-mild 1, :high-severe 0},
+    :warmup-time 11387312371,
     :lower-q
-    [2.2126884210526318E-4
-     (2.2126884210526318E-4 2.2524311789473686E-4)],
-    :warmup-executions 23140,
-    :sample-count 6,
+    [2.3124142780996527E-4
+     (2.30554626419467E-4 2.3144931673812287E-4)],
+    :warmup-executions 48455,
+    :sample-count 60,
     :upper-q
-    [2.4217487394736844E-4
-     (2.3396841131578949E-4 2.433276715789474E-4)],
-    :total-time 0.661123012,
-    :sample-variance [6.057760673787335E-11 (0.0 0.0)],
+    [2.36807468829664E-4
+     (2.3622133673232911E-4 2.3818312491309389E-4)],
+    :total-time 60.496488648,
+    :sample-variance [2.5994290521696344E-12 (0.0 0.0)],
     :options
     {:max-gc-attempts 100,
-     :samples 6,
-     :target-execution-time 100000000,
-     :warmup-jit-period 5000000000,
+     :samples 60,
+     :target-execution-time 1000000000,
+     :warmup-jit-period 10000000000,
      :tail-quantile 0.025,
-     :bootstrap-size 500,
-     :overhead 1.7731915371855393E-9},
+     :bootstrap-size 1000,
+     :overhead 1.7381553169279887E-9},
     :sample-mean
-    [2.3197298666666668E-4
-     (2.0862350143377857E-4 2.553224718995548E-4)]},
+    [2.336673953186559E-4
+     (2.2883057182905792E-4 2.3850421880825386E-4)]},
    "muuntaja (jackson)"
-   {:overhead 1.7731915371855393E-9,
+   {:overhead 1.7381553169279887E-9,
     :samples
-    (105309566 109536951 114892525 114634892 103681962 98863989),
+    (1012088328
+     1007454605
+     1007085453
+     1012900810
+     1017233520
+     1006681424
+     1011419887
+     1008979023
+     1004289016
+     1009025530
+     1016700798
+     1010171802
+     999344152
+     1015026266
+     1023043936
+     1031862585
+     1006884385
+     1000811479
+     998688783
+     1004245847
+     996640983
+     1001300127
+     1001268700
+     1006810334
+     1007269573
+     999486695
+     998537233
+     1012386709
+     997739099
+     1006879673
+     1001063899
+     1006128198
+     1021972972
+     1021315714
+     1019192491
+     1015291237
+     1008246420
+     1006654480
+     1011199739
+     998323329
+     999849139
+     997126898
+     993822093
+     1007103385
+     1008405724
+     1000283901
+     1003584926
+     1010805120
+     1010922517
+     1004149266
+     1016510377
+     1001612769
+     1002621883
+     1009990896
+     1002581971
+     1006153777
+     1017094880
+     1011424974
+     1006237403
+     1013704724),
     :runtime-details
     {:spec-vendor "Oracle Corporation",
      :spec-name "Java Virtual Machine Specification",
      :vm-version "25.31-b07",
-     :name "54365@Tommis-MacBook-Pro.local",
+     :name "61433@Tommis-MacBook-Pro.local",
      :clojure-version-string "1.8.0",
      :java-runtime-version "1.8.0_31-b13",
      :java-version "1.8.0_31",
@@ -1220,59 +2359,117 @@
      :sun-arch-data-model "64",
      :input-arguments
      ["-Dfile.encoding=UTF-8"
-      "-Xmx4096m"
-      "-Dclojure.compiler.direct-linking=true"
       "-Dclojure.compile.path=/Users/tommi/projects/metosin/muuntaja/target/classes"
       "-Dmuuntaja.version=0.2.0-SNAPSHOT"
       "-Dclojure.debug=false"]},
     :mean
-    [1.403906000434028E-4
-     (1.3440708138020836E-4 1.4630186284722224E-4)],
-    :final-gc-time 204838960,
-    :execution-count 768,
+    [1.3804703087214612E-4
+     (1.3780293307305935E-4 1.38320661543379E-4)],
+    :final-gc-time 214031330,
+    :execution-count 7300,
     :variance
-    [7.773509278826619E-11
-     (3.006840362071514E-11 1.2650623648855033E-10)],
+    [1.0867420793762134E-12
+     (7.500052427075621E-13 1.6566856766897022E-12)],
     :os-details
     {:arch "x86_64",
      :available-processors 8,
      :name "Mac OS X",
      :version "10.12.2"},
     :tail-quantile 0.025,
-    :outlier-variance 0.14832557362061125,
+    :outlier-variance 0.016388888888888887,
     :outliers
-    {:low-severe 0, :low-mild 0, :high-mild 0, :high-severe 0},
-    :warmup-time 5158472678,
+    {:low-severe 0, :low-mild 0, :high-mild 1, :high-severe 0},
+    :warmup-time 10202637467,
     :lower-q
-    [1.2872915234375E-4 (1.2872915234375E-4 1.350025546875E-4)],
-    :warmup-executions 37519,
-    :sample-count 6,
+    [1.365261620547945E-4
+     (1.3614001273972603E-4 1.3671460386986301E-4)],
+    :warmup-executions 73294,
+    :sample-count 60,
     :upper-q
-    [1.4926418229166668E-4
-     (1.419381873372396E-4 1.4959964192708336E-4)],
-    :total-time 0.646919885,
-    :sample-variance [6.885004814026114E-11 (0.0 0.0)],
+    [1.4007331891780823E-4
+     (1.394879424349315E-4 1.4135103904109589E-4)],
+    :total-time 60.465631857,
+    :sample-variance [1.0592113935961419E-12 (0.0 0.0)],
     :options
     {:max-gc-attempts 100,
-     :samples 6,
-     :target-execution-time 100000000,
-     :warmup-jit-period 5000000000,
+     :samples 60,
+     :target-execution-time 1000000000,
+     :warmup-jit-period 10000000000,
      :tail-quantile 0.025,
-     :bootstrap-size 500,
-     :overhead 1.7731915371855393E-9},
+     :bootstrap-size 1000,
+     :overhead 1.7381553169279887E-9},
     :sample-mean
-    [1.403906000434028E-4
-     (1.1549782130613944E-4 1.6528337878066613E-4)]}},
+    [1.3804938780136985E-4
+     (1.3496184791622422E-4 1.411369276865155E-4)]}},
   "100k"
   {"r-m-f (defaults)"
-   {:overhead 1.7731915371855393E-9,
+   {:overhead 1.7381553169279887E-9,
     :samples
-    (109690865 108138891 105286314 105004880 109000791 108543091),
+    (1022730346
+     1025392197
+     1026349470
+     1038806159
+     1044912998
+     1049041488
+     1049502223
+     1043378161
+     1037821394
+     1035803407
+     1045817129
+     1047155151
+     1030117000
+     1031548518
+     1052057913
+     1033091820
+     1033715876
+     1034162868
+     1024245080
+     1056176223
+     1047923220
+     1025404895
+     1044889560
+     1056639439
+     1062629920
+     1055800325
+     1060680979
+     1041091828
+     1055240511
+     1050200748
+     1048978331
+     1052242041
+     1065507816
+     1056228667
+     1028363859
+     1055343527
+     1042166190
+     1023655301
+     1020182608
+     1021138442
+     1044863046
+     1046431627
+     1045123838
+     1038172945
+     1029855932
+     1027539618
+     1022956738
+     1044323285
+     1052500251
+     1033211665
+     1048093891
+     1033275172
+     1035140350
+     1046642027
+     1036638367
+     1064503593
+     1032608367
+     1034275052
+     1027958127
+     1029623250),
     :runtime-details
     {:spec-vendor "Oracle Corporation",
      :spec-name "Java Virtual Machine Specification",
      :vm-version "25.31-b07",
-     :name "54365@Tommis-MacBook-Pro.local",
+     :name "61433@Tommis-MacBook-Pro.local",
      :clojure-version-string "1.8.0",
      :java-runtime-version "1.8.0_31-b13",
      :java-version "1.8.0_31",
@@ -1284,56 +2481,113 @@
      :sun-arch-data-model "64",
      :input-arguments
      ["-Dfile.encoding=UTF-8"
-      "-Xmx4096m"
-      "-Dclojure.compiler.direct-linking=true"
       "-Dclojure.compile.path=/Users/tommi/projects/metosin/muuntaja/target/classes"
       "-Dmuuntaja.version=0.2.0-SNAPSHOT"
       "-Dclojure.debug=false"]},
     :mean
-    [0.005663726596491229 (0.00559158452631579 0.005733869245614036)],
-    :final-gc-time 214683117,
-    :execution-count 19,
+    [0.005392792700604491 (0.005377236149827288 0.005408005980569949)],
+    :final-gc-time 211371788,
+    :execution-count 193,
     :variance
-    [1.1620627281145365E-8
-     (5.213619118175908E-9 1.6220465684376736E-8)],
+    [3.953759031157591E-9 (3.046871574693241E-9 5.052509107034445E-9)],
     :os-details
     {:arch "x86_64",
      :available-processors 8,
      :name "Mac OS X",
      :version "10.12.2"},
     :tail-quantile 0.025,
-    :outlier-variance 0.1388888888888888,
+    :outlier-variance 0.016388888888888987,
     :outliers
     {:low-severe 0, :low-mild 0, :high-mild 0, :high-severe 0},
-    :warmup-time 9618669936,
+    :warmup-time 13998966797,
     :lower-q
-    [0.005526572631578948 (0.005526572631578948 0.005547191125000001)],
-    :warmup-executions 1756,
-    :sample-count 6,
+    [0.005290872756476684 (0.005285920248704663 0.005302013240544041)],
+    :warmup-executions 2605,
+    :sample-count 60,
     :upper-q
-    [0.005768663460526316 (0.005712794263157895 0.005773203421052632)],
-    :total-time 0.645664832,
-    :sample-variance [1.0859194574899362E-8 (0.0 0.0)],
+    [0.005508886364896373
+     (0.0054738047787564765 0.005520765886010363)],
+    :total-time 62.449870769,
+    :sample-variance [3.891520393897108E-9 (0.0 0.0)],
     :options
     {:max-gc-attempts 100,
-     :samples 6,
-     :target-execution-time 100000000,
-     :warmup-jit-period 5000000000,
+     :samples 60,
+     :target-execution-time 1000000000,
+     :warmup-jit-period 10000000000,
      :tail-quantile 0.025,
-     :bootstrap-size 500,
-     :overhead 1.7731915371855393E-9},
+     :bootstrap-size 1000,
+     :overhead 1.7381553169279887E-9},
     :sample-mean
-    [0.005663726596491229
-     (0.005351104218574845 0.005976348974407612)]},
+    [0.005392907665716753
+     (0.005205761510145569 0.005580053821287937)]},
    "r-m-f (tuned)"
-   {:overhead 1.7731915371855393E-9,
+   {:overhead 1.7381553169279887E-9,
     :samples
-    (105948298 108854992 96381069 92280432 91855816 102195289),
+    (1005461775
+     1017590086
+     1011843888
+     1004294532
+     1013052347
+     1013339803
+     1012029294
+     1010478433
+     1006013118
+     1010273401
+     1006528320
+     1014711165
+     1000822024
+     1019937401
+     1006646327
+     1002558171
+     1002415399
+     1007058231
+     1015222766
+     1005420757
+     1009310548
+     1025614637
+     1000650691
+     1009004681
+     1007062197
+     1005110654
+     1009447744
+     1009462211
+     1007298304
+     1012345678
+     1012649311
+     1010472837
+     1007385142
+     1014987679
+     1003547672
+     1014896881
+     1026979373
+     1012660165
+     1016231294
+     1026850588
+     1016073737
+     1004659704
+     1014026110
+     1019847184
+     1013874400
+     1020877591
+     1037061813
+     1024477175
+     1037638626
+     1031960926
+     1016519170
+     964289021
+     960715085
+     970483519
+     993306913
+     953715516
+     961198331
+     962062650
+     959793026
+     957529840),
     :runtime-details
     {:spec-vendor "Oracle Corporation",
      :spec-name "Java Virtual Machine Specification",
      :vm-version "25.31-b07",
-     :name "54365@Tommis-MacBook-Pro.local",
+     :name "61433@Tommis-MacBook-Pro.local",
      :clojure-version-string "1.8.0",
      :java-runtime-version "1.8.0_31-b13",
      :java-version "1.8.0_31",
@@ -1345,59 +2599,116 @@
      :sun-arch-data-model "64",
      :input-arguments
      ["-Dfile.encoding=UTF-8"
-      "-Xmx4096m"
-      "-Dclojure.compiler.direct-linking=true"
       "-Dclojure.compile.path=/Users/tommi/projects/metosin/muuntaja/target/classes"
       "-Dmuuntaja.version=0.2.0-SNAPSHOT"
       "-Dclojure.debug=false"]},
     :mean
-    [0.002374159285714286
-     (0.0022578702539682543 0.0025012594761904764)],
-    :final-gc-time 226727124,
-    :execution-count 42,
+    [0.0023830895058846763
+     (0.0023708990837282783 0.0023936149245260665)],
+    :final-gc-time 193475926,
+    :execution-count 422,
     :variance
-    [3.4851835304309434E-8
-     (1.9028053168275156E-8 4.7535389015371157E-8)],
+    [2.189242424540708E-9
+     (1.280369579480888E-9 3.1637684641623053E-9)],
     :os-details
     {:arch "x86_64",
      :available-processors 8,
      :name "Mac OS X",
      :version "10.12.2"},
     :tail-quantile 0.025,
-    :outlier-variance 0.15496735453570815,
+    :outlier-variance 0.07864203408721195,
     :outliers
-    {:low-severe 0, :low-mild 0, :high-mild 0, :high-severe 0},
-    :warmup-time 5473782732,
+    {:low-severe 8, :low-mild 0, :high-mild 3, :high-severe 0},
+    :warmup-time 10372305144,
     :lower-q
-    [0.0021870432380952385
-     (0.0021870432380952385 0.002200511252976191)],
-    :warmup-executions 2341,
-    :sample-count 6,
+    [0.002269028056872038
+     (0.002259989374407583 0.0022771199688388626)],
+    :warmup-executions 4316,
+    :sample-count 60,
     :upper-q
-    [0.002583134648809524
-     (0.0024332211666666667 0.002591785523809524)],
-    :total-time 0.597515896,
-    :sample-variance [2.9092980590910134E-8 (0.0 0.0)],
+    [0.0024468613289691946
+     (0.0024319040551540284 0.0024588593033175355)],
+    :total-time 60.347775862,
+    :sample-variance [2.15256609511636E-9 (0.0 0.0)],
     :options
     {:max-gc-attempts 100,
-     :samples 6,
-     :target-execution-time 100000000,
-     :warmup-jit-period 5000000000,
+     :samples 60,
+     :target-execution-time 1000000000,
+     :warmup-jit-period 10000000000,
      :tail-quantile 0.025,
-     :bootstrap-size 500,
-     :overhead 1.7731915371855393E-9},
+     :bootstrap-size 1000,
+     :overhead 1.7381553169279887E-9},
     :sample-mean
-    [0.0023710948253968258
-     (0.0018593948885996913 0.00288279476219396)]},
+    [0.002383403470063191
+     (0.0022442162046397793 0.002522590735486603)]},
    "ring-json"
-   {:overhead 1.7731915371855393E-9,
+   {:overhead 1.7381553169279887E-9,
     :samples
-    (94319841 96103792 103838212 93544782 100629345 105538537),
+    (1007117366
+     1002856555
+     1010362287
+     1011393646
+     1009579068
+     1010874929
+     1013332928
+     1008562758
+     1009804628
+     1028758136
+     1018251068
+     1010192675
+     1020590969
+     1006458409
+     1006924988
+     1046240149
+     1006477664
+     997323500
+     1021593675
+     1011830840
+     993156607
+     1013818689
+     1011204370
+     1005830533
+     1010498226
+     1009523478
+     1006589827
+     1035121876
+     1007087268
+     1010643397
+     1023413451
+     992262532
+     1020314363
+     1011038065
+     1007493031
+     1033438755
+     1006110087
+     996819167
+     1006628936
+     1033444312
+     1020424298
+     1011756572
+     1015216471
+     1025247740
+     1027853704
+     995694379
+     1028234155
+     1008708957
+     1014139199
+     1010897205
+     994040230
+     1004047250
+     1005990108
+     1025143074
+     1007358419
+     996195869
+     1009672006
+     1028749244
+     1002811746
+     1014965268),
     :runtime-details
     {:spec-vendor "Oracle Corporation",
      :spec-name "Java Virtual Machine Specification",
      :vm-version "25.31-b07",
-     :name "54365@Tommis-MacBook-Pro.local",
+     :name "61433@Tommis-MacBook-Pro.local",
      :clojure-version-string "1.8.0",
      :java-runtime-version "1.8.0_31-b13",
      :java-version "1.8.0_31",
@@ -1409,59 +2720,116 @@
      :sun-arch-data-model "64",
      :input-arguments
      ["-Dfile.encoding=UTF-8"
-      "-Xmx4096m"
-      "-Dclojure.compiler.direct-linking=true"
       "-Dclojure.compile.path=/Users/tommi/projects/metosin/muuntaja/target/classes"
       "-Dmuuntaja.version=0.2.0-SNAPSHOT"
       "-Dclojure.debug=false"]},
     :mean
-    [0.0025411297692307694
-     (0.002452509824786325 0.0026423583888888894)],
-    :final-gc-time 199249505,
-    :execution-count 39,
+    [0.0025057984280940594
+     (0.0024992584211221123 0.002513447121328383)],
+    :final-gc-time 188898807,
+    :execution-count 404,
     :variance
-    [1.9401183349956617E-8
-     (9.685955166938185E-9 2.721630082683236E-8)],
+    [7.592199520005725E-10
+     (5.169783494867135E-10 1.2341421025504765E-9)],
     :os-details
     {:arch "x86_64",
      :available-processors 8,
      :name "Mac OS X",
      :version "10.12.2"},
     :tail-quantile 0.025,
-    :outlier-variance 0.14259025597578165,
+    :outlier-variance 0.01638888888888912,
     :outliers
-    {:low-severe 0, :low-mild 0, :high-mild 0, :high-severe 0},
-    :warmup-time 6243672298,
+    {:low-severe 0, :low-mild 0, :high-mild 1, :high-severe 0},
+    :warmup-time 10585992327,
     :lower-q
-    [0.002398584153846154
-     (0.002398584153846154 0.0024184574615384617)],
-    :warmup-executions 2485,
-    :sample-count 6,
+    [0.002458185491460396
+     (0.0024560953762376237 0.002464590047029703)],
+    :warmup-executions 4219,
+    :sample-count 60,
     :upper-q
-    [0.002690381743589744
-     (0.002565734637820513 0.0027061163333333338)],
-    :total-time 0.593974509,
-    :sample-variance [1.694500075738244E-8 (0.0 0.0)],
+    [0.002560203944368812
+     (0.0025464090198019803 0.0025897033391089107)],
+    :total-time 60.740109102,
+    :sample-variance [7.488781374715935E-10 (0.0 0.0)],
     :options
     {:max-gc-attempts 100,
-     :samples 6,
-     :target-execution-time 100000000,
-     :warmup-jit-period 5000000000,
+     :samples 60,
+     :target-execution-time 1000000000,
+     :warmup-jit-period 10000000000,
      :tail-quantile 0.025,
-     :bootstrap-size 500,
-     :overhead 1.7731915371855393E-9},
+     :bootstrap-size 1000,
+     :overhead 1.7381553169279887E-9},
     :sample-mean
-    [0.002538352602564103
-     (0.00214783370824983 0.0029288714968783757)]},
+    [0.0025057800784653466
+     (0.0024236831647764367 0.0025878769921542566)]},
    "muuntaja"
-   {:overhead 1.7731915371855393E-9,
+   {:overhead 1.7381553169279887E-9,
     :samples
-    (108408110 101205540 95905582 102817652 103320425 104103689),
+    (982225369
+     1004362405
+     1000220172
+     978799603
+     982537932
+     977118022
+     973535500
+     984266615
+     975911036
+     976399626
+     989211606
+     984823337
+     967367911
+     979353003
+     983743001
+     986812589
+     970349584
+     1003747379
+     978856921
+     1033161072
+     978094128
+     975170101
+     989638673
+     979942343
+     983655701
+     987536214
+     978587623
+     988732080
+     976834287
+     983623418
+     966275891
+     974643568
+     984324162
+     975171673
+     984903495
+     972684703
+     991866798
+     997281137
+     997983855
+     980091120
+     984129371
+     987616305
+     982867343
+     992308878
+     993503805
+     990514752
+     984212580
+     987158181
+     988996350
+     1019532827
+     996002031
+     981481434
+     971227515
+     988191682
+     986783669
+     979608795
+     985727222
+     975334266
+     993831974
+     1023415450),
     :runtime-details
     {:spec-vendor "Oracle Corporation",
      :spec-name "Java Virtual Machine Specification",
      :vm-version "25.31-b07",
-     :name "54365@Tommis-MacBook-Pro.local",
+     :name "61433@Tommis-MacBook-Pro.local",
      :clojure-version-string "1.8.0",
      :java-runtime-version "1.8.0_31-b13",
      :java-version "1.8.0_31",
@@ -1473,59 +2841,115 @@
      :sun-arch-data-model "64",
      :input-arguments
      ["-Dfile.encoding=UTF-8"
-      "-Xmx4096m"
-      "-Dclojure.compiler.direct-linking=true"
       "-Dclojure.compile.path=/Users/tommi/projects/metosin/muuntaja/target/classes"
       "-Dmuuntaja.version=0.2.0-SNAPSHOT"
       "-Dclojure.debug=false"]},
     :mean
-    [0.002386670534883721
-     (0.0023032229263565893 0.002449398988372093)],
-    :final-gc-time 261529000,
-    :execution-count 43,
+    [0.0021527023412663757
+     (0.0021468564561863174 0.0021603919163027657)],
+    :final-gc-time 191299738,
+    :execution-count 458,
     :variance
-    [1.208282157856636E-8
-     (3.1865415558566597E-9 2.072632759623097E-8)],
+    [7.649915309240807E-10
+     (4.1669462842817236E-10 1.4581396658307604E-9)],
     :os-details
     {:arch "x86_64",
      :available-processors 8,
      :name "Mac OS X",
      :version "10.12.2"},
     :tail-quantile 0.025,
-    :outlier-variance 0.13888888888888862,
+    :outlier-variance 0.01638888888888901,
     :outliers
-    {:low-severe 0, :low-mild 1, :high-mild 0, :high-severe 0},
-    :warmup-time 5079844123,
+    {:low-severe 0, :low-mild 0, :high-mild 1, :high-severe 2},
+    :warmup-time 10019513998,
     :lower-q
-    [0.0022303623720930235
-     (0.0022303623720930235 0.0023536172093023256)],
-    :warmup-executions 2246,
-    :sample-count 6,
+    [0.0021121570109170307
+     (0.002109772687772926 0.002122095369650655)],
+    :warmup-executions 4656,
+    :sample-count 60,
     :upper-q
-    [0.0025063290552325584
-     (0.0024013390319767443 0.0025211188372093025)],
-    :total-time 0.615760998,
-    :sample-variance [9.012118761010279E-9 (0.0 0.0)],
+    [0.00223050481239083 (0.002187930034224891 0.0022558102008733627)],
+    :total-time 59.152288083,
+    :sample-variance [7.327382447312126E-10 (0.0 0.0)],
     :options
     {:max-gc-attempts 100,
-     :samples 6,
-     :target-execution-time 100000000,
-     :warmup-jit-period 5000000000,
+     :samples 60,
+     :target-execution-time 1000000000,
+     :warmup-jit-period 10000000000,
      :tail-quantile 0.025,
-     :bootstrap-size 500,
-     :overhead 1.7731915371855393E-9},
+     :bootstrap-size 1000,
+     :overhead 1.7381553169279887E-9},
     :sample-mean
-    [0.002386670534883721
-     (0.002101873995492716 0.0026714670742747264)]},
+    [0.0021525577905021835
+     (0.002071350375800194 0.002233765205204173)]},
    "muuntaja (jackson)"
-   {:overhead 1.7731915371855393E-9,
+   {:overhead 1.7381553169279887E-9,
     :samples
-    (100351443 102377107 103248403 107458462 104483015 108993917),
+    (1022800906
+     996340009
+     1037551288
+     1004125727
+     969805893
+     971976063
+     974257085
+     970486735
+     964913957
+     958072016
+     963634221
+     1011389459
+     961836263
+     984107535
+     989315425
+     974099245
+     987258921
+     1097783677
+     1119172418
+     1117750381
+     1057280046
+     982122719
+     968049368
+     982899875
+     991361693
+     962358050
+     961007292
+     972813523
+     961944784
+     979050862
+     961091082
+     991581681
+     974312495
+     976076143
+     953951017
+     958555406
+     990439568
+     980069978
+     988559797
+     970898775
+     989841519
+     971404770
+     962475394
+     968083347
+     972751442
+     965928350
+     986761417
+     975826990
+     957566960
+     980555224
+     964887235
+     953773796
+     972183490
+     974493008
+     978992127
+     965831665
+     951005992
+     969453860
+     969880157
+     993095043),
     :runtime-details
     {:spec-vendor "Oracle Corporation",
      :spec-name "Java Virtual Machine Specification",
      :vm-version "25.31-b07",
-     :name "54365@Tommis-MacBook-Pro.local",
+     :name "61433@Tommis-MacBook-Pro.local",
      :clojure-version-string "1.8.0",
      :java-runtime-version "1.8.0_31-b13",
      :java-version "1.8.0_31",
@@ -1537,43 +2961,45 @@
      :sun-arch-data-model "64",
      :input-arguments
      ["-Dfile.encoding=UTF-8"
-      "-Xmx4096m"
-      "-Dclojure.compiler.direct-linking=true"
       "-Dclojure.compile.path=/Users/tommi/projects/metosin/muuntaja/target/classes"
       "-Dmuuntaja.version=0.2.0-SNAPSHOT"
       "-Dclojure.debug=false"]},
     :mean
-    [0.0013060673895833334
-     (0.0012800481875000001 0.0013402307916666667)],
-    :final-gc-time 213394973,
-    :execution-count 80,
+    [0.001270728429311828
+     (0.0012613093714193549 0.0012837367986881722)],
+    :final-gc-time 189761484,
+    :execution-count 775,
     :variance
-    [1.891896636814687E-9
-     (6.309618229382769E-10 3.0609754898653547E-9)],
+    [2.1613262888379794E-9
+     (9.897260336677312E-10 4.222630046405073E-9)],
     :os-details
     {:arch "x86_64",
      :available-processors 8,
      :name "Mac OS X",
      :version "10.12.2"},
     :tail-quantile 0.025,
-    :outlier-variance 0.13888888888888878,
+    :outlier-variance 0.23783998951082722,
     :outliers
-    {:low-severe 0, :low-mild 0, :high-mild 0, :high-severe 0},
-    :warmup-time 11167373674,
-    :lower-q [0.0012543930375 (0.0012543930375 0.0012797138375000002)],
-    :warmup-executions 8317,
-    :sample-count 6,
-    :upper-q [0.001355375678125 (0.0013060376875 0.0013624239625)],
-    :total-time 0.626912347,
-    :sample-variance [1.6322028222686501E-9 (0.0 0.0)],
+    {:low-severe 0, :low-mild 0, :high-mild 2, :high-severe 3},
+    :warmup-time 14412560437,
+    :lower-q
+    [0.0012306758658064516
+     (0.0012271045058064515 0.001235879821419355)],
+    :warmup-executions 11361,
+    :sample-count 60,
+    :upper-q
+    [0.0014164950670967741
+     (0.0013297352987741936 0.0014440934425806451)],
+    :total-time 59.065893164,
+    :sample-variance [2.0579990426281356E-9 (0.0 0.0)],
     :options
     {:max-gc-attempts 100,
-     :samples 6,
-     :target-execution-time 100000000,
-     :warmup-jit-period 5000000000,
+     :samples 60,
+     :target-execution-time 1000000000,
+     :warmup-jit-period 10000000000,
      :tail-quantile 0.025,
-     :bootstrap-size 500,
-     :overhead 1.7731915371855393E-9},
+     :bootstrap-size 1000,
+     :overhead 1.7381553169279887E-9},
     :sample-mean
-    [0.0013060673895833334
-     (0.0011848657996580446 0.0014272689795086222)]}}}}
+    [0.001270234261591398
+     (0.0011341387385803406 0.001406329784602455)]}}}}
