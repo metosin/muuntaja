@@ -27,3 +27,11 @@
             (.write out buf 0 r)
             (recur))))
       (.toByteArray out))))
+
+(defmacro when-ns [ns & body]
+  `(try
+     (eval
+       '(do
+          (require ~ns)
+          ~@body))
+     (catch Exception ~'_)))

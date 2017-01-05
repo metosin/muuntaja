@@ -1,15 +1,10 @@
 (ns muuntaja.protocols
-  (:require [clojure.java.io :as io])
+  (:require [clojure.java.io :as io]
+            [muuntaja.util :as util])
   (:import (clojure.lang IFn AFn)
            (java.io ByteArrayOutputStream ByteArrayInputStream InputStreamReader BufferedReader InputStream Writer)))
 
-(defmacro when-ns [ns & body]
-  `(try
-     (eval
-       '(do
-          (require ~ns)
-          ~@body))
-     (catch Exception ~'_)))
+(set! *warn-on-reflection* true)
 
 (deftype StreamableResponse [f]
   IFn
@@ -20,7 +15,7 @@
     (AFn/applyToHelper this args)))
 
 ;; only when ring 1.6.0+ is used.
-(when-ns
+(util/when-ns
   'ring.core.protocols
   (extend-protocol ring.core.protocols/StreamableResponseBody
     StreamableResponse

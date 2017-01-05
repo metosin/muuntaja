@@ -530,9 +530,8 @@
                                 (assoc-in
                                   m/default-options
                                   [:formats "application/json"]
-                                  {:encoder [json-format/make-muuntaja-json-encoder {:keywords? true}]
-                                   :decoder [json-format/make-muuntaja-json-decoder]})))]
-          (report-bench results :json size "muuntaja (jackson)" (ring-stream! (app (request!))))))
+                                  json-format/muuntaja-json-format)))]
+        (report-bench results :json size "muuntaja (jackson)" (ring-stream! (app (request!)))))
 
     (save-results! (format "perf/json-results%s.edn" (next-number)) @results)))
 

@@ -24,9 +24,9 @@
 ;; format
 ;;
 
-(def msgpack-type "application/x-yaml")
+(def yaml-type "application/x-yaml")
 
-(def msgpack-format
+(def yaml-format
   {:decoder [make-yaml-decoder {:keywords true}]
    :encoder [make-yaml-encoder]
    :encode-protocol [EncodeYaml encode-yaml]})

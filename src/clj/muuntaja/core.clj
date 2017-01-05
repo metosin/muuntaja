@@ -205,24 +205,12 @@
    :charsets available-charsets
 
    :default-format "application/json"
-   :formats {"application/json" {:decoder [json-format/make-json-decoder {:key-fn true}]
-                                 :encoder [json-format/make-json-encoder]
-                                 :encode-protocol [json-format/EncodeJson json-format/encode-json]}
-             "application/edn" {:decoder [edn-format/make-edn-decoder]
-                                :encoder [edn-format/make-edn-encoder]
-                                :encode-protocol [edn-format/EncodeEdn edn-format/encode-edn]}
-             "application/msgpack" {:decoder [msgpack-format/make-msgpack-decoder {:keywords? true}]
-                                    :encoder [msgpack-format/make-msgpack-encoder]
-                                    :encode-protocol [msgpack-format/EncodeMsgpack msgpack-format/encode-msgpack]}
-             "application/x-yaml" {:decoder [yaml-format/make-yaml-decoder {:keywords true}]
-                                   :encoder [yaml-format/make-yaml-encoder]
-                                   :encode-protocol [yaml-format/EncodeYaml yaml-format/encode-yaml]}
-             "application/transit+json" {:decoder [(partial transit-format/make-transit-decoder :json)]
-                                         :encoder [(partial transit-format/make-transit-encoder :json)]
-                                         :encode-protocol [transit-format/EncodeTransitJson transit-format/encode-transit-json]}
-             "application/transit+msgpack" {:decoder [(partial transit-format/make-transit-decoder :msgpack)]
-                                            :encoder [(partial transit-format/make-transit-encoder :msgpack)]
-                                            :encode-protocol [transit-format/EncodeTransitMessagePack transit-format/encode-transit-msgpack]}}})
+   :formats {"application/json" json-format/json-format
+             "application/edn" edn-format/edn-format
+             "application/msgpack" msgpack-format/msgpack-format
+             "application/x-yaml" yaml-format/yaml-format
+             "application/transit+json" transit-format/transit-json-format
+             "application/transit+msgpack" transit-format/transit-msgpack-format}})
 
 ;;
 ;; HTTP stuff

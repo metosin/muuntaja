@@ -60,3 +60,11 @@
   {:decoder [make-json-decoder {:key-fn true}]
    :encoder [make-json-encoder]
    :encode-protocol [EncodeJson encode-json]})
+
+(def streaming-json-format
+  (assoc json-format :encoder [make-streaming-json-encoder]))
+
+(def muuntaja-json-format
+  {:decoder [make-muuntaja-json-decoder {:keywords? true}]
+   :encoder [make-muuntaja-json-encoder]
+   :encode-protocol [EncodeJson encode-json]})
