@@ -651,7 +651,7 @@
   (all))
 
 (comment
-  (doseq [[type results] (read-string (slurp "perf/json-results2.edn"))
+  (doseq [[type results] (read-string (slurp (format "perf/json-results%s.edn" (dec (next-number)))))
           [size data] results
           :let [min-value (->> data vals (keep mean) (apply min))
                 _ (printf "\n\u001B[35m%s (%s)\u001B[0m\n\n" type size)]
