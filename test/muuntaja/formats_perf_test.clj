@@ -1,11 +1,17 @@
 (ns muuntaja.formats-perf-test
   (:require [criterium.core :as cc]
             [muuntaja.test_utils :refer :all]
-            [muuntaja.formats :as formats]
+            [muuntaja.format.json :as json-format]
+            [muuntaja.format.edn :as edn-format]
+            [muuntaja.format.msgpack :as msgpack-format]
+            [muuntaja.format.transit :as transit-format]
+            [muuntaja.format.yaml :as yaml-format]
             [muuntaja.json]
             [ring.core.protocols :as protocols]
             [clojure.java.io :as io])
   (:import (java.io ByteArrayOutputStream ByteArrayInputStream)))
+
+(set! *warn-on-reflection* true)
 
 ;;
 ;; start repl with `lein perf repl`
@@ -29,9 +35,6 @@
 (def +transit-string+ "[\"^ \",\"~:kikka\",2]")
 (def +edn-string+ "{:kikka 2}")
 
-#_(def +data+ (cheshire.core/parse-string (slurp "users.json")))
-#_(def +json-string+ (cheshire.core/generate-string +data+))
-
 (defn ^ByteArrayOutputStream stream []
   (ByteArrayOutputStream. 16384))
 
@@ -44,16 +47,16 @@
 (def +charset+ "utf-8")
 
 (defn encode-json []
-  (let [encode0 (formats/make-json-string-encoder {})
-        encode1 (formats/make-streaming-json-encoder {})
-        encode2 (formats/make-json-encoder {})]
+  (let [encode0 (json-format/make-json-string-encoder {})
+        encode1 (json-format/make-streaming-json-encoder {})
+        encode2 (json-format/make-json-encoder {})]
 
     ;; 4.7µs
     (title "json: string")
     (let [call #(let [baos (stream)]
-                 (with-open [writer (io/writer baos)]
-                   (.write writer ^String (encode0 +data+ +charset+)))
-                 baos)]
+                  (with-open [writer (io/writer baos)]
+                    (.write writer ^String (encode0 +data+ +charset+)))
+                  baos)]
 
       (assert (= +json-string+ (str (call))))
       (cc/bench
@@ -62,8 +65,8 @@
     ;; 3.1µs
     (title "json: write-to-stream")
     (let [call #(let [baos (stream)]
-                 ((encode1 +data+ +charset+) baos)
-                 baos)]
+                  ((encode1 +data+ +charset+) baos)
+                  baos)]
 
       (assert (= +json-string+ (str (call))))
       (cc/bench
@@ -73,23 +76,23 @@
     (title "json: inputstream")
     (let [call #(let [baos (stream)
                       is (encode2 +data+ +charset+)]
-                 (io/copy is baos)
-                 baos)]
+                  (io/copy is baos)
+                  baos)]
 
       (assert (= +json-string+ (str (call))))
       (cc/bench
         (call)))))
 
 (defn encode-json-ring []
-  (let [encode0 (formats/make-json-string-encoder {})
-        encode1 (formats/make-streaming-json-encoder {})
-        encode2 (formats/make-json-encoder {})]
+  (let [encode0 (json-format/make-json-string-encoder {})
+        encode1 (json-format/make-streaming-json-encoder {})
+        encode2 (json-format/make-json-encoder {})]
 
     ;; 8.1µs
     (title "ring: json: string")
     (let [call #(let [baos (stream)]
-                 (ring-write (encode0 +data+ +charset+) baos)
-                 baos)]
+                  (ring-write (encode0 +data+ +charset+) baos)
+                  baos)]
 
       (assert (= +json-string+ (str (call))))
       (cc/bench
@@ -98,13 +101,13 @@
     ;; 3.0µs
     (title "ring: json: write-to-stream")
     (let [call #(let [baos (stream)]
-                 (ring-write
-                   (reify
-                     protocols/StreamableResponseBody
-                     (write-body-to-stream [_ _ stream]
-                       ((encode1 +data+ +charset+) stream)))
-                   baos)
-                 baos)]
+                  (ring-write
+                    (reify
+                      protocols/StreamableResponseBody
+                      (write-body-to-stream [_ _ stream]
+                        ((encode1 +data+ +charset+) stream)))
+                    baos)
+                  baos)]
       (assert (= +json-string+ (str (call))))
       (cc/bench
         (call)))
@@ -112,8 +115,8 @@
     ;; 3.3µs
     (title "ring: json: inputstream")
     (let [call #(let [baos (stream)]
-                 (ring-write (encode2 +data+ +charset+) baos)
-                 baos)]
+                  (ring-write (encode2 +data+ +charset+) baos)
+                  baos)]
 
       (assert (= +json-string+ (str (call))))
       (cc/bench
@@ -122,29 +125,29 @@
     ;; 2.4µs
     (title "ring: json: inputstream (muuntaja.json)")
     (let [call #(let [baos (stream)]
-                 (ring-write
-                  (ByteArrayInputStream. (.getBytes (muuntaja.json/to-json {"kikka" 2})))
-                   baos)
-                 baos)]
+                  (ring-write
+                    (ByteArrayInputStream. (.getBytes (muuntaja.json/to-json {"kikka" 2})))
+                    baos)
+                  baos)]
 
       (assert (= +json-string+ (str (call))))
       (cc/bench
         (call)))))
 
 (defn encode-transit-ring []
-  (let [encode1 (formats/make-streaming-transit-encoder :json {})
-        encode2 (formats/make-transit-encoder :json {})]
+  (let [encode1 (transit-format/make-streaming-transit-encoder :json {})
+        encode2 (transit-format/make-transit-encoder :json {})]
 
     ;; 6.6µs
     (title "ring: transit-json: write-to-stream")
     (let [call #(let [baos (stream)]
-                 (ring-write
-                   (reify
-                     protocols/StreamableResponseBody
-                     (write-body-to-stream [_ _ stream]
-                       ((encode1 +data+ +charset+) stream)))
-                   baos)
-                 baos)]
+                  (ring-write
+                    (reify
+                      protocols/StreamableResponseBody
+                      (write-body-to-stream [_ _ stream]
+                        ((encode1 +data+ +charset+) stream)))
+                    baos)
+                  baos)]
 
       (assert (= +transit-string+ (str (call))))
       (cc/bench
@@ -153,22 +156,22 @@
     ;; 7.4µs
     (title "ring: transit-json: inputstream")
     (let [call #(let [baos (stream)]
-                 (ring-write (encode2 +data+ +charset+) baos)
-                 baos)]
+                  (ring-write (encode2 +data+ +charset+) baos)
+                  baos)]
 
       (assert (= +transit-string+ (str (call))))
       (cc/bench
         (call)))))
 
 (defn encode-edn-ring []
-  (let [encode0 (formats/make-edn-string-encoder {})
-        encode2 (formats/make-edn-encoder {})]
+  (let [encode1 (edn-format/make-edn-string-encoder {})
+        encode2 (edn-format/make-edn-encoder {})]
 
     ;; 8.8µs
     (title "ring: edn: string")
     (let [call #(let [baos (stream)]
-                 (ring-write (encode0 +data+ +charset+) baos)
-                 baos)]
+                  (ring-write (encode1 +data+ +charset+) baos)
+                  baos)]
 
       (assert (= +edn-string+ (str (call))))
       (cc/bench
@@ -177,8 +180,8 @@
     ;; 4.4µs
     (title "ring: edn: inputstream")
     (let [call #(let [baos (stream)]
-                 (ring-write (encode2 +data+ +charset+) baos)
-                 baos)]
+                  (ring-write (encode2 +data+ +charset+) baos)
+                  baos)]
 
       (assert (= +edn-string+ (str (call))))
       (cc/bench
