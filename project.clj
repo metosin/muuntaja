@@ -8,8 +8,8 @@
   :source-paths ["src/clj"]
   :javac-options ["-Xlint:unchecked"]
   :java-source-paths ["src/java"]
-  :dependencies [[cheshire "5.6.3" :exclusions [com.fasterxml.jackson.core/jackson-core]]
-                 [com.fasterxml.jackson.core/jackson-databind "2.8.5"]
+  :dependencies [[cheshire "5.7.0" :exclusions [com.fasterxml.jackson.core/jackson-core]]
+                 [com.fasterxml.jackson.core/jackson-databind "2.8.6"]
                  [circleci/clj-yaml "0.5.5"]
                  [clojure-msgpack "1.2.0" :exclusions [org.clojure/clojure]]
                  [com.cognitect/transit-clj "0.8.297"]]
@@ -24,7 +24,7 @@
                                   [ring/ring-json "0.4.0"]
 
                                   ;; Pedestal
-                                  [io.pedestal/pedestal.service "0.5.1" :exclusions [org.clojure/tools.reader
+                                  [io.pedestal/pedestal.service "0.5.2" :exclusions [org.clojure/tools.reader
                                                                                      org.clojure/core.memoize]]
                                   [javax.servlet/javax.servlet-api "3.1.0"]
                                   [org.slf4j/slf4j-log4j12 "1.7.22"]

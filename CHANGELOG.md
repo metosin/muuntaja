@@ -1,6 +1,6 @@
 ## 0.2.0-SNAPSHOT
 
-* The new `muuntaja.json` JSON encoder & decoder.
+* **Alpha**: The new `muuntaja.json` JSON encoder & decoder.
   * directly on top of [Jackson](https://github.com/FasterXML/jackson)
   * explicit mappings instead of protocol extensions
   * encoding is 2.5 - 5.5x faster than Cheshire
@@ -33,8 +33,9 @@
 * Updated deps:
 
 ```clj
+[cheshire "5.7.0"] is available but we use "5.6.3"
 [com.cognitect/transit-clj "0.8.297"] is available but we use "0.8.290"
-[com.fasterxml.jackson.core/jackson-databind "2.8.5"] is available but we use "2.8.4"
+[com.fasterxml.jackson.core/jackson-databind "2.8.6"] is available but we use "2.8.4"
 ```
 
 ## 0.1.0 (25.10.2016)
