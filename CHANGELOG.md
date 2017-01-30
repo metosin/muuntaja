@@ -1,4 +1,4 @@
-## 0.2.0-SNAPSHOT
+## 0.2.0-20170130.142747-9 (30.1.2017)
 
 * **Alpha**: The new `muuntaja.json` JSON encoder & decoder.
   * directly on top of [Jackson](https://github.com/FasterXML/jackson)
