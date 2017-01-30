@@ -27,10 +27,17 @@
     ["utf-8" "iso-8859-1"]
 
     "UTF-8;q=0.3,iso-8859-1;q=0.5"
-    ["iso-8859-1" "utf-8"])
+    ["iso-8859-1" "utf-8"]
+
+    ;; invalid q
+    "UTF-8;q=x"
+    ["utf-8"])
 
   (are [s r]
     (= r (parse/parse-accept s))
+
+    nil
+    nil
 
     ;; simple case
     "application/json"
@@ -66,7 +73,23 @@
      "application/vnd.ms-excel"
      "application/vnd.ms-powerpoint"
      "application/msword"
-     "*/*"]))
+     "*/*"]
+
+    ;; non q parameters
+    "multipart/form-data; boundary=x; charset=US-ASCII"
+    ["multipart/form-data"]
+
+    ;; invalid q
+    "text/*;q=x"
+    ["text/*"]
+
+    ;; separators in parameter values are ignored
+    "text/*;x=0.0=x"
+    ["text/*"]
+
+    ;; quoted values can contain separators
+    "text/*;x=\"0.0=x\""
+    ["text/*"]))
 
 (defn perf []
 
@@ -97,11 +120,13 @@
   (tu/title "parse-accept")
 
   ;; 1100ns
+  ;; 1.06us -> 3.36us
   (cc/quick-bench
     (parse/parse-accept
       "application/json"))
 
   ;; 8200ns
+  ;; 7.14us -> 25.7us
   (cc/quick-bench
     (parse/parse-accept
       "application/xml,application/xhtml+xml,text/html;q=0.9,
