@@ -29,6 +29,7 @@
 
 * default-options support all JVM registered charsets (instead of just `utf-8`)
 * re-organized namespaces & code: formats now in separate namespaces
+* fixed Accept header parsing to allow e.g. non-numeric parameters ([#67](https://github.com/ngrunwald/ring-middleware-format/pull/67))
 
 * Updated deps:
 
