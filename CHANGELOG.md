@@ -6,6 +6,14 @@
   * encoding is 2.5 - 5.5x faster than Cheshire
   * decoding is 30%+ faster than Cheshire
 
+* All middleware support now the ring-async 3-arity version:
+  * `muuntaja.middleware/wrap-exception`
+  * `muuntaja.middleware/wrap-params`
+  * `muuntaja.middleware/wrap-format`
+  * `muuntaja.middleware/wrap-format-negotiate`
+  * `muuntaja.middleware/wrap-format-request`
+  * `muuntaja.middleware/wrap-format-response`
+
 * **BREAKING**: move and rename http-negotiation keys from top level to `:http` in options:
   * `:extract-content-type-fn` =>  `:extract-content-type`
   * `:extract-accept-charset-fn` => `:extract-accept-charset`
