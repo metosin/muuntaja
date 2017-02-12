@@ -8,6 +8,11 @@
   {:status 200
    :body (:body-params request)})
 
+(defn async-echo [request respond _]
+  (respond
+    {:status 200
+     :body (:body-params request)}))
+
 (defn ->request [content-type accept accept-charset body]
   {:headers {"content-type" content-type
              "accept-charset" accept-charset
@@ -216,3 +221,14 @@
       (let [respond (promise), raise (promise)]
         ((->mw (->handler :decode)) {} respond raise)
         (is (= 400 (:status @respond)))))))
+
+(deftest async-normal
+  (let [m (m/create)
+        data {:kikka 42}
+        json-string (slurp (m/encode m "application/json" data))]
+
+    (testing "happy case"
+      (let [app (middleware/wrap-format async-echo)
+            respond (promise), raise (promise)]
+        (app (->request "application/json" nil nil json-string) respond raise)
+        (is (= (m/decode m "application/json" (:body @respond)) data))))))
