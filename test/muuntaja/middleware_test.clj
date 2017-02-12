@@ -187,3 +187,32 @@
       (is (= {:params {:a 1, :b {:c 1}}
               :body-params {:b {:c 1}}}
              @respond)))))
+
+(deftest wrap-exceptions-test
+  (let [->handler (fn [type]
+                    (fn
+                      ([_]
+                       (condp = type
+                         :decode (throw (ex-info "kosh" {:type ::m/decode}))
+                         :runtime (throw (RuntimeException.))
+                         :return nil))
+                      ([_ respond raise]
+                       (condp = type
+                         :decode (raise (ex-info "kosh" {:type ::m/decode}))
+                         :runtime (raise (RuntimeException.))
+                         :return (respond nil)))))
+        ->mw (partial middleware/wrap-exception)]
+    (testing "sync"
+      (is (nil? ((->mw (->handler :return)) {})))
+      (is (thrown? RuntimeException ((->mw (->handler :runtime)) {})))
+      (is (= 400 (:status ((->mw (->handler :decode)) {})))))
+    (testing "async"
+      (let [respond (promise), raise (promise)]
+        ((->mw (->handler :return)) {} respond raise)
+        (is (nil? @respond)))
+      (let [respond (promise), raise (promise)]
+        ((->mw (->handler :runtime)) {} respond raise)
+        (is (= RuntimeException (class @raise))))
+      (let [respond (promise), raise (promise)]
+        ((->mw (->handler :decode)) {} respond raise)
+        (is (= 400 (:status @respond)))))))
