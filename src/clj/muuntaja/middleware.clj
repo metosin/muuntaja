@@ -7,27 +7,41 @@
    :headers {"Content-Type" "text/plain"}
    :body (str "Malformed " format " request.")})
 
-(defn- try-catch [handler request on-exception]
-  (try
-    (handler request)
-    (catch Exception e
+(defn- handle-exception [e request on-exception raise]
       (if-let [data (ex-data e)]
         (if (-> data :type (= ::m/decode))
           (on-exception e (:format data) request)
-          (throw e))
-        (throw e)))))
+      (raise e))
+    (raise e)))
 
 (defn wrap-exception
   ([handler]
    (wrap-exception handler default-on-exception))
   ([handler on-exception]
-   (fn [request]
-     (try-catch handler request on-exception))))
+   (let [throw #(throw %)]
+     (fn
+       ([request]
+        (try
+          (handler request)
+          (catch Exception e
+            (handle-exception e request on-exception throw))))
+       ([request respond raise]
+        (try
+          (handler request respond #(handle-exception % request on-exception raise))
+          (catch Exception e
+            (handle-exception e request on-exception raise))))))))
 
 (defn wrap-params [handler]
-  (fn [request]
-    (let [body-params (:body-params request)]
-      (handler (if (map? body-params)
+  (fn
+    ([request]
+     (let [body-params (:body-params request)
+           request (if (map? body-params)
+                     (update request :params merge body-params)
+                     request)]
+       (handler request)))
+    ([request respond raise]
+     (let [body-params (:body-params request)
+           request (if (map? body-params)
                  (update request :params merge body-params)
                  request)))))
 

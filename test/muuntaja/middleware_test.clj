@@ -166,3 +166,24 @@
           (is (= "{:kikka 42}" (-> response :body slurp)))
           (is (not (contains? response ::m/content-type)))
           (is (= "application/edn; charset=utf-8" (get-in response [:headers "Content-Type"]))))))))
+
+(deftest wrap-params-test
+  (testing "sync"
+    (let [mw (middleware/wrap-params identity)]
+      (is (= {:params {:a 1, :b {:c 1}}
+              :body-params {:b {:c 1}}}
+             (mw {:params {:a 1}
+                  :body-params {:b {:c 1}}})))
+      (is (= {:params {:b {:c 1}}
+              :body-params {:b {:c 1}}}
+             (mw {:body-params {:b {:c 1}}})))
+      (is (= {:body-params [1 2 3]}
+             (mw {:body-params [1 2 3]})))))
+  (testing "async"
+    (let [mw (middleware/wrap-params (fn [request respond _] (respond request)))
+          respond (promise), raise (promise)]
+      (mw {:params {:a 1}
+           :body-params {:b {:c 1}}} respond raise)
+      (is (= {:params {:a 1, :b {:c 1}}
+              :body-params {:b {:c 1}}}
+             @respond)))))
