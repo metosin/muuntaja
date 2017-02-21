@@ -12,8 +12,8 @@ but a complete rewrite ([and up to 10x faster](https://github.com/metosin/muunta
 
 ## Rationale
 
-- explicit configuration, avoid shared mutable state (e.g. multimethods)
-- support both standalone & http usage
+- both standalone & ring/http usage
+- explicit configuration over mutable state (e.g. multimethods)
 - symmetric encoding & decoding when possible
 - support streaming when possible
 - fast & pragmatic by default
@@ -52,6 +52,8 @@ for more details.
 ;  :muuntaja.core/format "application/json",
 ;  :headers {"Content-Type" "application/json; charset=utf-8"}}
 ```
+
+See [differences](https://github.com/metosin/muuntaja/wiki/Differences-to-existing-formatters) to ring-middleware-format & ring-json.
 
 ### Standalone
 
