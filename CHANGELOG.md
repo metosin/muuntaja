@@ -1,10 +1,10 @@
 ## 0.2.0-20170212.203836-10 (12.2.2017)
 
-* **BREAKING**: with defaults, only `application/json`, `application/edn`, `application/transit+json`, `application/transit+msgpack` are supported
-  * support for `application/msgpack` and `application/x-yaml` can be added manually
-  * new helpers to add formats:
+* **BREAKING**: by default, `application/msgpack` and `application/x-yaml` are not used (smaller core)
+  * new helpers to add formats (need to add the deps manually):
 
 ```clj
+(require '[muuntaja.core :as m])
 (require '[muuntaja.format.msgpack :as msgpack-format])
 (require '[muuntaja.format.yaml :as yaml-format])
 
@@ -12,6 +12,7 @@
   (-> m/default-options
      (yaml-format/with-yaml-format)
      (msgpack-format/with-msgpack-format))
+
 ; #Muuntaja{:produces #{"application/json"
 ;                      "application/x-yaml"
 ;                      "application/msgpack"
@@ -28,11 +29,12 @@
 ;          :default-format "application/json"}
 ```
 
-* **Alpha**: The new `muuntaja.json` JSON encoder & decoder.
+* **Alpha**: The new `muuntaja.json` JSON encoder & decoder
   * directly on top of [Jackson](https://github.com/FasterXML/jackson)
   * explicit mappings instead of protocol extensions
   * encoding is 2.5 - 5.5x faster than Cheshire
   * decoding is 30%+ faster than Cheshire
+  * not production ready, default JSON uses still Cheshire.
 
 * All middleware support now the ring-async 3-arity version:
   * `muuntaja.middleware/wrap-exception`
