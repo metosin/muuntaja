@@ -69,8 +69,8 @@
               (= data (-> request app :body decode)))
             "application/json"
             "application/edn"
-            "application/x-yaml"
-            "application/msgpack"
+            ;"application/x-yaml"
+            ;"application/msgpack"
             "application/transit+json"
             "application/transit+msgpack"))
 
@@ -98,9 +98,9 @@
 
           (testing "different content-type & accept"
             (let [edn-string (slurp (m/encode m "application/edn" data))
-                  yaml-string (slurp (m/encode m "application/x-yaml" data))
-                  request (->request "application/edn" "application/x-yaml" nil edn-string)]
-              (is (= yaml-string (some-> request app :body slurp))))))))
+                  json-string (slurp (m/encode m "application/json" data))
+                  request (->request "application/edn" "application/json" nil edn-string)]
+              (is (= json-string (some-> request app :body slurp))))))))
 
     (testing "with regexp matchers"
       (let [app (middleware/wrap-format

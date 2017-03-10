@@ -64,7 +64,11 @@
 ;; format
 ;;
 
+;; type
+
 (def json-type "application/json")
+
+;; formats
 
 (def json-format
   {:decoder [make-json-decoder {:key-fn true}]
@@ -81,3 +85,17 @@
 
 (def streaming-muuntaja-json-format
   (assoc muuntaja-json-format :encoder [make-streaming-muuntaja-json-encoder]))
+
+;; options
+
+(defn with-json-format [options]
+  (assoc-in options [:formats json-type] json-format))
+
+(defn with-streaming-json-format [options]
+  (assoc-in options [:formats json-type] streaming-json-format))
+
+(defn with-muuntaja-json-format [options]
+  (assoc-in options [:formats json-type] muuntaja-json-format))
+
+(defn with-streaming-muuntaja-json-format [options]
+  (assoc-in options [:formats json-type] streaming-muuntaja-json-format))

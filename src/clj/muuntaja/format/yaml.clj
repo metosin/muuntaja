@@ -1,3 +1,4 @@
+;; [circleci/clj-yaml "0.5.5"]
 (ns muuntaja.format.yaml
   (:require [clj-yaml.core :as yaml]
             [msgpack.clojure-extensions])
@@ -30,3 +31,6 @@
   {:decoder [make-yaml-decoder {:keywords true}]
    :encoder [make-yaml-encoder]
    :encode-protocol [EncodeYaml encode-yaml]})
+
+(defn with-yaml-format [options]
+  (assoc-in options [:formats yaml-type] yaml-format))

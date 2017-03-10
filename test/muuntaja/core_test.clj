@@ -4,6 +4,8 @@
             [clojure.string :as str]
             [muuntaja.protocols :as protocols]
             [muuntaja.format.json :as json-format]
+            [muuntaja.format.msgpack :as msgpack-format]
+            [muuntaja.format.yaml :as yaml-format]
             [muuntaja.json :as json])
   (:import (java.nio.charset Charset)
            (java.io ByteArrayInputStream)))
@@ -31,17 +33,19 @@
        (finally
          (set-jvm-default-charset! old-charset#)))))
 
-(deftest core-test
+(def m (m/create
+         (-> m/default-options
+             (msgpack-format/with-msgpack-format)
+             (yaml-format/with-yaml-format))))
 
+(deftest core-test
   (testing "encode & decode"
-    (let [m (m/create)
-          data {:kikka 42}]
+    (let [data {:kikka 42}]
       (is (= "{\"kikka\":42}" (slurp (m/encode m "application/json" data))))
       (is (= data (m/decode m "application/json" (m/encode m "application/json" data))))))
 
   (testing "symmetic encode + decode for all formats"
-    (let [m (m/create)
-          data {:kikka 42, :childs {:facts [1.2 true {:so "nested"}]}}]
+    (let [data {:kikka 42, :childs {:facts [1.2 true {:so "nested"}]}}]
       (are [format]
         (= data (m/decode m format (m/encode m format data)))
         "application/json"
@@ -61,8 +65,7 @@
 
   ;; TODO: should these behave in same way?
   (testing "decode with empty input"
-    (let [m (m/create)
-          no-data (fn [] (ByteArrayInputStream. (byte-array 0)))]
+    (let [no-data (fn [] (ByteArrayInputStream. (byte-array 0)))]
       (testing "some formats return nil"
         (are [format]
           (= nil (m/decode m format (no-data)))
@@ -83,7 +86,7 @@
           "application/transit+msgpack"))))
 
   (testing "non-binary-formats encoding with charsets"
-    (let [m (m/create (assoc m/default-options :charsets m/available-charsets))
+    (let [m (assoc m :charsets m/available-charsets)
           data {:fée "böz"}
           iso-encoded #(slurp (m/encode m % data "ISO-8859-1"))]
       (testing "application/json & application/edn use the given charset"
@@ -103,7 +106,7 @@
               (is (not= "[\"^ \",\"~:f�e\",\"b�z\"]" (iso-encoded "application/transit+json")))))))))
 
   (testing "all formats handle different charsets symmetrically"
-    (let [m (m/create (assoc m/default-options :charsets m/available-charsets))
+    (let [m (assoc m :charsets m/available-charsets)
           data {:fée "böz"}
           encode-decode #(as-> data $
                                (m/encode m % $ "ISO-8859-1")

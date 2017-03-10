@@ -34,3 +34,6 @@
   {:decoder [make-edn-decoder]
    :encoder [make-edn-encoder]
    :encode-protocol [EncodeEdn encode-edn]})
+
+(defn with-edn-format [options]
+  (assoc-in options [:formats edn-type] edn-format))

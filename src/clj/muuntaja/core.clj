@@ -7,9 +7,7 @@
             [muuntaja.records :as records]
             [muuntaja.format.json :as json-format]
             [muuntaja.format.edn :as edn-format]
-            [muuntaja.format.msgpack :as msgpack-format]
-            [muuntaja.format.transit :as transit-format]
-            [muuntaja.format.yaml :as yaml-format])
+            [muuntaja.format.transit :as transit-format])
   (:import (muuntaja.records FormatAndCharset Adapter Muuntaja)
            (java.nio.charset Charset)))
 
@@ -207,10 +205,10 @@
    :default-format "application/json"
    :formats {"application/json" json-format/json-format
              "application/edn" edn-format/edn-format
-             "application/msgpack" msgpack-format/msgpack-format
-             "application/x-yaml" yaml-format/yaml-format
              "application/transit+json" transit-format/transit-json-format
-             "application/transit+msgpack" transit-format/transit-msgpack-format}})
+             "application/transit+msgpack" transit-format/transit-msgpack-format
+             #_#_"application/msgpack" msgpack-format/msgpack-format
+             #_#_"application/x-yaml" yaml-format/yaml-format}})
 
 ;;
 ;; HTTP stuff

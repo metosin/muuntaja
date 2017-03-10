@@ -1,3 +1,4 @@
+;; [clojure-msgpack "1.2.0" :exclusions [org.clojure/clojure]]
 (ns muuntaja.format.msgpack
   (:require [clojure.walk :as walk]
             [msgpack.core :as msgpack]
@@ -46,3 +47,6 @@
   {:decoder [make-msgpack-decoder {:keywords? true}]
    :encoder [make-msgpack-encoder]
    :encode-protocol [EncodeMsgpack encode-msgpack]})
+
+(defn with-msgpack-format [options]
+  (assoc-in options [:formats msgpack-type] msgpack-format))

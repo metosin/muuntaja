@@ -10,8 +10,6 @@
   :java-source-paths ["src/java"]
   :dependencies [[cheshire "5.7.0" :exclusions [com.fasterxml.jackson.core/jackson-core]]
                  [com.fasterxml.jackson.core/jackson-databind "2.8.7"]
-                 [circleci/clj-yaml "0.5.5"]
-                 [clojure-msgpack "1.2.0" :exclusions [org.clojure/clojure]]
                  [com.cognitect/transit-clj "0.8.297"]]
   :plugins [[lein-codox "0.10.3"]]
   :codox {:src-uri "http://github.com/metosin/muuntaja/blob/master/{filepath}#L{line}"
@@ -22,6 +20,10 @@
                                   [ring-middleware-format "0.7.2"]
                                   [ring-transit "0.1.6"]
                                   [ring/ring-json "0.4.0"]
+
+                                  ;; extra formatters
+                                  [circleci/clj-yaml "0.5.5"]
+                                  [clojure-msgpack "1.2.0" :exclusions [org.clojure/clojure]]
 
                                   ;; Pedestal
                                   [io.pedestal/pedestal.service "0.5.2" :exclusions [org.clojure/tools.reader

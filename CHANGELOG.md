@@ -1,5 +1,33 @@
 ## 0.2.0-20170212.203836-10 (12.2.2017)
 
+* **BREAKING**: with defaults, only `application/json`, `application/edn`, `application/transit+json`, `application/transit+msgpack` are supported
+  * support for `application/msgpack` and `application/x-yaml` can be added manually
+  * new helpers to add formats:
+
+```clj
+(require '[muuntaja.format.msgpack :as msgpack-format])
+(require '[muuntaja.format.yaml :as yaml-format])
+
+(m/create
+  (-> m/default-options
+     (yaml-format/with-yaml-format)
+     (msgpack-format/with-msgpack-format))
+; #Muuntaja{:produces #{"application/json"
+;                      "application/x-yaml"
+;                      "application/msgpack"
+;                      "application/transit+msgpack"
+;                      "application/transit+json"
+;                      "application/edn"},
+;          :consumes #{"application/json"
+;                      "application/x-yaml"
+;                      "application/msgpack"
+;                      "application/transit+msgpack"
+;                      "application/transit+json"
+;                      "application/edn"},
+;          :default-charset "utf-8",
+;          :default-format "application/json"}
+```
+
 * **Alpha**: The new `muuntaja.json` JSON encoder & decoder.
   * directly on top of [Jackson](https://github.com/FasterXML/jackson)
   * explicit mappings instead of protocol extensions

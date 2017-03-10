@@ -47,6 +47,9 @@
    :encoder [(partial make-transit-encoder :json)]
    :encode-protocol [EncodeTransitJson encode-transit-json]})
 
+(defn with-transit-json-format [options]
+  (assoc-in options [:formats transit-json-type] transit-json-format))
+
 (def transit-msgpack-type "application/transit+msgpack")
 
 (def transit-msgpack-format
@@ -54,3 +57,5 @@
    :encoder [(partial make-transit-encoder :msgpack)]
    :encode-protocol [EncodeTransitMessagePack encode-transit-msgpack]})
 
+(defn with-transit-msgpack-format [options]
+  (assoc-in options [:formats transit-msgpack-type] transit-msgpack-format))
