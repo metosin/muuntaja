@@ -29,7 +29,7 @@
                                   [io.pedestal/pedestal.service "0.5.2" :exclusions [org.clojure/tools.reader
                                                                                      org.clojure/core.memoize]]
                                   [javax.servlet/javax.servlet-api "3.1.0"]
-                                  [org.slf4j/slf4j-log4j12 "1.7.23"]
+                                  [org.slf4j/slf4j-log4j12 "1.7.24"]
 
                                   [criterium "0.4.4"]]}
              :1.9 {:dependencies [[org.clojure/clojure "1.9.0-alpha12"]]}
