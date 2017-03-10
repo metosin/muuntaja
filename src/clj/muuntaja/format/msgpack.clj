@@ -1,5 +1,5 @@
-;; [clojure-msgpack "1.2.0" :exclusions [org.clojure/clojure]]
 (ns muuntaja.format.msgpack
+  "Requires [clojure-msgpack \"1.2.0\" :exclusions [org.clojure/clojure]] as dependency"
   (:require [clojure.walk :as walk]
             [msgpack.core :as msgpack]
             [clojure.java.io :as io]

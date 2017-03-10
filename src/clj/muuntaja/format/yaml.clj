@@ -1,5 +1,5 @@
-;; [circleci/clj-yaml "0.5.5"]
 (ns muuntaja.format.yaml
+  "Requires [circleci/clj-yaml \"0.5.5\"] as dependency"
   (:require [clj-yaml.core :as yaml]
             [msgpack.clojure-extensions])
   (:import (java.io ByteArrayInputStream)))

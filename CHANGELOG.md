@@ -1,7 +1,9 @@
-## 0.2.0-20170212.203836-10 (12.2.2017)
+## 0.2.0-SNAPSHOT (10.3.2017)
 
 * **BREAKING**: by default, `application/msgpack` and `application/x-yaml` are not used (smaller core)
   * new helpers to add formats (need to add the deps manually):
+    * `application/yaml`: `[circleci/clj-yaml "0.5.5"]`
+    * `application/msgpack`: `[clojure-msgpack "1.2.0" :exclusions [org.clojure/clojure]]`
 
 ```clj
 (require '[muuntaja.core :as m])
