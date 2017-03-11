@@ -6,6 +6,8 @@
             [clj-yaml.core :as yaml]
             [clojure.walk :refer [keywordize-keys]]
             [cognitect.transit :as transit]
+            [muuntaja.format.msgpack :as msgpack-format]
+            [muuntaja.format.yaml :as yaml-format]
             [msgpack.core :as msgpack]
             [clojure.java.io :as io]
             [clojure.string :as str])
@@ -20,7 +22,11 @@
   ([handler opts]
    (-> handler
        (middleware/wrap-format
-         (m/transform-formats opts #(dissoc %2 :decoder))))))
+         (m/transform-formats
+           (-> opts
+               (yaml-format/with-yaml-format)
+               (msgpack-format/with-msgpack-format))
+           #(dissoc %2 :decoder))))))
 
 (def api-echo
   (wrap-api-response identity))
@@ -99,6 +105,7 @@
   (wrap-api-response
     identity
     (-> m/default-options
+        (msgpack-format/with-msgpack-format)
         (m/select-formats ["application/msgpack"]))))
 
 (deftest format-msgpack-hashmap
@@ -129,6 +136,7 @@
   (wrap-api-response
     identity
     (-> m/default-options
+        (yaml-format/with-yaml-format)
         (m/select-formats ["application/x-yaml"]))))
 
 (deftest format-yaml-hashmap

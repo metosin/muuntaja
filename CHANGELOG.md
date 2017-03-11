@@ -1,10 +1,42 @@
-## 0.2.0-20170212.203836-10 (12.2.2017)
+## 0.2.0-SNAPSHOT (10.3.2017)
 
-* **Alpha**: The new `muuntaja.json` JSON encoder & decoder.
+* **BREAKING**: by default, `application/msgpack` and `application/x-yaml` are not used (smaller core)
+  * new helpers to add formats (need to add the deps manually):
+    * `application/yaml`: `[circleci/clj-yaml "0.5.5"]`
+    * `application/msgpack`: `[clojure-msgpack "1.2.0" :exclusions [org.clojure/clojure]]`
+
+```clj
+(require '[muuntaja.core :as m])
+(require '[muuntaja.format.msgpack :as msgpack-format])
+(require '[muuntaja.format.yaml :as yaml-format])
+
+(m/create
+  (-> m/default-options
+     (yaml-format/with-yaml-format)
+     (msgpack-format/with-msgpack-format))
+
+; #Muuntaja{:produces #{"application/json"
+;                      "application/x-yaml"
+;                      "application/msgpack"
+;                      "application/transit+msgpack"
+;                      "application/transit+json"
+;                      "application/edn"},
+;          :consumes #{"application/json"
+;                      "application/x-yaml"
+;                      "application/msgpack"
+;                      "application/transit+msgpack"
+;                      "application/transit+json"
+;                      "application/edn"},
+;          :default-charset "utf-8",
+;          :default-format "application/json"}
+```
+
+* **Alpha**: The new `muuntaja.json` JSON encoder & decoder
   * directly on top of [Jackson](https://github.com/FasterXML/jackson)
   * explicit mappings instead of protocol extensions
   * encoding is 2.5 - 5.5x faster than Cheshire
   * decoding is 30%+ faster than Cheshire
+  * not production ready, default JSON uses still Cheshire.
 
 * All middleware support now the ring-async 3-arity version:
   * `muuntaja.middleware/wrap-exception`

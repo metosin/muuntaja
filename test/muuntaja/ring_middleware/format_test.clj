@@ -3,6 +3,7 @@
             [cheshire.core :as json]
             [muuntaja.core :as m]
             [muuntaja.middleware :as middleware]
+            [muuntaja.format.yaml :as yaml-format]
             [clj-yaml.core :as yaml])
   (:import [java.io ByteArrayInputStream]))
 
@@ -35,6 +36,7 @@
       (middleware/wrap-params)
       (middleware/wrap-format
         (-> m/default-options
+            (yaml-format/with-yaml-format)
             (m/select-formats ["application/x-yaml"])))))
 
 (deftest test-api-round-trip

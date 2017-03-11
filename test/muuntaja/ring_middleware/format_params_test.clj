@@ -3,6 +3,8 @@
             [cognitect.transit :as transit]
             [clojure.java.io :as io]
             [clojure.walk :refer [stringify-keys keywordize-keys]]
+            [muuntaja.format.msgpack :as msgpack-format]
+            [muuntaja.format.yaml :as yaml-format]
             [msgpack.core :as msgpack]
             [clojure.string :as string]
             [muuntaja.core :as m]
@@ -14,6 +16,8 @@
 
 (def default-options
   (-> m/default-options
+      (msgpack-format/with-msgpack-format)
+      (yaml-format/with-yaml-format)
       (assoc-in [:formats "application/json" :matches] #"^application/(.+\+)?json$")
       (assoc-in [:formats "application/edn" :matches] #"^application/(vnd.+)?(x-)?(clojure|edn)$")
       (assoc-in [:formats "application/msgpack" :matches] #"^application/(vnd.+)?(x-)?msgpack$")
