@@ -11,6 +11,7 @@
             [ring.middleware.json]
             [io.pedestal.http]
             [io.pedestal.http.body-params]
+            [io.pedestal.http.content-negotiation]
             [muuntaja.json :as json]
             [muuntaja.format.json :as json-format]
             [muuntaja.format.transit :as transit-format]
@@ -386,30 +387,50 @@
     (cc/quick-bench (ring-stream! (app (request!))))))
 
 (defn pedestal-interceptor-e2e []
+  (let [negotiate-content (:enter (io.pedestal.http.content-negotiation/negotiate-content ["application/json" "application/edn" "application/transit+json"]))
+        body-params (:enter (io.pedestal.http.body-params/body-params))
+        json-body (:leave io.pedestal.http/json-body)
+        transit-body (:leave io.pedestal.http/transit-body)]
 
-  ; 4.2µs && 7.0µs
-  (let [enter (:enter (io.pedestal.http.body-params/body-params))
-        handler (fn [ctx] (assoc ctx :response {:status 200 :body (-> ctx :request :json-params)}))
-        leave (:leave io.pedestal.http/json-body)
-        app (fn [ctx] (-> ctx enter handler leave :response))
-        request! (context-stream (assoc +json-request+ :content-type "application/json"))]
+    ; 9.5µs && 13.2µs
+    (let [handler (fn [ctx] (assoc ctx :response {:status 200 :body (-> ctx :request :json-params)}))
+          app (fn [ctx] (-> ctx negotiate-content body-params handler json-body :response))
+          request! (context-stream (assoc +json-request+ :content-type "application/json"))]
 
-    (title "pedestal: Interceptor JSON-REQUEST-RESPONSE")
-    (assert (= (:body +json-request+) (str (fn-stream! (app (request!))))))
-    (cc/quick-bench (app (request!)))
-    (cc/quick-bench (fn-stream! (app (request!)))))
+      (title "pedestal: Interceptor JSON-REQUEST-RESPONSE (negotiate-content)")
+      (assert (= (:body +json-request+) (str (fn-stream! (app (request!))))))
+      (cc/quick-bench (app (request!)))
+      (cc/quick-bench (fn-stream! (app (request!)))))
 
-  ; 5.2µs && 11.8µs
-  (let [enter (:enter (io.pedestal.http.body-params/body-params))
-        handler (fn [ctx] (assoc ctx :response {:status 200 :body (-> ctx :request :transit-params)}))
-        leave (:leave io.pedestal.http/transit-body)
-        app (fn [ctx] (-> ctx enter handler leave :response))
-        request! (context-stream (assoc +transit-json-request+ :content-type "application/transit+json"))]
+    ; 4.2µs && 7.2µs
+    (let [handler (fn [ctx] (assoc ctx :response {:status 200 :body (-> ctx :request :json-params)}))
+          app (fn [ctx] (-> ctx body-params handler json-body :response))
+          request! (context-stream (assoc +json-request+ :content-type "application/json"))]
 
-    (title "pedestal: Interceptor TRANSIT-REQUEST-RESPONSE")
-    (assert (= (:body +transit-json-request+) (str (fn-stream! (app (request!))))))
-    (cc/quick-bench (app (request!)))
-    (cc/quick-bench (fn-stream! (app (request!))))))
+      (title "pedestal: Interceptor JSON-REQUEST-RESPONSE")
+      (assert (= (:body +json-request+) (str (fn-stream! (app (request!))))))
+      (cc/quick-bench (app (request!)))
+      (cc/quick-bench (fn-stream! (app (request!)))))
+
+    ; 11.3µs && 19.8µs
+    (let [handler (fn [ctx] (assoc ctx :response {:status 200 :body (-> ctx :request :transit-params)}))
+          app (fn [ctx] (-> ctx negotiate-content body-params handler transit-body :response))
+          request! (context-stream (assoc +transit-json-request+ :content-type "application/transit+json"))]
+
+      (title "pedestal: Interceptor TRANSIT-REQUEST-RESPONSE (negotiate-content)")
+      (assert (= (:body +transit-json-request+) (str (fn-stream! (app (request!))))))
+      (cc/quick-bench (app (request!)))
+      (cc/quick-bench (fn-stream! (app (request!)))))
+
+    ; 5.2µs && 12.5µs
+    (let [handler (fn [ctx] (assoc ctx :response {:status 200 :body (-> ctx :request :transit-params)}))
+          app (fn [ctx] (-> ctx body-params handler transit-body :response))
+          request! (context-stream (assoc +transit-json-request+ :content-type "application/transit+json"))]
+
+      (title "pedestal: Interceptor TRANSIT-REQUEST-RESPONSE")
+      (assert (= (:body +transit-json-request+) (str (fn-stream! (app (request!))))))
+      (cc/quick-bench (app (request!)))
+      (cc/quick-bench (fn-stream! (app (request!)))))))
 
 (defn interceptor-e2e []
 
@@ -417,7 +438,7 @@
   ; 4.7µs (negotiations)
   ; 4.6µs (content-type)
   ; 4.4µs && 7.1µs
-  ; 3.5µs && 6.3µs (streaming)
+  ; 3.5µs && 7.0µs (streaming)
   (let [{:keys [enter leave]} (interceptor/format-interceptor
                                 (json-format/with-streaming-json-format m/default-options))
         app (fn [ctx] (-> ctx enter (handle +handler+) leave :response))
@@ -431,7 +452,7 @@
   ; 7.5µs
   ; 8.7µs (negotiations)
   ; 8.5µs (content-type)
-  ; 4.7µs && 11.9µs (streaming)
+  ; 4.7µs && 12.4µs (streaming)
   (let [{:keys [enter leave]} (interceptor/format-interceptor
                                 (transit-format/with-streaming-transit-json-format m/default-options))
         app (fn [ctx] (-> ctx enter (handle +handler+) leave :response))
