@@ -50,6 +50,12 @@
 (defn with-transit-json-format [options]
   (assoc-in options [:formats transit-json-type] transit-json-format))
 
+(def streaming-transit-json-format
+  (assoc transit-json-format :encoder [(partial make-streaming-transit-encoder :json)]))
+
+(defn with-streaming-transit-json-format [options]
+  (assoc-in options [:formats transit-json-type] streaming-transit-json-format))
+
 (def transit-msgpack-type "application/transit+msgpack")
 
 (def transit-msgpack-format
@@ -59,3 +65,9 @@
 
 (defn with-transit-msgpack-format [options]
   (assoc-in options [:formats transit-msgpack-type] transit-msgpack-format))
+
+(def streaming-transit-msgpack-format
+  (assoc transit-msgpack-format :encoder [(partial make-streaming-transit-encoder :msgpack)]))
+
+(defn with-streaming-transit-msgpack-format [options]
+  (assoc-in options [:formats transit-msgpack-type] streaming-transit-msgpack-format))
