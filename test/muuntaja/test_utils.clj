@@ -12,7 +12,7 @@
   (let [b (.getBytes ^String (:body request))
         ctx {:request request}]
     (fn []
-      (update ctx :request assoc :body (ByteArrayInputStream. b)))))
+      (assoc-in ctx [:request :body] (ByteArrayInputStream. b)))))
 
 (defn title [s]
   (println

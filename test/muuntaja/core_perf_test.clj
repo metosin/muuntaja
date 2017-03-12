@@ -569,7 +569,7 @@
                                   json-format/streaming-muuntaja-json-format)))]
         (report-bench results :json size "muuntaja (streaming)" (ring-stream! (app (request!))))))
 
-    (save-results! (format "perf/json-results%s.edn" (next-number)) @results)))
+    (save-results! (format "perf/middleware/json-results%s.edn" (next-number)) @results)))
 
 ;; file sizes about about the size in JSON. Smaller with transit.
 (defn e2e-transit-comparison-different-payloads []
@@ -638,6 +638,67 @@
       #_(println (str (ring-stream! (app (request!)))))
       (cc/quick-bench (ring-stream! (app (request!)))))))
 
+;;
+;; interceptors
+;;
+
+(defn e2e-json-interceptor-comparison-different-payloads []
+  (let [results (atom {})]
+    (doseq [size ["10b" "100b" "1k" "10k" "100k"]
+            :let [file (str "dev-resources/json" size ".json")
+                  data (cheshire/parse-string (slurp file))
+                  request (assoc (json-request data) :content-type "application/json")
+                  request! (context-stream request)]]
+
+      (title file)
+
+      (let [negotiate-content (:enter (io.pedestal.http.content-negotiation/negotiate-content ["application/json" "application/edn" "application/transit+json"]))
+            body-params (:enter (io.pedestal.http.body-params/body-params))
+            json-body (:leave io.pedestal.http/json-body)]
+
+        ;   14µs (10b)
+        ;   17µs (100b)
+        ;   30µs (1k)
+        ;  219µs (10k)
+        ; 2050µs (100k)
+        (let [handler (fn [ctx] (assoc ctx :response {:status 200 :body (-> ctx :request :json-params)}))
+              app (fn [ctx] (-> ctx negotiate-content body-params handler json-body :response))]
+          (report-bench results :json size "pedestal (negotiate)" (fn-stream! (app (request!)))))
+
+        ;    7µs (10b)
+        ;   11µs (100b)
+        ;   24µs (1k)
+        ;  212µs (10k)
+        ; 2170µs (100k)
+        (let [handler (fn [ctx] (assoc ctx :response {:status 200 :body (-> ctx :request :json-params)}))
+              app (fn [ctx] (-> ctx body-params handler json-body :response))]
+          (report-bench results :json size "pedestal" (fn-stream! (app (request!))))))
+
+      ;    6µs (10b)
+      ;    9µs (100b)
+      ;   21µs (1k)
+      ;  214µs (10k)
+      ; 1990µs (100k)
+      (let [{:keys [enter leave]} (interceptor/format-interceptor
+                                    (json-format/with-streaming-json-format m/default-options))
+            handler (fn [ctx] (assoc ctx :response {:status 200 :body (-> ctx :request :body-params)}))
+            app (fn [ctx] (-> ctx enter handler leave :response))]
+        (report-bench results :json size "muuntaja" (fn-stream! (app (request!)))))
+
+      ;    4µs (10b)
+      ;    7µs (100b)
+      ;   16µs (1k)
+      ;  152µs (10k)
+      ; 1510µs (100k)
+      (let [{:keys [enter leave]} (interceptor/format-interceptor
+                                    (json-format/with-streaming-muuntaja-json-format m/default-options))
+            handler (fn [ctx] (assoc ctx :response {:status 200 :body (-> ctx :request :body-params)}))
+            app (fn [ctx] (-> ctx enter handler leave :response))]
+        (report-bench results :json size "muuntaja (jackson)" (fn-stream! (app (request!))))))
+
+    (save-results! (format "perf/interceptor/json-results%s.edn" (next-number)) @results)))
+
+
 (defrecord Json10b [^Long imu]
   json-format/EncodeJson
   (encode-json [_ charset]
@@ -682,6 +743,7 @@
   (request-streams)
   (e2e-json-comparison-different-payloads)
   (e2e-transit-comparison-different-payloads)
+  (e2e-json-interceptor-comparison-different-payloads)
   (e2e-muuntaja-json)
   (all))
 
