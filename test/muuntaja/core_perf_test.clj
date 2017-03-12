@@ -386,7 +386,7 @@
 
 (defn pedestal-interceptor-e2e []
 
-  ; 3.8µs && 7.2µs
+  ; 4.2µs && 7.0µs
   (let [enter (:enter (io.pedestal.http.body-params/body-params))
         handler (fn [ctx] (assoc ctx :response {:status 200 :body (-> ctx :request :json-params)}))
         leave (:leave io.pedestal.http/json-body)
@@ -395,10 +395,10 @@
 
     (title "pedestal: Interceptor JSON-REQUEST-RESPONSE")
     (assert (= (:body +json-request+) (str (fn-stream! (app (request!))))))
-    (cc/bench (app (request!)))
-    (cc/bench (fn-stream! (app (request!)))))
+    (cc/quick-bench (app (request!)))
+    (cc/quick-bench (fn-stream! (app (request!)))))
 
-  ; 5.6µs && 11.9µs
+  ; 5.2µs && 11.8µs
   (let [enter (:enter (io.pedestal.http.body-params/body-params))
         handler (fn [ctx] (assoc ctx :response {:status 200 :body (-> ctx :request :transit-params)}))
         leave (:leave io.pedestal.http/transit-body)
@@ -407,8 +407,8 @@
 
     (title "pedestal: Interceptor TRANSIT-REQUEST-RESPONSE")
     (assert (= (:body +transit-json-request+) (str (fn-stream! (app (request!))))))
-    (cc/bench (app (request!)))
-    (cc/bench (fn-stream! (app (request!))))))
+    (cc/quick-bench (app (request!)))
+    (cc/quick-bench (fn-stream! (app (request!))))))
 
 (defn interceptor-e2e []
 
@@ -416,28 +416,30 @@
   ; 4.7µs (negotiations)
   ; 4.6µs (content-type)
   ; 4.4µs && 7.1µs
-  ; 3.5µs && 6.7µs (streaming)
-  (let [{:keys [enter leave]} (interceptor/format-interceptor m/default-options)
+  ; 3.5µs && 6.3µs (streaming)
+  (let [{:keys [enter leave]} (interceptor/format-interceptor
+                                (json-format/with-streaming-json-format m/default-options))
         app (fn [ctx] (-> ctx enter (handle +handler+) leave :response))
         request! (context-stream +json-request+)]
 
     (title "muuntaja: Interceptor JSON-REQUEST-RESPONSE")
     (assert (= (:body +json-request+) (str (ring-stream! (app (request!))))))
-    (cc/bench (app (request!)))
-    (cc/bench (ring-stream! (app (request!)))))
+    (cc/quick-bench (app (request!)))
+    (cc/quick-bench (ring-stream! (app (request!)))))
 
   ; 7.5µs
   ; 8.7µs (negotiations)
   ; 8.5µs (content-type)
-  ; 5.5µs && 12.2µs (streaming)
-  (let [{:keys [enter leave]} (interceptor/format-interceptor m/default-options)
+  ; 4.7µs && 11.9µs (streaming)
+  (let [{:keys [enter leave]} (interceptor/format-interceptor
+                                (transit-format/with-streaming-transit-json-format m/default-options))
         app (fn [ctx] (-> ctx enter (handle +handler+) leave :response))
         request! (context-stream +transit-json-request+)]
 
     (title "muuntaja: Interceptor TRANSIT-REQUEST-RESPONSE")
     (assert (= (:body +transit-json-request+) (str (ring-stream! (app (request!))))))
-    (cc/bench (app (request!)))
-    (cc/bench (ring-stream! (app (request!))))))
+    (cc/quick-bench (app (request!)))
+    (cc/quick-bench (ring-stream! (app (request!))))))
 
 ;;
 ;; PERF
