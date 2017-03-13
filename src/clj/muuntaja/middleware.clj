@@ -106,7 +106,7 @@
    (let [formats (m/create prototype)]
      (fn
        ([request]
-        (handler (m/decode-ring-request formats request)))
+        (handler (m/format-request formats request)))
        ([request respond raise]
         (handler (m/format-request formats request) respond raise))))))
 
