@@ -656,28 +656,28 @@
             body-params (:enter (io.pedestal.http.body-params/body-params))
             json-body (:leave io.pedestal.http/json-body)]
 
-        ;   14µs (10b)
-        ;   17µs (100b)
-        ;   30µs (1k)
-        ;  219µs (10k)
-        ; 2050µs (100k)
+        ;   15µs (10b)
+        ;   19µs (100b)
+        ;   34µs (1k)
+        ;  220µs (10k)
+        ; 2100µs (100k)
         (let [handler (fn [ctx] (assoc ctx :response {:status 200 :body (-> ctx :request :json-params)}))
               app (fn [ctx] (-> ctx negotiate-content body-params handler json-body :response))]
           (report-bench results :json size "pedestal (negotiate)" (fn-stream! (app (request!)))))
 
-        ;    7µs (10b)
+        ;    8µs (10b)
         ;   11µs (100b)
-        ;   24µs (1k)
-        ;  212µs (10k)
-        ; 2170µs (100k)
+        ;   25µs (1k)
+        ;  232µs (10k)
+        ; 2080µs (100k)
         (let [handler (fn [ctx] (assoc ctx :response {:status 200 :body (-> ctx :request :json-params)}))
               app (fn [ctx] (-> ctx body-params handler json-body :response))]
           (report-bench results :json size "pedestal" (fn-stream! (app (request!))))))
 
-      ;    6µs (10b)
-      ;    9µs (100b)
-      ;   21µs (1k)
-      ;  214µs (10k)
+      ;    7µs (10b)
+      ;   10µs (100b)
+      ;   23µs (1k)
+      ;  220µs (10k)
       ; 1990µs (100k)
       (let [{:keys [enter leave]} (interceptor/format-interceptor
                                     (json-format/with-streaming-json-format m/default-options))
@@ -685,11 +685,11 @@
             app (fn [ctx] (-> ctx enter handler leave :response))]
         (report-bench results :json size "muuntaja" (fn-stream! (app (request!)))))
 
-      ;    4µs (10b)
+      ;    5µs (10b)
       ;    7µs (100b)
       ;   16µs (1k)
-      ;  152µs (10k)
-      ; 1510µs (100k)
+      ;  153µs (10k)
+      ; 1410µs (100k)
       (let [{:keys [enter leave]} (interceptor/format-interceptor
                                     (json-format/with-streaming-muuntaja-json-format m/default-options))
             handler (fn [ctx] (assoc ctx :response {:status 200 :body (-> ctx :request :body-params)}))
@@ -701,7 +701,7 @@
 
 (defrecord Json10b [^Long imu]
   json-format/EncodeJson
-  (encode-json [_ charset]
+  (encode-json [_ charset1]
     (to-byte-stream (json/to-json {:imu imu}) charset)))
 
 (defn e2e-muuntaja-json []
