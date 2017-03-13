@@ -439,7 +439,7 @@
   ; 4.6µs (content-type)
   ; 4.4µs && 7.1µs
   ; 3.5µs && 7.0µs (streaming)
-  (let [{:keys [enter leave]} (interceptor/format-interceptor
+  (let [{:keys [enter leave]} (interceptor/format
                                 (json-format/with-streaming-json-format m/default-options))
         app (fn [ctx] (-> ctx enter (handle +handler+) leave :response))
         request! (context-stream +json-request+)]
@@ -453,7 +453,7 @@
   ; 8.7µs (negotiations)
   ; 8.5µs (content-type)
   ; 4.7µs && 12.4µs (streaming)
-  (let [{:keys [enter leave]} (interceptor/format-interceptor
+  (let [{:keys [enter leave]} (interceptor/format
                                 (transit-format/with-streaming-transit-json-format m/default-options))
         app (fn [ctx] (-> ctx enter (handle +handler+) leave :response))
         request! (context-stream +transit-json-request+)]
@@ -679,7 +679,7 @@
       ;   23µs (1k)
       ;  220µs (10k)
       ; 1990µs (100k)
-      (let [{:keys [enter leave]} (interceptor/format-interceptor
+      (let [{:keys [enter leave]} (interceptor/format
                                     (json-format/with-streaming-json-format m/default-options))
             handler (fn [ctx] (assoc ctx :response {:status 200 :body (-> ctx :request :body-params)}))
             app (fn [ctx] (-> ctx enter handler leave :response))]
@@ -690,7 +690,7 @@
       ;   16µs (1k)
       ;  153µs (10k)
       ; 1410µs (100k)
-      (let [{:keys [enter leave]} (interceptor/format-interceptor
+      (let [{:keys [enter leave]} (interceptor/format
                                     (json-format/with-streaming-muuntaja-json-format m/default-options))
             handler (fn [ctx] (assoc ctx :response {:status 200 :body (-> ctx :request :body-params)}))
             app (fn [ctx] (-> ctx enter handler leave :response))]
@@ -701,7 +701,7 @@
 
 (defrecord Json10b [^Long imu]
   json-format/EncodeJson
-  (encode-json [_ charset1]
+  (encode-json [_ charset]
     (to-byte-stream (json/to-json {:imu imu}) charset)))
 
 (defn e2e-muuntaja-json []
