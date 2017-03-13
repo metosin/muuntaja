@@ -12,11 +12,11 @@ but a complete rewrite ([and up to 10x faster](https://github.com/metosin/muunta
 
 ## Rationale
 
-- both standalone & ring/http usage
+- both standalone & http (ring & pedestal)
 - explicit configuration over mutable state (e.g. multimethods)
 - symmetric encoding & decoding when possible
 - support streaming when possible
-- fast & pragmatic by default
+- fast with good defaults
 - extendable & pluggable: new formats, behavior
 - typed exceptions - caught elsewhere
 - support runtime docs (like swagger) & inspection (negotiation results)
@@ -54,6 +54,8 @@ for more details.
 ```
 
 See [differences](https://github.com/metosin/muuntaja/wiki/Differences-to-existing-formatters) to ring-middleware-format & ring-json.
+
+Interceptors are found in [`muuntaja.interceptor`](https://github.com/metosin/muuntaja/blob/master/src/clj/muuntaja/interceptor.clj).
 
 ### Standalone
 

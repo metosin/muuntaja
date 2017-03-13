@@ -1,8 +1,6 @@
 (ns muuntaja.interceptor
   (:require [muuntaja.core :as m]))
 
-(defrecord Interceptor [name enter leave])
-
 (defn format
   "Interceptor that negotiates a request body based on accept, accept-charset
   and content-type headers and decodes the body with an attached Muuntaja
