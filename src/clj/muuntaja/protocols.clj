@@ -43,7 +43,7 @@
   (.write w (str "<<StreamableResponse>>")))
 
 (defprotocol AsInputStream
-  (as-input-stream [this]))
+  (as-input-stream ^java.io.InputStream [this]))
 
 (extend-protocol AsInputStream
   InputStream

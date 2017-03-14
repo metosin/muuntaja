@@ -9,7 +9,8 @@
             [muuntaja.format.edn :as edn-format]
             [muuntaja.format.transit :as transit-format])
   (:import (muuntaja.records FormatAndCharset Adapter Muuntaja)
-           (java.nio.charset Charset)))
+           (java.nio.charset Charset)
+           (java.io InputStream)))
 
 ;;
 ;; encode & decode
@@ -68,12 +69,22 @@
        :format format}
       e)))
 
-(defn- create-coder [format type spec spec-opts default-charset [p pf]]
-  (let [g (if (vector? spec)
-            (let [[f opts] spec]
-              (f (merge opts spec-opts)))
-            spec)
-        prepare (if (= type ::decode) protocols/as-input-stream identity)]
+(defn- create-coder [format type spec spec-opts default-charset allow-empty-input? [p pf]]
+  (let [decode? (= type ::decode)
+        g (as-> spec $
+
+                ;; duct-style generator
+                (if (vector? $)
+                  (let [[f opts] $]
+                    (f (merge opts spec-opts)))
+                  $)
+
+                ;; optional guard on empty imput
+                (if (and allow-empty-input? decode?)
+                  (fn [^InputStream is charset]
+                    (if (pos? (.available is)) ($ is charset)))
+                  $))
+        prepare (if decode? protocols/as-input-stream identity)]
     (if (and p pf)
       (fn f
         ([x]
@@ -94,7 +105,7 @@
            (catch Exception e
              (on-exception e format type))))))))
 
-(defn- create-adapters [formats default-charset]
+(defn- create-adapters [formats default-charset allow-empty-input?]
   (->> (for [[format {:keys [decoder decoder-opts encoder encoder-opts encode-protocol]}] formats]
          (if-not (or encoder decoder)
            (throw
@@ -104,16 +115,16 @@
                 :formats (keys formats)}))
            [format (records/map->Adapter
                      (merge
-                       (if decoder {:decode (create-coder format ::decode decoder decoder-opts default-charset nil)})
-                       (if encoder {:encode (create-coder format ::encode encoder encoder-opts default-charset encode-protocol)})))]))
+                       (if decoder {:decode (create-coder format ::decode decoder decoder-opts default-charset allow-empty-input? nil)})
+                       (if encoder {:encode (create-coder format ::encode encoder encoder-opts default-charset allow-empty-input? encode-protocol)})))]))
        (into {})))
 
 (declare default-options)
 (declare http-create)
 
 (defn- -create
-  [{:keys [formats default-format default-charset] :as options}]
-  (let [adapters (create-adapters formats default-charset)
+  [{:keys [formats default-format default-charset allow-empty-input?] :as options}]
+  (let [adapters (create-adapters formats default-charset allow-empty-input?)
         valid-format? (key-set formats identity)]
     (when-not (or (not default-format) (valid-format? default-format))
       (throw
@@ -198,6 +209,8 @@
           :extract-accept extract-accept-ring
           :decode-request-body? (constantly true)
           :encode-response-body? encode-collections-with-override}
+
+   :allow-empty-input? false
 
    :default-charset "utf-8"
    :charsets available-charsets

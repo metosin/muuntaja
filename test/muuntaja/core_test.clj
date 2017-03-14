@@ -63,6 +63,16 @@
         "UTF-16"
         (is (= "UTF-16" (str (Charset/defaultCharset)))))))
 
+  (testing "on empty input"
+    (testing "by default - exception is thrown"
+      (let [m (m/create)
+            in (ByteArrayInputStream. (byte-array 0))]
+        (is (thrown? Exception (m/decode m "application/transit+json" in)))))
+    (testing "optionally nil is returned"
+      (let [m (m/create (assoc m/default-options :allow-empty-input? true))
+            in (ByteArrayInputStream. (byte-array 0))]
+        (is (nil? (m/decode m "application/transit+json" in))))))
+
   ;; TODO: should these behave in same way?
   (testing "decode with empty input"
     (let [no-data (fn [] (ByteArrayInputStream. (byte-array 0)))]
