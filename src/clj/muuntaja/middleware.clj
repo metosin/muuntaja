@@ -9,13 +9,13 @@
 
 (defn- handle-exception [exception request on-exception respond raise]
   (if-let [data (ex-data exception)]
-    (if (-> data :type (= ::m/decode))
+    (if (-> data :type (= :muuntaja/decode))
       (respond (on-exception exception (:format data) request))
       (raise exception))
     (raise exception)))
 
 (defn wrap-exception
-  "Middleware that catches exceptions of type `:muuntaja.core/decode`
+  "Middleware that catches exceptions of type `:muuntaja/decode`
    and invokes a 3-arity callback [^Exception e format request] which
    returns a response. Support async-ring."
   ([handler]

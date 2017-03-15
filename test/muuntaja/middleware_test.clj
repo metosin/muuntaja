@@ -134,7 +134,7 @@
           (let [response (app (->request "application/json" nil nil json-string))]
             (is (= response ::invalid)))
           (catch Exception e
-            (is (= (-> e ex-data :type) ::m/response-format-negotiation))))))
+            (is (= (-> e ex-data :type) :muuntaja/response-format-negotiation))))))
 
     (testing "without :default-charset"
 
@@ -144,7 +144,7 @@
             (let [response (app (->request "application/json" nil nil json-string))]
               (is (= response ::invalid)))
             (catch Exception e
-              (is (= (-> e ex-data :type) ::m/request-charset-negotiation))))))
+              (is (= (-> e ex-data :type) :muuntaja/request-charset-negotiation))))))
 
       (testing "without valid request charset, a non-matching format is ok"
         (let [app (middleware/wrap-format echo (dissoc m/default-options :default-charset))]
@@ -157,19 +157,19 @@
             (let [response (app (->request "application/json; charset=utf-8" nil nil json-string))]
               (is (= response ::invalid)))
             (catch Exception e
-              (is (= (-> e ex-data :type) ::m/response-charset-negotiation)))))))
+              (is (= (-> e ex-data :type) :muuntaja/response-charset-negotiation)))))))
 
     (testing "runtime options for encoding & decoding"
       (testing "forcing a content-type on a handler (bypass negotiate)"
         (let [echo-edn (fn [request]
                          {:status 200
-                          ::m/content-type "application/edn"
+                          :muuntaja/content-type "application/edn"
                           :body (:body-params request)})
               app (middleware/wrap-format echo-edn)
               request (->request "application/json" "application/json" nil "{\"kikka\":42}")
               response (-> request app)]
           (is (= "{:kikka 42}" (-> response :body slurp)))
-          (is (not (contains? response ::m/content-type)))
+          (is (not (contains? response :muuntaja/content-type)))
           (is (= "application/edn; charset=utf-8" (get-in response [:headers "Content-Type"]))))))))
 
 (deftest wrap-params-test
@@ -198,12 +198,12 @@
                     (fn
                       ([_]
                        (condp = type
-                         :decode (throw (ex-info "kosh" {:type ::m/decode}))
+                         :decode (throw (ex-info "kosh" {:type :muuntaja/decode}))
                          :runtime (throw (RuntimeException.))
                          :return nil))
                       ([_ respond raise]
                        (condp = type
-                         :decode (raise (ex-info "kosh" {:type ::m/decode}))
+                         :decode (raise (ex-info "kosh" {:type :muuntaja/decode}))
                          :runtime (raise (RuntimeException.))
                          :return (respond nil)))))
         ->mw (partial middleware/wrap-exception)]

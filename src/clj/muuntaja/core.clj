@@ -70,7 +70,7 @@
       e)))
 
 (defn- create-coder [format type spec spec-opts default-charset allow-empty-input-on-decode? [p pf]]
-  (let [decode? (= type ::decode)
+  (let [decode? (= type :muuntaja/decode)
         g (as-> spec $
 
                 ;; duct-style generator
@@ -115,8 +115,8 @@
                 :formats (keys formats)}))
            [format (records/map->Adapter
                      (merge
-                       (if decoder {:decode (create-coder format ::decode decoder decoder-opts default-charset allow-empty-input-on-decode? nil)})
-                       (if encoder {:encode (create-coder format ::encode encoder encoder-opts default-charset allow-empty-input-on-decode? encode-protocol)})))]))
+                       (if decoder {:decode (create-coder format :muuntaja/decode decoder decoder-opts default-charset allow-empty-input-on-decode? nil)})
+                       (if encoder {:encode (create-coder format :muuntaja/encode encoder encoder-opts default-charset allow-empty-input-on-decode? encode-protocol)})))]))
        (into {})))
 
 (declare default-options)
@@ -196,7 +196,7 @@
 
 (defn encode-collections-with-override [_ response]
   (or
-    (-> response ::encode?)
+    (-> response :muuntaja/encode?)
     (-> response :body coll?)))
 
 (def available-charsets
@@ -235,7 +235,7 @@
   (throw
     (ex-info
       (str "Malformed " (:format request-format-and-charset) " request.")
-      {:type ::decode
+      {:type :muuntaja/decode
        :default-format (:default-format m)
        :format (:format request-format-and-charset)
        :charset (:charset request-format-and-charset)
@@ -246,21 +246,21 @@
   (throw
     (ex-info
       "Can't negotiate on request charset"
-      {:type ::request-charset-negotiation
+      {:type :muuntaja/request-charset-negotiation
        :charsets (:charsets formats)})))
 
 (defn- fail-on-response-charset-negotiation [formats]
   (throw
     (ex-info
       "Can't negotiate on response charset"
-      {:type ::response-charset-negotiation
+      {:type :muuntaja/response-charset-negotiation
        :charsets (:charsets formats)})))
 
 (defn- fail-on-response-format-negotiation [formats]
   (throw
     (ex-info
       "Can't negotiate on response format"
-      {:type ::response-format-negotiation
+      {:type :muuntaja/response-format-negotiation
        :formats (:produces formats)})))
 
 (defn- set-content-type [response content-type]
@@ -347,13 +347,13 @@
 
 (defn- -decode-request? [^Muuntaja m request]
   (if-let [decode? (.decode_request_body_QMARK_ m)]
-    (and (not (contains? request ::format))
+    (and (not (contains? request :muuntaja/format))
          (decode? request))))
 
 (defn- -encode-response? [^Muuntaja m request response]
   (if-let [encode? (.encode_response_body_QMARK_ m)]
     (and (map? response)
-         (not (contains? response ::format))
+         (not (contains? response :muuntaja/format))
          (encode? request response))))
 
 ;;
@@ -370,15 +370,15 @@
 
 (defn negotiate-request [^Muuntaja m request]
   (-> request
-      (assoc ::request (-negotiate-request m request))
-      (assoc ::response (-negotiate-response m request))))
+      (assoc :muuntaja/request (-negotiate-request m request))
+      (assoc :muuntaja/response (-negotiate-response m request))))
 
 (defn decode-request [^Muuntaja m request]
-  (let [req-fc (::request request)
-        res-fc (::response request)
+  (let [req-fc (:muuntaja/request request)
+        res-fc (:muuntaja/response request)
         body (decode-request-body m request req-fc res-fc)]
     (cond-> request
-            body (-> (assoc ::format req-fc)
+            body (-> (assoc :muuntaja/format req-fc)
                      (assoc :body-params body)))))
 
 (defn format-request [^Muuntaja m request]
@@ -392,23 +392,23 @@
 
 (defn- handle-response [response format encoder charset]
   (as-> response $
-        (assoc $ ::format format)
-        (dissoc $ ::content-type)
+        (assoc $ :muuntaja/format format)
+        (dissoc $ :muuntaja/content-type)
         (update $ :body encoder charset)
         (if-not (get (:headers $) "Content-Type")
           (set-content-type $ (content-type format charset))
           $)))
 
 (defn- resolve-response-format [response ^Muuntaja m request]
-  (or (if-let [ct (::content-type response)]
+  (or (if-let [ct (:muuntaja/content-type response)]
         ((.produces m) ct))
-      (some-> request ::response :format)
+      (some-> request :muuntaja/response :format)
       (.default_format m)
       (fail-on-response-format-negotiation m)))
 
 ;; TODO: fail is negotiation fails!
 (defn- resolve-response-charset [response ^Muuntaja m request]
-  (or (if-let [ct (some-> request ::response :charset)]
+  (or (if-let [ct (some-> request :muuntaja/response :charset)]
         ((.charsets m) ct))
       (.default_charset m)
       (fail-on-response-charset-negotiation m)))
@@ -427,14 +427,14 @@
 ;;
 
 (defn disable-request-decoding [request]
-  (assoc request ::format nil))
+  (assoc request :muuntaja/format nil))
 
 ;;
 ;; response helpers
 ;;
 
 (defn disable-response-encoding [response]
-  (assoc response ::format nil))
+  (assoc response :muuntaja/format nil))
 
 (defn set-response-content-type [response content-type]
-  (assoc response ::content-type content-type))
+  (assoc response :muuntaja/content-type content-type))

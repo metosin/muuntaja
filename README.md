@@ -48,7 +48,7 @@ for more details.
       :body "{:kikka 42}"})
 ; {:status 200,
 ;  :body #object[java.io.ByteArrayInputStream]
-;  :muuntaja.core/format "application/json",
+;  :muuntaja/format "application/json",
 ;  :headers {"Content-Type" "application/json; charset=utf-8"}}
 ```
 
@@ -138,8 +138,7 @@ return a `muuntaja.protocols.StremableResponse` type, which satisifies the follo
 
 HTTP format negotiation is done via request headers for both request (`content-type`, including the charset)
 and response (`accept` and `accept-charset`). With the default options, a full match on the content-type is
-required, e.g. `application/json`. Adding a `:matches` regexp for formats enables more loose matching. See
-`muuntaja.core/default-options-with-format-regexps` for more info.
+required, e.g. `application/json`. Adding a `:matches` regexp for formats enables more loose matching. See [Configuration wiki-page](https://github.com/metosin/muuntaja/wiki/Configuration#loose-matching-on-content-type) for more info.
 
 Results of the negotiation are published into request & response under namespaced keys for introspection.
 These keys can also be set manually, overriding the content negotiation process.
@@ -149,29 +148,29 @@ These keys can also be set manually, overriding the content negotiation process.
 When something bad happens, an typed exception is thrown. You should handle it elsewhere. Thrown exceptions
 have an `ex-data` with the following `:type` value (plus extra info to generate descriptive erros to clients):
 
-* `:muuntaja.core/decode`, input can't be decoded with the negotiated `format` & `charset`.
-* `:muuntaja.core/request-charset-negotiation`, request charset is illegal.
-* `:muuntaja.core/response-charset-negotiation`, could not negotiate a charset for the response.
+* `:muuntaja/decode`, input can't be decoded with the negotiated `format` & `charset`.
+* `:muuntaja/request-charset-negotiation`, request charset is illegal.
+* `:muuntaja/response-charset-negotiation`, could not negotiate a charset for the response.
 * `:muutaja.core/response-format-negotiation`, could not negotiate a format for the response.
 
 ## Server Spec
 
 ### Request
 
-* `:muuntaja.core/format`, format name that was used to decode the request body, e.g. `application/json`. If
+* `:muuntaja/format`, format name that was used to decode the request body, e.g. `application/json`. If
    the key is already present in the request map, muuntaja middleware/interceptor will skip the decoding process.
-* `:muuntaja.core/request`, client-negotiated request format and charset as `muuntaja.core/FormatAndCharset` record. Will
+* `:muuntaja/request`, client-negotiated request format and charset as `FormatAndCharset` record. Will
 be used in the response pipeline.
-* `:muuntaja.core/response`, client-negotiated response format and charset as `muuntaja.core/FormatAndCharset` record. Will
+* `:muuntaja/response`, client-negotiated response format and charset as `FormatAndCharset` record. Will
 be used in the response pipeline.
 * `:body-params` decoded body is here.
 
 ### Response
 
-* `:muuntaja.core/encode?`, if set to true, the response body will be encoded regardles of the type (primitives!)
-* `:muuntaja.core/format`, format name that was used to encode the response body, e.g. `application/json`. If
+* `:muuntaja/encode?`, if set to true, the response body will be encoded regardles of the type (primitives!)
+* `:muuntaja/format`, format name that was used to encode the response body, e.g. `application/json`. If
    the key is already present in the response map, muuntaja middleware/interceptor will skip the encoding process.
-* `:muuntaja.core/content-type`, handlers can use this to override the negotiated content-type for response encoding,
+* `:muuntaja/content-type`, handlers can use this to override the negotiated content-type for response encoding,
    e.g. setting it to `application/edn` will cause the response to be formatted in JSON.
 
 
