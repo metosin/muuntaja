@@ -91,9 +91,9 @@
    (let [m (m/create prototype)]
      (fn
        ([request]
-        (handler (m/negotiate-ring-request m request)))
+        (handler (m/negotiate-request m request)))
        ([request respond raise]
-        (handler (m/negotiate-ring-request m request) respond raise))))))
+        (handler (m/negotiate-request m request) respond raise))))))
 
 (defn wrap-format-request
   "Middleware that decodes the request body with an attached Muuntaja

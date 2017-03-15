@@ -331,12 +331,12 @@
 ;; Content Negotiation
 ;;
 
-(defn negotiate-request [^Muuntaja m request]
+(defn- -negotiate-request [^Muuntaja m request]
   ((.negotiate_content_type m)
     ((.extract_content_type m)
       request)))
 
-(defn negotiate-response [^Muuntaja m request]
+(defn- -negotiate-response [^Muuntaja m request]
   (records/->FormatAndCharset
     ((.negotiate_accept m)
       ((.extract_accept m)
@@ -345,12 +345,12 @@
       ((.extract_accept_charset m)
         request))))
 
-(defn decode-request? [^Muuntaja m request]
+(defn- -decode-request? [^Muuntaja m request]
   (if-let [decode? (.decode_request_body_QMARK_ m)]
     (and (not (contains? request ::format))
          (decode? request))))
 
-(defn encode-response? [^Muuntaja m request response]
+(defn- -encode-response? [^Muuntaja m request response]
   (if-let [encode? (.encode_response_body_QMARK_ m)]
     (and (map? response)
          (not (contains? response ::format))
@@ -360,31 +360,31 @@
 ;; Request
 ;;
 
-(defn- decode-request [^Muuntaja m request ^FormatAndCharset req-fc ^FormatAndCharset res-fc]
-  (if (decode-request? m request)
+(defn- decode-request-body [^Muuntaja m request ^FormatAndCharset req-fc ^FormatAndCharset res-fc]
+  (if (-decode-request? m request)
     (if-let [decode (decoder m (if req-fc (.-format req-fc)))]
       (try
         (decode (:body request) (.-charset req-fc))
         (catch Exception e
           (fail-on-request-decode-exception m e req-fc res-fc request))))))
 
-(defn negotiate-ring-request [^Muuntaja m request]
+(defn negotiate-request [^Muuntaja m request]
   (-> request
-      (assoc ::request (negotiate-request m request))
-      (assoc ::response (negotiate-response m request))))
+      (assoc ::request (-negotiate-request m request))
+      (assoc ::response (-negotiate-response m request))))
 
-(defn decode-ring-request [^Muuntaja m request]
+(defn decode-request [^Muuntaja m request]
   (let [req-fc (::request request)
         res-fc (::response request)
-        body (decode-request m request req-fc res-fc)]
+        body (decode-request-body m request req-fc res-fc)]
     (cond-> request
             body (-> (assoc ::format req-fc)
                      (assoc :body-params body)))))
 
 (defn format-request [^Muuntaja m request]
   (->> request
-       (negotiate-ring-request m)
-       (decode-ring-request m)))
+       (negotiate-request m)
+       (decode-request m)))
 
 ;;
 ;; Response
@@ -415,7 +415,7 @@
 
 (defn format-response [^Muuntaja m request response]
   (or
-    (if (encode-response? m request response)
+    (if (-encode-response? m request response)
       (if-let [format (resolve-response-format response m request)]
         (if-let [charset (resolve-response-charset response m request)]
           (if-let [encoder (encoder m format)]

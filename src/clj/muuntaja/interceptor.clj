@@ -27,7 +27,7 @@
   [prototype]
   (let [m (m/create prototype)]
     {:name ::format
-     :enter #(update % :request (partial m/negotiate-ring-request m))}))
+     :enter #(update % :request (partial m/negotiate-request m))}))
 
 (defn format-request
   "Interceptor that decodes the request body with an attached Muuntaja

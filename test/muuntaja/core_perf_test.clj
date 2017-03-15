@@ -147,16 +147,16 @@
     ; 27ns compile (-29%) (-48%)
     ; 49ns + charset, memoized
     (title "Content-type: JSON")
-    (assert (= ["application/json" "utf-8"] (m/negotiate-request m +json-request+)))
-    (cc/quick-bench (m/negotiate-request m +json-request+))
+    (assert (= ["application/json" "utf-8"] (#'m/-negotiate-request m +json-request+)))
+    (cc/quick-bench (#'m/-negotiate-request m +json-request+))
 
     ; 65ns
     ; 55ns consumes & produces (-15%)
     ; 42ns compile (-24%) (-35%)
     ; 43ns + charset, memoized
     (title "Content-type: TRANSIT")
-    (assert (= ["application/transit+json" "utf-16"] (m/negotiate-request m +transit-json-request+)))
-    (cc/quick-bench (m/negotiate-request m +transit-json-request+))))
+    (assert (= ["application/transit+json" "utf-16"] (#'m/-negotiate-request m +transit-json-request+)))
+    (cc/quick-bench (#'m/-negotiate-request m +transit-json-request+))))
 
 (defn accept []
   (let [m (m/create m/default-options)]
@@ -166,8 +166,8 @@
     ; 48ns compile (-17%) (-32%)
     ; 94ns + charset, memoized
     (title "Accept: TRANSIT")
-    (assert (= ["application/transit+json" "utf-16"] (m/negotiate-response m +transit-json-request+)))
-    (cc/quick-bench (m/negotiate-response m +transit-json-request+))))
+    (assert (= ["application/transit+json" "utf-16"] (#'m/-negotiate-response m +transit-json-request+)))
+    (cc/quick-bench (#'m/-negotiate-response m +transit-json-request+))))
 
 (defn negotiate-request []
   (let [m (-> m/default-options
