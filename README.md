@@ -14,8 +14,7 @@ but a complete rewrite ([and up to 10x faster](https://github.com/metosin/muunta
 
 - both standalone & http (ring & pedestal)
 - explicit configuration over mutable state (e.g. multimethods)
-- symmetric encoding & decoding when possible
-- support streaming when possible
+- lazy streams when possible
 - fast with good defaults
 - extendable & pluggable: new formats, behavior
 - typed exceptions - caught elsewhere
@@ -59,7 +58,7 @@ See [differences](https://github.com/metosin/muuntaja/wiki/Differences-to-existi
 
 See [`muuntaja.interceptor`](https://github.com/metosin/muuntaja/blob/master/src/clj/muuntaja/interceptor.clj).
 
-### Standalone
+## Standalone
 
 Create a Muuntaja and use it to encode & decode JSON:
 
