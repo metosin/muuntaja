@@ -58,19 +58,20 @@
   Muuntaja instance based on the negotiation information or override information
   provided by the handler.
 
+  Takes a pre-configured Muuntaja or options maps as second argument.
   See https://github.com/metosin/muuntaja for all options and defaults.
   Supports async-ring."
   ([handler]
    (wrap-format handler m/default-options))
   ([handler prototype]
-   (let [formats (m/create prototype)]
+   (let [m (m/create prototype)]
      (fn
        ([request]
-        (let [req (m/format-request formats request)]
-          (->> (handler req) (m/format-response formats req))))
+        (let [req (m/format-request m request)]
+          (->> (handler req) (m/format-response m req))))
        ([request respond raise]
-        (let [req (m/format-request formats request)]
-          (handler req #(respond (m/format-response formats req %)) raise)))))))
+        (let [req (m/format-request m request)]
+          (handler req #(respond (m/format-response m req %)) raise)))))))
 
 ;;
 ;; separate mw for negotiate, request & response
@@ -81,48 +82,51 @@
   and content-type headers with an attached Muuntaja instance. Injects negotiation
   results into request for `wrap-format-request` to use.
 
+  Takes a pre-configured Muuntaja or options maps as second argument.
   See https://github.com/metosin/muuntaja for all options and defaults.
   Supports async-ring."
   ([handler]
    (wrap-format-negotiate handler m/default-options))
   ([handler prototype]
-   (let [formats (m/create prototype)]
+   (let [m (m/create prototype)]
      (fn
        ([request]
-        (handler (m/negotiate-ring-request formats request)))
+        (handler (m/negotiate-ring-request m request)))
        ([request respond raise]
-        (handler (m/negotiate-ring-request formats request) respond raise))))))
+        (handler (m/negotiate-ring-request m request) respond raise))))))
 
 (defn wrap-format-request
   "Middleware that decodes the request body with an attached Muuntaja
   instance into `:body-params` based on the negotiation information provided
   by `wrap-format-negotiate`.
 
+  Takes a pre-configured Muuntaja or options maps as second argument.
   See https://github.com/metosin/muuntaja for all options and defaults.
   Supports async-ring."
   ([handler]
    (wrap-format-request handler m/default-options))
   ([handler prototype]
-   (let [formats (m/create prototype)]
+   (let [m (m/create prototype)]
      (fn
        ([request]
-        (handler (m/format-request formats request)))
+        (handler (m/format-request m request)))
        ([request respond raise]
-        (handler (m/format-request formats request) respond raise))))))
+        (handler (m/format-request m request) respond raise))))))
 
 (defn wrap-format-response
   "Middleware that encodes also the response body with the attached
   Muuntaja instance, based on request negotiation information provided by
   `wrap-format-negotiate` or override information provided by the handler.
 
+  Takes a pre-configured Muuntaja or options maps as second argument.
   See https://github.com/metosin/muuntaja for all options and defaults.
   Supports async-ring."
   ([handler]
    (wrap-format-response handler m/default-options))
   ([handler prototype]
-   (let [formats (m/create prototype)]
+   (let [m (m/create prototype)]
      (fn
        ([request]
-        (->> (handler request) (m/format-response formats request)))
+        (->> (handler request) (m/format-response m request)))
        ([request respond raise]
-        (handler request #(respond (m/format-response formats request %)) raise))))))
+        (handler request #(respond (m/format-response m request %)) raise))))))

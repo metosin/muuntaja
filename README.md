@@ -178,7 +178,10 @@ be used in the response pipeline.
 * `:muuntaja.core/content-type`, handlers can use this to override the negotiated content-type for response encoding,
    e.g. setting it to `application/edn` will cause the response to be formatted in JSON.
 
-### Default options
+
+### Options
+
+#### Default options
 
 ```clj
 {:http {:extract-content-type extract-content-type-ring
