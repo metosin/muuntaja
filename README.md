@@ -187,7 +187,7 @@ be used in the response pipeline.
         :decode-request-body? (constantly true)
         :encode-reseponse-body? encode-collections-with-override}
 
- :allow-empty-input? false
+ :allow-empty-input-on-decode? false
 
  :default-charset "utf-8"
  :charsets muuntaja/available-charsets

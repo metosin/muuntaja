@@ -64,36 +64,46 @@
         (is (= "UTF-16" (str (Charset/defaultCharset)))))))
 
   (testing "on empty input"
-    (testing "by default - exception is thrown"
-      (let [m (m/create)
-            in (ByteArrayInputStream. (byte-array 0))]
-        (is (thrown? Exception (m/decode m "application/transit+json" in)))))
-    (testing "optionally nil is returned"
-      (let [m (m/create (assoc m/default-options :allow-empty-input? true))
-            in (ByteArrayInputStream. (byte-array 0))]
-        (is (nil? (m/decode m "application/transit+json" in))))))
+    (let [empty (fn [] (ByteArrayInputStream. (byte-array 0)))
+          m2 (m/create
+               (-> m/default-options
+                   (msgpack-format/with-msgpack-format)
+                   (yaml-format/with-yaml-format)
+                   (assoc :allow-empty-input-on-decode? true)))]
 
-  ;; TODO: should these behave in same way?
-  (testing "decode with empty input"
-    (let [no-data (fn [] (ByteArrayInputStream. (byte-array 0)))]
-      (testing "some formats return nil"
-        (are [format]
-          (= nil (m/decode m format (no-data)))
-          "application/json"
-          #_"application/edn"
-          "application/x-yaml"
-          #_"application/msgpack"
-          #_"application/transit+json"
-          #_"application/transit+msgpack"))
-      (testing "some formats fail"
-        (are [format]
-          (thrown-with-msg? Exception #"Malformed" (m/decode m format (no-data)))
-          #_"application/json"
-          "application/edn"
-          #_"application/x-yaml"
-          "application/msgpack"
-          "application/transit+json"
-          "application/transit+msgpack"))))
+      (testing "by default - exception is thrown"
+        (is (thrown? Exception (m/decode m "application/transit+json" (empty)))))
+
+      (testing "optionally nil is returned"
+        (is (nil? (m/decode m2 "application/transit+json" (empty)))))
+
+      (testing "all formats"
+        (testing "with defaults"
+
+          (testing "json & yaml return nil"
+            (are [format]
+              (= nil (m/decode m format (empty)))
+              "application/json"
+              "application/x-yaml"))
+
+          (testing "others fail"
+            (are [format]
+              (thrown-with-msg? Exception #"Malformed" (m/decode m format (empty)))
+              "application/edn"
+              "application/msgpack"
+              "application/transit+json"
+              "application/transit+msgpack")))
+
+        (testing "with :allow-empty-input-on-decode? true"
+          (testing "all formats return nil"
+            (are [format]
+              (= nil (m/decode m2 format (empty)))
+              "application/json"
+              "application/edn"
+              "application/x-yaml"
+              "application/msgpack"
+              "application/transit+json"
+              "application/transit+msgpack"))))))
 
   (testing "non-binary-formats encoding with charsets"
     (let [m (assoc m :charsets m/available-charsets)

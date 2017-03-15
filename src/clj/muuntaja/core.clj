@@ -69,7 +69,7 @@
        :format format}
       e)))
 
-(defn- create-coder [format type spec spec-opts default-charset allow-empty-input? [p pf]]
+(defn- create-coder [format type spec spec-opts default-charset allow-empty-input-on-decode? [p pf]]
   (let [decode? (= type ::decode)
         g (as-> spec $
 
@@ -80,7 +80,7 @@
                   $)
 
                 ;; optional guard on empty imput
-                (if (and allow-empty-input? decode?)
+                (if (and allow-empty-input-on-decode? decode?)
                   (fn [^InputStream is charset]
                     (if (pos? (.available is)) ($ is charset)))
                   $))
@@ -105,7 +105,7 @@
            (catch Exception e
              (on-exception e format type))))))))
 
-(defn- create-adapters [formats default-charset allow-empty-input?]
+(defn- create-adapters [formats default-charset allow-empty-input-on-decode?]
   (->> (for [[format {:keys [decoder decoder-opts encoder encoder-opts encode-protocol]}] formats]
          (if-not (or encoder decoder)
            (throw
@@ -115,16 +115,16 @@
                 :formats (keys formats)}))
            [format (records/map->Adapter
                      (merge
-                       (if decoder {:decode (create-coder format ::decode decoder decoder-opts default-charset allow-empty-input? nil)})
-                       (if encoder {:encode (create-coder format ::encode encoder encoder-opts default-charset allow-empty-input? encode-protocol)})))]))
+                       (if decoder {:decode (create-coder format ::decode decoder decoder-opts default-charset allow-empty-input-on-decode? nil)})
+                       (if encoder {:encode (create-coder format ::encode encoder encoder-opts default-charset allow-empty-input-on-decode? encode-protocol)})))]))
        (into {})))
 
 (declare default-options)
 (declare http-create)
 
 (defn- -create
-  [{:keys [formats default-format default-charset allow-empty-input?] :as options}]
-  (let [adapters (create-adapters formats default-charset allow-empty-input?)
+  [{:keys [formats default-format default-charset allow-empty-input-on-decode?] :as options}]
+  (let [adapters (create-adapters formats default-charset allow-empty-input-on-decode?)
         valid-format? (key-set formats identity)]
     (when-not (or (not default-format) (valid-format? default-format))
       (throw
@@ -210,7 +210,7 @@
           :decode-request-body? (constantly true)
           :encode-response-body? encode-collections-with-override}
 
-   :allow-empty-input? false
+   :allow-empty-input-on-decode? false
 
    :default-charset "utf-8"
    :charsets available-charsets

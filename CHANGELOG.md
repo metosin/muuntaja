@@ -1,6 +1,6 @@
 ## 0.2.0-SNAPSHOT (10.3.2017)
 
-* New option to allow empty input on decode, `:allow-empty-input?` (default to `false`). If set to `true`, empty inputstreams map to `nil` body, otherwise, the decoder decides what happens (transit fails on default).
+* New option to allow empty input on decode, `:allow-empty-input-on-decode?` (default to `false`). If set to `true`, empty inputstreams map to `nil` body, otherwise, the decoder decides what happens (transit fails on default).
   * Fixes [#33](https://github.com/metosin/muuntaja/issues/33)
 
 * **BREAKING**: by default, `application/msgpack` and `application/x-yaml` are not used (smaller core)
