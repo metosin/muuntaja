@@ -115,13 +115,10 @@ return a `muuntaja.protocols.StremableResponse` type, which satisifies the follo
 ```clj
 (require '[muuntaja.format.json :as json-format])
 
-;; options are just data!
 (def m
   (muuntaja/create
-    (assoc-in
-      muuntaja/default-options
-      [:formats "application/json" :encoder 0]
-      json-format/make-streaming-json-encoder)))
+    (-> muuntaja/default-options
+        json-format/with-streaming-json-format)))
 
 (->> {:kikka 42}
      (muuntaja/encode m "application/json"))
