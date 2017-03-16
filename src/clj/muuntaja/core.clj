@@ -378,8 +378,8 @@
         res-fc (:muuntaja/response request)
         body (decode-request-body m request req-fc res-fc)]
     (cond-> request
-            body (-> (assoc :muuntaja/format req-fc)
-                     (assoc :body-params body)))))
+            (not (nil? body)) (-> (assoc :muuntaja/format req-fc)
+                                  (assoc :body-params body)))))
 
 (defn format-request [^Muuntaja m request]
   (->> request

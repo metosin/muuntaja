@@ -151,7 +151,7 @@ have an `ex-data` with the following `:type` value (plus extra info to generate 
 * `:muuntaja/decode`, input can't be decoded with the negotiated `format` & `charset`.
 * `:muuntaja/request-charset-negotiation`, request charset is illegal.
 * `:muuntaja/response-charset-negotiation`, could not negotiate a charset for the response.
-* `:muutaja.core/response-format-negotiation`, could not negotiate a format for the response.
+* `:muuntaja/response-format-negotiation`, could not negotiate a format for the response.
 
 ## Server Spec
 

@@ -170,7 +170,24 @@
               response (-> request app)]
           (is (= "{:kikka 42}" (-> response :body slurp)))
           (is (not (contains? response :muuntaja/content-type)))
-          (is (= "application/edn; charset=utf-8" (get-in response [:headers "Content-Type"]))))))))
+          (is (= "application/edn; charset=utf-8" (get-in response [:headers "Content-Type"]))))))
+
+    (testing "different bodies"
+      (let [m (m/create (assoc-in m/default-options [:http :encode-response-body?] (constantly true)))
+            app (middleware/wrap-format echo m)
+            edn-request #(->request "application/edn" "application/edn" nil (pr-str %))
+            e2e #(m/decode m "application/edn" (:body (app (edn-request %))))]
+        (are [primitive]
+          (is (= primitive (e2e primitive)))
+
+          [:a 1]
+          {:a 1}
+          "kikka"
+          :kikka
+          true
+          false
+          nil
+          1)))))
 
 (deftest wrap-params-test
   (testing "sync"
