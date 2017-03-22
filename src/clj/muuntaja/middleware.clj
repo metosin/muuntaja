@@ -38,11 +38,12 @@
   "Middleware that merges request `:body-params` into `:params`.
   Supports async-ring."
   (letfn [(set-params
-            ([{:keys [params body-params] :as request}]
+            ([request]
              (cond
-               (empty? body-params) request
-               (empty? params) (assoc request :params body-params)
-               :else (update request :params merge body-params))))]
+               (not (map? (:body-params request))) request
+               (empty? (:body-params request)) request
+               (empty? (:params request)) (assoc request :params (:body-params request))
+               :else (update request :params merge (:body-params request)))))]
     (fn
       ([request]
         (handler (set-params request)))
