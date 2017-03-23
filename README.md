@@ -21,8 +21,7 @@ but a complete rewrite ([and up to 10x faster](https://github.com/metosin/muunta
 - support runtime docs (like swagger) & inspection (negotiation results)
 - support runtime configuration (negotiation overrides)
 
-Check the [Wiki](https://github.com/metosin/muuntaja/wiki) & [api-docs](http://metosin.github.com/muuntaja)
-for more details.
+Check the [Wiki](https://github.com/metosin/muuntaja/wiki) & [api-docs](http://metosin.github.com/muuntaja) for more details.
 
 ## Latest version
 
@@ -52,7 +51,7 @@ for more details.
 ;  :headers {"Content-Type" "application/json; charset=utf-8"}}
 ```
 
-See [differences](https://github.com/metosin/muuntaja/wiki/Differences-to-existing-formatters) to ring-middleware-format & ring-json.
+**NOTE**: See [differences](https://github.com/metosin/muuntaja/wiki/Differences-to-existing-formatters) to ring-middleware-format & ring-json if you are migrating from those.
 
 ## Interceptors
 
