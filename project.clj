@@ -10,7 +10,7 @@
   :java-source-paths ["src/java"]
   :dependencies [[cheshire "5.7.0" :exclusions [com.fasterxml.jackson.core/jackson-core]]
                  [com.fasterxml.jackson.core/jackson-databind "2.8.7"]
-                 [com.cognitect/transit-clj "0.8.297"]]
+                 [com.cognitect/transit-clj "0.8.300"]]
   :plugins [[lein-codox "0.10.3"]]
   :codox {:src-uri "http://github.com/metosin/muuntaja/blob/master/{filepath}#L{line}"
           :defaults {:doc/format :markdown}}
@@ -29,7 +29,7 @@
                                   [io.pedestal/pedestal.service "0.5.2" :exclusions [org.clojure/tools.reader
                                                                                      org.clojure/core.memoize]]
                                   [javax.servlet/javax.servlet-api "3.1.0"]
-                                  [org.slf4j/slf4j-log4j12 "1.7.24"]
+                                  [org.slf4j/slf4j-log4j12 "1.7.25"]
 
                                   [criterium "0.4.4"]]}
              :1.9 {:dependencies [[org.clojure/clojure "1.9.0-alpha12"]]}

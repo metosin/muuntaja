@@ -1,6 +1,8 @@
-## 0.2.0-20170315.064343-13 (15.3.2017)
+## 0.2.0-20170323.064148-15 (23.3.2017)
 
-* New option to allow empty input on decode, `:allow-empty-input-on-decode?` (default to `false`). If set to `true`, empty inputstreams map to `nil` body, otherwise, the decoder decides what happens (transit fails on default).
+* optimized `muuntaja.middleware/wrap-params`, up to 3x faster for many common cases, thanks to [Dmitri Sotnikov](https://github.com/yogthos)!
+
+* New option to allow empty input on decode, `:allow-empty-input-on-decode?` (default to `false`). If set to `true`, empty inputstreams map to `nil` body, otherwise, the decoder decides what happens (transit fails on default, cheshire does not).
   * Fixes [#33](https://github.com/metosin/muuntaja/issues/33)
 
 * **BREAKING**: by default, `application/msgpack` and `application/x-yaml` are not used (smaller core)
@@ -78,7 +80,7 @@
 
 ```clj
 [cheshire "5.7.0"] is available but we use "5.6.3"
-[com.cognitect/transit-clj "0.8.297"] is available but we use "0.8.290"
+[com.cognitect/transit-clj "0.8.300"] is available but we use "0.8.290"
 [com.fasterxml.jackson.core/jackson-databind "2.8.7"] is available but we use "2.8.4"
 ```
 
