@@ -1,4 +1,4 @@
-## 0.2.0-20170323.064148-15 (23.3.2017)
+## 0.2.0 (31.3.2017)
 
 * optimized `muuntaja.middleware/wrap-params`, up to 3x faster for many common cases, thanks to [Dmitri Sotnikov](https://github.com/yogthos)!
 
