@@ -32,7 +32,8 @@
                                   [org.slf4j/slf4j-log4j12 "1.7.25"]
 
                                   [criterium "0.4.4"]]}
-             :1.9 {:dependencies [[org.clojure/clojure "1.9.0-alpha12"]]}
+             :1.7 {:dependencies [[org.clojure/clojure "1.7.0"]]}
+             :1.9 {:dependencies [[org.clojure/clojure "1.9.0-alpha15"]]}
              :perf {:jvm-opts ^:replace ["-server"
                                          "-Xmx4096m"
                                          "-Dclojure.compiler.direct-linking=true"]}
@@ -41,6 +42,6 @@
                                             "-XX:+PrintCompilation"
                                             "-XX:+UnlockDiagnosticVMOptions"
                                             "-XX:+PrintInlining"]}}
-  :aliases {"all" ["with-profile" "dev:dev,1.9"]
+  :aliases {"all" ["with-profile" "dev:dev,1.7:dev,1.9"]
             "perf" ["with-profile" "default,dev,perf"]
             "analyze" ["with-profile" "default,dev,analyze"]})
