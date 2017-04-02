@@ -1,4 +1,4 @@
-(defproject metosin/muuntaja "0.2.1-SNAPSHOT"
+(defproject metosin/muuntaja "0.2.1"
   :description "Clojure library for fast http format negotiation, encoding and decoding."
   :url "https://github.com/metosin/muuntaja"
   :license {:name "Eclipse Public License"
@@ -26,7 +26,9 @@
                                   [clojure-msgpack "1.2.0" :exclusions [org.clojure/clojure]]
 
                                   ;; Pedestal
+                                  [org.clojure/core.async "0.3.442"]
                                   [io.pedestal/pedestal.service "0.5.2" :exclusions [org.clojure/tools.reader
+                                                                                     org.clojure/core.async
                                                                                      org.clojure/core.memoize]]
                                   [javax.servlet/javax.servlet-api "3.1.0"]
                                   [org.slf4j/slf4j-log4j12 "1.7.25"]

@@ -1,4 +1,4 @@
-## 0.2.1-SNAPSHOT
+## 0.2.1
 
 * removed direct dependencies to msgpack, fixes [#39](https://github.com/metosin/muuntaja/issues/39).
 
