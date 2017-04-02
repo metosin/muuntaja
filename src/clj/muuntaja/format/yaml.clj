@@ -1,7 +1,6 @@
 (ns muuntaja.format.yaml
   "Requires [circleci/clj-yaml \"0.5.5\"] as dependency"
-  (:require [clj-yaml.core :as yaml]
-            [msgpack.clojure-extensions])
+  (:require [clj-yaml.core :as yaml])
   (:import (java.io ByteArrayInputStream)))
 
 ;; uses default charset)

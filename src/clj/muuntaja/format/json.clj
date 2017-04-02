@@ -2,7 +2,6 @@
   (:require [cheshire.core :as cheshire]
             [cheshire.parse :as parse]
             [muuntaja.protocols :as protocols]
-            [msgpack.clojure-extensions]
             [muuntaja.json :as json])
   (:import (java.io InputStreamReader InputStream ByteArrayInputStream OutputStreamWriter OutputStream)))
 

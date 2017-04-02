@@ -1,3 +1,7 @@
+## 0.2.1-SNAPSHOT
+
+* removed direct dependencies to msgpack, fixes [#39](https://github.com/metosin/muuntaja/issues/39).
+
 ## 0.2.0 (31.3.2017)
 
 * optimized `muuntaja.middleware/wrap-params`, up to 3x faster for many common cases, thanks to [Dmitri Sotnikov](https://github.com/yogthos)!

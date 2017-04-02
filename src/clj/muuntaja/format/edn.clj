@@ -1,6 +1,5 @@
 (ns muuntaja.format.edn
-  (:require [clojure.edn :as edn]
-            [msgpack.clojure-extensions])
+  (:require [clojure.edn :as edn])
   (:import (java.io InputStreamReader PushbackReader InputStream ByteArrayInputStream)))
 
 (defn make-edn-decoder [options]

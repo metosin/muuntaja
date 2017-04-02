@@ -1,7 +1,6 @@
 (ns muuntaja.format.transit
   (:require [cognitect.transit :as transit]
-            [muuntaja.protocols :as protocols]
-            [msgpack.clojure-extensions])
+            [muuntaja.protocols :as protocols])
   (:import (java.io ByteArrayOutputStream ByteArrayInputStream OutputStream)))
 
 ;; uses default charset)
