@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -euo pipefail
+
 rev=$(git rev-parse HEAD)
 remoteurl=$(git ls-remote --get-url origin)
 
@@ -10,14 +12,14 @@ if [[ -z $(git branch -r --list origin/gh-pages) ]]; then
     mkdir doc
     cd doc
     git init
-    git remote add origin ${remoteurl}
+    git remote add origin "${remoteurl}"
     git checkout -b gh-pages
     git commit --allow-empty -m "Init"
     git push -u origin gh-pages
     )
 elif [[ ! -d doc ]]; then
     # Clone existing gh-pages branch if not cloned
-    git clone --branch gh-pages ${remoteurl} doc
+    git clone --branch gh-pages "${remoteurl}" doc
 else
     # Reset existing clone to remote state
     (

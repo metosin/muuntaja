@@ -13,6 +13,7 @@
                  [com.cognitect/transit-clj "0.8.300"]]
   :plugins [[lein-codox "0.10.3"]]
   :codox {:src-uri "http://github.com/metosin/muuntaja/blob/master/{filepath}#L{line}"
+          :output-path "doc"
           :defaults {:doc/format :markdown}}
   :profiles {:dev {:jvm-opts ^:replace ["-server"]
                    :dependencies [[org.clojure/clojure "1.8.0"]
