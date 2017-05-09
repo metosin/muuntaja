@@ -51,9 +51,7 @@ Check the [Wiki](https://github.com/metosin/muuntaja/wiki) & [api-docs](http://m
 ;  :headers {"Content-Type" "application/json; charset=utf-8"}}
 ```
 
-**NOTE**: See [differences](https://github.com/metosin/muuntaja/wiki/Differences-to-existing-formatters) to ring-middleware-format & ring-json if you are migrating from those.
-
-See also the [Ring guide](https://github.com/metosin/muuntaja/wiki/With-Ring) from wiki.
+There is a [Ring guide](https://github.com/metosin/muuntaja/wiki/With-Ring) in a wiki. See also [differences](https://github.com/metosin/muuntaja/wiki/Differences-to-existing-formatters) to ring-middleware-format & ring-json if you are migrating from those.
 
 ## Interceptors
 
