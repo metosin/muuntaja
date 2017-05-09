@@ -82,8 +82,9 @@
                 ;; optional guard on empty imput
                 (if (and allow-empty-input-on-decode? decode?)
                   (fn [^InputStream is charset]
-                    (if (pos? (.available is)) ($ is charset)))
-                  $))
+                    (if (and (not (nil? is)) (pos? (.available is))) ($ is charset)))
+                  (fn [^InputStream is charset]
+                    (if-not (nil? is) ($ is charset)))))
         prepare (if decode? protocols/as-input-stream identity)]
     (if (and p pf)
       (fn f

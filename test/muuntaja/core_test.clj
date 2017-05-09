@@ -71,11 +71,15 @@
                    (yaml-format/with-yaml-format)
                    (assoc :allow-empty-input-on-decode? true)))]
 
-      (testing "by default - exception is thrown"
+      (testing "by default - exception is thrown for empty stream"
         (is (thrown? Exception (m/decode m "application/transit+json" (empty)))))
 
-      (testing "optionally nil is returned"
-        (is (nil? (m/decode m2 "application/transit+json" (empty)))))
+      (testing "by default - nil input returns nil stream"
+        (is (nil? (m/decode m "application/transit+json" nil))))
+
+      (testing "optionally nil is returned in both cases"
+        (is (nil? (m/decode m2 "application/transit+json" (empty))))
+        (is (nil? (m/decode m2 "application/transit+json" nil))))
 
       (testing "all formats"
         (testing "with defaults"

@@ -55,4 +55,8 @@
 
   String
   (as-input-stream [this]
-    (ByteArrayInputStream. (.getBytes this "utf-8"))))
+    (ByteArrayInputStream. (.getBytes this "utf-8")))
+
+  nil
+  (as-input-stream [_]
+    nil))
