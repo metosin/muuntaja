@@ -8,7 +8,7 @@
   :source-paths ["src/clj"]
   :javac-options ["-Xlint:unchecked"]
   :java-source-paths ["src/java"]
-  :dependencies [[cheshire "5.7.0" :exclusions [com.fasterxml.jackson.core/jackson-core]]
+  :dependencies [[cheshire "5.7.1" :exclusions [com.fasterxml.jackson.core/jackson-core]]
                  [com.fasterxml.jackson.core/jackson-databind "2.8.7"]
                  [com.cognitect/transit-clj "0.8.300"]]
   :plugins [[lein-codox "0.10.3"]]
@@ -17,7 +17,7 @@
           :defaults {:doc/format :markdown}}
   :profiles {:dev {:jvm-opts ^:replace ["-server"]
                    :dependencies [[org.clojure/clojure "1.8.0"]
-                                  [ring/ring-core "1.6.0-RC1"]
+                                  [ring/ring-core "1.6.0"]
                                   [ring-middleware-format "0.7.2"]
                                   [ring-transit "0.1.6"]
                                   [ring/ring-json "0.4.0"]

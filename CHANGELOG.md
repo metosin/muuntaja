@@ -1,3 +1,12 @@
+## UNRELEASED
+
+* `nil` input is always resolved as `nil`. Fixes [#41](https://github.com/metosin/muuntaja/issues/41)
+* updated deps:
+
+```clj
+[cheshire "5.7.1"] is available but we use "5.7.0"
+```
+
 ## 0.2.1 (2.4.2017)
 
 * removed direct dependencies to msgpack, fixes [#39](https://github.com/metosin/muuntaja/issues/39).
