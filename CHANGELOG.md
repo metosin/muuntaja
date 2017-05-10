@@ -1,4 +1,4 @@
-## UNRELEASED
+## 0.3.0-SNAPSHOT
 
 * **BREAKING**: Handling empty responses
   * `:allow-empty-input-on-decode?` is now called `:allow-empty-input?`. It's a boolean:
