@@ -1,9 +1,9 @@
 ## UNRELEASED
 
 * **BREAKING**: Handling empty responses
-  * `:allow-empty-input-on-decode?` is now called `:allow-empty-input`, defaulting to `true`
-  * by default, empty input(streams) is decoded into`nil`
-  * setting the value to `false` with cause the decoder to do whatever it does
+  * `:allow-empty-input-on-decode?` is now called `:allow-empty-input?`. It's a boolean:
+    * `true` (default): empty input(stream) is decoded into `nil`
+    * `false` with cause the decoder to do whatever it does (e.g. Transit fails, Cheshire returns `nil`)
 
 * updated deps:
 
