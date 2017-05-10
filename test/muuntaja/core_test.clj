@@ -69,35 +69,39 @@
                (-> m/default-options
                    (msgpack-format/with-msgpack-format)
                    (yaml-format/with-yaml-format)
-                   (assoc :allow-empty-input-on-decode? true)))]
+                   (assoc :allow-empty-input? false)))]
 
-      (testing "by default - exception is thrown"
-        (is (thrown? Exception (m/decode m "application/transit+json" (empty)))))
+      (testing "by default - nil is returned for empty stream"
+        (is (nil? (m/decode m "application/transit+json" (empty)))))
 
-      (testing "optionally nil is returned"
-        (is (nil? (m/decode m2 "application/transit+json" (empty)))))
+      (testing "by default - nil input returns nil stream"
+        (is (nil? (m/decode m "application/transit+json" nil))))
+
+      (testing "optionally decoder can decide to throw"
+        (is (thrown? Exception (m/decode m2 "application/transit+json" (empty))))
+        (is (thrown? Exception (m/decode m2 "application/transit+json" nil))))
 
       (testing "all formats"
-        (testing "with defaults"
+        (testing "with :allow-empty-input? false"
 
           (testing "json & yaml return nil"
             (are [format]
-              (= nil (m/decode m format (empty)))
+              (= nil (m/decode m2 format (empty)))
               "application/json"
               "application/x-yaml"))
 
           (testing "others fail"
             (are [format]
-              (thrown-with-msg? Exception #"Malformed" (m/decode m format (empty)))
+              (thrown-with-msg? Exception #"Malformed" (m/decode m2 format (empty)))
               "application/edn"
               "application/msgpack"
               "application/transit+json"
               "application/transit+msgpack")))
 
-        (testing "with :allow-empty-input-on-decode? true"
+        (testing "with defaults"
           (testing "all formats return nil"
             (are [format]
-              (= nil (m/decode m2 format (empty)))
+              (= nil (m/decode m format (empty)))
               "application/json"
               "application/edn"
               "application/x-yaml"
@@ -221,3 +225,8 @@
                 (assoc-in
                   [:formats "application/jsonz" :decoder-opts]
                   {:keywords? false})))))))
+
+(deftest migration-to-0.3.0-test
+  (is (thrown?
+        AssertionError
+        (m/create (assoc m/default-options :allow-empty-input-on-decode? true)))))

@@ -1,3 +1,16 @@
+## UNRELEASED
+
+* **BREAKING**: Handling empty responses
+  * `:allow-empty-input-on-decode?` is now called `:allow-empty-input?`. It's a boolean:
+    * `true` (default): empty input(stream) is decoded into `nil`
+    * `false` with cause the decoder to do whatever it does (e.g. Transit fails, Cheshire returns `nil`)
+
+* updated deps:
+
+```clj
+[cheshire "5.7.1"] is available but we use "5.7.0"
+```
+
 ## 0.2.1 (2.4.2017)
 
 * removed direct dependencies to msgpack, fixes [#39](https://github.com/metosin/muuntaja/issues/39).
