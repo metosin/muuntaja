@@ -69,7 +69,7 @@
        :format format}
       e)))
 
-(defn- create-coder [format type spec spec-opts default-charset allow-empty-input-on-decode? [p pf]]
+(defn- create-coder [format type spec spec-opts default-charset allow-empty-input? [p pf]]
   (let [decode? (= type :muuntaja/decode)
         g (as-> spec $
 
@@ -80,11 +80,11 @@
                   $)
 
                 ;; optional guard on empty imput
-                (if (and allow-empty-input-on-decode? decode?)
+                (if (and allow-empty-input? decode?)
                   (fn [^InputStream is charset]
-                    (if (and (not (nil? is)) (pos? (.available is))) ($ is charset)))
+                    (if (pos? (.available is)) ($ is charset)))
                   (fn [^InputStream is charset]
-                    (if-not (nil? is) ($ is charset)))))
+                    ($ is charset))))
         prepare (if decode? protocols/as-input-stream identity)]
     (if (and p pf)
       (fn f
@@ -106,7 +106,7 @@
            (catch Exception e
              (on-exception e format type))))))))
 
-(defn- create-adapters [formats default-charset allow-empty-input-on-decode?]
+(defn- create-adapters [formats default-charset allow-empty-input?]
   (->> (for [[format {:keys [decoder decoder-opts encoder encoder-opts encode-protocol]}] formats]
          (if-not (or encoder decoder)
            (throw
@@ -116,16 +116,16 @@
                 :formats (keys formats)}))
            [format (records/map->Adapter
                      (merge
-                       (if decoder {:decode (create-coder format :muuntaja/decode decoder decoder-opts default-charset allow-empty-input-on-decode? nil)})
-                       (if encoder {:encode (create-coder format :muuntaja/encode encoder encoder-opts default-charset allow-empty-input-on-decode? encode-protocol)})))]))
+                       (if decoder {:decode (create-coder format :muuntaja/decode decoder decoder-opts default-charset allow-empty-input? nil)})
+                       (if encoder {:encode (create-coder format :muuntaja/encode encoder encoder-opts default-charset allow-empty-input? encode-protocol)})))]))
        (into {})))
 
 (declare default-options)
 (declare http-create)
 
 (defn- -create
-  [{:keys [formats default-format default-charset allow-empty-input-on-decode?] :as options}]
-  (let [adapters (create-adapters formats default-charset allow-empty-input-on-decode?)
+  [{:keys [formats default-format default-charset allow-empty-input?] :as options}]
+  (let [adapters (create-adapters formats default-charset allow-empty-input?)
         valid-format? (key-set formats identity)]
     (when-not (or (not default-format) (valid-format? default-format))
       (throw
@@ -211,7 +211,7 @@
           :decode-request-body? (constantly true)
           :encode-response-body? encode-collections-with-override}
 
-   :allow-empty-input-on-decode? false
+   :allow-empty-input? true
 
    :default-charset "utf-8"
    :charsets available-charsets

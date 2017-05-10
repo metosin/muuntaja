@@ -59,4 +59,4 @@
 
   nil
   (as-input-stream [_]
-    nil))
+    (ByteArrayInputStream. (byte-array 0))))
