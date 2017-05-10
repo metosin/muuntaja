@@ -83,8 +83,7 @@
                 (if (and allow-empty-input? decode?)
                   (fn [^InputStream is charset]
                     (if (pos? (.available is)) ($ is charset)))
-                  (fn [^InputStream is charset]
-                    ($ is charset))))
+                  $))
         prepare (if decode? protocols/as-input-stream identity)]
     (if (and p pf)
       (fn f
