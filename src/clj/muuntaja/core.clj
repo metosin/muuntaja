@@ -132,6 +132,9 @@
           (str "Invalid default format " default-format)
           {:formats valid-format?
            :default-format default-format})))
+    (assert
+      (not (:allow-empty-input-on-decode? options))
+      ":allow-empty-input-on-decode? is deprecated in Muuntaja 0.3.0")
     (->
       (merge
         (dissoc options :formats)

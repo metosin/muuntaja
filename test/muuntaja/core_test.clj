@@ -225,3 +225,8 @@
                 (assoc-in
                   [:formats "application/jsonz" :decoder-opts]
                   {:keywords? false})))))))
+
+(deftest migration-to-0.3.0-test
+  (is (thrown?
+        AssertionError
+        (m/create (assoc m/default-options :allow-empty-input-on-decode? true)))))
