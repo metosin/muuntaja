@@ -104,7 +104,7 @@ Define a function to encode Transit-json:
 
 Muuntaja ships with streaming encoders for both JSON & Transit. With these, the encoded data
 can be lazily written to provided `OutputStream`, avoiding intermediate byte-streams. These encoders
-return a `muuntaja.protocols.StremableResponse` type, which satisifies the following protocols & interfaces:
+return a `muuntaja.protocols.StreamableResponse` type, which satisifies the following protocols & interfaces:
 
 * `ring.protocols.StreamableResponseBody`, Ring 1.6.0 will stream these for you
 * `clojure.lang.IFn`, invoke the result with an OutputStream to write the results into the stream
