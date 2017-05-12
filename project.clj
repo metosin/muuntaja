@@ -6,7 +6,7 @@
             :distribution :repo
             :comments "same as Clojure"}
   :source-paths ["src/clj"]
-  :javac-options ["-Xlint:unchecked"]
+  :javac-options ["-Xlint:unchecked" "-target" "1.7" "-source" "1.7"]
   :java-source-paths ["src/java"]
   :dependencies [[cheshire "5.7.0" :exclusions [com.fasterxml.jackson.core/jackson-core]]
                  [com.fasterxml.jackson.core/jackson-databind "2.8.7"]
