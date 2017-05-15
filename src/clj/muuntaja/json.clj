@@ -50,6 +50,7 @@
   (:import
     com.fasterxml.jackson.databind.ObjectMapper
     com.fasterxml.jackson.databind.module.SimpleModule
+    com.fasstringterxml.jackson.databind.SerializationFeature
     (muuntaja.jackson
       DateSerializer
       FunctionalSerializer
@@ -67,21 +68,25 @@
   "Create a Jackson Databind module to support Clojure datastructures.
 
   See make-mapper docstring for the documentation of the options."
-  [{:keys [keywordize? encoders]}]
+  [{:keys [keywordize? pretty? encoders date-format]}]
   (doto (SimpleModule. "Clojure")
     (.addDeserializer java.util.List (PersistentVectorDeserializer.))
     (.addDeserializer java.util.Map (PersistentHashMapDeserializer.))
     (.addSerializer clojure.lang.Keyword (KeywordSerializer. false))
     (.addSerializer clojure.lang.Ratio (RatioSerializer.))
     (.addSerializer clojure.lang.Symbol (SymbolSerializer.))
-    (.addSerializer java.util.Date (DateSerializer.))
     (.addKeySerializer clojure.lang.Keyword (KeywordSerializer. true))
+    (.addSerializer java.util.Date (if date-format
+                                     (DateSerializer. date-format)
+                                     (DateSerializer.)))
     (as-> module
         (doseq [[cls encoder-fn] encoders]
           (.addSerializer module cls (FunctionalSerializer. encoder-fn))))
     (cond->
-      ;; This key deserializer decodes the map keys into Clojure keywords.
-      keywordize? (.addKeyDeserializer Object (KeywordKeyDeserializer.)))))
+        ;; This key deserializer decodes the map keys into Clojure keywords.
+        keywordize? (.addKeyDeserializer Object (KeywordKeyDeserializer.)))))
+
+;mapper.enable(SerializationFeature.INDENT_OUTPUT)
 
 (defn ^ObjectMapper make-mapper
   "Create an ObjectMapper with Clojure support.
@@ -99,12 +104,13 @@
   ([] (make-mapper {}))
   ([options]
    (doto (ObjectMapper.)
-     (.registerModule (make-clojure-module options)))))
+     (.registerModule (make-clojure-module options))
+     (cond-> (:pretty options) (.enable (SerializationFeature/INDENT_OUTPUT))))))
 
 (def ^ObjectMapper +default-mapper+
   "The default ObjectMapper instance used by muuntaja.json/to-json and
   muuntaja.json/from-json unless you pass in a custom one."
-  (make-mapper))
+  (make-mapper {}))
 
 (defn from-json
   "Decode a value from a JSON string or InputStream.
@@ -116,12 +122,33 @@
      (.readValue mapper ^String data ^Class Object)
      (.readValue mapper ^InputStream data ^Class Object))))
 
+(defn from-json-with-opts
+  "Decode a value from a JSON string or InputStream.
+
+  To configure, pass in an ObjectMapper created with make-mapper."
+  ([data] (from-json data {}))
+  ([data opts]
+   (if (string? data)
+     (.readValue (make-mapper opts) ^String data ^Class Object)
+     (.readValue (make-mapper opts) ^InputStream data ^Class Object))))
+
 (defn ^String to-json
   "Encode a value as a JSON string.
 
   To configure, pass in an ObjectMapper created with make-mapper."
   ([object] (to-json object +default-mapper+))
   ([object ^ObjectMapper mapper] (.writeValueAsString mapper object)))
+
+(defn ^String to-json-with-opts
+  "Encode a value as a JSON string.
+
+  The optional second parameter is a map of options:
+  :encoders     --  a map of custom encoders where keys should be types and values
+                    should be encoder functions
+  :keywordize?  --  set to true to convert map keys into keywords (default: false)
+  :pretty      --  if set to true will use Jacksons PrettyPrinter default options to indent JSON"
+  ([object] (to-json-with-opts object {}))
+  ([object opts] (.writeValueAsString (make-mapper opts) object)))
 
 (defn ^String write-to
   ([object ^Writer writer]
