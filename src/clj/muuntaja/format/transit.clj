@@ -29,12 +29,6 @@
             (transit/writer output-stream full-type options) data)
           (.flush output-stream))))))
 
-(defprotocol EncodeTransitJson
-  (encode-transit-json [this charset]))
-
-(defprotocol EncodeTransitMessagePack
-  (encode-transit-msgpack [this charset]))
-
 ;;
 ;; formats
 ;;
@@ -43,8 +37,7 @@
 
 (def transit-json-format
   {:decoder [(partial make-transit-decoder :json)]
-   :encoder [(partial make-transit-encoder :json)]
-   :encode-protocol [EncodeTransitJson encode-transit-json]})
+   :encoder [(partial make-transit-encoder :json)]})
 
 (defn with-transit-json-format [options]
   (assoc-in options [:formats transit-json-type] transit-json-format))
@@ -59,8 +52,7 @@
 
 (def transit-msgpack-format
   {:decoder [(partial make-transit-decoder :msgpack)]
-   :encoder [(partial make-transit-encoder :msgpack)]
-   :encode-protocol [EncodeTransitMessagePack encode-transit-msgpack]})
+   :encoder [(partial make-transit-encoder :msgpack)]})
 
 (defn with-transit-msgpack-format [options]
   (assoc-in options [:formats transit-msgpack-type] transit-msgpack-format))

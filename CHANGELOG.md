@@ -1,5 +1,8 @@
 ## 0.3.0-SNAPSHOT
 
+* **BREAKING**: Drop default support for manual encoding of records.
+  * Guide how to enable it in the wiki: https://github.com/metosin/muuntaja/wiki/Configuration#manual-encoding
+
 * **BREAKING**: Handling empty responses
   * `:allow-empty-input-on-decode?` is now called `:allow-empty-input?`. It's a boolean:
     * `true` (default): empty input(stream) is decoded into `nil`
