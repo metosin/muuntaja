@@ -34,9 +34,6 @@
       (ByteArrayInputStream.
         (.toByteArray out-stream)))))
 
-(defprotocol EncodeMsgpack
-  (encode-msgpack [this charset]))
-
 ;;
 ;; format
 ;;
@@ -45,8 +42,7 @@
 
 (def msgpack-format
   {:decoder [make-msgpack-decoder {:keywords? true}]
-   :encoder [make-msgpack-encoder]
-   :encode-protocol [EncodeMsgpack encode-msgpack]})
+   :encoder [make-msgpack-encoder]})
 
 (defn with-msgpack-format [options]
   (assoc-in options [:formats msgpack-type] msgpack-format))

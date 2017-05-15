@@ -222,9 +222,7 @@
    :formats {"application/json" json-format/json-format
              "application/edn" edn-format/edn-format
              "application/transit+json" transit-format/transit-json-format
-             "application/transit+msgpack" transit-format/transit-msgpack-format
-             #_#_"application/msgpack" msgpack-format/msgpack-format
-             #_#_"application/x-yaml" yaml-format/yaml-format}})
+             "application/transit+msgpack" transit-format/transit-msgpack-format}})
 
 ;;
 ;; HTTP stuff

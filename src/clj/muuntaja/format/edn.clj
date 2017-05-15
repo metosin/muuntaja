@@ -20,9 +20,6 @@
   (fn [data _]
     (pr-str data)))
 
-(defprotocol EncodeEdn
-  (encode-edn [this charset]))
-
 ;;
 ;; format
 ;;
@@ -31,8 +28,7 @@
 
 (def edn-format
   {:decoder [make-edn-decoder]
-   :encoder [make-edn-encoder]
-   :encode-protocol [EncodeEdn encode-edn]})
+   :encoder [make-edn-encoder]})
 
 (defn with-edn-format [options]
   (assoc-in options [:formats edn-type] edn-format))

@@ -191,17 +191,13 @@ be used in the response pipeline.
 
  :default-format "application/json"
  :formats {"application/json" {:decoder [formats/make-json-decoder {:key-fn true}]
-                               :encoder [formats/make-json-encoder]
-                               :encode-protocol [formats/EncodeJson formats/encode-json]}
+                               :encoder [formats/make-json-encoder]}
            "application/edn" {:decoder [formats/make-edn-decoder]
-                              :encoder [formats/make-edn-encoder]
-                              :encode-protocol [formats/EncodeEdn formats/encode-edn]}
+                              :encoder [formats/make-edn-encoder]}
            "application/transit+json" {:decoder [(partial formats/make-transit-decoder :json)]
-                                       :encoder [(partial formats/make-transit-encoder :json)]
-                                       :encode-protocol [formats/EncodeTransitJson formats/encode-transit-json]}
+                                       :encoder [(partial formats/make-transit-encoder :json)]}
            "application/transit+msgpack" {:decoder [(partial formats/make-transit-decoder :msgpack)]
-                                          :encoder [(partial formats/make-transit-encoder :msgpack)]
-                                          :encode-protocol [formats/EncodeTransitMessagePack formats/encode-transit-msgpack]}}}
+                                          :encoder [(partial formats/make-transit-encoder :msgpack)]}}}
 
 ```
 

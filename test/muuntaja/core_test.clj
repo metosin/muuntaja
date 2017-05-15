@@ -20,8 +20,11 @@
     (.set nil nil))
   nil)
 
+(defprotocol EncodeJson
+  (encode-json [this charset]))
+
 (defrecord Hello [^String name]
-  json-format/EncodeJson
+  EncodeJson
   (encode-json [_ charset]
     (to-byte-stream (json/to-json {"hello" name}) charset)))
 
@@ -166,7 +169,12 @@
               (json-decoder "{:invalid :syntax}"))))))
 
   (testing "encode-protocol"
-    (let [encoder (m/encoder (m/create) "application/json")]
+    (let [m (m/create
+              (-> m/default-options
+                  (assoc-in
+                    [:formats "application/json" :encode-protocol]
+                    [EncodeJson encode-json])))
+          encoder (m/encoder m "application/json")]
       (is (= "{\"hello\":\"Nekala\"}" (slurp (encoder (->Hello "Nekala") "utf-8"))))
       (is (= "{\"hello\":\"Nekala\"}" (slurp (encoder (->Hello "Nekala") "utf-16") :encoding "UTF-16")))))
 

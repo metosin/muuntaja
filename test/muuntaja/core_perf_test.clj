@@ -58,8 +58,17 @@
 (defn- to-byte-stream [^String x ^String charset]
   (ByteArrayInputStream. (.getBytes x charset)))
 
+(defprotocol EncodeJson
+  (encode-json [this charset]))
+
+(def default-options-with-encode-protocol
+  (-> m/default-options
+      (assoc-in
+        [:formats "application/json" :encode-protocol]
+        [EncodeJson encode-json])))
+
 (defrecord Hello [^String name]
-  json-format/EncodeJson
+  EncodeJson
   (encode-json [_ charset]
     (to-byte-stream (json/to-json {"hello" name}) charset)))
 
@@ -378,7 +387,7 @@
   ; 3.3µs (negotions)
   ; 3.2µs (content-type)
   ; 3.3µs && 5.7µs
-  (let [app (middleware/wrap-format +handler2+ m/default-options)
+  (let [app (middleware/wrap-format +handler2+ default-options-with-encode-protocol)
         request! (request-stream +json-request+)]
 
     (title "muuntaja: JSON-REQUEST-RESPONSE (PROTOCOL)")
@@ -698,9 +707,8 @@
 
     (save-results! (format "perf/interceptor/json-results%s.edn" (next-number)) @results)))
 
-
 (defrecord Json10b [^Long imu]
-  json-format/EncodeJson
+  EncodeJson
   (encode-json [_ charset]
     (to-byte-stream (json/to-json {:imu imu}) charset)))
 
@@ -711,8 +719,8 @@
         request! (request-stream request)]
 
     ; 5.4µs (10b)
-    (title "muuntaja: JSON-REQUEST-RESPONSE (hand-crafted)z")
-    (let [app (-> handler (middleware/wrap-format))]
+    (title "muuntaja: JSON-REQUEST-RESPONSE (hand-crafted)")
+    (let [app (-> handler (middleware/wrap-format default-options-with-encode-protocol))]
       #_(println (str (ring-stream! (app (request!)))))
       (cc/quick-bench (ring-stream! (app (request!)))))))
 

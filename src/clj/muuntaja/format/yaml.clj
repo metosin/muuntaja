@@ -17,9 +17,6 @@
         (.getBytes
           ^String (apply yaml/generate-string data options-args))))))
 
-(defprotocol EncodeYaml
-  (encode-yaml [this charset]))
-
 ;;
 ;; format
 ;;
@@ -28,8 +25,7 @@
 
 (def yaml-format
   {:decoder [make-yaml-decoder {:keywords true}]
-   :encoder [make-yaml-encoder]
-   :encode-protocol [EncodeYaml encode-yaml]})
+   :encoder [make-yaml-encoder]})
 
 (defn with-yaml-format [options]
   (assoc-in options [:formats yaml-type] yaml-format))

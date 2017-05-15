@@ -35,9 +35,6 @@
           options)
         (.flush output-stream)))))
 
-(defprotocol EncodeJson
-  (encode-json [this charset]))
-
 ;; muuntaja.json - experimental
 
 (defn ^:no-doc make-muuntaja-json-decoder [{:keys [keywords?]}]
@@ -71,16 +68,14 @@
 
 (def json-format
   {:decoder [make-json-decoder {:key-fn true}]
-   :encoder [make-json-encoder]
-   :encode-protocol [EncodeJson encode-json]})
+   :encoder [make-json-encoder]})
 
 (def streaming-json-format
   (assoc json-format :encoder [make-streaming-json-encoder]))
 
 (def muuntaja-json-format
   {:decoder [make-muuntaja-json-decoder {:keywords? true}]
-   :encoder [make-muuntaja-json-encoder]
-   :encode-protocol [EncodeJson encode-json]})
+   :encoder [make-muuntaja-json-encoder]})
 
 (def streaming-muuntaja-json-format
   (assoc muuntaja-json-format :encoder [make-streaming-muuntaja-json-encoder]))
