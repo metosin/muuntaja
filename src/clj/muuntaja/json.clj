@@ -92,7 +92,7 @@
 
   The optional first parameter is a map of options. The following options are
   available:
-  Encodin options: 
+  Encoding options: 
   :pretty           -- set to true use Jacksons pretty-printing defaults
   :escape-non-ascii -- set to true to escape non ascii characters
   :date-format      -- string for custom date formatting. If not set will use default \"yyyy-MM-dd'T'HH:mm:ss'Z'\"
@@ -101,7 +101,7 @@
   Encoder functions take two parameters: the value to be encoded and a
   JsonGenerator object. The function should call JsonGenerator methods to emit
   the desired JSON.
-  Decodin options:
+  Decoding options:
   :keywordize?  --  set to true to convert map keys into keywords (default: false)"
   ([] (make-mapper {}))
   ([options]
