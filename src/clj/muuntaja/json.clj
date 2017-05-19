@@ -92,14 +92,17 @@
 
   The optional first parameter is a map of options. The following options are
   available:
-
+  Encodin options: 
+  :pretty           -- set to true use Jacksons pretty-printing defaults
+  :escape-non-ascii -- set to true to escape non ascii characters
+  :date-format      -- string for custom date formatting. If not set will use default \"yyyy-MM-dd'T'HH:mm:ss'Z'\"
   :encoders     --  a map of custom encoders where keys should be types and values
                     should be encoder functions
-  :keywordize?  --  set to true to convert map keys into keywords (default: false)
-
   Encoder functions take two parameters: the value to be encoded and a
   JsonGenerator object. The function should call JsonGenerator methods to emit
-  the desired JSON."
+  the desired JSON.
+  Decodin options:
+  :keywordize?  --  set to true to convert map keys into keywords (default: false)"
   ([] (make-mapper {}))
   ([options]
    (doto (ObjectMapper.)
@@ -116,30 +119,28 @@
 (defn from-json
   "Decode a value from a JSON string or InputStream.
 
-  To configure, pass in an ObjectMapper created with make-mapper."
+  To configure, pass in an ObjectMapper created with make-mapper, or pass in a map with options.
+  See make-mapper docstring for available options"
   ([data] (from-json data +default-mapper+))
-  ([data arg]
+  ([data opts-or-mapper]
    (let [mapper (cond
-                  (map? arg) (make-mapper arg)
-                  (instance? ObjectMapper arg) arg)]
+                  (map? opts-or-mapper) (make-mapper opts-or-mapper)
+                  (instance? ObjectMapper opts-or-mapper) opts-or-mapper)]
      (if (string? data)
-       (.readValue mapper ^String data ^Class Object)
-       (.readValue mapper ^InputStream data ^Class Object)))))
+       (.readValue ^ObjectMapper mapper ^String data ^Class Object)
+       (.readValue ^ObjectMapper mapper ^InputStream data ^Class Object)))))
 
 (defn ^String to-json
   "Encode a value as a JSON string.
 
-  To configure, pass in an ObjectMapper created with make-mapper, or pass in map with options.
-  Available options:
-  :pretty           -- set to true use jacksons pretty-printing defaults
-  :escape-non-ascii -- set to true to escape non ascii characters
-  :date-format      -- string for custom date formatting. If not set will use default \"yyyy-MM-dd'T'HH:mm:ss'Z'\""
+  To configure, pass in an ObjectMapper created with make-mapper, or pass in a map with options.
+  See make-mapper docstring for available options"
   ([object] (to-json object +default-mapper+))
-  ([object arg]
+  ([object opts-or-mapper]
    (let [mapper (cond
-                  (map? arg) (make-mapper arg)
-                  (instance? ObjectMapper arg) arg)]
-     (.writeValueAsString mapper object))))
+                  (map? opts-or-mapper) (make-mapper opts-or-mapper)
+                  (instance? ObjectMapper opts-or-mapper) opts-or-mapper)]
+     (.writeValueAsString ^ObjectMapper mapper object))))
 
 (defn ^String write-to
   ([object ^Writer writer]
