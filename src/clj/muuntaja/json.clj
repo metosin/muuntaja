@@ -50,7 +50,8 @@
   (:import
     com.fasterxml.jackson.databind.ObjectMapper
     com.fasterxml.jackson.databind.module.SimpleModule
-    com.fasstringterxml.jackson.databind.SerializationFeature
+    com.fasterxml.jackson.databind.SerializationFeature
+    com.fasterxml.jackson.core.JsonGenerator$Feature
     (muuntaja.jackson
       DateSerializer
       FunctionalSerializer
@@ -86,8 +87,6 @@
         ;; This key deserializer decodes the map keys into Clojure keywords.
         keywordize? (.addKeyDeserializer Object (KeywordKeyDeserializer.)))))
 
-;mapper.enable(SerializationFeature.INDENT_OUTPUT)
-
 (defn ^ObjectMapper make-mapper
   "Create an ObjectMapper with Clojure support.
 
@@ -105,7 +104,9 @@
   ([options]
    (doto (ObjectMapper.)
      (.registerModule (make-clojure-module options))
-     (cond-> (:pretty options) (.enable (SerializationFeature/INDENT_OUTPUT))))))
+     (cond-> (:pretty options) (.enable SerializationFeature/INDENT_OUTPUT)
+             (:escape-non-ascii options) (.enable ^"[Lcom.fasterxml.jackson.core.JsonGenerator$Feature;"
+                                                  (into-array [JsonGenerator$Feature/ESCAPE_NON_ASCII]))))))
 
 (def ^ObjectMapper +default-mapper+
   "The default ObjectMapper instance used by muuntaja.json/to-json and
