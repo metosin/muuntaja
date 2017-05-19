@@ -69,7 +69,7 @@
   "Create a Jackson Databind module to support Clojure datastructures.
 
   See make-mapper docstring for the documentation of the options."
-  [{:keys [keywordize? pretty? encoders date-format]}]
+  [{:keys [keywordize? encoders date-format]}]
   (doto (SimpleModule. "Clojure")
     (.addDeserializer java.util.List (PersistentVectorDeserializer.))
     (.addDeserializer java.util.Map (PersistentHashMapDeserializer.))
@@ -118,38 +118,26 @@
 
   To configure, pass in an ObjectMapper created with make-mapper."
   ([data] (from-json data +default-mapper+))
-  ([data ^ObjectMapper mapper]
-   (if (string? data)
-     (.readValue mapper ^String data ^Class Object)
-     (.readValue mapper ^InputStream data ^Class Object))))
-
-(defn from-json-with-opts
-  "Decode a value from a JSON string or InputStream.
-
-  To configure, pass in an ObjectMapper created with make-mapper."
-  ([data] (from-json data {}))
-  ([data opts]
-   (if (string? data)
-     (.readValue (make-mapper opts) ^String data ^Class Object)
-     (.readValue (make-mapper opts) ^InputStream data ^Class Object))))
+  ([data arg]
+   (let [decode (fn [data ^ObjectMapper mapper]
+                  (if (string? data)
+                    (.readValue mapper ^String data ^Class Object)
+                    (.readValue mapper ^InputStream data ^Class Object)))]
+     (cond
+       (map? arg) (decode data (make-mapper arg))
+       (instance? ObjectMapper arg) (decode data arg)))))
 
 (defn ^String to-json
   "Encode a value as a JSON string.
 
   To configure, pass in an ObjectMapper created with make-mapper."
   ([object] (to-json object +default-mapper+))
-  ([object ^ObjectMapper mapper] (.writeValueAsString mapper object)))
-
-(defn ^String to-json-with-opts
-  "Encode a value as a JSON string.
-
-  The optional second parameter is a map of options:
-  :encoders     --  a map of custom encoders where keys should be types and values
-                    should be encoder functions
-  :keywordize?  --  set to true to convert map keys into keywords (default: false)
-  :pretty      --  if set to true will use Jacksons PrettyPrinter default options to indent JSON"
-  ([object] (to-json-with-opts object {}))
-  ([object opts] (.writeValueAsString (make-mapper opts) object)))
+  ([object arg]
+   (let [encode (fn [object ^ObjectMapper mapper]
+                  (.writeValueAsString mapper object))]
+     (cond
+       (map? arg) (encode object (make-mapper arg))
+       (instance? ObjectMapper arg) (encode object arg)))))
 
 (defn ^String write-to
   ([object ^Writer writer]
