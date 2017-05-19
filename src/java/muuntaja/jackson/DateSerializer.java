@@ -18,7 +18,7 @@ public class DateSerializer extends StdSerializer<Date> {
     }
 
     public DateSerializer() {
-        this("yyyy-MM-dd'T'HH:mm:ss'Z'")
+        this("yyyy-MM-dd'T'HH:mm:ss'Z'");
     }
 
     @Override
