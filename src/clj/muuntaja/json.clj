@@ -119,25 +119,27 @@
   To configure, pass in an ObjectMapper created with make-mapper."
   ([data] (from-json data +default-mapper+))
   ([data arg]
-   (let [decode (fn [data ^ObjectMapper mapper]
-                  (if (string? data)
-                    (.readValue mapper ^String data ^Class Object)
-                    (.readValue mapper ^InputStream data ^Class Object)))]
-     (cond
-       (map? arg) (decode data (make-mapper arg))
-       (instance? ObjectMapper arg) (decode data arg)))))
+   (let [mapper (cond
+                  (map? arg) (make-mapper arg)
+                  (instance? ObjectMapper arg) arg)]
+     (if (string? data)
+       (.readValue mapper ^String data ^Class Object)
+       (.readValue mapper ^InputStream data ^Class Object)))))
 
 (defn ^String to-json
   "Encode a value as a JSON string.
 
-  To configure, pass in an ObjectMapper created with make-mapper."
+  To configure, pass in an ObjectMapper created with make-mapper, or pass in map with options.
+  Available options:
+  :pretty           -- set to true use jacksons pretty-printing defaults
+  :escape-non-ascii -- set to true to escape non ascii characters
+  :date-format      -- string for custom date formatting. If not set will use default \"yyyy-MM-dd'T'HH:mm:ss'Z'\""
   ([object] (to-json object +default-mapper+))
   ([object arg]
-   (let [encode (fn [object ^ObjectMapper mapper]
-                  (.writeValueAsString mapper object))]
-     (cond
-       (map? arg) (encode object (make-mapper arg))
-       (instance? ObjectMapper arg) (encode object arg)))))
+   (let [mapper (cond
+                  (map? arg) (make-mapper arg)
+                  (instance? ObjectMapper arg) arg)]
+     (.writeValueAsString mapper object))))
 
 (defn ^String write-to
   ([object ^Writer writer]
