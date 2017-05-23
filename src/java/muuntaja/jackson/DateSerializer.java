@@ -11,10 +11,14 @@ import java.text.SimpleDateFormat;
 public class DateSerializer extends StdSerializer<Date> {
     private final SimpleDateFormat formatter;
 
-    public DateSerializer() {
+    public DateSerializer(String dateFormat) {
         super(DateSerializer.class, true);
-        formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+        formatter = new SimpleDateFormat(dateFormat);
         formatter.setTimeZone(new SimpleTimeZone(0, "UTC"));
+    }
+
+    public DateSerializer() {
+        this("yyyy-MM-dd'T'HH:mm:ss'Z'");
     }
 
     @Override

@@ -50,6 +50,8 @@
   (:import
     com.fasterxml.jackson.databind.ObjectMapper
     com.fasterxml.jackson.databind.module.SimpleModule
+    com.fasterxml.jackson.databind.SerializationFeature
+    com.fasterxml.jackson.core.JsonGenerator$Feature
     (muuntaja.jackson
       DateSerializer
       FunctionalSerializer
@@ -67,61 +69,78 @@
   "Create a Jackson Databind module to support Clojure datastructures.
 
   See make-mapper docstring for the documentation of the options."
-  [{:keys [keywordize? encoders]}]
+  [{:keys [keywordize? encoders date-format]}]
   (doto (SimpleModule. "Clojure")
     (.addDeserializer java.util.List (PersistentVectorDeserializer.))
     (.addDeserializer java.util.Map (PersistentHashMapDeserializer.))
     (.addSerializer clojure.lang.Keyword (KeywordSerializer. false))
     (.addSerializer clojure.lang.Ratio (RatioSerializer.))
     (.addSerializer clojure.lang.Symbol (SymbolSerializer.))
-    (.addSerializer java.util.Date (DateSerializer.))
     (.addKeySerializer clojure.lang.Keyword (KeywordSerializer. true))
+    (.addSerializer java.util.Date (if date-format
+                                     (DateSerializer. date-format)
+                                     (DateSerializer.)))
     (as-> module
         (doseq [[cls encoder-fn] encoders]
           (.addSerializer module cls (FunctionalSerializer. encoder-fn))))
     (cond->
-      ;; This key deserializer decodes the map keys into Clojure keywords.
-      keywordize? (.addKeyDeserializer Object (KeywordKeyDeserializer.)))))
+        ;; This key deserializer decodes the map keys into Clojure keywords.
+        keywordize? (.addKeyDeserializer Object (KeywordKeyDeserializer.)))))
 
 (defn ^ObjectMapper make-mapper
   "Create an ObjectMapper with Clojure support.
 
   The optional first parameter is a map of options. The following options are
   available:
-
+  Encoding options: 
+  :pretty           -- set to true use Jacksons pretty-printing defaults
+  :escape-non-ascii -- set to true to escape non ascii characters
+  :date-format      -- string for custom date formatting. If not set will use default \"yyyy-MM-dd'T'HH:mm:ss'Z'\"
   :encoders     --  a map of custom encoders where keys should be types and values
                     should be encoder functions
-  :keywordize?  --  set to true to convert map keys into keywords (default: false)
-
   Encoder functions take two parameters: the value to be encoded and a
   JsonGenerator object. The function should call JsonGenerator methods to emit
-  the desired JSON."
+  the desired JSON.
+  Decoding options:
+  :keywordize?  --  set to true to convert map keys into keywords (default: false)"
   ([] (make-mapper {}))
   ([options]
    (doto (ObjectMapper.)
-     (.registerModule (make-clojure-module options)))))
+     (.registerModule (make-clojure-module options))
+     (cond-> (:pretty options) (.enable SerializationFeature/INDENT_OUTPUT)
+             (:escape-non-ascii options) (.enable ^"[Lcom.fasterxml.jackson.core.JsonGenerator$Feature;"
+                                                  (into-array [JsonGenerator$Feature/ESCAPE_NON_ASCII]))))))
 
 (def ^ObjectMapper +default-mapper+
   "The default ObjectMapper instance used by muuntaja.json/to-json and
   muuntaja.json/from-json unless you pass in a custom one."
-  (make-mapper))
+  (make-mapper {}))
 
 (defn from-json
   "Decode a value from a JSON string or InputStream.
 
-  To configure, pass in an ObjectMapper created with make-mapper."
+  To configure, pass in an ObjectMapper created with make-mapper, or pass in a map with options.
+  See make-mapper docstring for available options"
   ([data] (from-json data +default-mapper+))
-  ([data ^ObjectMapper mapper]
-   (if (string? data)
-     (.readValue mapper ^String data ^Class Object)
-     (.readValue mapper ^InputStream data ^Class Object))))
+  ([data opts-or-mapper]
+   (let [mapper (cond
+                  (map? opts-or-mapper) (make-mapper opts-or-mapper)
+                  (instance? ObjectMapper opts-or-mapper) opts-or-mapper)]
+     (if (string? data)
+       (.readValue ^ObjectMapper mapper ^String data ^Class Object)
+       (.readValue ^ObjectMapper mapper ^InputStream data ^Class Object)))))
 
 (defn ^String to-json
   "Encode a value as a JSON string.
 
-  To configure, pass in an ObjectMapper created with make-mapper."
+  To configure, pass in an ObjectMapper created with make-mapper, or pass in a map with options.
+  See make-mapper docstring for available options"
   ([object] (to-json object +default-mapper+))
-  ([object ^ObjectMapper mapper] (.writeValueAsString mapper object)))
+  ([object opts-or-mapper]
+   (let [mapper (cond
+                  (map? opts-or-mapper) (make-mapper opts-or-mapper)
+                  (instance? ObjectMapper opts-or-mapper) opts-or-mapper)]
+     (.writeValueAsString ^ObjectMapper mapper object))))
 
 (defn ^String write-to
   ([object ^Writer writer]
