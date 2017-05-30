@@ -6,7 +6,7 @@
             [muuntaja.format.json :as json-format]
             [muuntaja.format.msgpack :as msgpack-format]
             [muuntaja.format.yaml :as yaml-format]
-            [muuntaja.json :as json])
+            [jsonista.core :as jsonista])
   (:import (java.nio.charset Charset)
            (java.io ByteArrayInputStream)))
 
@@ -26,7 +26,7 @@
 (defrecord Hello [^String name]
   EncodeJson
   (encode-json [_ charset]
-    (to-byte-stream (json/to-json {"hello" name}) charset)))
+    (to-byte-stream (jsonista/to-json {"hello" name}) charset)))
 
 (defmacro with-default-charset [charset & body]
   `(let [old-charset# (str (Charset/defaultCharset))]

@@ -12,7 +12,7 @@
             [io.pedestal.http]
             [io.pedestal.http.body-params]
             [io.pedestal.http.content-negotiation]
-            [muuntaja.json :as json]
+            [jsonista.core :as jsonista]
             [muuntaja.format.json :as json-format]
             [muuntaja.format.transit :as transit-format]
             [muuntaja.format.transit :as transit]
@@ -70,7 +70,7 @@
 (defrecord Hello [^String name]
   EncodeJson
   (encode-json [_ charset]
-    (to-byte-stream (json/to-json {"hello" name}) charset)))
+    (to-byte-stream (jsonista/to-json {"hello" name}) charset)))
 
 (def +handler+ (fn [request] {:status 200 :body (:body-params request)}))
 (def +handler2+ (fn [_] {:status 200 :body (->Hello "yello")}))
@@ -563,7 +563,7 @@
                                 (assoc-in
                                   m/default-options
                                   [:formats "application/json"]
-                                  json-format/muuntaja-json-format)))]
+                                  json-format/jsonista-format)))]
         (report-bench results :json size "muuntaja (jackson)" (ring-stream! (app (request!)))))
 
       ;    4µs (10b)
@@ -575,7 +575,7 @@
                                 (assoc-in
                                   m/default-options
                                   [:formats "application/json"]
-                                  json-format/streaming-muuntaja-json-format)))]
+                                  json-format/streaming-jsonista-format)))]
         (report-bench results :json size "muuntaja (streaming)" (ring-stream! (app (request!))))))
 
     (save-results! (format "perf/middleware/json-results%s.edn" (next-number)) @results)))
@@ -700,7 +700,7 @@
       ;  153µs (10k)
       ; 1410µs (100k)
       (let [{:keys [enter leave]} (interceptor/format
-                                    (json-format/with-streaming-muuntaja-json-format m/default-options))
+                                    (json-format/with-streaming-jsonista-format m/default-options))
             handler (fn [ctx] (assoc ctx :response {:status 200 :body (-> ctx :request :body-params)}))
             app (fn [ctx] (-> ctx enter handler leave :response))]
         (report-bench results :json size "muuntaja (jackson)" (fn-stream! (app (request!))))))
@@ -710,9 +710,9 @@
 (defrecord Json10b [^Long imu]
   EncodeJson
   (encode-json [_ charset]
-    (to-byte-stream (json/to-json {:imu imu}) charset)))
+    (to-byte-stream (jsonista/to-json {:imu imu}) charset)))
 
-(defn e2e-muuntaja-json []
+(defn e2e-jsonista []
   (let [data (->Json10b 42)
         handler (fn [_] {:status 200 :body data})
         request (json-request data)
@@ -752,7 +752,7 @@
   (e2e-json-comparison-different-payloads)
   (e2e-transit-comparison-different-payloads)
   (e2e-json-interceptor-comparison-different-payloads)
-  (e2e-muuntaja-json)
+  (e2e-jsonista)
   (all))
 
 (comment

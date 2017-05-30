@@ -9,8 +9,7 @@
   :javac-options ["-Xlint:unchecked" "-target" "1.7" "-source" "1.7"]
   :java-source-paths ["src/java"]
   :dependencies [[cheshire "5.7.1" :exclusions [com.fasterxml.jackson.core/jackson-core]]
-                 [com.fasterxml.jackson.core/jackson-databind "2.8.7"]
-                 [com.fasterxml.jackson.core/jackson-core "2.8.7"]
+                 [metosin/jsonista "0.1.0-SNAPSHOT"]
                  [com.cognitect/transit-clj "0.8.300"]]
   :plugins [[lein-codox "0.10.3"]]
   :codox {:src-uri "http://github.com/metosin/muuntaja/blob/master/{filepath}#L{line}"
@@ -18,7 +17,7 @@
           :defaults {:doc/format :markdown}}
   :profiles {:dev {:jvm-opts ^:replace ["-server"]
                    :dependencies [[org.clojure/clojure "1.8.0"]
-                                  [ring/ring-core "1.6.0"]
+                                  [ring/ring-core "1.6.1"]
                                   [ring-middleware-format "0.7.2"]
                                   [ring-transit "0.1.6"]
                                   [ring/ring-json "0.4.0"]

@@ -1,3 +1,7 @@
+## Unreleased
+
+* **BREAKING**: muuntaja.json is now a separate library, [jsonista](https://github.com/metosin/jsonista)
+
 ## 0.3.0-SNAPSHOT
 
 * **BREAKING**: Drop default support for custom encoding of records.
