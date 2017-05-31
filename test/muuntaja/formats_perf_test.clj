@@ -6,7 +6,7 @@
             [muuntaja.format.msgpack :as msgpack-format]
             [muuntaja.format.transit :as transit-format]
             [muuntaja.format.yaml :as yaml-format]
-            [muuntaja.json]
+            [jsonista.core]
             [ring.core.protocols :as protocols]
             [clojure.java.io :as io])
   (:import (java.io ByteArrayOutputStream ByteArrayInputStream)))
@@ -123,10 +123,10 @@
         (call)))
 
     ;; 2.4µs
-    (title "ring: json: inputstream (muuntaja.json)")
+    (title "ring: json: inputstream (jsonista)")
     (let [call #(let [baos (stream)]
                   (ring-write
-                    (ByteArrayInputStream. (.getBytes (muuntaja.json/to-json {"kikka" 2})))
+                    (ByteArrayInputStream. (.getBytes (jsonista.core/to-json {"kikka" 2})))
                     baos)
                   baos)]
 
