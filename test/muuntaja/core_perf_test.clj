@@ -14,6 +14,7 @@
             [io.pedestal.http.content-negotiation]
             [jsonista.core :as jsonista]
             [muuntaja.format.json :as json-format]
+            [muuntaja.format.jsonista :as jsonista-format]
             [muuntaja.format.transit :as transit-format]
             [muuntaja.format.transit :as transit]
             [ring.core.protocols :as protocols]
@@ -563,7 +564,7 @@
                                 (assoc-in
                                   m/default-options
                                   [:formats "application/json"]
-                                  json-format/jsonista-format)))]
+                                  jsonista-format/json-format)))]
         (report-bench results :json size "muuntaja (jackson)" (ring-stream! (app (request!)))))
 
       ;    4µs (10b)
@@ -575,7 +576,7 @@
                                 (assoc-in
                                   m/default-options
                                   [:formats "application/json"]
-                                  json-format/streaming-jsonista-format)))]
+                                  jsonista-format/streaming-json-format)))]
         (report-bench results :json size "muuntaja (streaming)" (ring-stream! (app (request!))))))
 
     (save-results! (format "perf/middleware/json-results%s.edn" (next-number)) @results)))
@@ -700,7 +701,7 @@
       ;  153µs (10k)
       ; 1410µs (100k)
       (let [{:keys [enter leave]} (interceptor/format
-                                    (json-format/with-streaming-jsonista-format m/default-options))
+                                    (jsonista-format/with-streaming-json-format m/default-options))
             handler (fn [ctx] (assoc ctx :response {:status 200 :body (-> ctx :request :body-params)}))
             app (fn [ctx] (-> ctx enter handler leave :response))]
         (report-bench results :json size "muuntaja (jackson)" (fn-stream! (app (request!))))))

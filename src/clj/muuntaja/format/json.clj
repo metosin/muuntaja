@@ -1,8 +1,7 @@
 (ns muuntaja.format.json
   (:require [cheshire.core :as cheshire]
             [cheshire.parse :as parse]
-            [muuntaja.protocols :as protocols]
-            [jsonista.core :as jsonista])
+            [muuntaja.protocols :as protocols])
   (:import (java.io InputStreamReader InputStream ByteArrayInputStream OutputStreamWriter OutputStream)))
 
 (defn make-json-decoder [{:keys [key-fn array-coerce-fn bigdecimals?]}]
@@ -35,27 +34,6 @@
           options)
         (.flush output-stream)))))
 
-;; jsonista - experimental
-
-(defn ^:no-doc make-jsonista-decoder [{:keys [keywords?]}]
-  (let [mapper (jsonista/make-mapper {:keywordize? keywords?})]
-    (fn [x ^String charset]
-      (jsonista/from-json x mapper))))
-
-(defn ^:no-doc make-jsonista-encoder [options]
-  (fn [data ^String charset]
-    (ByteArrayInputStream. (.getBytes (jsonista/to-json data) charset))))
-
-(defn make-streaming-jsonista-encoder [{:keys [keywords?]}]
-  (let [mapper (jsonista/make-mapper {:keywordize? keywords?})]
-    (fn [data ^String charset]
-      (protocols/->StreamableResponse
-        (fn [^OutputStream output-stream]
-          (jsonista/write-to
-            data
-            (OutputStreamWriter. output-stream charset)
-            mapper))))))
-
 ;;
 ;; format
 ;;
@@ -73,13 +51,6 @@
 (def streaming-json-format
   (assoc json-format :encoder [make-streaming-json-encoder]))
 
-(def jsonista-format
-  {:decoder [make-jsonista-decoder {:keywords? true}]
-   :encoder [make-jsonista-encoder]})
-
-(def streaming-jsonista-format
-  (assoc jsonista-format :encoder [make-streaming-jsonista-encoder]))
-
 ;; options
 
 (defn with-json-format [options]
@@ -87,9 +58,3 @@
 
 (defn with-streaming-json-format [options]
   (assoc-in options [:formats json-type] streaming-json-format))
-
-(defn with-jsonista-format [options]
-  (assoc-in options [:formats json-type] jsonista-format))
-
-(defn with-streaming-jsonista-format [options]
-  (assoc-in options [:formats json-type] streaming-jsonista-format))
