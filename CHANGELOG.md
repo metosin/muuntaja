@@ -18,6 +18,10 @@
 [cheshire "5.7.1"] is available but we use "5.7.0"
 ```
 
+## 0.2.2 (11.6.2017)
+
+* Support Java 1.7, fixes [#50](https://github.com/metosin/muuntaja/issues/50)
+
 ## 0.2.1 (2.4.2017)
 
 * removed direct dependencies to msgpack, fixes [#39](https://github.com/metosin/muuntaja/issues/39).
