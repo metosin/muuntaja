@@ -4,6 +4,7 @@
             [clojure.string :as str]
             [muuntaja.protocols :as protocols]
             [muuntaja.format.json :as json-format]
+            [muuntaja.format.jsonista :as jsonista-format]
             [muuntaja.format.msgpack :as msgpack-format]
             [muuntaja.format.yaml :as yaml-format]
             [jsonista.core :as jsonista])
@@ -36,10 +37,16 @@
        (finally
          (set-jvm-default-charset! old-charset#)))))
 
+;; Since Cheshire already uses "application/json", let's put jsonista under
+;; another mime type for the tests.
+(defn- with-jsonista-format [options]
+  (assoc-in options [:formats "application/json+jsonista"] jsonista-format/json-format))
+
 (def m (m/create
          (-> m/default-options
              (msgpack-format/with-msgpack-format)
-             (yaml-format/with-yaml-format))))
+             (yaml-format/with-yaml-format)
+             (with-jsonista-format))))
 
 (deftest core-test
   (testing "encode & decode"
@@ -52,6 +59,7 @@
       (are [format]
         (= data (m/decode m format (m/encode m format data)))
         "application/json"
+        "application/json+jsonista"
         "application/edn"
         "application/x-yaml"
         "application/msgpack"
@@ -72,6 +80,7 @@
                (-> m/default-options
                    (msgpack-format/with-msgpack-format)
                    (yaml-format/with-yaml-format)
+                   (with-jsonista-format)
                    (assoc :allow-empty-input? false)))]
 
       (testing "by default - nil is returned for empty stream"
@@ -87,7 +96,7 @@
       (testing "all formats"
         (testing "with :allow-empty-input? false"
 
-          (testing "json & yaml return nil"
+          (testing "cheshire json & yaml return nil"
             (are [format]
               (= nil (m/decode m2 format (empty)))
               "application/json"
@@ -99,13 +108,15 @@
               "application/edn"
               "application/msgpack"
               "application/transit+json"
-              "application/transit+msgpack")))
+              "application/transit+msgpack"
+              "application/json+jsonista")))
 
         (testing "with defaults"
           (testing "all formats return nil"
             (are [format]
               (= nil (m/decode m format (empty)))
               "application/json"
+              "application/json+jsonista"
               "application/edn"
               "application/x-yaml"
               "application/msgpack"
@@ -118,6 +129,7 @@
           iso-encoded #(slurp (m/encode m % data "ISO-8859-1"))]
       (testing "application/json & application/edn use the given charset"
         (is (= "{\"f�e\":\"b�z\"}" (iso-encoded "application/json")))
+        (is (= "{\"f�e\":\"b�z\"}" (iso-encoded "application/json+jsonista")))
         (is (= "{:f�e \"b�z\"}" (iso-encoded "application/edn"))))
 
       (testing "application/x-yaml & application/transit+json use the platform charset"
@@ -141,6 +153,7 @@
       (are [format]
         (= data (encode-decode format))
         "application/json"
+        "application/json+jsonista"
         "application/edn"
         ;; platform charset
         "application/x-yaml"
