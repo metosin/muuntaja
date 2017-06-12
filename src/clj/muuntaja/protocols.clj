@@ -1,6 +1,6 @@
 (ns muuntaja.protocols
   (:require [clojure.java.io :as io]
-            [muuntaja.util :as util])
+            ring.core.protocols)
   (:import (clojure.lang IFn AFn)
            (java.io ByteArrayOutputStream ByteArrayInputStream InputStreamReader BufferedReader InputStream Writer)))
 
@@ -14,13 +14,10 @@
   (applyTo [this args]
     (AFn/applyToHelper this args)))
 
-;; only when ring 1.6.0+ is used.
-(util/when-ns
-  'ring.core.protocols
-  (extend-protocol ring.core.protocols/StreamableResponseBody
-    StreamableResponse
-    (write-body-to-stream [this _ output-stream]
-      ((.f this) output-stream))))
+(extend-protocol ring.core.protocols/StreamableResponseBody
+  StreamableResponse
+  (write-body-to-stream [this _ output-stream]
+    ((.f this) output-stream)))
 
 (extend StreamableResponse
   io/IOFactory
