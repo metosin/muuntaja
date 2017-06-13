@@ -2,6 +2,7 @@
 
 * **BREAKING**: muuntaja.json is now a separate library, [jsonista](https://github.com/metosin/jsonista)
 * **BREAKING**: Muuntaja only supports Ring 1.6.0 or later. [#47](https://github.com/metosin/muuntaja/issues/47)
+* jsonista decoder now allows using non-UTF charsets. [#24](https://github.com/metosin/muuntaja/issues/24)
 
 ## 0.3.0-SNAPSHOT
 
