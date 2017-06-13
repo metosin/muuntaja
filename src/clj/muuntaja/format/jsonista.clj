@@ -1,12 +1,18 @@
 (ns muuntaja.format.jsonista
   (:require [jsonista.core :as jsonista]
             [muuntaja.protocols :as protocols])
-  (:import (java.io ByteArrayInputStream OutputStreamWriter OutputStream)))
+  (:import (java.io ByteArrayInputStream
+                    InputStream
+                    InputStreamReader
+                    OutputStreamWriter
+                    OutputStream)))
 
 (defn ^:no-doc make-json-decoder [{:keys [keywords?]}]
   (let [mapper (jsonista/make-mapper {:keywordize? keywords?})]
     (fn [x ^String charset]
-      (jsonista/from-json x mapper))))
+      (if (string? x)
+        (jsonista/from-json x mapper)
+        (jsonista/from-json (InputStreamReader. ^InputStream x charset) mapper)))))
 
 (defn ^:no-doc make-json-encoder [options]
   (fn [data ^String charset]
