@@ -1,3 +1,7 @@
+## 0.3.1 (19.6.2017)
+
+* Unique names for Muuntaja interceptors.
+
 ## 0.3.0 (19.6.2017)
 
 * **BREAKING**: Drop default support for custom encoding of records.
