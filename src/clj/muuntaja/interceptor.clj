@@ -26,7 +26,7 @@
   See https://github.com/metosin/muuntaja for all options and defaults."
   [prototype]
   (let [m (m/create prototype)]
-    {:name ::format
+    {:name ::format-negotiate
      :enter #(update % :request (partial m/negotiate-request m))}))
 
 (defn format-request
@@ -38,7 +38,7 @@
   See https://github.com/metosin/muuntaja for all options and defaults."
   [prototype]
   (let [m (m/create prototype)]
-    {:name ::format
+    {:name ::format-request
      :enter #(update % :request (partial m/format-request m))}))
 
 (defn format-response
@@ -50,5 +50,5 @@
   See https://github.com/metosin/muuntaja for all options and defaults."
   [prototype]
   (let [m (m/create prototype)]
-    {:name ::format
+    {:name ::format-response
      :leave #(update % :response (partial m/format-response m (:request %)))}))
