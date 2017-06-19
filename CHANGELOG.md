@@ -1,10 +1,4 @@
-## Unreleased
-
-* **BREAKING**: muuntaja.json is now a separate library, [jsonista](https://github.com/metosin/jsonista)
-* **BREAKING**: Muuntaja only supports Ring 1.6.0 or later. [#47](https://github.com/metosin/muuntaja/issues/47)
-* jsonista decoder now allows using non-UTF charsets. [#24](https://github.com/metosin/muuntaja/issues/24)
-
-## 0.3.0-SNAPSHOT
+## 0.3.0 (19.6.2017)
 
 * **BREAKING**: Drop default support for custom encoding of records.
   * Guide how to enable it in the wiki: https://github.com/metosin/muuntaja/wiki/Configuration#custom-encoding
@@ -13,6 +7,12 @@
   * `:allow-empty-input-on-decode?` is now called `:allow-empty-input?`. It's a boolean:
     * `true` (default): empty input(stream) is decoded into `nil`
     * `false` with cause the decoder to do whatever it does (e.g. Transit fails, Cheshire returns `nil`)
+
+* **BREAKING**: muuntaja.json is now a separate library, [jsonista](https://github.com/metosin/jsonista)
+
+* **BREAKING**: Muuntaja only supports Ring 1.6.0 or later. [#47](https://github.com/metosin/muuntaja/issues/47)
+
+* jsonista decoder now allows using non-UTF charsets. [#24](https://github.com/metosin/muuntaja/issues/24)
 
 * updated deps:
 
