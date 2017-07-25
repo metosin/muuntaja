@@ -12,10 +12,10 @@
       (or (.get cache args)
           (let [ret (apply f args)]
             (when ret
-              (.putIfAbsent cache args ret)
               ;; not synchronized but ok enough
-              (if (> (.size cache) size)
-                (.clear cache)))
+              (when (> (.size cache) size)
+                (.clear cache))
+              (.putIfAbsent cache args ret))
             ret)))))
 
 ;;
