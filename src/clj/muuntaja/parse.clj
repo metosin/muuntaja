@@ -1,21 +1,22 @@
 (ns muuntaja.parse
   (:require [clojure.string :as str])
-  (:import (com.fasterxml.jackson.databind.util LRUMap)))
+  (:import (java.util.concurrent ConcurrentHashMap)))
 
 ;;
-;; Utils
+;; Cache
 ;;
 
-(defn cache [n]
-  (LRUMap. n n))
-
-(defn fast-memoize [^LRUMap cache f]
-  (fn [& args]
-    (or (.get cache args)
-        (let [ret (apply f args)]
-          (when ret
-            (.put cache args ret))
-          ret))))
+(defn fast-memoize [size f]
+  (let [cache (ConcurrentHashMap. size 0.8 4)]
+    (fn [& args]
+      (or (.get cache args)
+          (let [ret (apply f args)]
+            (when ret
+              ;; not synchronized but ok enough
+              (when (> (.size cache) size)
+                (.clear cache))
+              (.putIfAbsent cache args ret))
+            ret)))))
 
 ;;
 ;; Parse content-type

@@ -315,17 +315,17 @@
       (assoc
         :negotiate-accept-charset
         (parse/fast-memoize
-          (parse/cache 1000)
+          1000
           (partial -negotiate-accept-charset m)))
       (assoc
         :negotiate-accept
         (parse/fast-memoize
-          (parse/cache 1000)
+          1000
           (partial -negotiate-accept m)))
       (assoc
         :negotiate-content-type
         (parse/fast-memoize
-          (parse/cache 1000)
+          1000
           (partial -negotiate-content-type m)))))
 
 ;;
