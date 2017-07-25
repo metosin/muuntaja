@@ -1,7 +1,7 @@
-## 0.3.2-SNAPSHOT
+## 0.3.2 (25.7.2017)
 
-* Removed direct dependency to `[Jackson Databind](https://github.com/FasterXML/jackson-databind)`
 * Custom Memoization Cache instead of `com.fasterxml.jackson.databind.util.LRUMap`, fixing [#33](https://github.com/metosin/muuntaja/issues/53).
+   * No more direct dependency to `[Jackson Databind](https://github.com/FasterXML/jackson-databind)`
 
 ## 0.3.1 (19.6.2017)
 
