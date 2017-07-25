@@ -1,3 +1,8 @@
+## 0.3.2-SNAPSHOT
+
+* Removed direct dependency to `[Jackson Databind](https://github.com/FasterXML/jackson-databind)`
+* Custom Memoization Cache instead of `com.fasterxml.jackson.databind.util.LRUMap`, fixing [#33](https://github.com/metosin/muuntaja/issues/53).
+
 ## 0.3.1 (19.6.2017)
 
 * Unique names for Muuntaja interceptors.
