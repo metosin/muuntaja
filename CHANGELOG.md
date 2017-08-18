@@ -1,3 +1,9 @@
+## UNRELEASED
+
+```clj
+[cheshire "5.8.0"] is available but we use "5.7.1"
+```
+
 ## 0.3.2 (25.7.2017)
 
 * Custom Memoization Cache instead of `com.fasterxml.jackson.databind.util.LRUMap`, fixing [#33](https://github.com/metosin/muuntaja/issues/53).
