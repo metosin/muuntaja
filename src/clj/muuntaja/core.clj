@@ -199,8 +199,8 @@
 
 (defn encode-collections-with-override [_ response]
   (or
-    (-> response :muuntaja/encode?)
-    (-> response :body coll?)))
+    (-> response :body coll?)
+    (-> response :muuntaja/encode?)))
 
 (def available-charsets
   "Set of recognised charsets by the current JVM"
