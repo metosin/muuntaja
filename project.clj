@@ -32,7 +32,7 @@
                                   [io.pedestal/pedestal.service "0.5.2" :exclusions [org.clojure/tools.reader
                                                                                      org.clojure/core.async
                                                                                      org.clojure/core.memoize]]
-                                  [javax.servlet/javax.servlet-api "4.0.0"]
+                                  [javax.servlet/javax.servlet-api "3.1.0"]
                                   [org.slf4j/slf4j-log4j12 "1.7.25"]
 
                                   [criterium "0.4.4"]]}
