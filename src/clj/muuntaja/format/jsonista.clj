@@ -8,25 +8,27 @@
                     OutputStream)))
 
 (defn ^:no-doc make-json-decoder [{:keys [keywords?]}]
-  (let [mapper (jsonista/make-mapper {:keywordize? keywords?})]
+  (let [mapper (jsonista/object-mapper {:keywordize? keywords?})]
     (fn [x ^String charset]
       (if (string? x)
-        (jsonista/from-json x mapper)
-        (jsonista/from-json (InputStreamReader. ^InputStream x charset) mapper)))))
+        (jsonista/read-value x mapper)
+        (jsonista/read-value (InputStreamReader. ^InputStream x charset) mapper)))))
 
 (defn ^:no-doc make-json-encoder [options]
-  (fn [data ^String charset]
-    (ByteArrayInputStream. (.getBytes (jsonista/to-json data) charset))))
+  ;; TODO: map options
+  (let [mapper (jsonista/object-mapper)]
+    (fn [data ^String charset]
+      (ByteArrayInputStream.
+        (if (.equals "utf-8" charset)
+          (jsonista/write-value-as-bytes data mapper)
+          (.getBytes ^String (jsonista/write-value-as-string data mapper) charset))))))
 
 (defn make-streaming-json-encoder [{:keys [keywords?]}]
-  (let [mapper (jsonista/make-mapper {:keywordize? keywords?})]
+  (let [mapper (jsonista/object-mapper {:keywordize? keywords?})]
     (fn [data ^String charset]
       (protocols/->StreamableResponse
        (fn [^OutputStream output-stream]
-         (jsonista/write-to
-          data
-          (OutputStreamWriter. output-stream charset)
-          mapper))))))
+         (jsonista/write-value (OutputStreamWriter. output-stream charset) data mapper))))))
 
 ;;;
 ;;; format
