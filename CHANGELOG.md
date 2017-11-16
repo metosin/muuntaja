@@ -1,4 +1,4 @@
-## UNRELEASED
+## 0.3.3 (16.11.2017)
 
 ```clj
 [cheshire "5.8.0"] is available but we use "5.7.1"
