@@ -3,13 +3,16 @@
             [muuntaja.test_utils :refer :all]
             [muuntaja.format.json :as json-format]
             [muuntaja.format.edn :as edn-format]
-            [muuntaja.format.msgpack :as msgpack-format]
             [muuntaja.format.transit :as transit-format]
-            [muuntaja.format.yaml :as yaml-format]
             [jsonista.core]
             [ring.core.protocols :as protocols]
-            [clojure.java.io :as io])
-  (:import (java.io ByteArrayOutputStream ByteArrayInputStream)))
+            [clojure.java.io :as io]
+            [cognitect.transit :as transit]
+            [muuntaja.core :as m]
+            [muuntaja.middleware :as middleware]
+            [cheshire.core :as cheshire])
+  (:import (java.io ByteArrayOutputStream ByteArrayInputStream)
+           (org.joda.time ReadableInstant)))
 
 (set! *warn-on-reflection* true)
 
@@ -126,7 +129,7 @@
     (title "ring: json: inputstream (jsonista)")
     (let [call #(let [baos (stream)]
                   (ring-write
-                    (ByteArrayInputStream. (.getBytes (jsonista.core/to-json {"kikka" 2})))
+                    (ByteArrayInputStream. (.getBytes ^String (jsonista.core/write-value-as-string {"kikka" 2})))
                     baos)
                   baos)]
 

@@ -27,7 +27,7 @@
 (defrecord Hello [^String name]
   EncodeJson
   (encode-json [_ charset]
-    (to-byte-stream (jsonista/to-json {"hello" name}) charset)))
+    (to-byte-stream (jsonista/write-value-as-string {"hello" name}) charset)))
 
 (defmacro with-default-charset [charset & body]
   `(let [old-charset# (str (Charset/defaultCharset))]
