@@ -519,39 +519,39 @@
 
       (title file)
 
-      ;   22µs (10b)
-      ;   40µs (100b)
-      ;  269µs (1k)
-      ; 2200µs (10k)
-      ; 4730µs (100k)
+      ;   21µs (10b)
+      ;   42µs (100b)
+      ;  290µs (1k)
+      ; 2300µs (10k)
+      ; 5400µs (100k)
       (let [app (-> +handler+ (ring.middleware.format/wrap-restful-format))]
         (report-bench results :json size "r-m-f (defaults)" (ring-stream! (app (request!)))))
 
-      ;   19µs (10b)
-      ;   24µs (100b)
-      ;   39µs (1k)
+      ;   17µs (10b)
+      ;   21µs (100b)
+      ;   38µs (1k)
       ;  260µs (10k)
-      ; 2340µs (100k)
+      ; 2400µs (100k)
       (let [app (-> +handler+ (ring.middleware.format/wrap-restful-format {:formats [:json-kw :edn :msgpack :yaml :transit-msgpack :transit-json]
                                                                            :charset ring.middleware.format-params/get-or-default-charset}))]
         (report-bench results :json size "r-m-f (tuned)" (ring-stream! (app (request!)))))
 
-      ;   15µs (10b)
+      ;   14µs (10b)
       ;   18µs (100b)
-      ;   35µs (1k)
-      ;  270µs (10k)
-      ; 2500µs (100k)
+      ;   33µs (1k)
+      ;  300µs (10k)
+      ; 2700µs (100k)
       (let [+handler+ (fn [request] {:status 200 :body (:body request)})
             app (-> +handler+
                     (ring.middleware.json/wrap-json-body)
                     (ring.middleware.json/wrap-json-response))]
         (report-bench results :json size "ring-json" (ring-stream! (app (request!)))))
 
-      ;    7µs (10b)
-      ;    9µs (100b)
-      ;   23µs (1k)
-      ;  215µs (10k)
-      ; 2100µs (100k)
+      ;  6.1µs (10b)
+      ;  9.4µs (100b)
+      ;   25µs (1k)
+      ;  240µs (10k)
+      ; 2400µs (100k)
       (let [app (-> +handler+ (middleware/wrap-format))]
         (report-bench results :json size "muuntaja" (ring-stream! (app (request!)))))
 
