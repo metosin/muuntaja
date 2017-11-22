@@ -22,8 +22,8 @@
           (jsonista/write-value-as-bytes data mapper)
           (.getBytes ^String (jsonista/write-value-as-string data mapper) charset))))))
 
-(defn make-streaming-json-encoder [{:keys [keywords?]}]
-  (let [mapper (jsonista/object-mapper {:keywordize? keywords?})]
+(defn make-streaming-json-encoder [options]
+  (let [mapper (jsonista/object-mapper options)]
     (fn [data ^String charset]
       (protocols/->StreamableResponse
        (fn [^OutputStream output-stream]
@@ -40,7 +40,7 @@
 ;; formats
 
 (def json-format
-  {:decoder [make-json-decoder {:decode-keys-fn true}]
+  {:decoder [make-json-decoder {:decode-key-fn true}]
    :encoder [make-json-encoder]})
 
 (def streaming-json-format
