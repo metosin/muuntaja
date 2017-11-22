@@ -7,16 +7,15 @@
                     OutputStreamWriter
                     OutputStream)))
 
-(defn ^:no-doc make-json-decoder [{:keys [keywords?]}]
-  (let [mapper (jsonista/object-mapper {:keywordize? keywords?})]
+(defn ^:no-doc make-json-decoder [options]
+  (let [mapper (jsonista/object-mapper options)]
     (fn [x ^String charset]
       (if (string? x)
         (jsonista/read-value x mapper)
         (jsonista/read-value (InputStreamReader. ^InputStream x charset) mapper)))))
 
 (defn ^:no-doc make-json-encoder [options]
-  ;; TODO: map options
-  (let [mapper (jsonista/object-mapper)]
+  (let [mapper (jsonista/object-mapper options)]
     (fn [data ^String charset]
       (ByteArrayInputStream.
         (if (.equals "utf-8" charset)
@@ -41,7 +40,7 @@
 ;; formats
 
 (def json-format
-  {:decoder [make-json-decoder {:keywords? true}]
+  {:decoder [make-json-decoder {:decode-keys-fn true}]
    :encoder [make-json-encoder]})
 
 (def streaming-json-format
