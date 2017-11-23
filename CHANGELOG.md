@@ -1,3 +1,7 @@
+## 0.4.3 (23.11.2017)
+
+* Fixed random failures if `:allow-empty-input?` was `true` - which was on by default.
+
 ## 0.3.3 (16.11.2017)
 
 ```clj

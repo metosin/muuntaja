@@ -1,4 +1,4 @@
-(defproject metosin/muuntaja "0.3.3"
+(defproject metosin/muuntaja "0.3.4"
   :description "Clojure library for fast http format negotiation, encoding and decoding."
   :url "https://github.com/metosin/muuntaja"
   :license {:name "Eclipse Public License"
@@ -17,21 +17,21 @@
   :deploy-repositories [["releases" :clojars]]
   :profiles {:dev {:jvm-opts ^:replace ["-server"]
                    :dependencies [[org.clojure/clojure "1.8.0"]
-                                  [ring/ring-core "1.6.2"]
+                                  [ring/ring-core "1.6.3"]
                                   [ring-middleware-format "0.7.2"]
                                   [ring-transit "0.1.6"]
                                   [ring/ring-json "0.4.0"]
 
                                   ;; extra formatters
                                   [circleci/clj-yaml "0.5.6"]
-                                  [clojure-msgpack "1.2.0" :exclusions [org.clojure/clojure]]
+                                  [clojure-msgpack "1.2.1" :exclusions [org.clojure/clojure]]
                                   [metosin/jsonista "0.1.0-SNAPSHOT"]
 
                                   ;; Pedestal
-                                  [org.clojure/core.async "0.3.443"]
-                                  [io.pedestal/pedestal.service "0.5.2" :exclusions [org.clojure/tools.reader
+                                  [org.clojure/core.async "0.3.465"]
+                                  [io.pedestal/pedestal.service "0.5.3" :exclusions [org.clojure/tools.reader
                                                                                      org.clojure/core.async                                                                                     org.clojure/core.memoize]]
-                                  [javax.servlet/javax.servlet-api "3.1.0"]
+                                  [javax.servlet/javax.servlet-api "4.0.0"]
                                   [org.slf4j/slf4j-log4j12 "1.7.25"]
 
                                   [criterium "0.4.4"]]}
