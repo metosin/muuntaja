@@ -1,3 +1,7 @@
+## 0.4.1 (23.11.2017)
+
+* Don't depend on Jackson internal Exceptions.
+
 ## 0.4.0 (23.11.2017)
 
 * Require Java 1.8 (might work on older, but tests only with 1.8

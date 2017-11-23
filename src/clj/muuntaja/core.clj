@@ -61,7 +61,7 @@
       [name matches])
     (into {})))
 
-;; TODO: PR to get better exceptions on EOF
+;; TODO: we know th format, so we should delegate to formatter how to handle the empty input
 (defn- on-exception [allow-empty-input? ^Exception e format type]
   (let [message (.getMessage e)]
     (if-not (try
