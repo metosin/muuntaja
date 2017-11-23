@@ -27,6 +27,8 @@ Check the [Wiki](https://github.com/metosin/muuntaja/wiki) & [api-docs](http://m
 
 [![Clojars Project](http://clojars.org/metosin/muuntaja/latest-version.svg)](http://clojars.org/metosin/muuntaja)
 
+Muuntaja requires Java 1.8+
+
 ## Quickstart
 
 ### Ring

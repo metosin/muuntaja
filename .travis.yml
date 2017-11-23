@@ -3,8 +3,8 @@ language: clojure
 lein: 2.7.1
 script: lein do clean, all test, all check
 jdk:
-  - openjdk7
   - oraclejdk8
+  - oraclejdk9
 cache:
   directories:
   - $HOME/.m2
