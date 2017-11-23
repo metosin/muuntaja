@@ -30,7 +30,8 @@
                                   ;; Pedestal
                                   [org.clojure/core.async "0.3.465"]
                                   [io.pedestal/pedestal.service "0.5.3" :exclusions [org.clojure/tools.reader
-                                                                                     org.clojure/core.async                                                                                     org.clojure/core.memoize]]
+                                                                                     org.clojure/core.async
+                                                                                     org.clojure/core.memoize]]
                                   [javax.servlet/javax.servlet-api "4.0.0"]
                                   [org.slf4j/slf4j-log4j12 "1.7.25"]
 
