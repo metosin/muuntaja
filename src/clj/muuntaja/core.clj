@@ -73,12 +73,10 @@
                      (some->> e .getCause (instance? EOFException))
                      ;; jsonista
                      (and (instance? IOException e)
-                          message
-                          (.startsWith message "No content to map due to end-of-input"))
+                          message (.startsWith message "No content to map due to end-of-input"))
                      ;; edn
                      (and (instance? RuntimeException e)
-                          message
-                          (.startsWith message "EOF while reading"))))
+                          (= message "EOF while reading"))))
               (catch Exception _))
       (throw
         (ex-info
