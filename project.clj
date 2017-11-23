@@ -28,7 +28,7 @@
                                   [metosin/jsonista "0.1.0-SNAPSHOT"]
 
                                   ;; Pedestal
-                                  [org.clojure/core.async "0.3.465"]
+                                  [org.clojure/core.async "0.3.443"]
                                   [io.pedestal/pedestal.service "0.5.3" :exclusions [org.clojure/tools.reader
                                                                                      org.clojure/core.async
                                                                                      org.clojure/core.memoize]]
