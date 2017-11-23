@@ -74,10 +74,11 @@
                      ;; jsonista
                      (and (instance? IOException e)
                           message
-                          (str/starts-with? message "No content to map due to end-of-input"))
+                          (.startsWith message "No content to map due to end-of-input"))
                      ;; edn
                      (and (instance? RuntimeException e)
-                          (= "EOF while reading" message))))
+                          message
+                          (.startsWith message "EOF while reading"))))
               (catch Exception _))
       (throw
         (ex-info
