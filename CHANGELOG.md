@@ -1,4 +1,4 @@
-## 0.4.3 (23.11.2017)
+## 0.3.4 (23.11.2017)
 
 * Fixed random failures if `:allow-empty-input?` was `true` - which was on by default.
 
