@@ -10,8 +10,7 @@
             [muuntaja.format.transit :as transit-format])
   (:import (muuntaja.records FormatAndCharset Adapter Muuntaja)
            (java.nio.charset Charset)
-           (java.io EOFException)
-           (com.fasterxml.jackson.databind.exc MismatchedInputException)))
+           (java.io EOFException IOException)))
 
 ;;
 ;; encode & decode
@@ -64,26 +63,29 @@
 
 ;; TODO: PR to get better exceptions on EOF
 (defn- on-exception [allow-empty-input? ^Exception e format type]
-  (if-not (try
-            (and allow-empty-input?
-                 (or
-                   ;; msgpack
-                   (instance? EOFException e)
-                   ;; transit
-                   (some->> e .getCause (instance? EOFException))
-                   ;; jsonista
-                   (and (instance? MismatchedInputException e)
-                        (empty? (.getPath ^MismatchedInputException e)))
-                   ;; edn
-                   (and (instance? RuntimeException e)
-                        (= "EOF while reading" (.getMessage e)))))
-            (catch Exception _))
-    (throw
-      (ex-info
-        (str "Malformed " format " in " type "")
-        {:type type
-         :format format}
-        e))))
+  (let [message (.getMessage e)]
+    (if-not (try
+              (and allow-empty-input?
+                   (or
+                     ;; msgpack
+                     (instance? EOFException e)
+                     ;; transit
+                     (some->> e .getCause (instance? EOFException))
+                     ;; jsonista
+                     (and (instance? IOException e)
+                          message
+                          (str/starts-with? message "No content to map due to end-of-input"))
+                     ;; edn
+                     (and (instance? RuntimeException e)
+                          (= "EOF while reading" message))))
+              (catch Exception _))
+      (throw
+        (ex-info
+          (str "Malformed " format " in " type "")
+          {:type type
+           :format format}
+          e)))))
+
 
 (defn- create-coder [format type spec spec-opts default-charset allow-empty-input? [p pf]]
   (let [decode? (= type :muuntaja/decode)
