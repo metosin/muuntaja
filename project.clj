@@ -25,10 +25,10 @@
                                   ;; extra formatters
                                   [circleci/clj-yaml "0.5.6"]
                                   [clojure-msgpack "1.2.1" :exclusions [org.clojure/clojure]]
-                                  [metosin/jsonista "0.1.0-SNAPSHOT"]
+                                  [metosin/jsonista "0.1.0"]
 
                                   ;; Pedestal
-                                  [org.clojure/core.async "0.3.465"]
+                                  [org.clojure/core.async "0.4.474"]
                                   [io.pedestal/pedestal.service "0.5.3" :exclusions [org.clojure/tools.reader
                                                                                      org.clojure/core.async
                                                                                      org.clojure/core.memoize]]
