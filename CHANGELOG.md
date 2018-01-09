@@ -1,3 +1,11 @@
+## UNRELEASED
+
+* Cleanup transitive dependencies, added:
+
+```clj
+[com.fasterxml.jackson.core/jackson-core "2.9.3"]
+```
+
 ## 0.4.1 (23.11.2017)
 
 * Don't depend on Jackson internal Exceptions.

@@ -1,4 +1,4 @@
-(defproject metosin/muuntaja "0.4.1"
+(defproject metosin/muuntaja "0.4.2"
   :description "Clojure library for fast http format negotiation, encoding and decoding."
   :url "https://github.com/metosin/muuntaja"
   :license {:name "Eclipse Public License"
@@ -9,6 +9,7 @@
   :javac-options ["-Xlint:unchecked" "-target" "1.7" "-source" "1.7"]
   :java-source-paths ["src/java"]
   :dependencies [[cheshire "5.8.0"]
+                 [com.fasterxml.jackson.core/jackson-core "2.9.3"]
                  [com.cognitect/transit-clj "0.8.300"]]
   :plugins [[lein-codox "0.10.3"]]
   :codox {:src-uri "http://github.com/metosin/muuntaja/blob/master/{filepath}#L{line}"
@@ -25,16 +26,17 @@
                                   ;; extra formatters
                                   [circleci/clj-yaml "0.5.6"]
                                   [clojure-msgpack "1.2.1" :exclusions [org.clojure/clojure]]
-                                  [metosin/jsonista "0.1.0"]
+                                  [metosin/jsonista "0.1.1"]
 
                                   ;; Pedestal
-                                  [org.clojure/core.async "0.4.474"]
+                                  [org.clojure/core.async "0.4.474" :exclusions [org.clojure/tools.reader]]
                                   [io.pedestal/pedestal.service "0.5.3" :exclusions [org.clojure/tools.reader
                                                                                      org.clojure/core.async
                                                                                      org.clojure/core.memoize]]
                                   [javax.servlet/javax.servlet-api "4.0.0"]
                                   [org.slf4j/slf4j-log4j12 "1.7.25"]
 
+                                  [org.clojure/tools.namespace "0.2.11"]
                                   [criterium "0.4.4"]]}
              :1.7 {:dependencies [[org.clojure/clojure "1.7.0"]]}
              :1.9 {:dependencies [[org.clojure/clojure "1.9.0-alpha15"]]}
