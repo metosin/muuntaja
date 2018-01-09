@@ -36,7 +36,6 @@
                                   [javax.servlet/javax.servlet-api "4.0.0"]
                                   [org.slf4j/slf4j-log4j12 "1.7.25"]
 
-                                  [org.clojure/tools.namespace "0.2.11"]
                                   [criterium "0.4.4"]]}
              :1.7 {:dependencies [[org.clojure/clojure "1.7.0"]]}
              :1.9 {:dependencies [[org.clojure/clojure "1.9.0-alpha15"]]}
