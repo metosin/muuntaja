@@ -1,4 +1,4 @@
-## UNRELEASED
+## 0.4.2 (9.1.2018)
 
 * Cleanup transitive dependencies, added:
 
