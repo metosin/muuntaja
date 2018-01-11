@@ -1,10 +1,8 @@
 (ns muuntaja.protocols
   (:require [clojure.java.io :as io]
-            ring.core.protocols)
+            [muuntaja.util :as util])
   (:import (clojure.lang IFn AFn)
            (java.io ByteArrayOutputStream ByteArrayInputStream InputStreamReader BufferedReader InputStream Writer)))
-
-(set! *warn-on-reflection* true)
 
 (deftype StreamableResponse [f]
   IFn
@@ -14,10 +12,12 @@
   (applyTo [this args]
     (AFn/applyToHelper this args)))
 
-(extend-protocol ring.core.protocols/StreamableResponseBody
-  StreamableResponse
-  (write-body-to-stream [this _ output-stream]
-    ((.f this) output-stream)))
+(util/when-ns
+  'ring.core.protocols
+  (extend-protocol ring.core.protocols/StreamableResponseBody
+    StreamableResponse
+    (write-body-to-stream [this _ output-stream]
+      ((.f this) output-stream))))
 
 (extend StreamableResponse
   io/IOFactory
