@@ -1,4 +1,4 @@
-(defproject metosin/muuntaja "0.4.2"
+(defproject metosin/muuntaja "0.4.3-SNAPSHOT"
   :description "Clojure library for fast http format negotiation, encoding and decoding."
   :url "https://github.com/metosin/muuntaja"
   :license {:name "Eclipse Public License"

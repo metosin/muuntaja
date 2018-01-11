@@ -1,3 +1,7 @@
+## 0.4.3-SNAPSHOT
+
+* Fix [Cannot use muuntaja.core without depending on Ring](https://github.com/metosin/muuntaja/issues/58).
+
 ## 0.4.2 (9.1.2018)
 
 * Cleanup transitive dependencies, added:
