@@ -18,7 +18,8 @@
             [muuntaja.format.transit :as transit-format]
             [muuntaja.format.transit :as transit]
             [ring.core.protocols :as protocols]
-            [clojure.java.io :as io])
+            [clojure.java.io :as io]
+            [muuntaja.records :as records])
   (:import (java.io InputStreamReader ByteArrayOutputStream ByteArrayInputStream File)))
 
 (set! *warn-on-reflection* true)
@@ -156,17 +157,21 @@
     ; 38ns consumes & produces (-27%)
     ; 27ns compile (-29%) (-48%)
     ; 49ns + charset, memoized
+    ; 104ns Records
     (title "Content-type: JSON")
-    (assert (= ["application/json" "utf-8"] (#'m/-negotiate-request m +json-request+)))
-    (cc/quick-bench (#'m/-negotiate-request m +json-request+))
+    (assert (= (records/->FormatAndCharset "application/json" "utf-8")
+               (m/request-format m +json-request+)))
+    (cc/quick-bench (m/response-format m +json-request+))
 
     ; 65ns
     ; 55ns consumes & produces (-15%)
     ; 42ns compile (-24%) (-35%)
     ; 43ns + charset, memoized
+    ; 115ns Records
     (title "Content-type: TRANSIT")
-    (assert (= ["application/transit+json" "utf-16"] (#'m/-negotiate-request m +transit-json-request+)))
-    (cc/quick-bench (#'m/-negotiate-request m +transit-json-request+))))
+    (assert (= (records/->FormatAndCharset "application/transit+json" "utf-8")
+               (m/request-format m +transit-json-request+)))
+    (cc/quick-bench (m/response-format m +transit-json-request+))))
 
 (defn accept []
   (let [m (m/create m/default-options)]
@@ -176,8 +181,11 @@
     ; 48ns compile (-17%) (-32%)
     ; 94ns + charset, memoized
     (title "Accept: TRANSIT")
-    (assert (= ["application/transit+json" "utf-16"] (#'m/-negotiate-response m +transit-json-request+)))
-    (cc/quick-bench (#'m/-negotiate-response m +transit-json-request+))))
+    (assert (= (records/->FormatAndCharset "application/transit+json" "utf-8")
+               (m/response-format m +transit-json-request+)))
+    (cc/quick-bench (m/response-format m +transit-json-request+))))
+
+(set! *warn-on-reflection* true)
 
 (defn negotiate-request []
   (let [m (-> m/default-options
@@ -189,14 +197,14 @@
     ; 278ns (+charset)
     (title "Negotiate Request: JSON")
     (cc/quick-bench
-      (m/format-request m +json-request+))
+      (m/negotiate-and-format-request m +json-request+))
 
     ; 211ns
     ; 226ns (records)
     ; 278ns (+charset)
     (title "Negotiate Request: Transit")
     (cc/quick-bench
-      (m/format-request m +transit-json-request+))))
+      (m/negotiate-and-format-request m +transit-json-request+))))
 
 (defn identity-encode-decode []
   (let [m (-> m/default-options
@@ -218,14 +226,14 @@
     ; 540ns (content-type)
     (title "request-format - JSON identity")
     (cc/quick-bench
-      (m/format-request m +json-request+))
+      (m/negotiate-and-format-request m +json-request+))
 
     ; 670ns
     ; 873ns (+charset)
     ; 706ns (content-type)
     (title "requset-format & response-format - JSON identity")
     (let [wrap (fn [request]
-                 (let [req (m/format-request m request)]
+                 (let [req (m/negotiate-and-format-request m request)]
                    (->> (+handler+ req) (m/format-response m req))))]
       (cc/quick-bench
         (wrap +json-request+)))))

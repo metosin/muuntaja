@@ -124,8 +124,7 @@
               "application/transit+msgpack"))))))
 
   (testing "non-binary-formats encoding with charsets"
-    (let [m (assoc m :charsets m/available-charsets)
-          data {:fée "böz"}
+    (let [data {:fée "böz"}
           iso-encoded #(slurp (m/encode m % data "ISO-8859-1"))]
       (testing "application/json & application/edn use the given charset"
         (is (= "{\"f�e\":\"b�z\"}" (iso-encoded "application/json")))
@@ -145,8 +144,7 @@
               (is (not= "[\"^ \",\"~:f�e\",\"b�z\"]" (iso-encoded "application/transit+json")))))))))
 
   (testing "all formats handle different charsets symmetrically"
-    (let [m (assoc m :charsets m/available-charsets)
-          data {:fée "böz"}
+    (let [data {:fée "böz"}
           encode-decode #(as-> data $
                                (m/encode m % $ "ISO-8859-1")
                                (m/decode m % $ "ISO-8859-1"))]
@@ -198,7 +196,7 @@
           m (m/create
               (-> m/default-options
                   (assoc-in [:formats format] upper-case-format)))
-          {:keys [encode decode]} (get-in m [:adapters format])
+          {:keys [encode decode]} (-> m (m/adapters) (get format))
           data "olipa kerran avaruus"]
       (is (= "OLIPA KERRAN AVARUUS" (slurp (encode data))))
       (is (= data (decode (encode data))))))
@@ -246,8 +244,3 @@
                 (assoc-in
                   [:formats "application/jsonz" :decoder-opts]
                   {:keywords? false})))))))
-
-(deftest migration-to-0.3.0-test
-  (is (thrown?
-        AssertionError
-        (m/create (assoc m/default-options :allow-empty-input-on-decode? true)))))

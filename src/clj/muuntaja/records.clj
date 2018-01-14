@@ -9,26 +9,26 @@
 
 (defrecord Adapter [encode decode])
 
-(defrecord Muuntaja [negotiate-content-type
-                     negotiate-accept
-                     negotiate-accept-charset
+#_(defrecord Muuntaja [negotiate-content-type
+                       negotiate-accept
+                       negotiate-accept-charset
 
-                     extract-content-type
-                     extract-accept
-                     extract-accept-charset
+                       extract-content-type
+                       extract-accept
+                       extract-accept-charset
 
-                     encode-response-body?
-                     decode-request-body?
+                       encode-response-body?
+                       decode-request-body?
 
-                     produces
-                     consumes
-                     matchers
+                       produces
+                       consumes
+                       matchers
 
-                     adapters
-                     charsets
-                     default-charset
-                     default-format])
+                       adapters
+                       charsets
+                       default-charset
+                       default-format])
 
-(defmethod print-method Muuntaja
-  [this ^Writer w]
-  (.write w (str "#Muuntaja" (select-keys this [:produces :consumes :default-charset :default-format]))))
+#_(defmethod print-method Muuntaja
+    [this ^Writer w]
+    (.write w (str "#Muuntaja" (select-keys this [:produces :consumes :default-charset :default-format]))))
