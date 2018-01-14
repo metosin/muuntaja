@@ -236,7 +236,7 @@
             ;; only set default if none were set
             (and (not charset-raw) default-charset)
             ;; negotiation failed
-            (fail-on-request-charset-negotiation formats)))))))
+            (fail-on-request-charset-negotiation m)))))))
 
 ;; TODO: fail if no match?
 (defn- -negotiate-accept [m s]
