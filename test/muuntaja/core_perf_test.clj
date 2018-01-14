@@ -561,17 +561,17 @@
 
       ;  6.1µs (10b)
       ;  9.4µs (100b)
-      ;   25µs (1k)
+      ;   24µs (1k)
       ;  240µs (10k)
       ; 2400µs (100k)
       (let [app (-> +handler+ (middleware/wrap-format))]
         (report-bench results :json size "muuntaja" (ring-stream! (app (request!)))))
 
-      ;    4µs (10b)
-      ;    6µs (100b)
-      ;   16µs (1k)
-      ;  153µs (10k)
-      ; 1500µs (100k)
+      ;  3.8µs (10b)
+      ;  5.8µs (100b)
+      ;   13µs (1k)
+      ;  112µs (10k)
+      ; 1290µs (100k)
       (let [app (-> +handler+ (middleware/wrap-format
                                 (assoc-in
                                   m/default-options
@@ -579,11 +579,11 @@
                                   jsonista-format/json-format)))]
         (report-bench results :json size "muuntaja (jsonista)" (ring-stream! (app (request!)))))
 
-      ;    4µs (10b)
+      ;  3.3µs (10b)
       ;    6µs (100b)
-      ;   15µs (1k)
-      ;  144µs (10k)
-      ; 1460µs (100k)
+      ;   12µs (1k)
+      ;  110µs (10k)
+      ; 1170µs (100k)
       (let [app (-> +handler+ (middleware/wrap-format
                                 (assoc-in
                                   m/default-options
