@@ -445,9 +445,17 @@
             response))
 
         (negotiate-and-format-request [this request]
-          (->> request
-               (negotiate-request-response this)
-               (format-request this)))))))
+          (let [req-fc (request-format this request)
+                res-fc (response-format this request)
+                body (-decode-request-body this request req-fc res-fc)]
+            (as-> request $
+                  (assoc $ :muuntaja/request req-fc)
+                  (assoc $ :muuntaja/response res-fc)
+                  (if (not (nil? body))
+                    (-> $
+                        (assoc :muuntaja/format req-fc)
+                        (assoc :body-params body))
+                    $))))))))
 
 (defmethod print-method ::muuntaja
   [_ ^Writer w]
