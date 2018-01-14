@@ -61,10 +61,10 @@
 ;;
 
 (defn consumes [m]
-  (->> m (adapters) (filter #(-> % second :encode)) (map first) (set)))
+  (->> m (adapters) (filter #(-> % second :decode)) (map first) (set)))
 
 (defn produces [m]
-  (->> m (adapters) (filter #(-> % second :decode)) (map first) (set)))
+  (->> m (adapters) (filter #(-> % second :encode)) (map first) (set)))
 
 (defn matchers [m]
   (->> m (options) :formats (keep (fn [[n {:keys [matches]}]] (if matches [n matches]))) (into {})))
