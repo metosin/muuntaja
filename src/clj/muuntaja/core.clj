@@ -24,15 +24,6 @@
   (adapters [this])
   (options [this]))
 
-#_(defprotocol MuuntajaDocs
-    (consumes [this])
-    (produces [this])
-    (matchers [this])
-    (charsets [this])
-    (default-charset [this])
-    (default-format [this])
-    (formats [this]))
-
 (defprotocol MuuntajaHttp
   (request-format [this request])
   (response-format [this request])
@@ -473,26 +464,3 @@
    (if (satisfies? Muuntaja prototype)
      prototype
      (-create prototype))))
-
-;;
-;; spike
-;;
-
-(def m (create default-options))
-(->> {:a 1}
-     (encode m "application/json")
-     (decode m "application/json")
-     (println))
-
-
-(->> {:body (encode m "application/edn" {:a 1})
-      :headers {"accept" "application/edn"
-                "accept-charset" "utf-8"
-                "content-type" "application/edn"}}
-     (negotiate-and-format-request m)
-     #_(negotiate-request-response m)
-     #_(format-request m)
-     ((fn [{:keys [body-params] :as req}]
-        (format-response m req {:body body-params})))
-     :body
-     (decode m "application/edn"))
