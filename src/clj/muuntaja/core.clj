@@ -12,8 +12,6 @@
            (java.nio.charset Charset)
            (java.io EOFException IOException Writer)))
 
-(set! *warn-on-reflection* true)
-
 ;;
 ;; Protocol
 ;;
@@ -334,141 +332,131 @@
                        (if encoder {:encode (create-coder format :muuntaja/encode encoder encoder-opts default-charset allow-empty-input? encode-protocol)})))]))
        (into {})))
 
-(defn- -create [{:keys [formats default-format charsets default-charset allow-empty-input?] :as options}]
-  (let [adapters (create-adapters formats default-charset allow-empty-input?)
-        valid-format? (key-set formats identity)]
-
-    (when-not (or (not default-format) (valid-format? default-format))
-      (throw
-        (ex-info
-          (str "Invalid default format " default-format)
-          {:formats valid-format?
-           :default-format default-format})))
-
-    (let [m (reify
-              Muuntaja
-              (adapters [_]
-                adapters)
-              (options [_]
-                options))
-          {:keys [extract-content-type
-                  extract-accept-charset
-                  extract-accept
-                  decode-request-body?
-                  encode-response-body?]} (:http options)
-          produces (produces m)
-          -encoder (fn [format]
-                     (if-let [^Adapter adapter (adapters format)]
-                       (.-encode adapter)))
-          -decoder (fn [format]
-                     (if-let [^Adapter adapter (adapters format)]
-                       (.-decode adapter)))
-          -negotiate-accept-charset (parse/fast-memoize 1000 (partial -negotiate-accept-charset m))
-          -negotiate-accept (parse/fast-memoize 1000 (partial -negotiate-accept m))
-          -negotiate-content-type (parse/fast-memoize 1000 (partial -negotiate-content-type m))
-          -decode-request? (fn [request]
-                             (and (not (contains? request :muuntaja/format))
-                                  (decode-request-body? request)))
-          -decode-request-body (fn [m request ^FormatAndCharset req-fc ^FormatAndCharset res-fc]
-                                 (if (-decode-request? request)
-                                   (if-let [decode (decoder m (if req-fc (.-format req-fc)))]
-                                     (try
-                                       (decode (:body request) (.-charset req-fc))
-                                       (catch Exception e
-                                         (fail-on-request-decode-exception m e req-fc res-fc request))))))
-          -encode-response? (fn [request response]
-                              (and (map? response)
-                                   (not (contains? response :muuntaja/format))
-                                   (encode-response-body? request response)))
-          -resolve-response-charset (fn [response request]
-                                      (or (if-let [ct (some-> request :muuntaja/response :charset)]
-                                            (charsets ct))
-                                          default-charset
-                                          (fail-on-response-charset-negotiation m)))
-          -resolve-response-format (fn [response request]
-                                     (or (if-let [ct (:muuntaja/content-type response)]
-                                           (produces ct))
-                                         (some-> request :muuntaja/response :format)
-                                         default-format
-                                         (fail-on-response-format-negotiation m)))
-          -handle-response (fn [response format encoder charset]
-                             (as-> response $
-                                   (assoc $ :muuntaja/format format)
-                                   (dissoc $ :muuntaja/content-type)
-                                   (update $ :body encoder charset)
-                                   (if-not (get (:headers $) "Content-Type")
-                                     (set-content-type $ (content-type format charset))
-                                     $)))]
-      ^{:type ::muuntaja}
-      (reify
-
-        Muuntaja
-        (encoder [_ format]
-          (-encoder format))
-        (decoder [_ format]
-          (-decoder format))
-        (adapters [_]
-          adapters)
-        (options [_]
-          options)
-
-        MuuntajaHttp
-
-        (request-format [_ request]
-          (-negotiate-content-type (extract-content-type request)))
-
-        (response-format [_ request]
-          (records/->FormatAndCharset
-            (-negotiate-accept (extract-accept request))
-            (-negotiate-accept-charset (extract-accept-charset request))))
-
-        (negotiate-request-response [this request]
-          (-> request
-              (assoc :muuntaja/request (request-format this request))
-              (assoc :muuntaja/response (response-format this request))))
-
-        (format-request [this request]
-          (let [req-fc (:muuntaja/request request)
-                res-fc (:muuntaja/response request)
-                body (-decode-request-body this request req-fc res-fc)]
-            (cond-> request
-                    (not (nil? body)) (-> (assoc :muuntaja/format req-fc)
-                                          (assoc :body-params body)))))
-
-        (format-response [_ request response]
-          (or
-            (if (-encode-response? request response)
-              (if-let [format (-resolve-response-format response request)]
-                (if-let [charset (-resolve-response-charset response request)]
-                  (if-let [encoder (-encoder format)]
-                    (-handle-response response format encoder charset)))))
-            response))
-
-        (negotiate-and-format-request [this request]
-          (let [req-fc (request-format this request)
-                res-fc (response-format this request)
-                body (-decode-request-body this request req-fc res-fc)]
-            (as-> request $
-                  (assoc $ :muuntaja/request req-fc)
-                  (assoc $ :muuntaja/response res-fc)
-                  (if (not (nil? body))
-                    (-> $
-                        (assoc :muuntaja/format req-fc)
-                        (assoc :body-params body))
-                    $))))))))
-
-(defmethod print-method ::muuntaja
-  [_ ^Writer w]
-  (.write w (str "<<Muuntaja>>")))
-
 (defn create
-  "Creates a new Muuntajaz intance from a given prototype:
+  "Creates a new Muuntaja intance from a given prototype:
   - existing Muuntaja (no-op)
   - options-map (new created)
   - nothing (new created with default-options)"
   ([]
    (create default-options))
-  ([prototype]
-   (if (satisfies? Muuntaja prototype)
-     prototype
-     (-create prototype))))
+  ([muuntaja-or-options]
+   (if (satisfies? Muuntaja muuntaja-or-options)
+     muuntaja-or-options
+     (let [{:keys [formats
+                   default-format
+                   charsets
+                   default-charset
+                   allow-empty-input?] :as options} muuntaja-or-options
+           adapters (create-adapters formats default-charset allow-empty-input?)
+           valid-format? (key-set formats identity)]
+       (when-not (or (not default-format) (valid-format? default-format))
+         (throw
+           (ex-info
+             (str "Invalid default format " default-format)
+             {:formats valid-format?
+              :default-format default-format})))
+       (let [m (reify Muuntaja
+                 (adapters [_] adapters)
+                 (options [_] options))
+             {:keys [extract-content-type
+                     extract-accept-charset
+                     extract-accept
+                     decode-request-body?
+                     encode-response-body?]} (:http options)
+             produces (produces m)
+             -encoder (fn [format]
+                        (if-let [^Adapter adapter (adapters format)]
+                          (.-encode adapter)))
+             -decoder (fn [format]
+                        (if-let [^Adapter adapter (adapters format)]
+                          (.-decode adapter)))
+             -negotiate-accept-charset (parse/fast-memoize 1000 (partial -negotiate-accept-charset m))
+             -negotiate-accept (parse/fast-memoize 1000 (partial -negotiate-accept m))
+             -negotiate-content-type (parse/fast-memoize 1000 (partial -negotiate-content-type m))
+             -decode-request? (fn [request]
+                                (and (not (contains? request :muuntaja/format))
+                                     (decode-request-body? request)))
+             -decode-request-body (fn [m request ^FormatAndCharset req-fc ^FormatAndCharset res-fc]
+                                    (if (-decode-request? request)
+                                      (if-let [decode (decoder m (if req-fc (.-format req-fc)))]
+                                        (try
+                                          (decode (:body request) (.-charset req-fc))
+                                          (catch Exception e
+                                            (fail-on-request-decode-exception m e req-fc res-fc request))))))
+             -encode-response? (fn [request response]
+                                 (and (map? response)
+                                      (not (contains? response :muuntaja/format))
+                                      (encode-response-body? request response)))
+             -resolve-response-charset (fn [response request]
+                                         (or (if-let [ct (some-> request :muuntaja/response :charset)]
+                                               (charsets ct))
+                                             default-charset
+                                             (fail-on-response-charset-negotiation m)))
+             -resolve-response-format (fn [response request]
+                                        (or (if-let [ct (:muuntaja/content-type response)]
+                                              (produces ct))
+                                            (some-> request :muuntaja/response :format)
+                                            default-format
+                                            (fail-on-response-format-negotiation m)))
+             -handle-response (fn [response format encoder charset]
+                                (as-> response $
+                                      (assoc $ :muuntaja/format format)
+                                      (dissoc $ :muuntaja/content-type)
+                                      (update $ :body encoder charset)
+                                      (if-not (get (:headers $) "Content-Type")
+                                        (set-content-type $ (content-type format charset))
+                                        $)))]
+         ^{:type ::muuntaja}
+         (reify
+           Muuntaja
+           (encoder [_ format]
+             (-encoder format))
+           (decoder [_ format]
+             (-decoder format))
+           (adapters [_]
+             adapters)
+           (options [_]
+             options)
+
+           MuuntajaHttp
+           (request-format [_ request]
+             (-negotiate-content-type (extract-content-type request)))
+           (response-format [_ request]
+             (records/->FormatAndCharset
+               (-negotiate-accept (extract-accept request))
+               (-negotiate-accept-charset (extract-accept-charset request))))
+           (negotiate-request-response [this request]
+             (-> request
+                 (assoc :muuntaja/request (request-format this request))
+                 (assoc :muuntaja/response (response-format this request))))
+           (format-request [this request]
+             (let [req-fc (:muuntaja/request request)
+                   res-fc (:muuntaja/response request)
+                   body (-decode-request-body this request req-fc res-fc)]
+               (cond-> request
+                       (not (nil? body)) (-> (assoc :muuntaja/format req-fc)
+                                             (assoc :body-params body)))))
+           (format-response [_ request response]
+             (or
+               (if (-encode-response? request response)
+                 (if-let [format (-resolve-response-format response request)]
+                   (if-let [charset (-resolve-response-charset response request)]
+                     (if-let [encoder (-encoder format)]
+                       (-handle-response response format encoder charset)))))
+               response))
+           (negotiate-and-format-request [this request]
+             (let [req-fc (request-format this request)
+                   res-fc (response-format this request)
+                   body (-decode-request-body this request req-fc res-fc)]
+               (as-> request $
+                     (assoc $ :muuntaja/request req-fc)
+                     (assoc $ :muuntaja/response res-fc)
+                     (if (not (nil? body))
+                       (-> $
+                           (assoc :muuntaja/format req-fc)
+                           (assoc :body-params body))
+                       $))))))))))
+
+(defmethod print-method ::muuntaja
+  [_ ^Writer w]
+  (.write w (str "<<Muuntaja>>")))
