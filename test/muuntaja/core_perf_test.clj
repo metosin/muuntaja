@@ -180,6 +180,7 @@
     ; 58ns consumes & produces (-18%)
     ; 48ns compile (-17%) (-32%)
     ; 94ns + charset, memoized
+    ; 109ns Records
     (title "Accept: TRANSIT")
     (assert (= (records/->FormatAndCharset "application/transit+json" "utf-8")
                (m/response-format m +transit-json-request+)))
@@ -243,6 +244,7 @@
   ; 2.9µs
   ; 2.5µs (no dynamic binding if not needed)
   ; 1.8µs ???
+  ; 2.1µs Protocols
   (title "muuntaja: parse-json-stream")
   (let [parse (m/decoder (m/create m/default-options) "application/json")
         request! (request-stream +json-request+)]
@@ -251,6 +253,7 @@
 
   ; 2.5µs
   ; 1.8µs ???
+  ; 2.1µs Protocols
   (title "cheshire: parse-json-stream")
   (let [parse #(cheshire/parse-stream (InputStreamReader. %) true)
         request! (request-stream +json-request+)]
@@ -259,6 +262,7 @@
 
   ; 5.1µs
   ; 3.9µs ???
+  ; 4.6µs Protocols
   (title "cheshire: parse-json-string")
   (let [parse #(cheshire/parse-string % true)
         request! (request-stream +json-request+)]
@@ -573,7 +577,7 @@
                                   m/default-options
                                   [:formats "application/json"]
                                   jsonista-format/json-format)))]
-        (report-bench results :json size "muuntaja (jackson)" (ring-stream! (app (request!)))))
+        (report-bench results :json size "muuntaja (jsonista)" (ring-stream! (app (request!)))))
 
       ;    4µs (10b)
       ;    6µs (100b)
@@ -585,7 +589,7 @@
                                   m/default-options
                                   [:formats "application/json"]
                                   jsonista-format/streaming-json-format)))]
-        (report-bench results :json size "muuntaja (streaming)" (ring-stream! (app (request!))))))
+        (report-bench results :json size "muuntaja (streaming jsonista)" (ring-stream! (app (request!))))))
 
     (save-results! (format "perf/middleware/json-results%s.edn" (next-number)) @results)))
 
