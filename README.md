@@ -8,7 +8,7 @@ out-of-the-box [JSON](http://www.json.org/), [EDN](https://github.com/edn-format
 Ships with optional adapters for [MessagePack](http://msgpack.org/) and [YAML](http://yaml.org/).
 
 Based on [ring-middleware-format](https://github.com/ngrunwald/ring-middleware-format),
-but a complete rewrite ([and up to 10x faster](https://github.com/metosin/muuntaja/wiki/Performance)).
+but a complete rewrite ([and up to 30x faster](https://github.com/metosin/muuntaja/wiki/Performance)).
 
 ## Rationale
 
@@ -64,42 +64,45 @@ See [`muuntaja.interceptor`](https://github.com/metosin/muuntaja/blob/master/src
 Create a Muuntaja and use it to encode & decode JSON:
 
 ```clj
-(require '[muuntaja.core :as muuntaja])
+(require '[muuntaja.core :as m])
 
 ;; with defaults
 (def m (muuntaja/create))
 
 (->> {:kikka 42}
-     (muuntaja/encode m "application/json")
+     (m/encode m "application/json")
      slurp)
-; "{\"kikka\":42}"
+; => "{\"kikka\":42}"
 
 (->> {:kikka 42}
-     (muuntaja/encode m "application/json")
-     (muuntaja/decode m "application/json"))
-; {:kikka 42}
+     (m/encode m "application/json")
+     (m/decode m "application/json"))
+; => {:kikka 42}
 ```
 
 With custom EDN decoder opts:
 
 ```clj
-(-> (muuntaja/create
-      (assoc-in
-        muuntaja/default-options
-        [:formats "application/edn" :decoder-opts]
-        {:readers {'INC inc}}))
-    (muuntaja/decode
-      "application/edn"
-      "{:value #INC 41}")); {:value 42}
+(def m
+  (m/create
+    (assoc-in
+      m/default-options
+      [:formats "application/edn" :decoder-opts]
+      {:readers {'INC inc}})))
+
+(->> "{:value #INC 41}"
+     (m/decode m "application/edn"))
+; => {:value 42}
 ```
 
-Define a function to encode Transit-json:
+A function to encode Transit-json:
 
 ```clj
-(def encode-transit-json (muuntaja/encoder m "application/transit+json"))
+(def encode-transit-json
+  (m/encoder m "application/transit+json"))
 
 (slurp (encode-transit-json {:kikka 42}))
-; "[\"^ \",\"~:kikka\",42]"
+; => "[\"^ \",\"~:kikka\",42]"
 ```
 
 ## Streaming
@@ -116,22 +119,22 @@ return a `muuntaja.protocols.StreamableResponse` type, which satisifies the foll
 (require '[muuntaja.format.json :as json-format])
 
 (def m
-  (muuntaja/create
-    (-> muuntaja/default-options
+  (m/create
+    (-> m/default-options
         json-format/with-streaming-json-format)))
 
 (->> {:kikka 42}
-     (muuntaja/encode m "application/json"))
+     (m/encode m "application/json"))
 ; <<StreamableResponse>>
 
 (->> {:kikka 42}
-     (muuntaja/encode m "application/json")
+     (m/encode m "application/json")
      slurp)
 ; "{\"kikka\":42}"
 
 (->> {:kikka 42}
-     (muuntaja/encode m "application/json")
-     (muuntaja/decode m "application/json"))
+     (m/encode m "application/json")
+     (m/decode m "application/json"))
 ; {:kikka 42}
 ```
 
