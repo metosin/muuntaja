@@ -37,6 +37,7 @@
 ;;
 
 (defn encode
+  "Encode data into the given format. Returns InputStream or throws."
   ([m format data]
    (if-let [encode (encoder m format)]
      (encode data)
@@ -47,6 +48,7 @@
      (util/throw! m format "invalid encode format"))))
 
 (defn decode
+  "Decode data into the given format. Returns InputStream or throws."
   ([m format data]
    (if-let [decode (decoder m format)]
      (decode data)
@@ -60,26 +62,33 @@
 ;; Documentation
 ;;
 
-(defn consumes [m]
-  (->> m (adapters) (filter #(-> % second :decode)) (map first) (set)))
+(defn decodes
+  "Set of formats that the Muuntaja instance can decode"
+  [m] (->> m (adapters) (filter #(-> % second :decode)) (map first) (set)))
 
-(defn produces [m]
-  (->> m (adapters) (filter #(-> % second :encode)) (map first) (set)))
+(defn encodes
+  "Set of formats that the Muuntaja instance can encode"
+  [m] (->> m (adapters) (filter #(-> % second :encode)) (map first) (set)))
 
-(defn matchers [m]
-  (->> m (options) :formats (keep (fn [[n {:keys [matches]}]] (if matches [n matches]))) (into {})))
+(defn matchers
+  "Map of format->regexp that the Muuntaja instance knows"
+  [m] (->> m (options) :formats (keep (fn [[n {:keys [matches]}]] (if matches [n matches]))) (into {})))
 
-(defn charsets [m]
-  (->> m (options) :charsets))
+(defn charsets
+  "Set of charsets that the Muuntaja instance can handle"
+  [m] (->> m (options) :charsets))
 
-(defn default-charset [m]
-  (->> m (options) :default-charset))
+(defn default-charset
+  "Default charset of the Muuntaja instance"
+  [m] (->> m (options) :default-charset))
 
-(defn default-format [m]
-  (->> m (options) :default-format))
+(defn default-format
+  "Default format of the Muuntaja instance"
+  [m] (->> m (options) :default-format))
 
-(defn formats [m]
-  (->> m (options) :formats (map first) (set)))
+(defn formats
+  "Set of formats that the Muuntaja instance can decode or encode"
+  [m] (->> m (options) :formats (map first) (set)))
 
 ;;
 ;; transforming options
@@ -187,7 +196,7 @@
     (ex-info
       "Can't negotiate on response format"
       {:type :muuntaja/response-format-negotiation
-       :formats (produces m)})))
+       :formats (encodes m)})))
 
 (defn- set-content-type [response content-type]
   (util/assoc-assoc response :headers "Content-Type" content-type))
@@ -217,7 +226,7 @@
 ;;
 
 (defn- -negotiate-content-type [m s]
-  (let [consumes (consumes m)
+  (let [consumes (decodes m)
         matchers (matchers m)
         default-charset (default-charset m)
         charsets (charsets m)]
@@ -240,7 +249,7 @@
 
 ;; TODO: fail if no match?
 (defn- -negotiate-accept [m s]
-  (let [produces (produces m)
+  (let [produces (encodes m)
         default-format (default-format m)]
     (or
       (util/some-value
@@ -363,7 +372,7 @@
                      extract-accept
                      decode-request-body?
                      encode-response-body?]} (:http options)
-             produces (produces m)
+             produces (encodes m)
              -encoder (fn [format]
                         (if-let [^Adapter adapter (adapters format)]
                           (.-encode adapter)))
