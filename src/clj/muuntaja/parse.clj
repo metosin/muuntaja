@@ -8,17 +8,20 @@
 
 (defn fast-memoize [size f]
   (let [cache (ConcurrentHashMap. size 0.8 4)
-        empty '(nil)]
+        sentinel (Object.)
+        cache! (fn [args]
+                 (let [value (apply f args)]
+                   (when value
+                     ;; not synchronized but ok enough
+                     (when (> (.size cache) size)
+                       (.clear cache))
+                     (.putIfAbsent cache args value))
+                   value))]
     (fn [& args]
-      (or (.get cache args)
-          (if-not (= args empty)
-            (let [ret (apply f args)]
-              (when ret
-                ;; not synchronized but ok enough
-                (when (> (.size cache) size)
-                  (.clear cache))
-                (.putIfAbsent cache args ret))
-              ret))))))
+      (let [cached (.getOrDefault cache args sentinel)]
+        (if (identical? sentinel cached)
+          (cache! args)
+          cached)))))
 
 ;;
 ;; Parse content-type
