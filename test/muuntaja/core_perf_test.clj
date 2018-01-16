@@ -18,7 +18,8 @@
             [muuntaja.format.transit :as transit-format]
             [muuntaja.format.transit :as transit]
             [ring.core.protocols :as protocols]
-            [clojure.java.io :as io])
+            [clojure.java.io :as io]
+            [muuntaja.records :as records])
   (:import (java.io InputStreamReader ByteArrayOutputStream ByteArrayInputStream File)))
 
 (set! *warn-on-reflection* true)
@@ -156,17 +157,21 @@
     ; 38ns consumes & produces (-27%)
     ; 27ns compile (-29%) (-48%)
     ; 49ns + charset, memoized
+    ; 104ns Records
     (title "Content-type: JSON")
-    (assert (= ["application/json" "utf-8"] (#'m/-negotiate-request m +json-request+)))
-    (cc/quick-bench (#'m/-negotiate-request m +json-request+))
+    (assert (= (records/->FormatAndCharset "application/json" "utf-8")
+               (m/request-format m +json-request+)))
+    (cc/quick-bench (m/response-format m +json-request+))
 
     ; 65ns
     ; 55ns consumes & produces (-15%)
     ; 42ns compile (-24%) (-35%)
     ; 43ns + charset, memoized
+    ; 115ns Records
     (title "Content-type: TRANSIT")
-    (assert (= ["application/transit+json" "utf-16"] (#'m/-negotiate-request m +transit-json-request+)))
-    (cc/quick-bench (#'m/-negotiate-request m +transit-json-request+))))
+    (assert (= (records/->FormatAndCharset "application/transit+json" "utf-8")
+               (m/request-format m +transit-json-request+)))
+    (cc/quick-bench (m/response-format m +transit-json-request+))))
 
 (defn accept []
   (let [m (m/create m/default-options)]
@@ -175,9 +180,13 @@
     ; 58ns consumes & produces (-18%)
     ; 48ns compile (-17%) (-32%)
     ; 94ns + charset, memoized
+    ; 109ns Records
     (title "Accept: TRANSIT")
-    (assert (= ["application/transit+json" "utf-16"] (#'m/-negotiate-response m +transit-json-request+)))
-    (cc/quick-bench (#'m/-negotiate-response m +transit-json-request+))))
+    (assert (= (records/->FormatAndCharset "application/transit+json" "utf-8")
+               (m/response-format m +transit-json-request+)))
+    (cc/quick-bench (m/response-format m +transit-json-request+))))
+
+(set! *warn-on-reflection* true)
 
 (defn negotiate-request []
   (let [m (-> m/default-options
@@ -189,14 +198,14 @@
     ; 278ns (+charset)
     (title "Negotiate Request: JSON")
     (cc/quick-bench
-      (m/format-request m +json-request+))
+      (m/negotiate-and-format-request m +json-request+))
 
     ; 211ns
     ; 226ns (records)
     ; 278ns (+charset)
     (title "Negotiate Request: Transit")
     (cc/quick-bench
-      (m/format-request m +transit-json-request+))))
+      (m/negotiate-and-format-request m +transit-json-request+))))
 
 (defn identity-encode-decode []
   (let [m (-> m/default-options
@@ -218,14 +227,14 @@
     ; 540ns (content-type)
     (title "request-format - JSON identity")
     (cc/quick-bench
-      (m/format-request m +json-request+))
+      (m/negotiate-and-format-request m +json-request+))
 
     ; 670ns
     ; 873ns (+charset)
     ; 706ns (content-type)
     (title "requset-format & response-format - JSON identity")
     (let [wrap (fn [request]
-                 (let [req (m/format-request m request)]
+                 (let [req (m/negotiate-and-format-request m request)]
                    (->> (+handler+ req) (m/format-response m req))))]
       (cc/quick-bench
         (wrap +json-request+)))))
@@ -235,6 +244,7 @@
   ; 2.9µs
   ; 2.5µs (no dynamic binding if not needed)
   ; 1.8µs ???
+  ; 2.1µs Protocols
   (title "muuntaja: parse-json-stream")
   (let [parse (m/decoder (m/create m/default-options) "application/json")
         request! (request-stream +json-request+)]
@@ -243,6 +253,7 @@
 
   ; 2.5µs
   ; 1.8µs ???
+  ; 2.1µs Protocols
   (title "cheshire: parse-json-stream")
   (let [parse #(cheshire/parse-stream (InputStreamReader. %) true)
         request! (request-stream +json-request+)]
@@ -251,6 +262,7 @@
 
   ; 5.1µs
   ; 3.9µs ???
+  ; 4.6µs Protocols
   (title "cheshire: parse-json-string")
   (let [parse #(cheshire/parse-string % true)
         request! (request-stream +json-request+)]
@@ -519,65 +531,65 @@
 
       (title file)
 
-      ;   21µs (10b)
-      ;   42µs (100b)
-      ;  290µs (1k)
-      ; 2300µs (10k)
-      ; 5400µs (100k)
-      (let [app (-> +handler+ (ring.middleware.format/wrap-restful-format))]
+      ;   26µs (10b)
+      ;   54µs (100b)
+      ;  390µs (1k)
+      ; 3200µs (10k)
+      ; 6400µs (100k)
+      #_(let [app (-> +handler+ (ring.middleware.format/wrap-restful-format))]
         (report-bench results :json size "r-m-f (defaults)" (ring-stream! (app (request!)))))
 
-      ;   17µs (10b)
-      ;   21µs (100b)
-      ;   38µs (1k)
-      ;  260µs (10k)
-      ; 2400µs (100k)
-      (let [app (-> +handler+ (ring.middleware.format/wrap-restful-format {:formats [:json-kw :edn :msgpack :yaml :transit-msgpack :transit-json]
+      ;   19µs (10b)
+      ;   26µs (100b)
+      ;   44µs (1k)
+      ;  270µs (10k)
+      ; 2800µs (100k)
+      #_(let [app (-> +handler+ (ring.middleware.format/wrap-restful-format {:formats [:json-kw :edn :msgpack :yaml :transit-msgpack :transit-json]
                                                                            :charset ring.middleware.format-params/get-or-default-charset}))]
         (report-bench results :json size "r-m-f (tuned)" (ring-stream! (app (request!)))))
 
-      ;   14µs (10b)
-      ;   18µs (100b)
-      ;   33µs (1k)
+      ;   15µs (10b)
+      ;   20µs (100b)
+      ;   40µs (1k)
       ;  300µs (10k)
       ; 2700µs (100k)
-      (let [+handler+ (fn [request] {:status 200 :body (:body request)})
+      #_(let [+handler+ (fn [request] {:status 200 :body (:body request)})
             app (-> +handler+
                     (ring.middleware.json/wrap-json-body)
                     (ring.middleware.json/wrap-json-response))]
         (report-bench results :json size "ring-json" (ring-stream! (app (request!)))))
 
-      ;  6.1µs (10b)
-      ;  9.4µs (100b)
-      ;   25µs (1k)
-      ;  240µs (10k)
+      ;  6.5µs (10b)
+      ;  9.0µs (100b)
+      ;   24µs (1k)
+      ;  250µs (10k)
       ; 2400µs (100k)
       (let [app (-> +handler+ (middleware/wrap-format))]
         (report-bench results :json size "muuntaja" (ring-stream! (app (request!)))))
 
-      ;    4µs (10b)
-      ;    6µs (100b)
-      ;   16µs (1k)
-      ;  153µs (10k)
-      ; 1500µs (100k)
+      ;  4.1µs (10b)
+      ;  5.5µs (100b)
+      ;   13µs (1k)
+      ;  120µs (10k)
+      ; 1200µs (100k)
       (let [app (-> +handler+ (middleware/wrap-format
-                                (assoc-in
-                                  m/default-options
-                                  [:formats "application/json"]
-                                  jsonista-format/json-format)))]
-        (report-bench results :json size "muuntaja (jackson)" (ring-stream! (app (request!)))))
+                                  (assoc-in
+                                    m/default-options
+                                    [:formats "application/json"]
+                                    jsonista-format/json-format)))]
+          (report-bench results :json size "muuntaja (jsonista)" (ring-stream! (app (request!)))))
 
-      ;    4µs (10b)
-      ;    6µs (100b)
-      ;   15µs (1k)
-      ;  144µs (10k)
-      ; 1460µs (100k)
+      ;  3.3µs (10b)
+      ;  5.1µs (100b)
+      ;   13µs (1k)
+      ;  110µs (10k)
+      ; 1200µs (100k)
       (let [app (-> +handler+ (middleware/wrap-format
                                 (assoc-in
                                   m/default-options
                                   [:formats "application/json"]
                                   jsonista-format/streaming-json-format)))]
-        (report-bench results :json size "muuntaja (streaming)" (ring-stream! (app (request!))))))
+        (report-bench results :json size "muuntaja (streaming jsonista)" (ring-stream! (app (request!))))))
 
     (save-results! (format "perf/middleware/json-results%s.edn" (next-number)) @results)))
 

@@ -12,7 +12,9 @@
     (fn [x ^String charset]
       (if (string? x)
         (jsonista/read-value x mapper)
-        (jsonista/read-value (InputStreamReader. ^InputStream x charset) mapper)))))
+        (if (.equals "utf-8" charset)
+          (jsonista/read-value x mapper)
+          (jsonista/read-value (InputStreamReader. ^InputStream x charset) mapper))))))
 
 (defn ^:no-doc make-json-encoder [options]
   (let [mapper (jsonista/object-mapper options)]
@@ -27,7 +29,9 @@
     (fn [data ^String charset]
       (protocols/->StreamableResponse
         (fn [^OutputStream output-stream]
-          (jsonista/write-value (OutputStreamWriter. output-stream charset) data mapper))))))
+          (if (.equals "utf-8" charset)
+            (jsonista/write-value output-stream data mapper)
+            (jsonista/write-value (OutputStreamWriter. output-stream charset) data mapper)))))))
 
 ;;;
 ;;; format

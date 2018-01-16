@@ -68,10 +68,10 @@
    (let [m (m/create prototype)]
      (fn
        ([request]
-        (let [req (m/format-request m request)]
+        (let [req (m/negotiate-and-format-request m request)]
           (->> (handler req) (m/format-response m req))))
        ([request respond raise]
-        (let [req (m/format-request m request)]
+        (let [req (m/negotiate-and-format-request m request)]
           (handler req #(respond (m/format-response m req %)) raise)))))))
 
 ;;
@@ -92,9 +92,9 @@
    (let [m (m/create prototype)]
      (fn
        ([request]
-        (handler (m/negotiate-request m request)))
+        (handler (m/negotiate-request-response m request)))
        ([request respond raise]
-        (handler (m/negotiate-request m request) respond raise))))))
+        (handler (m/negotiate-request-response m request) respond raise))))))
 
 (defn wrap-format-request
   "Middleware that decodes the request body with an attached Muuntaja
@@ -110,9 +110,9 @@
    (let [m (m/create prototype)]
      (fn
        ([request]
-        (handler (m/format-request m request)))
+        (handler (m/negotiate-and-format-request m request)))
        ([request respond raise]
-        (handler (m/format-request m request) respond raise))))))
+        (handler (m/negotiate-and-format-request m request) respond raise))))))
 
 (defn wrap-format-response
   "Middleware that encodes also the response body with the attached

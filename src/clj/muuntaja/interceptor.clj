@@ -14,7 +14,7 @@
   [prototype]
   (let [m (m/create prototype)]
     {:name ::format
-     :enter #(update % :request (partial m/format-request m))
+     :enter #(update % :request (partial m/negotiate-and-format-request m))
      :leave #(update % :response (partial m/format-response m (:request %)))}))
 
 (defn format-negotiate
@@ -27,7 +27,7 @@
   [prototype]
   (let [m (m/create prototype)]
     {:name ::format-negotiate
-     :enter #(update % :request (partial m/negotiate-request m))}))
+     :enter #(update % :request (partial m/negotiate-request-response m))}))
 
 (defn format-request
   "Interceptor that decodes the request body with an attached Muuntaja
@@ -39,7 +39,7 @@
   [prototype]
   (let [m (m/create prototype)]
     {:name ::format-request
-     :enter #(update % :request (partial m/format-request m))}))
+     :enter #(update % :request (partial m/negotiate-and-format-request m))}))
 
 (defn format-response
   "Interceptor that encodes also the response body with the attached

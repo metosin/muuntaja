@@ -6,13 +6,8 @@
             [muuntaja.format.transit :as transit-format]
             [jsonista.core]
             [ring.core.protocols :as protocols]
-            [clojure.java.io :as io]
-            [cognitect.transit :as transit]
-            [muuntaja.core :as m]
-            [muuntaja.middleware :as middleware]
-            [cheshire.core :as cheshire])
-  (:import (java.io ByteArrayOutputStream ByteArrayInputStream)
-           (org.joda.time ReadableInstant)))
+            [clojure.java.io :as io])
+  (:import (java.io ByteArrayOutputStream ByteArrayInputStream)))
 
 (set! *warn-on-reflection* true)
 
