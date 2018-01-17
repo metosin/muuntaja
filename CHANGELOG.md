@@ -3,7 +3,7 @@
 * Fix [Cannot use muuntaja.core without depending on Ring](https://github.com/metosin/muuntaja/issues/58).
 * Re-implement `Muuntaja` as Protocol instead of Record. Fixes [#59](https://github.com/metosin/muuntaja/issues/59)
 * Optimize `UTF-8` call path with JSONISTA, 2x faster, 20-30% perf improvement with e2e JSON echo.
-* New helpers in `muuntaja.core`: `decodes`, `encodes`, `matchers`, `charsets`, `default-charset`, `default-format`, `formats`
+* New helpers in `muuntaja.core`: `decodes`, `encodes`, `matchers`, `charsets`, `default-charset`, `default-format`, `formats` and `muuntaja?`
 * Faster memoization cache for content negotiation
 
 ## 0.4.2 (9.1.2018)

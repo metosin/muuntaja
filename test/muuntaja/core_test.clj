@@ -49,6 +49,9 @@
              (with-jsonista-format))))
 
 (deftest core-test
+  (testing "muuntaja?"
+    (is (m/muuntaja? m)))
+
   (testing "encode & decode"
     (let [data {:kikka 42}]
       (is (= "{\"kikka\":42}" (slurp (m/encode m "application/json" data))))

@@ -32,6 +32,9 @@
 
   (negotiate-and-format-request [this request]))
 
+(defn muuntaja? [x]
+  (satisfies? Muuntaja x))
+
 ;;
 ;; encode & decode
 ;;
