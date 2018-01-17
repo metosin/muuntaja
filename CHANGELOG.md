@@ -1,4 +1,4 @@
-## 0.5.0-SNAPSHOT
+## 0.5.0 (17.1.2018)
 
 * Fix [Cannot use muuntaja.core without depending on Ring](https://github.com/metosin/muuntaja/issues/58).
 * Re-implement `Muuntaja` as Protocol instead of Record. Fixes [#59](https://github.com/metosin/muuntaja/issues/59)
