@@ -1,9 +1,9 @@
 ## 0.6.0-SNAPSHOT
 
-* **BREAKING**: [Cheshire](https://github.com/dakrone/cheshire) in dropped in favor of [Jsonista](https://github.com/metosin/jsonista) as the default JSON formatter (much faster, explicit configuration)
+* **BREAKING**: [Cheshire](https://github.com/dakrone/cheshire) in dropped in favor of [Jsonista](https://github.com/metosin/jsonista) as the default JSON formatter (faster, explicit configuration)
   * `muuntaja.format.json` => `muuntaja.format.cheshire`
   * `muuntaja.format.jsonista` => `muuntaja.format.json`
-  * The `muuntaja.format.json` formatter parameters have changed, with a asertion to fail fast:
+  * The `muuntaja.format.json` formatter takes now jsonista options directly, with an asertion to fail fast if old options are used:
      * `:key-fn` => `:encode-key-fn` and `:decode-key-fn`
      * `:bigdecimals?` => `:bigdecimals`
 

@@ -8,7 +8,7 @@
   :source-paths ["src/clj"]
   :javac-options ["-Xlint:unchecked" "-target" "1.7" "-source" "1.7"]
   :java-source-paths ["src/java"]
-  :dependencies [[metosin/jsonista "0.2.1-SNAPSHOT"]
+  :dependencies [[metosin/jsonista "0.2.1"]
                  [com.cognitect/transit-clj "0.8.309"]]
   :plugins [[lein-codox "0.10.3"]]
   :codox {:src-uri "http://github.com/metosin/muuntaja/blob/master/{filepath}#L{line}"
