@@ -8,9 +8,8 @@
   :source-paths ["src/clj"]
   :javac-options ["-Xlint:unchecked" "-target" "1.7" "-source" "1.7"]
   :java-source-paths ["src/java"]
-  :dependencies [[cheshire "5.8.0"]
-                 [com.fasterxml.jackson.core/jackson-core "2.9.3"]
-                 [com.cognitect/transit-clj "0.8.300"]]
+  :dependencies [[metosin/jsonista "0.2.1-SNAPSHOT"]
+                 [com.cognitect/transit-clj "0.8.309"]]
   :plugins [[lein-codox "0.10.3"]]
   :codox {:src-uri "http://github.com/metosin/muuntaja/blob/master/{filepath}#L{line}"
           :output-path "doc"
@@ -26,14 +25,14 @@
                                   ;; extra formatters
                                   [circleci/clj-yaml "0.5.6"]
                                   [clojure-msgpack "1.2.1" :exclusions [org.clojure/clojure]]
-                                  [metosin/jsonista "0.1.1"]
+                                  [cheshire "5.8.0"]
 
                                   ;; Pedestal
                                   [org.clojure/core.async "0.4.474" :exclusions [org.clojure/tools.reader]]
                                   [io.pedestal/pedestal.service "0.5.3" :exclusions [org.clojure/tools.reader
                                                                                      org.clojure/core.async
                                                                                      org.clojure/core.memoize]]
-                                  [javax.servlet/javax.servlet-api "4.0.0"]
+                                  [javax.servlet/javax.servlet-api "4.0.1"]
                                   [org.slf4j/slf4j-log4j12 "1.7.25"]
 
                                   [criterium "0.4.4"]]}

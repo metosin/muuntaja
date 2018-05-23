@@ -1,10 +1,10 @@
 (ns muuntaja.formats-perf-test
   (:require [criterium.core :as cc]
             [muuntaja.test_utils :refer :all]
-            [muuntaja.format.json :as json-format]
+            [muuntaja.format.cheshire :as json-format]
             [muuntaja.format.edn :as edn-format]
             [muuntaja.format.transit :as transit-format]
-            [jsonista.core]
+            [jsonista.core :as j]
             [ring.core.protocols :as protocols]
             [clojure.java.io :as io])
   (:import (java.io ByteArrayOutputStream ByteArrayInputStream)))
@@ -124,7 +124,7 @@
     (title "ring: json: inputstream (jsonista)")
     (let [call #(let [baos (stream)]
                   (ring-write
-                    (ByteArrayInputStream. (.getBytes ^String (jsonista.core/write-value-as-string {"kikka" 2})))
+                    (ByteArrayInputStream. (.getBytes ^String (j/write-value-as-string {"kikka" 2})))
                     baos)
                   baos)]
 

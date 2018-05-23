@@ -1,42 +1,54 @@
 (ns muuntaja.format.json
-  (:require [cheshire.core :as cheshire]
-            [cheshire.parse :as parse]
+  (:require [jsonista.core :as j]
             [muuntaja.protocols :as protocols])
-  (:import (java.io InputStreamReader InputStream ByteArrayInputStream OutputStreamWriter OutputStream)))
+  (:import (java.io ByteArrayInputStream
+                    InputStream
+                    InputStreamReader
+                    OutputStreamWriter
+                    OutputStream)))
 
-(defn make-json-decoder [{:keys [key-fn array-coerce-fn bigdecimals?]}]
-  (if-not bigdecimals?
+(defn assert-options! [options]
+  (assert
+    (not (or (contains? options :key-fn) (contains? options :bigdecimals?)))
+    (str
+      "In Muuntaja 0.6.0+ the default JSON formatter has changed\n"
+      "from Cheshire to Jsonita. Changed options:\n\n"
+      "  :key-fn       => :encode-key-fn & :decode-key-fn\n"
+      "  :bigdecimals? => :bigdecimals\n"
+      options "\n")))
+
+(defn ^:no-doc make-json-decoder [options]
+  (assert-options! options)
+  (let [mapper (j/object-mapper options)]
     (fn [x ^String charset]
       (if (string? x)
-        (cheshire/parse-string x key-fn array-coerce-fn)
-        (cheshire/parse-stream (InputStreamReader. ^InputStream x charset) key-fn array-coerce-fn)))
-    (fn [x ^String charset]
-      (binding [parse/*use-bigdecimals?* bigdecimals?]
-        (if (string? x)
-          (cheshire/parse-string x key-fn array-coerce-fn)
-          (cheshire/parse-stream (InputStreamReader. ^InputStream x charset) key-fn array-coerce-fn))))))
+        (j/read-value x mapper)
+        (if (.equals "utf-8" charset)
+          (j/read-value x mapper)
+          (j/read-value (InputStreamReader. ^InputStream x charset) mapper))))))
 
-(defn make-json-encoder [options]
-  (fn [data ^String charset]
-    (ByteArrayInputStream. (.getBytes (cheshire/generate-string data options) charset))))
-
-(defn make-json-string-encoder [options]
-  (fn [data _]
-    (cheshire/generate-string data options)))
+(defn ^:no-doc make-json-encoder [options]
+  (assert-options! options)
+  (let [mapper (j/object-mapper options)]
+    (fn [data ^String charset]
+      (ByteArrayInputStream.
+        (if (.equals "utf-8" charset)
+          (j/write-value-as-bytes data mapper)
+          (.getBytes ^String (j/write-value-as-string data mapper) charset))))))
 
 (defn make-streaming-json-encoder [options]
-  (fn [data ^String charset]
-    (protocols/->StreamableResponse
-      (fn [^OutputStream output-stream]
-        (cheshire/generate-stream
-          data
-          (OutputStreamWriter. output-stream charset)
-          options)
-        (.flush output-stream)))))
+  (assert-options! options)
+  (let [mapper (j/object-mapper options)]
+    (fn [data ^String charset]
+      (protocols/->StreamableResponse
+        (fn [^OutputStream output-stream]
+          (if (.equals "utf-8" charset)
+            (j/write-value output-stream data mapper)
+            (j/write-value (OutputStreamWriter. output-stream charset) data mapper)))))))
 
-;;
-;; format
-;;
+;;;
+;;; format
+;;;
 
 ;; type
 
@@ -45,7 +57,7 @@
 ;; formats
 
 (def json-format
-  {:decoder [make-json-decoder {:key-fn true}]
+  {:decoder [make-json-decoder {:decode-key-fn true}]
    :encoder [make-json-encoder]})
 
 (def streaming-json-format
