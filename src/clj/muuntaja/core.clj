@@ -310,7 +310,7 @@
             (let [[f opts] spec]
               (f (merge opts spec-opts)))
             spec)
-        prepare (if decode? protocols/as-input-stream identity)
+        prepare (if decode? protocols/-input-stream identity)
         on-exception (partial on-exception allow-empty-input?)]
     (if (and p pf)
       (fn f

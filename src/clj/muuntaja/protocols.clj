@@ -39,21 +39,27 @@
   [_ ^Writer w]
   (.write w (str "<<StreamableResponse>>")))
 
-(defprotocol AsInputStream
-  (as-input-stream ^java.io.InputStream [this]))
 
-(extend-protocol AsInputStream
+(defmethod print-method ByteResponse
+  [_ ^Writer w]
+  (.write w (str "<<ByteResponse>>")))
+
+(defprotocol IntoInputStream
+  (-input-stream ^java.io.InputStream [this]))
+
+(extend-protocol IntoInputStream
   InputStream
-  (as-input-stream [this] this)
+  (-input-stream [this] this)
 
   StreamableResponse
-  (as-input-stream [this]
+  (-input-stream [this]
+    (io/make-input-stream this nil))
     (io/make-input-stream this nil))
 
   String
-  (as-input-stream [this]
+  (-input-stream [this]
     (ByteArrayInputStream. (.getBytes this "utf-8")))
 
   nil
-  (as-input-stream [_]
+  (-input-stream [_]
     (ByteArrayInputStream. (byte-array 0))))
