@@ -16,7 +16,7 @@
 * added dependencies:
 
 ```clj
-[metosin/jsonista "0.2.1-SNAPSHOT"]
+[metosin/jsonista "0.2.1"]
 ```
 
 ## 0.5.0 (17.1.2018)
