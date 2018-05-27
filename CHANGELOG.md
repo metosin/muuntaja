@@ -6,6 +6,7 @@
   * The `muuntaja.format.json` formatter takes now jsonista options directly, with an asertion to fail fast if old options are used:
      * `:key-fn` => `:encode-key-fn` and `:decode-key-fn`
      * `:bigdecimals?` => `:bigdecimals`
+* move everyting from `muuntaja.records` into `muuntaja.core`
 
 * dropped dependencies:
 

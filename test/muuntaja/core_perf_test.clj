@@ -18,8 +18,7 @@
             [muuntaja.format.transit :as transit-format]
             [muuntaja.format.transit :as transit]
             [ring.core.protocols :as protocols]
-            [clojure.java.io :as io]
-            [muuntaja.records :as records])
+            [clojure.java.io :as io])
   (:import (java.io InputStreamReader ByteArrayOutputStream ByteArrayInputStream File)))
 
 (set! *warn-on-reflection* true)
@@ -159,7 +158,7 @@
     ; 49ns + charset, memoized
     ; 104ns Records
     (title "Content-type: JSON")
-    (assert (= (records/->FormatAndCharset "application/json" "utf-8")
+    (assert (= (m/->FormatAndCharset "application/json" "utf-8")
                (m/request-format m +json-request+)))
     (cc/quick-bench (m/response-format m +json-request+))
 
@@ -169,7 +168,7 @@
     ; 43ns + charset, memoized
     ; 115ns Records
     (title "Content-type: TRANSIT")
-    (assert (= (records/->FormatAndCharset "application/transit+json" "utf-8")
+    (assert (= (m/->FormatAndCharset "application/transit+json" "utf-8")
                (m/request-format m +transit-json-request+)))
     (cc/quick-bench (m/response-format m +transit-json-request+))))
 
@@ -182,7 +181,7 @@
     ; 94ns + charset, memoized
     ; 109ns Records
     (title "Accept: TRANSIT")
-    (assert (= (records/->FormatAndCharset "application/transit+json" "utf-8")
+    (assert (= (m/->FormatAndCharset "application/transit+json" "utf-8")
                (m/response-format m +transit-json-request+)))
     (cc/quick-bench (m/response-format m +transit-json-request+))))
 
