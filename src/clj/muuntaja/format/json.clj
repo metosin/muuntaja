@@ -1,8 +1,7 @@
 (ns muuntaja.format.json
   (:require [jsonista.core :as j]
             [muuntaja.protocols :as protocols])
-  (:import (java.io ByteArrayInputStream
-                    InputStream
+  (:import (java.io InputStream
                     InputStreamReader
                     OutputStreamWriter
                     OutputStream)))
@@ -17,7 +16,7 @@
       "  :bigdecimals? => :bigdecimals\n"
       options "\n")))
 
-(defn ^:no-doc make-json-decoder [options]
+(defn make-json-decoder [options]
   (assert-options! options)
   (let [mapper (j/object-mapper options)]
     (fn [x ^String charset]
@@ -27,11 +26,11 @@
           (j/read-value x mapper)
           (j/read-value (InputStreamReader. ^InputStream x charset) mapper))))))
 
-(defn ^:no-doc make-json-encoder [options]
+(defn make-json-encoder [options]
   (assert-options! options)
   (let [mapper (j/object-mapper options)]
     (fn [data ^String charset]
-      (ByteArrayInputStream.
+      (protocols/->ByteResponse
         (if (.equals "utf-8" charset)
           (j/write-value-as-bytes data mapper)
           (.getBytes ^String (j/write-value-as-string data mapper) charset))))))

@@ -1,9 +1,11 @@
 (ns muuntaja.formats-perf-test
   (:require [criterium.core :as cc]
             [muuntaja.test_utils :refer :all]
-            [muuntaja.format.cheshire :as json-format]
+            [muuntaja.format.cheshire :as cheshire-format]
+            [muuntaja.format.json :as json-format]
             [muuntaja.format.edn :as edn-format]
             [muuntaja.format.transit :as transit-format]
+            [muuntaja.protocols :as mp]
             [jsonista.core :as j]
             [ring.core.protocols :as protocols]
             [clojure.java.io :as io])
@@ -45,9 +47,10 @@
 (def +charset+ "utf-8")
 
 (defn encode-json []
-  (let [encode0 (json-format/make-json-string-encoder {})
-        encode1 (json-format/make-streaming-json-encoder {})
-        encode2 (json-format/make-json-encoder {})]
+  (let [encode0 (cheshire-format/make-json-string-encoder {})
+        encode1 (cheshire-format/make-streaming-json-encoder {})
+        encode2 (cheshire-format/make-json-encoder {})
+        encode3 (json-format/make-json-encoder {})]
 
     ;; 4.7µs
     (title "json: string")
@@ -57,7 +60,7 @@
                   baos)]
 
       (assert (= +json-string+ (str (call))))
-      (cc/bench
+      (cc/quick-bench
         (call)))
 
     ;; 3.1µs
@@ -67,7 +70,7 @@
                   baos)]
 
       (assert (= +json-string+ (str (call))))
-      (cc/bench
+      (cc/quick-bench
         (call)))
 
     ;; 2.9µs
@@ -78,25 +81,25 @@
                   baos)]
 
       (assert (= +json-string+ (str (call))))
-      (cc/bench
+      (cc/quick-bench
         (call)))))
 
 (defn encode-json-ring []
-  (let [encode0 (json-format/make-json-string-encoder {})
-        encode1 (json-format/make-streaming-json-encoder {})
-        encode2 (json-format/make-json-encoder {})]
+  (let [encode0 (cheshire-format/make-json-string-encoder {})
+        encode1 (cheshire-format/make-streaming-json-encoder {})
+        encode2 (cheshire-format/make-json-encoder {})]
 
-    ;; 8.1µs
+    ;; 6.4µs
     (title "ring: json: string")
     (let [call #(let [baos (stream)]
                   (ring-write (encode0 +data+ +charset+) baos)
                   baos)]
 
       (assert (= +json-string+ (str (call))))
-      (cc/bench
+      (cc/quick-bench
         (call)))
 
-    ;; 3.0µs
+    ;; 3.8µs
     (title "ring: json: write-to-stream")
     (let [call #(let [baos (stream)]
                   (ring-write
@@ -107,17 +110,17 @@
                     baos)
                   baos)]
       (assert (= +json-string+ (str (call))))
-      (cc/bench
+      (cc/quick-bench
         (call)))
 
-    ;; 3.3µs
+    ;; 3.7µs
     (title "ring: json: inputstream")
     (let [call #(let [baos (stream)]
                   (ring-write (encode2 +data+ +charset+) baos)
                   baos)]
 
       (assert (= +json-string+ (str (call))))
-      (cc/bench
+      (cc/quick-bench
         (call)))
 
     ;; 2.4µs
@@ -129,7 +132,31 @@
                   baos)]
 
       (assert (= +json-string+ (str (call))))
-      (cc/bench
+      (cc/quick-bench
+        (call)))
+
+    ;; 1.8µs
+    (title "ring: json: ByteResponse (jsonista)")
+    (let [call #(let [baos (stream)]
+                  (ring-write
+                    (mp/->ByteResponse (j/write-value-as-bytes {"kikka" 2}))
+                    baos)
+                  baos)]
+
+      (assert (= +json-string+ (str (call))))
+      (cc/quick-bench
+        (call)))
+
+    ;; 6.0µs (wooot?)
+    (title "ring: json: inputstream (jsonista)")
+    (let [call #(let [baos (stream)]
+                  (ring-write
+                    (j/write-value-as-string {"kikka" 2})
+                    baos)
+                  baos)]
+
+      (assert (= +json-string+ (str (call))))
+      (cc/quick-bench
         (call)))))
 
 (defn encode-transit-ring []
@@ -148,7 +175,7 @@
                   baos)]
 
       (assert (= +transit-string+ (str (call))))
-      (cc/bench
+      (cc/quick-bench
         (call)))
 
     ;; 7.4µs
@@ -158,7 +185,7 @@
                   baos)]
 
       (assert (= +transit-string+ (str (call))))
-      (cc/bench
+      (cc/quick-bench
         (call)))))
 
 (defn encode-edn-ring []
@@ -172,7 +199,7 @@
                   baos)]
 
       (assert (= +edn-string+ (str (call))))
-      (cc/bench
+      (cc/quick-bench
         (call)))
 
     ;; 4.4µs
@@ -182,7 +209,7 @@
                   baos)]
 
       (assert (= +edn-string+ (str (call))))
-      (cc/bench
+      (cc/quick-bench
         (call)))))
 
 (comment
