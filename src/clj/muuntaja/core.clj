@@ -4,17 +4,11 @@
             [muuntaja.parse :as parse]
             [muuntaja.util :as util]
             [muuntaja.protocols :as protocols]
-            [muuntaja.records :as records]
             [muuntaja.format.json :as json-format]
             [muuntaja.format.edn :as edn-format]
             [muuntaja.format.transit :as transit-format])
-  (:import (muuntaja.records FormatAndCharset Adapter)
-           (java.nio.charset Charset)
+  (:import (java.nio.charset Charset)
            (java.io EOFException IOException Writer)))
-
-;;
-;; Protocol
-;;
 
 (defprotocol Muuntaja
   (encoder [this format])
@@ -34,6 +28,14 @@
 
 (defn muuntaja? [x]
   (satisfies? Muuntaja x))
+
+(defrecord FormatAndCharset [^String format, ^String charset])
+
+(defmethod print-method FormatAndCharset
+  [this ^Writer w]
+  (.write w (str "#FormatAndCharset" (into {} this))))
+
+(defrecord Adapter [encode decode])
 
 ;;
 ;; encode & decode
@@ -235,7 +237,7 @@
         charsets (charsets m)]
     (if s
       (let [[content-type-raw charset-raw] (parse/parse-content-type s)]
-        (records/->FormatAndCharset
+        (->FormatAndCharset
           (if content-type-raw
             (or (consumes content-type-raw)
                 (some
@@ -308,7 +310,7 @@
             (let [[f opts] spec]
               (f (merge opts spec-opts)))
             spec)
-        prepare (if decode? protocols/as-input-stream identity)
+        prepare (if decode? protocols/-input-stream identity)
         on-exception (partial on-exception allow-empty-input?)]
     (if (and p pf)
       (fn f
@@ -338,7 +340,7 @@
                (str "invalid format: " format)
                {:format format
                 :formats (keys formats)}))
-           [format (records/map->Adapter
+           [format (map->Adapter
                      (merge
                        (if decoder {:decode (create-coder format :muuntaja/decode decoder decoder-opts default-charset allow-empty-input? nil)})
                        (if encoder {:encode (create-coder format :muuntaja/encode encoder encoder-opts default-charset allow-empty-input? encode-protocol)})))]))
@@ -434,7 +436,7 @@
            (request-format [_ request]
              (-negotiate-content-type (extract-content-type request)))
            (response-format [_ request]
-             (records/->FormatAndCharset
+             (->FormatAndCharset
                (-negotiate-accept (extract-accept request))
                (-negotiate-accept-charset (extract-accept-charset request))))
            (negotiate-request-response [this request]

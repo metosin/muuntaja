@@ -2,7 +2,9 @@
   (:require [clojure.java.io :as io]
             [muuntaja.util :as util])
   (:import (clojure.lang IFn AFn)
-           (java.io ByteArrayOutputStream ByteArrayInputStream InputStreamReader BufferedReader InputStream Writer)))
+           (java.io ByteArrayOutputStream ByteArrayInputStream InputStreamReader BufferedReader InputStream Writer OutputStream)))
+
+(deftype ByteResponse [bytes])
 
 (deftype StreamableResponse [f]
   IFn
@@ -15,6 +17,10 @@
 (util/when-ns
   'ring.core.protocols
   (extend-protocol ring.core.protocols/StreamableResponseBody
+    ByteResponse
+    (write-body-to-stream [this _ output-stream]
+      (.write ^OutputStream output-stream ^bytes (.bytes this)))
+
     StreamableResponse
     (write-body-to-stream [this _ output-stream]
       ((.f this) output-stream))))
@@ -39,21 +45,45 @@
   [_ ^Writer w]
   (.write w (str "<<StreamableResponse>>")))
 
-(defprotocol AsInputStream
-  (as-input-stream ^java.io.InputStream [this]))
+(extend ByteResponse
+  io/IOFactory
+  (assoc io/default-streams-impl
+    :make-input-stream (fn [^ByteResponse this _]
+                         (with-open [out (ByteArrayOutputStream. 4096)]
+                           (.write out ^bytes (.bytes this))
+                           (ByteArrayInputStream.
+                             (.toByteArray out))))
+    :make-reader (fn [^ByteResponse this _]
+                   (with-open [out (ByteArrayOutputStream. 4096)]
+                     (.write out ^bytes (.bytes this))
+                     (BufferedReader.
+                       (InputStreamReader.
+                         (ByteArrayInputStream.
+                           (.toByteArray out))))))))
 
-(extend-protocol AsInputStream
+(defmethod print-method ByteResponse
+  [_ ^Writer w]
+  (.write w (str "<<ByteResponse>>")))
+
+(defprotocol IntoInputStream
+  (-input-stream ^java.io.InputStream [this]))
+
+(extend-protocol IntoInputStream
   InputStream
-  (as-input-stream [this] this)
+  (-input-stream [this] this)
 
   StreamableResponse
-  (as-input-stream [this]
+  (-input-stream [this]
+    (io/make-input-stream this nil))
+
+  ByteResponse
+  (-input-stream [this]
     (io/make-input-stream this nil))
 
   String
-  (as-input-stream [this]
+  (-input-stream [this]
     (ByteArrayInputStream. (.getBytes this "utf-8")))
 
   nil
-  (as-input-stream [_]
+  (-input-stream [_]
     (ByteArrayInputStream. (byte-array 0))))

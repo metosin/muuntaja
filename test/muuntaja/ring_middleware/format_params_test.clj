@@ -46,7 +46,7 @@
                               (m/select-formats ["application/json"])
                               (assoc-in
                                 [:formats "application/json" :decoder-opts]
-                                {:key-fn key-fn})))
+                                {:decode-key-fn key-fn})))
                          {:headers {"content-type" "application/json"}
                           :body (stream "{\"foo_bar\":\"bar\"}")}))))
   (is (= {:foo-bar "bar"}
@@ -55,7 +55,7 @@
                           (-> default-options
                               (assoc-in
                                 [:formats "application/json" :decoder-opts]
-                                {:key-fn key-fn})))
+                                {:decode-key-fn key-fn})))
                          {:headers {"content-type" "application/json"}
                           :body (stream "{\"foo_bar\":\"bar\"}")})))))
 

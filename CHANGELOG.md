@@ -1,3 +1,27 @@
+## 0.6.0-SNAPSHOT
+
+* **BREAKING**: [Cheshire](https://github.com/dakrone/cheshire) in dropped in favor of [Jsonista](https://github.com/metosin/jsonista) as the default JSON formatter (faster, explicit configuration)
+  * `muuntaja.format.json` => `muuntaja.format.cheshire`
+  * `muuntaja.format.jsonista` => `muuntaja.format.json`
+  * The `muuntaja.format.json` formatter takes now jsonista options directly, with an asertion to fail fast if old options are used:
+     * `:key-fn` => `:encode-key-fn` and `:decode-key-fn`
+     * `:bigdecimals?` => `:bigdecimals`
+* move everyting from `muuntaja.records` into `muuntaja.core`
+* Encoders can now return `muuntaja.protocols/ByteResponse`, a wrapper for `byte-array`. It can be streamed effectively with both Ring (via `ring.protocols/StreamableResponseBody`) and via NIO-enabled servers like [Aleph](https://github.com/ztellman/aleph) and [Immutant (perf fork)](https://github.com/ikitommi/immutant/pull/1)
+  * `muuntaja.format.json` returns these by default, 30% snappier with Ring Streaming.
+
+* dropped dependencies:
+
+```clj
+[cheshire "5.8.0"]
+```
+
+* added dependencies:
+
+```clj
+[metosin/jsonista "0.2.1"]
+```
+
 ## 0.5.0 (17.1.2018)
 
 * Fix [Cannot use muuntaja.core without depending on Ring](https://github.com/metosin/muuntaja/issues/58).

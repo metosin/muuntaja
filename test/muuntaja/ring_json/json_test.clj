@@ -2,6 +2,7 @@
   (:require [clojure.test :refer :all]
             [muuntaja.core :as m]
             [muuntaja.middleware :as middleware]
+            [cheshire.parse]
             [ring.util.io :refer [string-input-stream]]))
 
 (def +handler+ (fn [{:keys [body-params body]}]
@@ -26,7 +27,7 @@
                merge
                {:matches #"^application/(.+\+)?json$"
                 :encoder nil
-                :decoder-opts (merge {:key-fn false} opts)})))
+                :decoder-opts (merge {:decode-key-fn false} opts)})))
        (middleware/wrap-exception (constantly
                                     (or
                                       (:malformed-response opts)
@@ -96,14 +97,14 @@
                 :headers {"Content-Type" "text/plain"}
                 :body "Malformed JSON in request body."})))))
 
-  (let [handler (wrap-json-params +handler+ {:key-fn true})]
+  (let [handler (wrap-json-params +handler+ {:decode-key-fn true})]
     (testing "keyword keys"
       (let [request {:headers {"content-type" "application/json"}
                      :body (string-input-stream "{\"foo\": \"bar\"}")}
             response (handler request)]
         (is (= {:foo "bar"} (:body response))))))
 
-  (let [handler (wrap-json-params +handler+ {:key-fn true, :bigdecimals? true})]
+  (let [handler (wrap-json-params +handler+ {:decode-key-fn true, :bigdecimals true})]
     (testing "bigdecimal floats"
       (let [request {:headers {"content-type" "application/json"}
                      :body (string-input-stream "{\"foo\": 5.5}")}
@@ -123,10 +124,10 @@
   (let [handler (fn [_] {:status 200 :headers {} :body {:bigdecimals cheshire.parse/*use-bigdecimals?*}})]
     (testing "don't overwrite bigdecimal binding"
       (binding [cheshire.parse/*use-bigdecimals?* false]
-        (let [response ((wrap-json-params handler {:bigdecimals? true}) {})]
+        (let [response ((wrap-json-params handler {:bigdecimals true}) {})]
           (is (= (get-in response [:body :bigdecimals]) false))))
       (binding [cheshire.parse/*use-bigdecimals?* true]
-        (let [response ((wrap-json-params handler {:bigdecimals? false}) {})]
+        (let [response ((wrap-json-params handler {:bigdecimals false}) {})]
           (is (= (get-in response [:body :bigdecimals]) true)))))))
 
 (deftest test-json-params
@@ -149,7 +150,7 @@
         (is (= {"foo" "bar"} (:json-params response)))))
 
     (testing "json body with bigdecimals"
-      (let [handler (-> identity wrap-params (wrap-json-params {:bigdecimals? true}))
+      (let [handler (-> identity wrap-params (wrap-json-params {:bigdecimals true}))
             request {:headers {"content-type" "application/json; charset=UTF-8"}
                      :body (string-input-stream "{\"foo\": 5.5}")
                      :params {"id" 3}}
@@ -202,10 +203,10 @@
   (testing "don't overwrite bigdecimal binding"
     (let [handler (fn [_] {:status 200 :headers {} :body {:bigdecimals cheshire.parse/*use-bigdecimals?*}})]
       (binding [cheshire.parse/*use-bigdecimals?* false]
-        (let [response ((wrap-json-params handler {:bigdecimals? true}) {})]
+        (let [response ((wrap-json-params handler {:bigdecimals true}) {})]
           (is (= (get-in response [:body :bigdecimals]) false))))
       (binding [cheshire.parse/*use-bigdecimals?* true]
-        (let [response ((wrap-json-params handler {:bigdecimals? false}) {})]
+        (let [response ((wrap-json-params handler {:bigdecimals false}) {})]
           (is (= (get-in response [:body :bigdecimals]) true)))))))
 
 (deftest test-json-response
