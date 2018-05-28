@@ -7,7 +7,7 @@
      * `:key-fn` => `:encode-key-fn` and `:decode-key-fn`
      * `:bigdecimals?` => `:bigdecimals`
 * move everyting from `muuntaja.records` into `muuntaja.core`
-* Encoders can now return `muuntaja.protocols/ByteResponse`, a wrapper for `byte-array`. It can be streamed effectively with both Ring (via `ring.protocols/StreamableResponseBody`) and via NIO-enables servers like [Aleph](https://github.com/ztellman/aleph) and [Immutant (perf fork)](https://github.com/ikitommi/immutant/pull/1)
+* Encoders can now return `muuntaja.protocols/ByteResponse`, a wrapper for `byte-array`. It can be streamed effectively with both Ring (via `ring.protocols/StreamableResponseBody`) and via NIO-enabled servers like [Aleph](https://github.com/ztellman/aleph) and [Immutant (perf fork)](https://github.com/ikitommi/immutant/pull/1)
   * `muuntaja.format.json` returns these by default, 30% snappier with Ring Streaming.
 
 * dropped dependencies:
