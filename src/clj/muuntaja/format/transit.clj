@@ -17,7 +17,7 @@
       (let [baos (ByteArrayOutputStream.)
             writer (transit/writer baos full-type options)]
         (transit/write writer data)
-        (ByteArrayInputStream.
+        (protocols/->ByteResponse
           (.toByteArray baos))))))
 
 (defn make-streaming-transit-encoder [type {:keys [verbose] :as options}]

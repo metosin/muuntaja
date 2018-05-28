@@ -605,9 +605,9 @@
 
     (title file)
 
-    ;   26µs (10b)
-    ;   34µs (100b)
-    ;   52µs (1k)
+    ;   24µs (10b)
+    ;   30µs (100b)
+    ;   47µs (1k)
     ;  240µs (10k)
     ; 2000µs (100k)
     (title "ring-middleware-format: TRANSIT-JSON-REQUEST-RESPONSE (defaults)")
@@ -616,8 +616,8 @@
       (cc/quick-bench (ring-stream! (app (request!)))))
 
     ;   25µs (10b)
-    ;   32µs (100b)
-    ;   46µs (1k)
+    ;   28µs (100b)
+    ;   48µs (1k)
     ;  240µs (10k)
     ; 2000µs (100k)
     (title "ring-middleware-format: TRANSIT-JSON-REQUEST-RESPONSE (tuned)")
@@ -626,11 +626,11 @@
       #_(println (str (ring-stream! (app (request!)))))
       (cc/quick-bench (ring-stream! (app (request!)))))
 
-    ;   21µs (10b)
-    ;   26µs (100b)
-    ;   44µs (1k)
-    ;  258µs (10k)
-    ; 2390µs (100k)
+    ;   18µs (10b)
+    ;   24µs (100b)
+    ;   41µs (1k)
+    ;  240µs (10k)
+    ; 2100µs (100k)
     (title "ring-transit: TRANSIT-JSON-REQUEST-RESPONSE")
     (let [+handler+ (fn [request] {:status 200 :body (:body request)})
           app (-> +handler+
@@ -639,9 +639,9 @@
       #_(println (str (ring-stream! (app (request!)))))
       (cc/quick-bench (ring-stream! (app (request!)))))
 
-    ;   12µs (10b)
-    ;   18µs (100b)
-    ;   31µs (1k)
+    ;   11µs (10b)
+    ;   16µs (100b)
+    ;   29µs (1k)
     ;  220µs (10k)
     ; 1900µs (100k)
     (title "muuntaja: TRANSIT-JSON-REQUEST-RESPONSE")
@@ -651,8 +651,8 @@
 
     ;   11µs (10b)
     ;   17µs (100b)
-    ;   30µs (1k)
-    ;  215µs (10k)
+    ;   31µs (1k)
+    ;  210µs (10k)
     ; 1900µs (100k)
     (title "muuntaja: TRANSIT-JSON-REQUEST-RESPONSE, streaming")
     (let [app (-> +handler+ (middleware/wrap-format))]

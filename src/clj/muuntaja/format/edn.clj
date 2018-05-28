@@ -1,5 +1,6 @@
 (ns muuntaja.format.edn
-  (:require [clojure.edn :as edn])
+  (:require [clojure.edn :as edn]
+            [muuntaja.protocols :as protocols])
   (:import (java.io InputStreamReader PushbackReader InputStream ByteArrayInputStream)))
 
 (defn make-edn-decoder [options]
@@ -11,7 +12,7 @@
 
 (defn make-edn-encoder [_]
   (fn [data ^String charset]
-    (ByteArrayInputStream.
+    (protocols/->ByteResponse
       (.getBytes
         (pr-str data)
         charset))))
