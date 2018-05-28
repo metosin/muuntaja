@@ -6,8 +6,7 @@
 (deftest ByteResponse-test
   (let [br (protocols/->ByteResponse (.getBytes "kikka"))]
     (is (= "kikka" (slurp br)))
-    (is (= "kikka" (slurp (protocols/-input-stream br))))
-    (is (= "kikka" (str (br (ByteArrayOutputStream. 4096)))))))
+    (is (= "kikka" (slurp (protocols/-input-stream br))))))
 
 (deftest StreamableResponse-test
   (let [sr (protocols/->StreamableResponse #(.write % (.getBytes "kikka")))]

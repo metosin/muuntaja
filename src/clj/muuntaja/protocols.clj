@@ -4,13 +4,7 @@
   (:import (clojure.lang IFn AFn)
            (java.io ByteArrayOutputStream ByteArrayInputStream InputStreamReader BufferedReader InputStream Writer OutputStream)))
 
-(deftype ByteResponse [bytes]
-  IFn
-  (invoke [_ output-stream]
-    (.write ^OutputStream output-stream ^bytes bytes)
-    output-stream)
-  (applyTo [this args]
-    (AFn/applyToHelper this args)))
+(deftype ByteResponse [bytes])
 
 (deftype StreamableResponse [f]
   IFn
