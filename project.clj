@@ -14,6 +14,8 @@
   :codox {:src-uri "http://github.com/metosin/muuntaja/blob/master/{filepath}#L{line}"
           :output-path "doc"
           :metadata {:doc/format :markdown}}
+  :scm {:name "git"
+        :url "https://github.com/metosin/muuntaja"}
   :deploy-repositories [["releases" :clojars]]
   :profiles {:dev {:jvm-opts ^:replace ["-server"]
                    :dependencies [[org.clojure/clojure "1.8.0"]
