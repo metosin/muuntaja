@@ -34,9 +34,10 @@
           (catch Exception e
             (handle-exception e request on-exception respond throw))))))))
 
-(defn wrap-params [handler]
+(defn wrap-params
   "Middleware that merges request `:body-params` into `:params`.
   Supports async-ring."
+  [handler]
   (letfn [(set-params
             ([request]
              (let [params (:params request)
