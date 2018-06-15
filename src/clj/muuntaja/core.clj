@@ -304,11 +304,11 @@
           e)))))
 
 
-(defn- create-coder [format type spec spec-opts default-charset allow-empty-input? [p pf]]
+(defn- create-coder [format type spec opts spec-opts default-charset allow-empty-input? [p pf]]
   (let [decode? (= type :muuntaja/decode)
         g (if (vector? spec)
-            (let [[f opts] spec]
-              (f (merge opts spec-opts)))
+            (let [[f args] spec]
+              (f (merge args opts spec-opts)))
             spec)
         prepare (if decode? protocols/-input-stream identity)
         on-exception (partial on-exception allow-empty-input?)]
@@ -333,7 +333,7 @@
              (on-exception e format type))))))))
 
 (defn- create-adapters [formats default-charset allow-empty-input?]
-  (->> (for [[format {:keys [decoder decoder-opts encoder encoder-opts encode-protocol]}] formats]
+  (->> (for [[format {:keys [opts decoder decoder-opts encoder encoder-opts encode-protocol]}] formats]
          (if-not (or encoder decoder)
            (throw
              (ex-info
@@ -342,8 +342,8 @@
                 :formats (keys formats)}))
            [format (map->Adapter
                      (merge
-                       (if decoder {:decode (create-coder format :muuntaja/decode decoder decoder-opts default-charset allow-empty-input? nil)})
-                       (if encoder {:encode (create-coder format :muuntaja/encode encoder encoder-opts default-charset allow-empty-input? encode-protocol)})))]))
+                       (if decoder {:decode (create-coder format :muuntaja/decode decoder opts decoder-opts default-charset allow-empty-input? nil)})
+                       (if encoder {:encode (create-coder format :muuntaja/encode encoder opts encoder-opts default-charset allow-empty-input? encode-protocol)})))]))
        (into {})))
 
 (defn create

@@ -227,9 +227,25 @@
                             m/default-options
                             [:formats "application/json" :decoder-opts]
                             {:decode-key-fn false}))
-                        "application/json")]
+                        "application/json")
+          decode-json2 (m/decoder
+                         (m/create
+                           (assoc-in
+                             m/default-options
+                             [:formats "application/json" :opts]
+                             {:decode-key-fn false}))
+                         "application/json")
+          decode-json3 (m/decoder
+                         (m/create
+                           (assoc-in
+                             m/default-options
+                             [:formats "application/json" :opts]
+                             {:mapper (j/object-mapper {:decode-key-fn false})}))
+                         "application/json")]
       (is (= {:kikka true} (decode-json-kw "{\"kikka\":true}")))
-      (is (= {"kikka" true} (decode-json "{\"kikka\":true}")))))
+      (is (= {"kikka" true} (decode-json "{\"kikka\":true}")))
+      (is (= {"kikka" true} (decode-json2 "{\"kikka\":true}")))
+      (is (= {"kikka" true} (decode-json3 "{\"kikka\":true}")))))
 
   (testing "overriding invalid adapter options fails"
     (is (thrown?
