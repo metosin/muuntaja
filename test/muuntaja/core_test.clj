@@ -2,13 +2,15 @@
   (:require [clojure.test :refer :all]
             [muuntaja.core :as m]
             [clojure.string :as str]
-            [muuntaja.protocols :as protocols]
             [muuntaja.format.cheshire :as cheshire-format]
             [muuntaja.format.msgpack :as msgpack-format]
             [muuntaja.format.yaml :as yaml-format]
-            [jsonista.core :as j])
+            [jsonista.core :as j]
+            [clojure.java.io :as io]
+            [muuntaja.protocols :as protocols])
   (:import (java.nio.charset Charset)
-           (java.io ByteArrayInputStream)))
+           (java.io FileInputStream)
+           (java.nio.file Files)))
 
 (defn- to-byte-stream [x charset] (ByteArrayInputStream. (.getBytes x charset)))
 
@@ -283,3 +285,21 @@
                   (assoc-in
                     [:formats "application/json" :decoder-opts]
                     {:key-fn false}))))))))
+
+(deftest slurp-test
+  (let [file (io/file "dev-resources/json10b.json")
+        expected (slurp file)]
+    (testing "bytes"
+      (is (= expected (m/slurp (Files/readAllBytes (.toPath file))))))
+    (testing "file"
+      (is (= expected (m/slurp file))))
+    (testing "input-stream"
+      (is (= expected (m/slurp (FileInputStream. file)))))
+    (testing "StreamableResponse"
+      (is (= expected (m/slurp (protocols/->StreamableResponse (partial io/copy file))))))
+    (testing "ByteReponse"
+      (is (= expected (m/slurp (protocols/->ByteResponse (Files/readAllBytes (.toPath file)))))))
+    (testing "String"
+      (is (= expected (m/slurp expected))))
+    (testing "nil"
+      (is (= nil (m/slurp nil))))))

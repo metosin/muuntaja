@@ -1,4 +1,5 @@
 (ns muuntaja.core
+  (:refer-clojure :exclude [slurp])
   (:require [clojure.set :as set]
             [clojure.string :as str]
             [muuntaja.parse :as parse]
@@ -474,3 +475,10 @@
 (defmethod print-method ::muuntaja
   [_ ^Writer w]
   (.write w (str "<<Muuntaja>>")))
+
+;;
+;; Utilities
+;;
+
+(defn slurp [x]
+  (some-> x protocols/-input-stream clojure.core/slurp))

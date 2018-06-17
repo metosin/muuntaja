@@ -2,7 +2,8 @@
   (:require [clojure.java.io :as io]
             [muuntaja.util :as util])
   (:import (clojure.lang IFn AFn)
-           (java.io ByteArrayOutputStream ByteArrayInputStream InputStreamReader BufferedReader InputStream Writer OutputStream)))
+           (java.io ByteArrayOutputStream ByteArrayInputStream InputStreamReader BufferedReader InputStream Writer OutputStream FileInputStream File)
+           (java.nio ByteBuffer)))
 
 (deftype ByteResponse [bytes])
 
@@ -69,6 +70,12 @@
   (-input-stream ^java.io.InputStream [this]))
 
 (extend-protocol IntoInputStream
+  (Class/forName "[B")
+  (-input-stream [this] (ByteArrayInputStream. this))
+
+  File
+  (-input-stream [this] (FileInputStream. this))
+
   InputStream
   (-input-stream [this] this)
 
