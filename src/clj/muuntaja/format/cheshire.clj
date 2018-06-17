@@ -18,11 +18,7 @@
 
 (defn make-json-encoder [options]
   (fn [data ^String charset]
-    (ByteArrayInputStream. (.getBytes (cheshire/generate-string data options) charset))))
-
-(defn make-json-string-encoder [options]
-  (fn [data _]
-    (cheshire/generate-string data options)))
+    (.getBytes (cheshire/generate-string data options) charset)))
 
 (defn make-streaming-json-encoder [options]
   (fn [data ^String charset]

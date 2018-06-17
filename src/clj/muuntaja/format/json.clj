@@ -1,6 +1,7 @@
 (ns muuntaja.format.json
   (:require [jsonista.core :as j]
-            [muuntaja.protocols :as protocols])
+            [muuntaja.protocols :as protocols]
+            [muuntaja.util :as util])
   (:import (java.io InputStream
                     InputStreamReader
                     OutputStreamWriter
@@ -36,10 +37,9 @@
 (defn make-json-encoder [options]
   (let [mapper (object-mapper! options)]
     (fn [data ^String charset]
-      (protocols/->ByteResponse
-        (if (.equals "utf-8" charset)
-          (j/write-value-as-bytes data mapper)
-          (.getBytes ^String (j/write-value-as-string data mapper) charset))))))
+      (if (.equals "utf-8" charset)
+        (j/write-value-as-bytes data mapper)
+        (.getBytes ^String (j/write-value-as-string data mapper) charset)))))
 
 (defn make-streaming-json-encoder [options]
   (let [mapper (object-mapper! options)]

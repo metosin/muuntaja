@@ -12,14 +12,9 @@
 
 (defn make-edn-encoder [_]
   (fn [data ^String charset]
-    (protocols/->ByteResponse
-      (.getBytes
-        (pr-str data)
-        charset))))
-
-(defn make-edn-string-encoder [_]
-  (fn [data _]
-    (pr-str data)))
+    (.getBytes
+      (pr-str data)
+      charset)))
 
 ;;
 ;; format
