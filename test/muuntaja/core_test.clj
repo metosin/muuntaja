@@ -7,12 +7,13 @@
             [muuntaja.format.yaml :as yaml-format]
             [jsonista.core :as j]
             [clojure.java.io :as io]
-            [muuntaja.protocols :as protocols])
+            [muuntaja.protocols :as protocols]
+            [muuntaja.util :as util])
   (:import (java.nio.charset Charset)
            (java.io FileInputStream)
            (java.nio.file Files)))
 
-(defn- to-byte-stream [x charset] (ByteArrayInputStream. (.getBytes x charset)))
+(defn- to-byte-stream [x charset] (util/byte-stream (.getBytes x charset)))
 
 (defn set-jvm-default-charset! [charset]
   (System/setProperty "file.encoding" charset)
@@ -79,7 +80,7 @@
         (is (= "UTF-16" (str (Charset/defaultCharset)))))))
 
   (testing "on empty input"
-    (let [empty (fn [] (ByteArrayInputStream. (byte-array 0)))
+    (let [empty (fn [] (util/byte-stream (byte-array 0)))
           m2 (m/create
                (-> m/default-options
                    (msgpack-format/with-msgpack-format)
@@ -291,9 +292,9 @@
         expected (slurp file)]
     (testing "bytes"
       (is (= expected (m/slurp (Files/readAllBytes (.toPath file))))))
-    (testing "file"
+    (testing "File"
       (is (= expected (m/slurp file))))
-    (testing "input-stream"
+    (testing "InputStream"
       (is (= expected (m/slurp (FileInputStream. file)))))
     (testing "StreamableResponse"
       (is (= expected (m/slurp (protocols/->StreamableResponse (partial io/copy file))))))
