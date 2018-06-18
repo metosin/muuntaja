@@ -349,6 +349,7 @@
   ; 2.3µs
   ; 2.6µs (negotions)
   ; 2.6µs (content-type)
+  ; 1.2µs (jsonista)
   (let [app (middleware/wrap-format +handler+ (m/transform-formats
                                                 m/default-options
                                                 #(dissoc %2 :encoder :encode-protocol)))
@@ -361,6 +362,7 @@
   ; 3.6µs
   ; 4.2µs (negotions)
   ; 4.1µs (content-type)
+  ; 4.5µs (jsonista)
   (let [app (middleware/wrap-format +handler+ (m/transform-formats
                                                 m/default-options
                                                 #(dissoc %2 :encoder)))
@@ -374,6 +376,7 @@
   ; 4.4µs (negotions)
   ; 4.2µs (content-type)
   ; 4.2µs && 7.0µs
+  ; 1.8µs && 4.3µs (jsonista)
   (let [app (middleware/wrap-format +handler+ m/default-options)
         request! (request-stream +json-request+)]
 
@@ -386,6 +389,7 @@
   ; 8.8µs (negotions)
   ; 8.2µs (content-type)
   ; 9.4µs && 11.9µs
+  ; 12.8&& 11.5µs (jsonista)
   (let [app (middleware/wrap-format +handler+ m/default-options)
         request! (request-stream +transit-json-request+)]
 
@@ -399,6 +403,7 @@
   ; 3.3µs (negotions)
   ; 3.2µs (content-type)
   ; 3.3µs && 5.7µs
+  ; 2.1µs && 3.7µs (jsonista)
   (let [app (middleware/wrap-format +handler2+ default-options-with-encode-protocol)
         request! (request-stream +json-request+)]
 
@@ -558,37 +563,44 @@
                       (ring.middleware.json/wrap-json-response))]
           (report-bench results :json size "ring-json" (ring-stream! (app (request!)))))
 
-      ;  6.5µs (10b)
-      ;  9.0µs (100b)
+      ;  5.9µs (10b)
+      ;  8.6µs (100b)
       ;   24µs (1k)
-      ;  250µs (10k)
-      ; 2400µs (100k)
+      ;  225µs (10k)
+      ; 2300µs (100k)
       (let [app (-> +handler+ (middleware/wrap-format
-                                (assoc-in
-                                  m/default-options
-                                  [:formats "application/json"]
-                                  cheshire-format/json-format)))]
-        (report-bench results :json size "muuntaja" (ring-stream! (app (request!)))))
+                                (-> m/default-options cheshire-format/with-json-format)))]
+        (report-bench results :json size "muuntaja (cheshire)" (ring-stream! (app (request!)))))
 
-      ;  3.1µs (10b)
+      ;  4.3µs (10b)
+      ;  6.2µs (100b)
+      ;   12µs (1k)
+      ;  111µs (10k)
+      ; 1100µs (100k)
+      (let [app (-> +handler+ (middleware/wrap-format))]
+        (report-bench results :json size "muuntaja (jsonista)" (ring-stream! (app (request!)))))
+
+
+      ;  3.4µs (10b)
       ;  4.9µs (100b)
       ;   12µs (1k)
       ;  100µs (10k)
       ; 1100µs (100k)
-      (let [app (-> +handler+ (middleware/wrap-format))]
-        (report-bench results :json size "muuntaja (jsonista)" (ring-stream! (app (request!)))))
+      (let [app (-> +handler+ (middleware/wrap-format
+                                (assoc m/default-options :decode-into :byte-array)))]
+        (report-bench results :json size "muuntaja (jsonista - byte-array)" (ring-stream! (app (request!)))))
 
       ;  3.4µs (10b)
       ;  5.3µs (100b)
       ;   12µs (1k)
       ;  100µs (10k)
       ; 1100µs (100k)
-      (let [app (-> +handler+ (middleware/wrap-format
-                                (assoc-in
-                                  m/default-options
-                                  [:formats "application/json"]
-                                  json-format/streaming-json-format)))]
-        (report-bench results :json size "muuntaja (streaming jsonista)" (ring-stream! (app (request!))))))
+      #_(let [app (-> +handler+ (middleware/wrap-format
+                                  (assoc-in
+                                    m/default-options
+                                    [:formats "application/json"]
+                                    json-format/streaming-json-format)))]
+          (report-bench results :json size "muuntaja (streaming jsonista)" (ring-stream! (app (request!))))))
 
     (save-results! (format "perf/middleware/json-results%s.edn" (next-number)) @results)))
 

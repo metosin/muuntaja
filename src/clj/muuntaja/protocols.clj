@@ -18,6 +18,10 @@
 (util/when-ns
   'ring.core.protocols
   (extend-protocol ring.core.protocols/StreamableResponseBody
+    (Class/forName "[B")
+    (write-body-to-stream [this _ output-stream]
+      (.write ^OutputStream output-stream ^bytes this))
+
     ByteResponse
     (write-body-to-stream [this _ output-stream]
       (.write ^OutputStream output-stream ^bytes (.bytes this)))

@@ -1,7 +1,6 @@
 (ns muuntaja.format.json
   (:require [jsonista.core :as j]
-            [muuntaja.protocols :as protocols]
-            [muuntaja.util :as util])
+            [muuntaja.protocols :as protocols])
   (:import (java.io InputStream
                     InputStreamReader
                     OutputStreamWriter

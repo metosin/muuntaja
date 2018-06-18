@@ -9,8 +9,8 @@
   * `:mapper` option can be used to set the preconfigured `ObjectMapper`.
 * move everyting from `muuntaja.records` into `muuntaja.core`
 * `m/slurp` to consume whatever Muuntaja can encode into a String. Not performance optimized, e.g. for testing.
-* Encoders can now return `muuntaja.protocols/ByteResponse`, a wrapper for `byte-array`. It can be streamed effectively with both Ring (via `ring.protocols/StreamableResponseBody`) and via NIO-enabled servers like [Aleph](https://github.com/ztellman/aleph) and [Immutant (perf fork)](https://github.com/ikitommi/immutant/pull/1)
-  * all defaults formats (json, edn & transit) returns these by default
+* **BREAKING**: for performance reasons, encoders must now return `byte[]` Instead of `ByteArrayInputStream`.
+  * It can be streamed effectively with both Ring (via `ring.protocols/StreamableResponseBody`) and via NIO-enabled servers like [Aleph](https://github.com/ztellman/aleph) and [Immutant (perf fork)](https://github.com/ikitommi/immutant/pull/1)
   * JSON is 30% snappier now with Ring Streaming.
 * formats can now also take `:opts` keys, which gets merged into encoder and decoder arguments and opts, so these decoders are effectively the same:
 
