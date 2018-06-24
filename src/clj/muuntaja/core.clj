@@ -1,15 +1,15 @@
 (ns muuntaja.core
   (:refer-clojure :exclude [slurp])
-  (:require [clojure.set :as set]
-            [clojure.string :as str]
+  (:require [clojure.string :as str]
             [muuntaja.parse :as parse]
             [muuntaja.util :as util]
             [muuntaja.protocols :as protocols]
             [muuntaja.format.json :as json-format]
             [muuntaja.format.edn :as edn-format]
-            [muuntaja.format.transit :as transit-format])
+            [muuntaja.format.transit :as transit-format]
+            [clojure.set :as set])
   (:import (java.nio.charset Charset)
-           (java.io EOFException IOException Writer)))
+           (java.io EOFException IOException Writer ByteArrayInputStream)))
 
 (defprotocol Muuntaja
   (encoder [this format])
@@ -36,33 +36,7 @@
   [this ^Writer w]
   (.write w (str "#FormatAndCharset" (into {} this))))
 
-(defrecord Adapter [encode decode])
-
-;;
-;; encode & decode
-;;
-
-(defn encode
-  "Encode data into the given format. Returns InputStream or throws."
-  ([m format data]
-   (if-let [encode (encoder m format)]
-     (encode data)
-     (util/throw! m format "invalid encode format")))
-  ([m format data charset]
-   (if-let [encode (encoder m format)]
-     (encode data charset)
-     (util/throw! m format "invalid encode format"))))
-
-(defn decode
-  "Decode data into the given format. Returns InputStream or throws."
-  ([m format data]
-   (if-let [decode (decoder m format)]
-     (decode data)
-     (util/throw! m format "invalid decode format")))
-  ([m format data charset]
-   (if-let [decode (decoder m format)]
-     (decode data charset)
-     (util/throw! m format "invalid decode format"))))
+(defrecord Adapter [encoder decoder])
 
 ;;
 ;; Documentation
@@ -70,11 +44,11 @@
 
 (defn decodes
   "Set of formats that the Muuntaja instance can decode"
-  [m] (->> m (adapters) (filter #(-> % second :decode)) (map first) (set)))
+  [m] (->> m (adapters) (filter #(-> % second :decoder)) (map first) (set)))
 
 (defn encodes
   "Set of formats that the Muuntaja instance can encode"
-  [m] (->> m (adapters) (filter #(-> % second :encode)) (map first) (set)))
+  [m] (->> m (adapters) (filter #(-> % second :encoder)) (map first) (set)))
 
 (defn matchers
   "Map of format->regexp that the Muuntaja instance knows"
@@ -97,25 +71,26 @@
   [m] (->> m (options) :formats (map first) (set)))
 
 ;;
-;; transforming options
+;; encode & decode
 ;;
 
-(defn transform-formats [options f]
-  (update options :formats #(into (empty %) (map (fn [[k v]] [k (f k v)]) %))))
+(defn encode
+  "Encode data into the given format. Returns InputStream or throws."
+  ([m format data]
+   (encode m format data (default-charset m)))
+  ([m format data charset]
+   (if-let [encoder (encoder m format)]
+     (encoder data charset)
+     (util/throw! m format "invalid encode format"))))
 
-(defn select-formats [options formats]
-  (let [existing-formats (-> options :formats keys set)
-        future-formats (set formats)]
-    (when-let [diff (seq (set/difference future-formats existing-formats))]
-      (throw
-        (ex-info
-          (str "invalid formats: " diff)
-          {:invalid (seq diff)
-           :formats (seq formats)
-           :existing (seq existing-formats)})))
-    (-> options
-        (update :formats select-keys formats)
-        (assoc :default-format (first formats)))))
+(defn decode
+  "Decode data into the given format. Returns InputStream or throws."
+  ([m format data]
+   (decode m format data (default-charset m)))
+  ([m format data charset]
+   (if-let [decoder (decoder m format)]
+     (decoder data charset)
+     (util/throw! m format "invalid decode format"))))
 
 ;;
 ;; default options
@@ -154,16 +129,16 @@
           :encode-response-body? encode-collections-with-override}
 
    :allow-empty-input? true
-   :decode-into :input-stream ;; :byte-array :bytes
+   :return :stream ;; :bytes :lazy
 
    :default-charset "utf-8"
    :charsets available-charsets
 
    :default-format "application/json"
-   :formats {"application/json" json-format/json-format
-             "application/edn" edn-format/edn-format
-             "application/transit+json" transit-format/transit-json-format
-             "application/transit+msgpack" transit-format/transit-msgpack-format}})
+   :formats {"application/json" json-format/format
+             "application/edn" edn-format/format
+             "application/transit+json" transit-format/json-format
+             "application/transit+msgpack" transit-format/msgpack-format}})
 
 ;;
 ;; HTTP stuff
@@ -305,52 +280,81 @@
            :format format}
           e)))))
 
-(defn- create-coder [format type spec opts spec-opts default-charset allow-empty-input? decode-into [p pf]]
+(defn- create-coder [format key type spec opts spec-opts default-charset allow-empty-input? return]
   (let [decode? (= type :muuntaja/decode)
-        g' (if (vector? spec)
-             (let [[f args] spec]
-               (f (merge args opts spec-opts)))
-             spec)
-        g (if decode?
-            g'
-            (case decode-into
-              :byte-array g'
-              :input-stream (comp util/byte-stream g')
-              :bytes (comp protocols/->ByteResponse g')))
-        prepare (if decode? protocols/-input-stream identity)
-        on-exception (partial on-exception allow-empty-input?)]
-    (if (and p pf)
-      (fn f
-        ([x]
-         (f x default-charset))
-        ([x charset]
-         (try
-           (if (and (record? x) (satisfies? p x))
-             (pf x charset)
-             (g (prepare x) charset))
-           (catch Exception e
-             (on-exception e format type)))))
-      (fn f
-        ([x]
-         (f x default-charset))
-        ([x charset]
-         (try
-           (g (prepare x) charset)
-           (catch Exception e
-             (on-exception e format type))))))))
+        coder (if (vector? spec)
+                (let [[f args] spec]
+                  (f (merge args opts spec-opts)))
+                spec)
+        in (if decode? protocols/into-input-stream identity)
+        on-exception (partial on-exception allow-empty-input?)
+        valid-protocols (if decode?
+                          muuntaja.format.core/decode-protocols
+                          muuntaja.format.core/encode-protocols)]
 
-(defn- create-adapters [formats default-charset allow-empty-input? decode-into]
-  (->> (for [[format {:keys [opts decoder decoder-opts encoder encoder-opts encode-protocol]}] formats]
-         (if-not (or encoder decoder)
-           (throw
-             (ex-info
-               (str "invalid format: " format)
-               {:format format
-                :formats (keys formats)}))
-           [format (map->Adapter
-                     (merge
-                       (if decoder {:decode (create-coder format :muuntaja/decode decoder opts decoder-opts default-charset allow-empty-input? decode-into nil)})
-                       (if encoder {:encode (create-coder format :muuntaja/encode encoder opts encoder-opts default-charset allow-empty-input? decode-into encode-protocol)})))]))
+    (when-not (some #(satisfies? % coder) valid-protocols)
+      (throw
+        (ex-info
+          (str "Invalid format " (pr-str format) " for type " type ". "
+               "It should have key " key " satistying one of the following protocols: "
+               (mapv :on valid-protocols))
+          {:format format
+           :type type
+           :spec spec
+           :coder coder
+           :valid-protocols valid-protocols})))
+
+    {key
+     (if decode?
+       (fn decode
+         ([data]
+          (decode data default-charset))
+         ([data charset]
+          (try
+            (muuntaja.format.core/decode coder (in data) charset)
+            (catch Exception e
+              (on-exception e format type)))))
+       (case return
+         :bytes
+         (fn encode
+           ([data]
+            (encode data default-charset))
+           ([data charset]
+            (try
+              (muuntaja.format.core/encode coder data charset)
+              (catch Exception e
+                (on-exception e format type)))))
+         :stream
+         (fn encode
+           ([data]
+            (encode data default-charset))
+           ([data charset]
+            (try
+              (ByteArrayInputStream.
+                (muuntaja.format.core/encode coder data charset))
+              (catch Exception e
+                (on-exception e format type)))))
+         :lazy
+         (fn encode
+           ([data]
+            (encode data default-charset))
+           ([data charset]
+            (protocols/->StreamableResponse
+              (muuntaja.format.core/encode-to-stream coder data charset))))))}))
+
+(defn- create-adapters [formats default-charset allow-empty-input? default-return]
+  (->> (for [[format {:keys [opts decoder decoder-opts encoder encoder-opts return]}] formats]
+         (let [return (or return default-return)]
+           (if-not (or encoder decoder)
+             (throw
+               (ex-info
+                 (str "invalid format: " format)
+                 {:format format
+                  :formats (keys formats)}))
+             [format (map->Adapter
+                       (merge
+                         (if decoder (create-coder format :decoder :muuntaja/decode decoder opts decoder-opts default-charset allow-empty-input? return))
+                         (if encoder (create-coder format :encoder :muuntaja/encode encoder opts encoder-opts default-charset allow-empty-input? return))))])))
        (into {})))
 
 (defn create
@@ -367,9 +371,9 @@
                    default-format
                    charsets
                    default-charset
-                   allow-empty-input?
-                   decode-into] :as options} muuntaja-or-options
-           adapters (create-adapters formats default-charset allow-empty-input? decode-into)
+                   return
+                   allow-empty-input?] :as options} muuntaja-or-options
+           adapters (create-adapters formats default-charset allow-empty-input? return)
            valid-format? (key-set formats identity)]
        (when-not (or (not default-format) (valid-format? default-format))
          (throw
@@ -388,10 +392,10 @@
              produces (encodes m)
              -encoder (fn [format]
                         (if-let [^Adapter adapter (adapters format)]
-                          (.-encode adapter)))
+                          (.-encoder adapter)))
              -decoder (fn [format]
                         (if-let [^Adapter adapter (adapters format)]
-                          (.-decode adapter)))
+                          (.-decoder adapter)))
              -negotiate-accept-charset (parse/fast-memoize 1000 (partial -negotiate-accept-charset m))
              -negotiate-accept (parse/fast-memoize 1000 (partial -negotiate-accept m))
              -negotiate-content-type (parse/fast-memoize 1000 (partial -negotiate-content-type m))
@@ -479,13 +483,43 @@
                            (assoc :body-params body))
                        $))))))))))
 
+(def instance "the default instance" (create))
+
 (defmethod print-method ::muuntaja
   [_ ^Writer w]
   (.write w (str "<<Muuntaja>>")))
+
+;;
+;; options
+;;
+
+(defn transform-formats [options f]
+  (update options :formats #(into (empty %) (map (fn [[k v]] [k (f k v)]) %))))
+
+(defn select-formats [options formats]
+  (let [existing-formats (-> options :formats keys set)
+        future-formats (set formats)]
+    (when-let [diff (seq (set/difference future-formats existing-formats))]
+      (throw
+        (ex-info
+          (str "invalid formats: " diff)
+          {:invalid (seq diff)
+           :formats (seq formats)
+           :existing (seq existing-formats)})))
+    (-> options
+        (update :formats select-keys formats)
+        (assoc :default-format (first formats)))))
+
+(defn install
+  ([options format]
+   (install options format (:type format)))
+  ([options format type]
+   (assert type (str "no type in " format))
+   (assoc-in options [:formats type] (muuntaja.format.core/map->Format format))))
 
 ;;
 ;; Utilities
 ;;
 
 (defn slurp [x]
-  (some-> x protocols/-input-stream clojure.core/slurp))
+  (some-> x protocols/into-input-stream clojure.core/slurp))

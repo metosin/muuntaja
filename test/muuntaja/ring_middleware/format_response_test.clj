@@ -9,8 +9,8 @@
             [muuntaja.format.msgpack :as msgpack-format]
             [muuntaja.format.yaml :as yaml-format]
             [msgpack.core :as msgpack]
-            [clojure.java.io :as io]
-            [clojure.string :as str])
+            [clojure.string :as str]
+            [clojure.java.io :as io])
   (:import [java.io ByteArrayInputStream]))
 
 (defn stream [s]
@@ -24,8 +24,8 @@
        (middleware/wrap-format
          (m/transform-formats
            (-> opts
-               (yaml-format/with-yaml-format)
-               (msgpack-format/with-msgpack-format))
+               (m/install yaml-format/format)
+               (m/install msgpack-format/format))
            #(dissoc %2 :decoder))))))
 
 (def api-echo
@@ -105,7 +105,7 @@
   (wrap-api-response
     identity
     (-> m/default-options
-        (msgpack-format/with-msgpack-format)
+        (m/install msgpack-format/format)
         (m/select-formats ["application/msgpack"]))))
 
 (deftest format-msgpack-hashmap
@@ -136,7 +136,7 @@
   (wrap-api-response
     identity
     (-> m/default-options
-        (yaml-format/with-yaml-format)
+        (m/install yaml-format/format)
         (m/select-formats ["application/x-yaml"]))))
 
 (deftest format-yaml-hashmap
@@ -291,7 +291,11 @@
   (wrap-api-response
     identity
     (-> m/default-options
-        (assoc-in [:formats "text/foo"] {:encoder (constantly (.getBytes "foobar"))}))))
+        (m/install {:type "text/foo"
+                    :encoder (reify
+                               muuntaja.format.core/Encode
+                               (encode [_ _ _]
+                                 (.getBytes "foobar")))}))))
 
 (deftest format-custom-api-hashmap
   (let [req {:body {:foo "bar"} :headers {"accept" "text/foo"}}

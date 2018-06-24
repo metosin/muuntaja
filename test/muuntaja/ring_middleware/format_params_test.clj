@@ -1,14 +1,14 @@
 (ns muuntaja.ring-middleware.format-params-test
   (:require [clojure.test :refer :all]
             [cognitect.transit :as transit]
-            [clojure.java.io :as io]
             [clojure.walk :refer [stringify-keys keywordize-keys]]
             [muuntaja.format.msgpack :as msgpack-format]
             [muuntaja.format.yaml :as yaml-format]
             [msgpack.core :as msgpack]
             [clojure.string :as string]
             [muuntaja.core :as m]
-            [muuntaja.middleware :as middleware])
+            [muuntaja.middleware :as middleware]
+            [clojure.java.io :as io])
   (:import [java.io ByteArrayInputStream ByteArrayOutputStream]))
 
 (defn stream [s]
@@ -16,8 +16,8 @@
 
 (def default-options
   (-> m/default-options
-      (msgpack-format/with-msgpack-format)
-      (yaml-format/with-yaml-format)
+      (m/install msgpack-format/format)
+      (m/install yaml-format/format)
       (assoc-in [:formats "application/json" :matches] #"^application/(.+\+)?json$")
       (assoc-in [:formats "application/edn" :matches] #"^application/(vnd.+)?(x-)?(clojure|edn)$")
       (assoc-in [:formats "application/msgpack" :matches] #"^application/(vnd.+)?(x-)?msgpack$")

@@ -1,56 +1,36 @@
 (ns muuntaja.format.cheshire
+  (:refer-clojure :exclude [format])
   (:require [cheshire.core :as cheshire]
             [cheshire.parse :as parse]
-            [muuntaja.protocols :as protocols])
-  (:import (java.io InputStreamReader InputStream ByteArrayInputStream OutputStreamWriter OutputStream)))
+            [muuntaja.format.core :as core])
+  (:import (java.io InputStreamReader InputStream OutputStreamWriter OutputStream)))
 
-(defn make-json-decoder [{:keys [key-fn array-coerce-fn bigdecimals?]}]
+(defn decoder [{:keys [key-fn array-coerce-fn bigdecimals?]}]
   (if-not bigdecimals?
-    (fn [x ^String charset]
-      (if (string? x)
-        (cheshire/parse-string x key-fn array-coerce-fn)
-        (cheshire/parse-stream (InputStreamReader. ^InputStream x charset) key-fn array-coerce-fn)))
-    (fn [x ^String charset]
-      (binding [parse/*use-bigdecimals?* bigdecimals?]
-        (if (string? x)
-          (cheshire/parse-string x key-fn array-coerce-fn)
-          (cheshire/parse-stream (InputStreamReader. ^InputStream x charset) key-fn array-coerce-fn))))))
+    (reify
+      core/Decode
+      (decode [_ data charset]
+        (cheshire/parse-stream (InputStreamReader. ^InputStream data ^String charset) key-fn array-coerce-fn)))
+    (reify
+      core/Decode
+      (decode [_ data charset]
+        (binding [parse/*use-bigdecimals?* bigdecimals?]
+          (cheshire/parse-stream (InputStreamReader. ^InputStream data ^String charset) key-fn array-coerce-fn))))))
 
-(defn make-json-encoder [options]
-  (fn [data ^String charset]
-    (.getBytes (cheshire/generate-string data options) charset)))
-
-(defn make-streaming-json-encoder [options]
-  (fn [data ^String charset]
-    (protocols/->StreamableResponse
+(defn encoder [options]
+  (reify
+    core/Encode
+    (encode [_ data charset]
+      (.getBytes (cheshire/generate-string data options) ^String charset))
+    core/EncodeToStream
+    (encode-to-stream [_ data charset]
       (fn [^OutputStream output-stream]
         (cheshire/generate-stream
-          data
-          (OutputStreamWriter. output-stream charset)
-          options)
+          data (OutputStreamWriter. output-stream ^String charset) options)
         (.flush output-stream)))))
 
-;;
-;; format
-;;
-
-;; type
-
-(def json-type "application/json")
-
-;; formats
-
-(def json-format
-  {:decoder [make-json-decoder {:key-fn true}]
-   :encoder [make-json-encoder]})
-
-(def streaming-json-format
-  (assoc json-format :encoder [make-streaming-json-encoder]))
-
-;; options
-
-(defn with-json-format [options]
-  (assoc-in options [:formats json-type] json-format))
-
-(defn with-streaming-json-format [options]
-  (assoc-in options [:formats json-type] streaming-json-format))
+(def format
+  (core/map->Format
+    {:type "application/json"
+     :decoder [decoder {:key-fn true}]
+     :encoder [encoder]}))

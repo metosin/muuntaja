@@ -1,30 +1,32 @@
 (ns muuntaja.format.edn
+  (:refer-clojure :exclude [format])
   (:require [clojure.edn :as edn]
-            [muuntaja.protocols :as protocols])
-  (:import (java.io InputStreamReader PushbackReader InputStream ByteArrayInputStream)))
+            [muuntaja.format.core :as core])
+  (:import (java.io InputStreamReader PushbackReader InputStream OutputStream)))
 
-(defn make-edn-decoder [options]
+(defn decoder [options]
   (let [options (merge {:readers *data-readers*} options)]
-    (fn [x ^String charset]
-      (if (string? x)
-        (edn/read-string options x)
-        (edn/read options (PushbackReader. (InputStreamReader. ^InputStream x charset)))))))
+    (reify
+      core/Decode
+      (decode [_ data charset]
+        (edn/read options (PushbackReader. (InputStreamReader. ^InputStream data ^String charset)))))))
 
-(defn make-edn-encoder [_]
-  (fn [data ^String charset]
-    (.getBytes
-      (pr-str data)
-      charset)))
+(defn encoder [_]
+  (reify
+    core/Encode
+    (encode [_ data charset]
+      (.getBytes
+        (pr-str data)
+        ^String charset))
+    core/EncodeToStream
+    (encode-to-stream [_ data charset]
+      (fn [^OutputStream output-stream]
+        (.write output-stream (.getBytes
+                                (pr-str data)
+                                ^String charset))))))
 
-;;
-;; format
-;;
-
-(def edn-type "application/edn")
-
-(def edn-format
-  {:decoder [make-edn-decoder]
-   :encoder [make-edn-encoder]})
-
-(defn with-edn-format [options]
-  (assoc-in options [:formats edn-type] edn-format))
+(def format
+  (core/map->Format
+    {:type "application/edn"
+     :decoder [decoder]
+     :encoder [encoder]}))

@@ -39,16 +39,12 @@
        (finally
          (set-jvm-default-charset! old-charset#)))))
 
-;; Since Jsonista already uses "application/json", let's put cheshire under
-;; another mime type for the tests.
-(defn- with-cheshire-format [options]
-  (assoc-in options [:formats "application/json+cheshire"] cheshire-format/json-format))
-
-(def m (m/create
-         (-> m/default-options
-             (msgpack-format/with-msgpack-format)
-             (yaml-format/with-yaml-format)
-             (with-cheshire-format))))
+(def m
+  (m/create
+    (-> m/default-options
+        (m/install msgpack-format/format)
+        (m/install yaml-format/format)
+        (m/install cheshire-format/format "application/json+cheshire"))))
 
 (deftest core-test
   (testing "muuntaja?"
@@ -83,9 +79,9 @@
     (let [empty (fn [] (util/byte-stream (byte-array 0)))
           m2 (m/create
                (-> m/default-options
-                   (msgpack-format/with-msgpack-format)
-                   (yaml-format/with-yaml-format)
-                   (with-cheshire-format)
+                   (m/install msgpack-format/format)
+                   (m/install yaml-format/format)
+                   (m/install cheshire-format/format "application/json+cheshire")
                    (assoc :allow-empty-input? false)))]
 
       (testing "by default - nil is returned for empty stream"
@@ -184,27 +180,33 @@
               Exception
               (json-decoder "{:invalid :syntax}"))))))
 
-  (testing "encode-protocol"
-    (let [m (m/create
-              (-> m/default-options
-                  (assoc-in
-                    [:formats "application/json" :encode-protocol]
-                    [EncodeJson encode-json])))
-          encoder (m/encoder m "application/json")]
-      (is (= "{\"hello\":\"Nekala\"}" (slurp (encoder (->Hello "Nekala") "utf-8"))))
-      (is (= "{\"hello\":\"Nekala\"}" (slurp (encoder (->Hello "Nekala") "utf-16") :encoding "UTF-16")))))
-
   (testing "adding new format"
-    (let [format "application/upper"
-          upper-case-format {:decoder (fn [s _] (str/lower-case (slurp s)))
-                             :encoder (fn [s _] (.getBytes (str/upper-case s)))}
-          m (m/create
-              (-> m/default-options
-                  (assoc-in [:formats format] upper-case-format)))
-          {:keys [encode decode]} (-> m (m/adapters) (get format))
+    (let [type "application/upper"
+          upper-case-format {:type type
+                             :decoder (reify
+                                        muuntaja.format.core/Decode
+                                        (decode [_ data _]
+                                          (str/lower-case (slurp data))))
+                             :encoder (reify
+                                        muuntaja.format.core/Encode
+                                        (encode [_ data _]
+                                          (.getBytes (str/upper-case data))))}
+          m (m/create (m/install m/default-options upper-case-format))
+          encode (m/encoder m type)
+          decode (m/decoder m type)
           data "olipa kerran avaruus"]
       (is (= "OLIPA KERRAN AVARUUS" (slurp (encode data))))
       (is (= data (decode (encode data))))))
+
+  (testing "invalid format fails fast"
+    (let [upper-case-format {:type "application/upper"
+                             :decoder (fn [_ data _]
+                                        (str/lower-case (slurp data)))}]
+      (is (thrown?
+            Exception
+            (m/create
+              (-> m/default-options
+                  (m/install upper-case-format)))))))
 
   (testing "setting non-existing format as default throws exception"
     (is (thrown?
@@ -298,8 +300,6 @@
       (is (= expected (m/slurp (FileInputStream. file)))))
     (testing "StreamableResponse"
       (is (= expected (m/slurp (protocols/->StreamableResponse (partial io/copy file))))))
-    (testing "ByteReponse"
-      (is (= expected (m/slurp (protocols/->ByteResponse (Files/readAllBytes (.toPath file)))))))
     (testing "String"
       (is (= expected (m/slurp expected))))
     (testing "nil"

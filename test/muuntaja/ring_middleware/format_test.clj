@@ -36,7 +36,7 @@
       (middleware/wrap-params)
       (middleware/wrap-format
         (-> m/default-options
-            (yaml-format/with-yaml-format)
+            (m/install yaml-format/format)
             (m/select-formats ["application/x-yaml"])))))
 
 (deftest test-api-round-trip
