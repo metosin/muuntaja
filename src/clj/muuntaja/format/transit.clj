@@ -29,12 +29,12 @@
 
 (def json-format
   (core/map->Format
-    {:type "application/transit+json"
+    {:name "application/transit+json"
      :decoder [(partial decoder :json)]
      :encoder [(partial encoder :json)]}))
 
 (def msgpack-format
   (core/map->Format
-    {:type "application/transit+msgpack"
+    {:name "application/transit+msgpack"
      :decoder [(partial decoder :msgpack)]
      :encoder [(partial encoder :msgpack)]}))

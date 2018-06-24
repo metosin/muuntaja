@@ -513,10 +513,10 @@
 
 (defn install
   ([options format]
-   (install options format (:type format)))
-  ([options format type]
-   (assert type (str "no type in " format))
-   (assoc-in options [:formats type] (core/map->Format format))))
+   (install options format (:name format)))
+  ([options format name]
+   (assert name (str "no name in " format))
+   (assoc-in options [:formats name] (core/map->Format format))))
 
 ;;
 ;; Utilities

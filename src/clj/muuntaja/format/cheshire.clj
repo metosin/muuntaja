@@ -31,6 +31,6 @@
 
 (def format
   (core/map->Format
-    {:type "application/json"
+    {:name "application/json"
      :decoder [decoder {:key-fn true}]
      :encoder [encoder]}))

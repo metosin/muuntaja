@@ -30,6 +30,6 @@
 
 (def format
   (core/map->Format
-    {:type "application/msgpack"
+    {:name "application/msgpack"
      :decoder [decoder {:keywords? true}]
      :encoder [encoder]}))

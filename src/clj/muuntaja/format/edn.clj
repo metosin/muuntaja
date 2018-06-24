@@ -27,6 +27,6 @@
 
 (def format
   (core/map->Format
-    {:type "application/edn"
+    {:name "application/edn"
      :decoder [decoder]
      :encoder [encoder]}))

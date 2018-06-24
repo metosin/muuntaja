@@ -26,6 +26,6 @@
 
 (def format
   (core/map->Format
-    {:type "application/x-yaml"
+    {:name "application/x-yaml"
      :decoder [decoder {:keywords true}]
      :encoder [encoder]}))

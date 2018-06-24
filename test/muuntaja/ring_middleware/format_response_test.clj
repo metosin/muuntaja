@@ -292,7 +292,7 @@
   (wrap-api-response
     identity
     (-> m/default-options
-        (m/install {:type "text/foo"
+        (m/install {:name "text/foo"
                     :encoder (reify
                                format/EncodeToBytes
                                (encode-to-bytes [_ _ _]

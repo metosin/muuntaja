@@ -182,8 +182,8 @@
               (json-decoder "{:invalid :syntax}"))))))
 
   (testing "adding new format"
-    (let [type "application/upper"
-          upper-case-format {:type type
+    (let [name "application/upper"
+          upper-case-format {:name name
                              :decoder (reify
                                         core/Decode
                                         (decode [_ data _]
@@ -193,14 +193,14 @@
                                         (encode-to-bytes [_ data _]
                                           (.getBytes (str/upper-case data))))}
           m (m/create (m/install m/default-options upper-case-format))
-          encode (m/encoder m type)
-          decode (m/decoder m type)
+          encode (m/encoder m name)
+          decode (m/decoder m name)
           data "olipa kerran avaruus"]
       (is (= "OLIPA KERRAN AVARUUS" (slurp (encode data))))
       (is (= data (decode (encode data))))))
 
   (testing "invalid format fails fast"
-    (let [upper-case-format {:type "application/upper"
+    (let [upper-case-format {:name "application/upper"
                              :decoder (fn [_ data _]
                                         (str/lower-case (slurp data)))}]
       (is (thrown?

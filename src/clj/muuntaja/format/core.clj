@@ -9,7 +9,7 @@
 (defprotocol EncodeToOutputStream
   (encode-to-output-stream [this data charset]))
 
-(defrecord Format [type encoder decoder matches])
+(defrecord Format [name encoder decoder matches])
 
 (def decode-protocols [Decode])
 (def encode-protocols [EncodeToBytes EncodeToOutputStream])

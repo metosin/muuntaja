@@ -9,9 +9,33 @@
   * `:mapper` option can be used to set the preconfigured `ObjectMapper`.
 * move everyting from `muuntaja.records` into `muuntaja.core`
 * `m/slurp` to consume whatever Muuntaja can encode into a String. Not performance optimized, e.g. for testing.
-* **BREAKING**: for performance reasons, encoders must now return `byte[]` Instead of `ByteArrayInputStream`.
-  * It can be streamed effectively with both Ring (via `ring.protocols/StreamableResponseBody`) and via NIO-enabled servers like [Aleph](https://github.com/ztellman/aleph) and [Immutant (perf fork)](https://github.com/ikitommi/immutant/pull/1)
-  * JSON is 30% snappier now with Ring Streaming.
+* **BREAKING**: formats are written as Protocols instead of just functions.
+  * encoders should satisfy `muuntaja.format.core/EncodeToBytes` or `muuntaja.format.core/EncodeToOutputStream`
+  * decoders should satisfy `muuntaja.format.core/Decode`
+  * as a migration guard - if functions are used, there is an descrptive error message at Muuntaja creation time
+* With Muuntaja option `:return` one can control what is the encoding target. Valid values are:
+  * `:stream` to encode into `java.io.ByteArrayInputStream` (default)
+  * `:bytes` to encode into `byte[]`
+  * `:lazy` to encode lazily into `java.io.OutputStream`
+  * Formats can have their own `:return` value, overriding the Muuntaja defaults.
+* Formats can also have `:name` (e.g. `"application/json"`) and for installing new formats there is `muuntaja.core/install`:
+
+```clj
+(require '[muuntaja.core :as m])
+
+;; [clojure-msgpack "1.2.0" :exclusions [org.clojure/clojure]]
+(require '[muuntaja.format.msgpack])
+
+;; [circleci/clj-yaml "0.5.5"]
+(require '[muuntaja.format.yaml])
+
+(def m (m/create
+         (-> m/default-options
+             (m/install muuntaja.format.msgpack/format)
+             (m/install muuntaja.format.yaml/format)
+             (assoc :return :bytes))))
+```
+
 * formats can now also take `:opts` keys, which gets merged into encoder and decoder arguments and opts, so these decoders are effectively the same:
 
 ```clj
