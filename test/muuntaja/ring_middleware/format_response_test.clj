@@ -10,7 +10,8 @@
             [muuntaja.format.yaml :as yaml-format]
             [msgpack.core :as msgpack]
             [clojure.string :as str]
-            [clojure.java.io :as io])
+            [clojure.java.io :as io]
+            [muuntaja.format.core :as format])
   (:import [java.io ByteArrayInputStream]))
 
 (defn stream [s]
@@ -293,8 +294,8 @@
     (-> m/default-options
         (m/install {:type "text/foo"
                     :encoder (reify
-                               muuntaja.format.core/Encode
-                               (encode [_ _ _]
+                               format/EncodeToBytes
+                               (encode-to-bytes [_ _ _]
                                  (.getBytes "foobar")))}))))
 
 (deftest format-custom-api-hashmap

@@ -14,14 +14,14 @@
 (defn encoder [type {:keys [verbose] :as options}]
   (let [full-type (if (and (= type :json) verbose) :json-verbose type)]
     (reify
-      core/Encode
-      (encode [_ data _]
+      core/EncodeToBytes
+      (encode-to-bytes [_ data _]
         (let [baos (ByteArrayOutputStream.)
               writer (transit/writer baos full-type options)]
           (transit/write writer data)
           (.toByteArray baos)))
-      core/EncodeToStream
-      (encode-to-stream [_ data _]
+      core/EncodeToOutputStream
+      (encode-to-output-stream [_ data _]
         (fn [^OutputStream output-stream]
           (transit/write
             (transit/writer output-stream full-type options) data)

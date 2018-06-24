@@ -19,11 +19,11 @@
 
 (defn encoder [options]
   (reify
-    core/Encode
-    (encode [_ data charset]
+    core/EncodeToBytes
+    (encode-to-bytes [_ data charset]
       (.getBytes (cheshire/generate-string data options) ^String charset))
-    core/EncodeToStream
-    (encode-to-stream [_ data charset]
+    core/EncodeToOutputStream
+    (encode-to-output-stream [_ data charset]
       (fn [^OutputStream output-stream]
         (cheshire/generate-stream
           data (OutputStreamWriter. output-stream ^String charset) options)

@@ -16,14 +16,14 @@
 
 (defn encoder [options]
   (reify
-    core/Encode
-    (encode [_ data _]
+    core/EncodeToBytes
+    (encode-to-bytes [_ data _]
       (with-open [out-stream (ByteArrayOutputStream.)]
         (let [data-out (DataOutputStream. out-stream)]
           (msgpack/pack-stream (walk/stringify-keys data) data-out) options)
         (.toByteArray out-stream)))
-    core/EncodeToStream
-    (encode-to-stream [_ data _]
+    core/EncodeToOutputStream
+    (encode-to-output-stream [_ data _]
       (fn [^OutputStream output-stream]
         (let [data-out (DataOutputStream. output-stream)]
           (msgpack/pack-stream (walk/stringify-keys data) data-out) options)))))

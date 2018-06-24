@@ -4,6 +4,7 @@
             [muuntaja.parse :as parse]
             [muuntaja.util :as util]
             [muuntaja.protocols :as protocols]
+            [muuntaja.format.core :as core]
             [muuntaja.format.json :as json-format]
             [muuntaja.format.edn :as edn-format]
             [muuntaja.format.transit :as transit-format]
@@ -289,8 +290,8 @@
         in (if decode? protocols/into-input-stream identity)
         on-exception (partial on-exception allow-empty-input?)
         valid-protocols (if decode?
-                          muuntaja.format.core/decode-protocols
-                          muuntaja.format.core/encode-protocols)]
+                          core/decode-protocols
+                          core/encode-protocols)]
 
     (when-not (some #(satisfies? % coder) valid-protocols)
       (throw
@@ -311,7 +312,7 @@
           (decode data default-charset))
          ([data charset]
           (try
-            (muuntaja.format.core/decode coder (in data) charset)
+            (core/decode coder (in data) charset)
             (catch Exception e
               (on-exception e format type)))))
        (case return
@@ -321,7 +322,7 @@
             (encode data default-charset))
            ([data charset]
             (try
-              (muuntaja.format.core/encode coder data charset)
+              (core/encode-to-bytes coder data charset)
               (catch Exception e
                 (on-exception e format type)))))
          :stream
@@ -331,7 +332,7 @@
            ([data charset]
             (try
               (ByteArrayInputStream.
-                (muuntaja.format.core/encode coder data charset))
+                (core/encode-to-bytes coder data charset))
               (catch Exception e
                 (on-exception e format type)))))
          :lazy
@@ -340,7 +341,7 @@
             (encode data default-charset))
            ([data charset]
             (protocols/->StreamableResponse
-              (muuntaja.format.core/encode-to-stream coder data charset))))))}))
+              (core/encode-to-output-stream coder data charset))))))}))
 
 (defn- create-adapters [formats default-charset allow-empty-input? default-return]
   (->> (for [[format {:keys [opts decoder decoder-opts encoder encoder-opts return]}] formats]
@@ -515,7 +516,7 @@
    (install options format (:type format)))
   ([options format type]
    (assert type (str "no type in " format))
-   (assoc-in options [:formats type] (muuntaja.format.core/map->Format format))))
+   (assoc-in options [:formats type] (core/map->Format format))))
 
 ;;
 ;; Utilities

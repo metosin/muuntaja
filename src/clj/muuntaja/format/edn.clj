@@ -13,13 +13,13 @@
 
 (defn encoder [_]
   (reify
-    core/Encode
-    (encode [_ data charset]
+    core/EncodeToBytes
+    (encode-to-bytes [_ data charset]
       (.getBytes
         (pr-str data)
         ^String charset))
-    core/EncodeToStream
-    (encode-to-stream [_ data charset]
+    core/EncodeToOutputStream
+    (encode-to-output-stream [_ data charset]
       (fn [^OutputStream output-stream]
         (.write output-stream (.getBytes
                                 (pr-str data)

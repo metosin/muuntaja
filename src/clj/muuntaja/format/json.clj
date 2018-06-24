@@ -37,13 +37,13 @@
 (defn encoder [options]
   (let [mapper (object-mapper! options)]
     (reify
-      core/Encode
-      (encode [_ data charset]
+      core/EncodeToBytes
+      (encode-to-bytes [_ data charset]
         (if (.equals "utf-8" ^String charset)
           (j/write-value-as-bytes data mapper)
           (.getBytes ^String (j/write-value-as-string data mapper) ^String charset)))
-      core/EncodeToStream
-      (encode-to-stream [_ data charset]
+      core/EncodeToOutputStream
+      (encode-to-output-stream [_ data charset]
         (fn [^OutputStream output-stream]
           (if (.equals "utf-8" ^String charset)
             (j/write-value output-stream data mapper)

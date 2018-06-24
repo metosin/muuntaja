@@ -3,13 +3,13 @@
 (defprotocol Decode
   (decode [this data charset]))
 
-(defprotocol Encode
-  (encode [this data charset]))
+(defprotocol EncodeToBytes
+  (encode-to-bytes [this data charset]))
 
-(defprotocol EncodeToStream
-  (encode-to-stream [this data charset]))
+(defprotocol EncodeToOutputStream
+  (encode-to-output-stream [this data charset]))
 
 (defrecord Format [type encoder decoder matches])
 
 (def decode-protocols [Decode])
-(def encode-protocols [Encode EncodeToStream])
+(def encode-protocols [EncodeToBytes EncodeToOutputStream])

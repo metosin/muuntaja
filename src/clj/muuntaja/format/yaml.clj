@@ -15,12 +15,12 @@
 (defn encoder [options]
   (let [options-args (mapcat identity options)]
     (reify
-      core/Encode
-      (encode [_ data _]
+      core/EncodeToBytes
+      (encode-to-bytes [_ data _]
         (.getBytes
           ^String (apply yaml/generate-string data options-args)))
-      core/EncodeToStream
-      (encode-to-stream [_ data _]
+      core/EncodeToOutputStream
+      (encode-to-output-stream [_ data _]
         (fn [^OutputStream output-stream]
           (.write output-stream (.getBytes ^String (apply yaml/generate-string data options-args))))))))
 

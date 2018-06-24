@@ -2,6 +2,7 @@
   (:require [clojure.test :refer :all]
             [muuntaja.core :as m]
             [clojure.string :as str]
+            [muuntaja.format.core :as core]
             [muuntaja.format.cheshire :as cheshire-format]
             [muuntaja.format.msgpack :as msgpack-format]
             [muuntaja.format.yaml :as yaml-format]
@@ -184,12 +185,12 @@
     (let [type "application/upper"
           upper-case-format {:type type
                              :decoder (reify
-                                        muuntaja.format.core/Decode
+                                        core/Decode
                                         (decode [_ data _]
                                           (str/lower-case (slurp data))))
                              :encoder (reify
-                                        muuntaja.format.core/Encode
-                                        (encode [_ data _]
+                                        core/EncodeToBytes
+                                        (encode-to-bytes [_ data _]
                                           (.getBytes (str/upper-case data))))}
           m (m/create (m/install m/default-options upper-case-format))
           encode (m/encoder m type)
