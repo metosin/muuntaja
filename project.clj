@@ -31,7 +31,7 @@
 
                                   ;; Pedestal
                                   [org.clojure/core.async "0.4.474" :exclusions [org.clojure/tools.reader]]
-                                  [io.pedestal/pedestal.service "0.5.3" :exclusions [org.clojure/tools.reader
+                                  [io.pedestal/pedestal.service "0.5.4" :exclusions [org.clojure/tools.reader
                                                                                      org.clojure/core.async
                                                                                      org.clojure/core.memoize]]
                                   [javax.servlet/javax.servlet-api "4.0.1"]
