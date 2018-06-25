@@ -80,7 +80,7 @@ Create a Muuntaja and use it to encode & decode JSON:
 ; => {:kikka 42}
 ```
 
-With custom EDN decoder opts:
+With custom EDN decoder options:
 
 ```clj
 (def m
@@ -95,7 +95,7 @@ With custom EDN decoder opts:
 ; => {:value 42}
 ```
 
-Create a encoding function for Transit-json:
+Defining a encoding function for Transit-json:
 
 ```clj
 (def encode-transit-json
@@ -105,9 +105,9 @@ Create a encoding function for Transit-json:
 ; => "[\"^ \",\"~:kikka\",42]"
 ```
 
-## Encoding targets
+## Encode format
 
-By default, encoding writes the value into a `java.io.ByteArrayInputStream`. This can be changed with a `:return` option, accepting the following values:
+By default, encoding writes value into a `java.io.ByteArrayInputStream`. This can be changed with a `:return` option, accepting the following values:
 
 | value            | description                                                                      |
 | -----------------|----------------------------------------------------------------------------------|
@@ -120,27 +120,48 @@ All return types satisfy the following Protocols & Interfaces:
 * `ring.protocols.StreamableResponseBody`, Ring 1.6.0+ will stream these for you
 * `clojure.io.IOFactory`, so you can slurp the response
 
-```clj
-(require '[muuntaja.format.json :as json-format])
+### `:input-stream`
 
-(def m
-  (m/create
-    (-> m/default-options
-        json-format/with-streaming-json-format)))
+```clj
+(def m (m/create (assoc m/default-options :return :input-stream)))
+
+(->> {:kikka 42}
+     (m/encode m "application/json"))
+; #object[java.io.ByteArrayInputStream]
+```
+
+### `:bytes`
+
+```clj
+(def m (m/create (assoc m/default-options :return :bytes)))
+
+(->> {:kikka 42}
+     (m/encode m "application/json"))
+; #object["[B" 0x31f5d734 "[B@31f5d734"]
+```
+
+### `:output-stream`
+
+```clj
+(def m (m/create (assoc m/default-options :return :output-stream)))
 
 (->> {:kikka 42}
      (m/encode m "application/json"))
 ; <<StreamableResponse>>
+```
+
+### Format-based return
+
+```clj
+(def m (m/create (assoc-in m/default-options [:formats "application/edn" :return] :output-stream)))
 
 (->> {:kikka 42}
-     (m/encode m "application/json")
-     slurp)
-; "{\"kikka\":42}"
+     (m/encode m "application/json"))
+; #object[java.io.ByteArrayInputStream]
 
 (->> {:kikka 42}
-     (m/encode m "application/json")
-     (m/decode m "application/json"))
-; {:kikka 42}
+     (m/encode m "application/edn"))
+; <<StreamableResponse>>
 ```
 
 ## HTTP format negotiation
@@ -195,6 +216,7 @@ be used in the response pipeline.
         :encode-response-body? encode-collections-with-override}
 
  :allow-empty-input? true
+ :return :input-stream
 
  :default-charset "utf-8"
  :charsets available-charsets
