@@ -130,7 +130,7 @@
           :encode-response-body? encode-collections-with-override}
 
    :allow-empty-input? true
-   :return :stream ;; :bytes :lazy
+   :return :input-stream ;; :bytes :output-stream
 
    :default-charset "utf-8"
    :charsets available-charsets
@@ -325,7 +325,7 @@
               (core/encode-to-bytes coder data charset)
               (catch Exception e
                 (on-exception e format type)))))
-         :stream
+         :input-stream
          (fn encode
            ([data]
             (encode data default-charset))
@@ -335,7 +335,7 @@
                 (core/encode-to-bytes coder data charset))
               (catch Exception e
                 (on-exception e format type)))))
-         :lazy
+         :output-stream
          (fn encode
            ([data]
             (encode data default-charset))

@@ -466,7 +466,7 @@
   ; 4.4µs && 7.1µs
   ; 3.5µs && 7.0µs (streaming)
   (let [{:keys [enter leave]} (interceptor/format
-                                (assoc m/default-options :return :lazy))
+                                (assoc m/default-options :return :output-stream))
         app (fn [ctx] (-> ctx enter (handle +handler+) leave :response))
         request! (context-stream +json-request+)]
 
@@ -480,7 +480,7 @@
   ; 8.5µs (content-type)
   ; 4.7µs && 12.4µs (streaming)
   (let [{:keys [enter leave]} (interceptor/format
-                                (assoc m/default-options :return :lazy))
+                                (assoc m/default-options :return :output-stream))
         app (fn [ctx] (-> ctx enter (handle +handler+) leave :response))
         request! (context-stream +transit-json-request+)]
 
@@ -579,7 +579,7 @@
       ;  100µs (10k)
       ; 1000µs (100k)
       (let [app (-> +handler+ (middleware/wrap-format))]
-        (report-bench results :json size "muuntaja (jsonista :stream)" (ring-stream! (app (request!)))))
+        (report-bench results :json size "muuntaja (jsonista :input-stream)" (ring-stream! (app (request!)))))
 
 
       ;  3.0µs (10b)
@@ -597,8 +597,8 @@
       ;  100µs (10k)
       ; 1000µs (100k)
       (let [app (-> +handler+ (middleware/wrap-format
-                                (assoc m/default-options :return :lazy)))]
-        (report-bench results :json size "muuntaja (jsonista :lazy)" (ring-stream! (app (request!))))))
+                                (assoc m/default-options :return :output-stream)))]
+        (report-bench results :json size "muuntaja (jsonista :output-stream)" (ring-stream! (app (request!))))))
 
     (save-results! (format "perf/middleware/json-results%s.edn" (next-number)) @results)))
 
@@ -654,8 +654,8 @@
     ;   28µs (1k)
     ;  190µs (10k)
     ; 1900µs (100k)
-    (title "muuntaja: TRANSIT-JSON-REQUEST-RESPONSE, :stream")
-    (let [app (-> +handler+ (middleware/wrap-format (assoc m/default-options :return :stream)))]
+    (title "muuntaja: TRANSIT-JSON-REQUEST-RESPONSE, :input-stream")
+    (let [app (-> +handler+ (middleware/wrap-format (assoc m/default-options :return :input-stream)))]
       #_(println (str (ring-stream! (app (request!)))))
       (cc/quick-bench (ring-stream! (app (request!)))))
 
@@ -674,8 +674,8 @@
     ;   26µs (1k)
     ;  190µs (10k)
     ; 1800µs (100k)
-    (title "muuntaja: TRANSIT-JSON-REQUEST-RESPONSE, :lazy")
-    (let [app (-> +handler+ (middleware/wrap-format (assoc m/default-options :return :lazy)))]
+    (title "muuntaja: TRANSIT-JSON-REQUEST-RESPONSE, :output-stream")
+    (let [app (-> +handler+ (middleware/wrap-format (assoc m/default-options :return :output-stream)))]
       #_(println (str (ring-stream! (app (request!)))))
       (cc/quick-bench (ring-stream! (app (request!)))))))
 
@@ -721,7 +721,7 @@
       ;  220µs (10k)
       ; 1990µs (100k)
       (let [{:keys [enter leave]} (interceptor/format
-                                    (assoc m/default-options :return :lazy))
+                                    (assoc m/default-options :return :output-stream))
             handler (fn [ctx] (assoc ctx :response {:status 200 :body (-> ctx :request :body-params)}))
             app (fn [ctx] (-> ctx enter handler leave :response))]
         (report-bench results :json size "muuntaja" (fn-stream! (app (request!)))))
@@ -732,7 +732,7 @@
       ;  153µs (10k)
       ; 1410µs (100k)
       (let [{:keys [enter leave]} (interceptor/format
-                                    (assoc m/default-options :return :lazy))
+                                    (assoc m/default-options :return :output-stream))
             handler (fn [ctx] (assoc ctx :response {:status 200 :body (-> ctx :request :body-params)}))
             app (fn [ctx] (-> ctx enter handler leave :response))]
         (report-bench results :json size "muuntaja (jackson)" (fn-stream! (app (request!))))))

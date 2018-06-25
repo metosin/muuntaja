@@ -14,10 +14,14 @@
   * decoders should satisfy `muuntaja.format.core/Decode`
   * as a migration guard - if functions are used, there is an descrptive error message at Muuntaja creation time
 * With Muuntaja option `:return` one can control what is the encoding target. Valid values are:
-  * `:stream` to encode into `java.io.ByteArrayInputStream` (default)
-  * `:bytes` to encode into `byte[]`
-  * `:lazy` to encode lazily into `java.io.OutputStream`
-  * Formats can have their own `:return` value, overriding the Muuntaja defaults.
+
+| value            | description                                                                      |
+| -----------------|----------------------------------------------------------------------------------|
+| `:input-stream`  | encodes into `java.io.ByteArrayInputStream` (default)                            |
+| `:bytes`         | encodes into `byte[]`. Faster than Stream, enables NIO for servers supporting it |
+| `:output-stream` | encodes lazily into `java.io.OutputStream` via a callback function               |
+
+* Formats can override `:return` value
 * Formats can also have `:name` (e.g. `"application/json"`) and for installing new formats there is `muuntaja.core/install`:
 
 ```clj
@@ -36,6 +40,7 @@
              (assoc :return :bytes))))
 ```
 
+* **BREAKING**: `with-streaming-***-format` helpers are removed, use `:return` `:output-stream` to set it.
 * formats can now also take `:opts` keys, which gets merged into encoder and decoder arguments and opts, so these decoders are effectively the same:
 
 ```clj

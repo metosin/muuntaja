@@ -95,7 +95,7 @@ With custom EDN decoder opts:
 ; => {:value 42}
 ```
 
-A function to encode Transit-json:
+Create a encoding function for Transit-json:
 
 ```clj
 (def encode-transit-json
@@ -105,14 +105,19 @@ A function to encode Transit-json:
 ; => "[\"^ \",\"~:kikka\",42]"
 ```
 
-## Streaming
+## Encoding targets
 
-Muuntaja ships with streaming encoders for both JSON & Transit. With these, the encoded data
-can be lazily written to provided `OutputStream`, avoiding intermediate byte-streams. These encoders
-return a `muuntaja.protocols.StreamableResponse` type, which satisifies the following protocols & interfaces:
+By default, encoding writes the value into a `java.io.ByteArrayInputStream`. This can be changed with a `:return` option, accepting the following values:
 
-* `ring.protocols.StreamableResponseBody`, Ring 1.6.0 will stream these for you
-* `clojure.lang.IFn`, invoke the result with an OutputStream to write the results into the stream
+| value            | description                                                                      |
+| -----------------|----------------------------------------------------------------------------------|
+| `:input-stream`  | encodes into `java.io.ByteArrayInputStream` (default)                            |
+| `:bytes`         | encodes into `byte[]`. Faster than Strean, enables NIO for servers supporting it |
+| `:output-stream` | encodes lazily into `java.io.OutputStream` via a callback function               |
+
+All return types satisfy the following Protocols & Interfaces:
+
+* `ring.protocols.StreamableResponseBody`, Ring 1.6.0+ will stream these for you
 * `clojure.io.IOFactory`, so you can slurp the response
 
 ```clj
