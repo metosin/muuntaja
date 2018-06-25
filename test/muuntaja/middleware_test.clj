@@ -257,5 +257,5 @@
                 (reset! types [(m/get-negotiated-request-content-type request)
                                (m/get-negotiated-response-content-type request)])
                 nil))]
-    (app {:headers {"content-type" "application/edn", "accept" "application/edn"}})
-    (is (= ["application/edn" "application/edn"] @types))))
+    (app {:headers {"content-type" "application/edn", "accept" "application/transit+json"}})
+    (is (= ["application/edn" "application/transit+json"] @types))))

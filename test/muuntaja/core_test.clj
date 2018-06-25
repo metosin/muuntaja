@@ -203,11 +203,16 @@
     (let [upper-case-format {:name "application/upper"
                              :decoder (fn [_ data _]
                                         (str/lower-case (slurp data)))}]
-      (is (thrown?
-            Exception
-            (m/create
-              (-> m/default-options
-                  (m/install upper-case-format)))))))
+      (is (thrown? Exception (m/create (m/install m/default-options upper-case-format))))))
+
+  (testing "implementing wrong protocol fails fast"
+    (let [upper-case-format {:name "application/upper"
+                             :return :output-stream
+                             :encoder (reify
+                                        core/EncodeToBytes
+                                        (encode-to-bytes [_ data _]
+                                          (.getBytes (str/upper-case data))))}]
+      (is (thrown? Exception (m/create (m/install m/default-options upper-case-format))))))
 
   (testing "setting non-existing format as default throws exception"
     (is (thrown?
