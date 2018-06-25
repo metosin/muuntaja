@@ -194,6 +194,12 @@
 (defn disable-request-decoding [request]
   (assoc request :muuntaja/format nil))
 
+(defn get-negotiated-request-content-type [request]
+  (-> request :muuntaja/request :format))
+
+(defn get-negotiated-response-content-type [request]
+  (-> request :muuntaja/response :format))
+
 ;;
 ;; response helpers
 ;;

@@ -8,6 +8,7 @@
      * `:bigdecimals?` => `:bigdecimals`
   * `:mapper` option can be used to set the preconfigured `ObjectMapper`.
 * move everyting from `muuntaja.records` into `muuntaja.core`
+* helpers `m/get-negotiated-request-content-type` & `m/get-negotiated-response-content-type`
 * `m/slurp` to consume whatever Muuntaja can encode into a String. Not performance optimized, e.g. for testing.
 * **BREAKING**: formats are written as Protocols instead of just functions.
   * encoders should satisfy `muuntaja.format.core/EncodeToBytes` or `muuntaja.format.core/EncodeToOutputStream`
