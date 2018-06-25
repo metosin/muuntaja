@@ -1,7 +1,9 @@
 sudo: false
 language: clojure
 lein: 2.7.1
-script: lein do clean, all test, all check
+script: 
+  - ./scripts/lein-modules install
+  - lein do clean, all test, all check
 jdk:
   - oraclejdk8
 cache:
