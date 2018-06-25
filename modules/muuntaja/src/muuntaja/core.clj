@@ -82,7 +82,7 @@
   ([m format data charset]
    (if-let [encoder (encoder m format)]
      (encoder data charset)
-     (util/throw! m format "invalid encode format"))))
+     (util/throw! m format "encoder not found for"))))
 
 (defn decode
   "Decode data into the given format. Returns InputStream or throws."
@@ -91,7 +91,7 @@
   ([m format data charset]
    (if-let [decoder (decoder m format)]
      (decoder data charset)
-     (util/throw! m format "invalid decode format"))))
+     (util/throw! m format "decoder not found for"))))
 
 ;;
 ;; default options

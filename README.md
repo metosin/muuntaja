@@ -12,20 +12,37 @@ but a complete rewrite ([and up to 30x faster](https://github.com/metosin/muunta
 
 ## Rationale
 
-- both standalone & http (ring & pedestal)
+- both standalone & http (middleware & interceptors)
 - explicit configuration over mutable state (e.g. multimethods)
-- lazy streams when possible
 - fast with good defaults
 - extendable & pluggable: new formats, behavior
 - typed exceptions - caught elsewhere
 - support runtime docs (like swagger) & inspection (negotiation results)
 - support runtime configuration (negotiation overrides)
 
+## Modules
+
+* `metosin/muuntaja` - the core abstractions + [Jsonista JSON](https://github.com/metosin/jsonista), EDN and Transit formats
+* `metosin/muuntaja-cheshire` - optional [Cheshire JSON](https://github.com/dakrone/cheshire) format
+* `metosin/muuntaja-msgpack` - Messagepack format
+* `metosin/muuntaja-yaml` - YAML format
+
+
 Check the [Wiki](https://github.com/metosin/muuntaja/wiki) & [api-docs](http://metosin.github.com/muuntaja) for more details.
 
 ## Latest version
 
-[![Clojars Project](http://clojars.org/metosin/muuntaja/latest-version.svg)](http://clojars.org/metosin/muuntaja)
+```clj
+[metosin/muuntaja "0.6.0-SNAPSHOT"]
+```
+
+Optionally, the parts can be required separately:
+
+```clj
+[metosin/muuntaja-cheshire "0.6.0-SNAPSHOT"]
+[metosin/muuntaja-msgpack "0.6.0-SNAPSHOT"]
+[metosin/muuntaja-yaml "0.6.0-SNAPSHOT"]
+```
 
 Muuntaja requires Java 1.8+
 

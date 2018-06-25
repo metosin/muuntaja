@@ -22,15 +22,20 @@
 | `:output-stream` | encodes lazily into `java.io.OutputStream` via a callback function               |
 
 * Formats can override `:return` value
-* Formats can also have `:name` (e.g. `"application/json"`) and for installing new formats there is `muuntaja.core/install`:
+* Formats can also have `:name` (e.g. `"application/json"`) and for installing new formats there is `muuntaja.core/install`
+* **BREAKING**: Muuntaja has now a multi-module layout! The modules are:
+  * `metosin/muuntaja` - the core + [Jsonista](https://github.com/metosin/jsonista), EDN and Transit formats
+  * `metosin/muuntaja-cheshire` - optional [Cheshire](https://github.com/dakrone/cheshire) JSON format
+  * `metosin/muuntaja-msgpack` - Messagepack format
+  * `metosin/muuntaja-yaml` - YAML format
 
 ```clj
 (require '[muuntaja.core :as m])
 
-;; [clojure-msgpack "1.2.0" :exclusions [org.clojure/clojure]]
+;; [metosin/muuntaja-msgpack]
 (require '[muuntaja.format.msgpack])
 
-;; [circleci/clj-yaml "0.5.5"]
+;; [metosin/muuntaja-yaml]
 (require '[muuntaja.format.yaml])
 
 (def m (m/create
