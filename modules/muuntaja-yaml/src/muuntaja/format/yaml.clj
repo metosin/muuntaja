@@ -1,5 +1,4 @@
 (ns muuntaja.format.yaml
-  "Requires [circleci/clj-yaml \"0.5.5\"] as dependency"
   (:refer-clojure :exclude [format])
   (:require [clj-yaml.core :as yaml]
             [muuntaja.format.core :as core])

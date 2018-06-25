@@ -1,0 +1,8 @@
+#!/bin/bash
+
+set -e
+
+# Modules
+for ext in muuntaja muuntaja-cheshire muuntaja-msgpack muuntaja-yaml; do
+  cd modules/$ext; lein "$@"; cd ../..;
+done
