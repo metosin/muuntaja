@@ -6,10 +6,47 @@
   * The `muuntaja.format.json` formatter takes now jsonista options directly, with an asertion to fail fast if old options are used:
      * `:key-fn` => `:encode-key-fn` and `:decode-key-fn`
      * `:bigdecimals?` => `:bigdecimals`
+  * `:mapper` option can be used to set the preconfigured `ObjectMapper`.
 * move everyting from `muuntaja.records` into `muuntaja.core`
-* Encoders can now return `muuntaja.protocols/ByteResponse`, a wrapper for `byte-array`. It can be streamed effectively with both Ring (via `ring.protocols/StreamableResponseBody`) and via NIO-enabled servers like [Aleph](https://github.com/ztellman/aleph) and [Immutant (perf fork)](https://github.com/ikitommi/immutant/pull/1)
-  * all defaults formats (json, edn & transit) returns these by default
+* `m/slurp` to consume whatever Muuntaja can encode into a String. Not performance optimized, e.g. for testing.
+* **BREAKING**: for performance reasons, encoders must now return `byte[]` Instead of `ByteArrayInputStream`.
+  * It can be streamed effectively with both Ring (via `ring.protocols/StreamableResponseBody`) and via NIO-enabled servers like [Aleph](https://github.com/ztellman/aleph) and [Immutant (perf fork)](https://github.com/ikitommi/immutant/pull/1)
   * JSON is 30% snappier now with Ring Streaming.
+* formats can now also take `:opts` keys, which gets merged into encoder and decoder arguments and opts, so these decoders are effectively the same:
+
+```clj
+(require '[muuntaja.core :as m])
+
+(m/decoder
+  (m/create
+    (assoc-in
+      m/default-options
+      [:formats "application/json" :opts]
+      {:decode-key-fn false}))
+  "application/json")
+
+(m/decoder
+  (m/create
+    (assoc-in
+      m/default-options
+      [:formats "application/json" :decoder-opts]
+      {:decode-key-fn false}))
+  "application/json")
+```
+
+... and also this:
+
+```clj  
+(require '[jsonista.core :as j])
+
+(m/decoder
+  (m/create
+    (assoc-in
+      m/default-options
+      [:formats "application/json" :opts]
+      {:mapper (j/object-mapper {:decode-key-fn false})}))
+  "application/json")  
+```
 
 * dropped dependencies:
 

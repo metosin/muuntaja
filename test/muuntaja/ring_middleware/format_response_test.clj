@@ -291,7 +291,7 @@
   (wrap-api-response
     identity
     (-> m/default-options
-        (assoc-in [:formats "text/foo"] {:encoder (constantly "foobar")}))))
+        (assoc-in [:formats "text/foo"] {:encoder (constantly (.getBytes "foobar"))}))))
 
 (deftest format-custom-api-hashmap
   (let [req {:body {:foo "bar"} :headers {"accept" "text/foo"}}

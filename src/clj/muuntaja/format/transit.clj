@@ -1,7 +1,7 @@
 (ns muuntaja.format.transit
   (:require [cognitect.transit :as transit]
             [muuntaja.protocols :as protocols])
-  (:import (java.io ByteArrayOutputStream ByteArrayInputStream OutputStream)))
+  (:import (java.io ByteArrayOutputStream OutputStream)))
 
 ;; uses default charset)
 
@@ -17,8 +17,7 @@
       (let [baos (ByteArrayOutputStream.)
             writer (transit/writer baos full-type options)]
         (transit/write writer data)
-        (protocols/->ByteResponse
-          (.toByteArray baos))))))
+        (.toByteArray baos)))))
 
 (defn make-streaming-transit-encoder [type {:keys [verbose] :as options}]
   (let [full-type (if (and (= type :json) verbose) :json-verbose type)]

@@ -67,7 +67,7 @@ Create a Muuntaja and use it to encode & decode JSON:
 (require '[muuntaja.core :as m])
 
 ;; with defaults
-(def m (muuntaja/create))
+(def m (m/create))
 
 (->> {:kikka 42}
      (m/encode m "application/json")

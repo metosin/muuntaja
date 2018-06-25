@@ -31,8 +31,7 @@
     (with-open [out-stream (ByteArrayOutputStream.)]
       (let [data-out (DataOutputStream. out-stream)]
         (msgpack/pack-stream (walk/stringify-keys data) data-out) options)
-      (ByteArrayInputStream.
-        (.toByteArray out-stream)))))
+      (.toByteArray out-stream))))
 
 ;;
 ;; format

@@ -1,4 +1,8 @@
-(ns muuntaja.util)
+(ns muuntaja.util
+  (:import (java.io ByteArrayInputStream)))
+
+(defn byte-stream [^bytes bytes]
+  (ByteArrayInputStream. bytes))
 
 (defn throw! [formats format message]
   (throw

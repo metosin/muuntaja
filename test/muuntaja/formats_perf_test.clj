@@ -8,7 +8,8 @@
             [muuntaja.protocols :as mp]
             [jsonista.core :as j]
             [ring.core.protocols :as protocols]
-            [clojure.java.io :as io])
+            [clojure.java.io :as io]
+            [cheshire.core :as cheshire])
   (:import (java.io ByteArrayOutputStream ByteArrayInputStream)))
 
 (set! *warn-on-reflection* true)
@@ -46,8 +47,16 @@
 
 (def +charset+ "utf-8")
 
+(defn make-json-string-encoder [options]
+  (fn [data _]
+    (cheshire/generate-string data options)))
+
+(defn make-cheshire-string-encoder [options]
+  (fn [data _]
+    (cheshire/generate-string data options)))
+
 (defn encode-json []
-  (let [encode0 (cheshire-format/make-json-string-encoder {})
+  (let [encode0 (make-json-string-encoder {})
         encode1 (cheshire-format/make-streaming-json-encoder {})
         encode2 (cheshire-format/make-json-encoder {})
         encode3 (json-format/make-json-encoder {})]
@@ -85,7 +94,7 @@
         (call)))))
 
 (defn encode-json-ring []
-  (let [encode0 (cheshire-format/make-json-string-encoder {})
+  (let [encode0 (make-cheshire-string-encoder {})
         encode1 (cheshire-format/make-streaming-json-encoder {})
         encode2 (cheshire-format/make-json-encoder {})]
 
@@ -188,8 +197,12 @@
       (cc/quick-bench
         (call)))))
 
+(defn make-edn-string-encoder [_]
+  (fn [data _]
+    (pr-str data)))
+
 (defn encode-edn-ring []
-  (let [encode1 (edn-format/make-edn-string-encoder {})
+  (let [encode1 (make-edn-string-encoder {})
         encode2 (edn-format/make-edn-encoder {})]
 
     ;; 8.8µs

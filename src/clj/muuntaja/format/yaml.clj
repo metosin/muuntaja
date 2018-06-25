@@ -13,9 +13,8 @@
 (defn make-yaml-encoder [options]
   (let [options-args (mapcat identity options)]
     (fn [data ^String _]
-      (ByteArrayInputStream.
-        (.getBytes
-          ^String (apply yaml/generate-string data options-args))))))
+      (.getBytes
+        ^String (apply yaml/generate-string data options-args)))))
 
 ;;
 ;; format

@@ -1,4 +1,5 @@
 (ns muuntaja.core
+  (:refer-clojure :exclude [slurp])
   (:require [clojure.set :as set]
             [clojure.string :as str]
             [muuntaja.parse :as parse]
@@ -153,6 +154,7 @@
           :encode-response-body? encode-collections-with-override}
 
    :allow-empty-input? true
+   :decode-into :input-stream ;; :byte-array :bytes
 
    :default-charset "utf-8"
    :charsets available-charsets
@@ -303,13 +305,18 @@
            :format format}
           e)))))
 
-
-(defn- create-coder [format type spec spec-opts default-charset allow-empty-input? [p pf]]
+(defn- create-coder [format type spec opts spec-opts default-charset allow-empty-input? decode-into [p pf]]
   (let [decode? (= type :muuntaja/decode)
-        g (if (vector? spec)
-            (let [[f opts] spec]
-              (f (merge opts spec-opts)))
-            spec)
+        g' (if (vector? spec)
+             (let [[f args] spec]
+               (f (merge args opts spec-opts)))
+             spec)
+        g (if decode?
+            g'
+            (case decode-into
+              :byte-array g'
+              :input-stream (comp util/byte-stream g')
+              :bytes (comp protocols/->ByteResponse g')))
         prepare (if decode? protocols/-input-stream identity)
         on-exception (partial on-exception allow-empty-input?)]
     (if (and p pf)
@@ -332,8 +339,8 @@
            (catch Exception e
              (on-exception e format type))))))))
 
-(defn- create-adapters [formats default-charset allow-empty-input?]
-  (->> (for [[format {:keys [decoder decoder-opts encoder encoder-opts encode-protocol]}] formats]
+(defn- create-adapters [formats default-charset allow-empty-input? decode-into]
+  (->> (for [[format {:keys [opts decoder decoder-opts encoder encoder-opts encode-protocol]}] formats]
          (if-not (or encoder decoder)
            (throw
              (ex-info
@@ -342,8 +349,8 @@
                 :formats (keys formats)}))
            [format (map->Adapter
                      (merge
-                       (if decoder {:decode (create-coder format :muuntaja/decode decoder decoder-opts default-charset allow-empty-input? nil)})
-                       (if encoder {:encode (create-coder format :muuntaja/encode encoder encoder-opts default-charset allow-empty-input? encode-protocol)})))]))
+                       (if decoder {:decode (create-coder format :muuntaja/decode decoder opts decoder-opts default-charset allow-empty-input? decode-into nil)})
+                       (if encoder {:encode (create-coder format :muuntaja/encode encoder opts encoder-opts default-charset allow-empty-input? decode-into encode-protocol)})))]))
        (into {})))
 
 (defn create
@@ -360,8 +367,9 @@
                    default-format
                    charsets
                    default-charset
-                   allow-empty-input?] :as options} muuntaja-or-options
-           adapters (create-adapters formats default-charset allow-empty-input?)
+                   allow-empty-input?
+                   decode-into] :as options} muuntaja-or-options
+           adapters (create-adapters formats default-charset allow-empty-input? decode-into)
            valid-format? (key-set formats identity)]
        (when-not (or (not default-format) (valid-format? default-format))
          (throw
@@ -474,3 +482,10 @@
 (defmethod print-method ::muuntaja
   [_ ^Writer w]
   (.write w (str "<<Muuntaja>>")))
+
+;;
+;; Utilities
+;;
+
+(defn slurp [x]
+  (some-> x protocols/-input-stream clojure.core/slurp))
