@@ -55,10 +55,10 @@
   (fn [data _]
     (cheshire/generate-string data options)))
 
-(defn encode-json []
+#_(defn encode-json []
   (let [encode0 (make-json-string-encoder {})
         encode1 (cheshire-format/make-streaming-json-encoder {})
-        encode2 (cheshire-format/make-json-encoder {})
+        encode2 (cheshire-format/encoder {})
         encode3 (json-format/make-json-encoder {})]
 
     ;; 4.7µs
@@ -93,10 +93,10 @@
       (cc/quick-bench
         (call)))))
 
-(defn encode-json-ring []
+#_(defn encode-json-ring []
   (let [encode0 (make-cheshire-string-encoder {})
         encode1 (cheshire-format/make-streaming-json-encoder {})
-        encode2 (cheshire-format/make-json-encoder {})]
+        encode2 (cheshire-format/encoder {})]
 
     ;; 6.4µs
     (title "ring: json: string")
@@ -168,9 +168,9 @@
       (cc/quick-bench
         (call)))))
 
-(defn encode-transit-ring []
+#_(defn encode-transit-ring []
   (let [encode1 (transit-format/make-streaming-transit-encoder :json {})
-        encode2 (transit-format/make-transit-encoder :json {})]
+        encode2 (transit-format/encoder :json {})]
 
     ;; 6.6µs
     (title "ring: transit-json: write-to-stream")
@@ -203,7 +203,7 @@
 
 (defn encode-edn-ring []
   (let [encode1 (make-edn-string-encoder {})
-        encode2 (edn-format/make-edn-encoder {})]
+        encode2 (edn-format/encoder {})]
 
     ;; 8.8µs
     (title "ring: edn: string")

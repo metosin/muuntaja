@@ -1,6 +1,7 @@
 (ns muuntaja.format.json
+  (:refer-clojure :exclude [format])
   (:require [jsonista.core :as j]
-            [muuntaja.protocols :as protocols])
+            [muuntaja.format.core :as core])
   (:import (java.io InputStream
                     InputStreamReader
                     OutputStreamWriter
@@ -24,52 +25,32 @@
     :else
     (j/object-mapper (dissoc options :mapper))))
 
-(defn make-json-decoder [options]
+(defn decoder [options]
   (let [mapper (object-mapper! options)]
-    (fn [x ^String charset]
-      (if (string? x)
-        (j/read-value x mapper)
-        (if (.equals "utf-8" charset)
-          (j/read-value x mapper)
-          (j/read-value (InputStreamReader. ^InputStream x charset) mapper))))))
+    (reify
+      core/Decode
+      (decode [_ data charset]
+        (if (.equals "utf-8" ^String charset)
+          (j/read-value data mapper)
+          (j/read-value (InputStreamReader. ^InputStream data ^String charset) mapper))))))
 
-(defn make-json-encoder [options]
+(defn encoder [options]
   (let [mapper (object-mapper! options)]
-    (fn [data ^String charset]
-      (if (.equals "utf-8" charset)
-        (j/write-value-as-bytes data mapper)
-        (.getBytes ^String (j/write-value-as-string data mapper) charset)))))
-
-(defn make-streaming-json-encoder [options]
-  (let [mapper (object-mapper! options)]
-    (fn [data ^String charset]
-      (protocols/->StreamableResponse
+    (reify
+      core/EncodeToBytes
+      (encode-to-bytes [_ data charset]
+        (if (.equals "utf-8" ^String charset)
+          (j/write-value-as-bytes data mapper)
+          (.getBytes ^String (j/write-value-as-string data mapper) ^String charset)))
+      core/EncodeToOutputStream
+      (encode-to-output-stream [_ data charset]
         (fn [^OutputStream output-stream]
-          (if (.equals "utf-8" charset)
+          (if (.equals "utf-8" ^String charset)
             (j/write-value output-stream data mapper)
-            (j/write-value (OutputStreamWriter. output-stream charset) data mapper)))))))
+            (j/write-value (OutputStreamWriter. output-stream ^String charset) data mapper)))))))
 
-;;;
-;;; format
-;;;
-
-;; type
-
-(def json-type "application/json")
-
-;; formats
-
-(def json-format
-  {:decoder [make-json-decoder {:decode-key-fn true}]
-   :encoder [make-json-encoder]})
-
-(def streaming-json-format
-  (assoc json-format :encoder [make-streaming-json-encoder]))
-
-;; options
-
-(defn with-json-format [options]
-  (assoc-in options [:formats json-type] json-format))
-
-(defn with-streaming-json-format [options]
-  (assoc-in options [:formats json-type] streaming-json-format))
+(def format
+  (core/map->Format
+    {:name "application/json"
+     :decoder [decoder {:decode-key-fn true}]
+     :encoder [encoder]}))

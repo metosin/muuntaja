@@ -18,7 +18,7 @@
         :url "https://github.com/metosin/muuntaja"}
   :deploy-repositories [["releases" :clojars]]
   :profiles {:dev {:jvm-opts ^:replace ["-server"]
-                   :dependencies [[org.clojure/clojure "1.8.0"]
+                   :dependencies [[org.clojure/clojure "1.9.0"]
                                   [ring/ring-core "1.6.3"]
                                   [ring-middleware-format "0.7.2"]
                                   [ring-transit "0.1.6"]
@@ -31,7 +31,7 @@
 
                                   ;; Pedestal
                                   [org.clojure/core.async "0.4.474" :exclusions [org.clojure/tools.reader]]
-                                  [io.pedestal/pedestal.service "0.5.3" :exclusions [org.clojure/tools.reader
+                                  [io.pedestal/pedestal.service "0.5.4" :exclusions [org.clojure/tools.reader
                                                                                      org.clojure/core.async
                                                                                      org.clojure/core.memoize]]
                                   [javax.servlet/javax.servlet-api "4.0.1"]
@@ -39,7 +39,7 @@
 
                                   [criterium "0.4.4"]]}
              :1.7 {:dependencies [[org.clojure/clojure "1.7.0"]]}
-             :1.9 {:dependencies [[org.clojure/clojure "1.9.0"]]}
+             :1.8 {:dependencies [[org.clojure/clojure "1.8.0"]]}
              :perf {:jvm-opts ^:replace ["-server"
                                          "-Xmx4096m"
                                          "-Dclojure.compiler.direct-linking=true"]}
@@ -48,6 +48,6 @@
                                             "-XX:+PrintCompilation"
                                             "-XX:+UnlockDiagnosticVMOptions"
                                             "-XX:+PrintInlining"]}}
-  :aliases {"all" ["with-profile" "dev:dev,1.7:dev,1.9"]
+  :aliases {"all" ["with-profile" "dev:dev,1.7:dev,1.8"]
             "perf" ["with-profile" "default,dev,perf"]
             "analyze" ["with-profile" "default,dev,analyze"]})

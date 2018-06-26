@@ -2,10 +2,7 @@
   (:require [clojure.java.io :as io]
             [muuntaja.util :as util])
   (:import (clojure.lang IFn AFn)
-           (java.io ByteArrayOutputStream ByteArrayInputStream InputStreamReader BufferedReader InputStream Writer OutputStream FileInputStream File)
-           (java.nio ByteBuffer)))
-
-(deftype ByteResponse [bytes])
+           (java.io ByteArrayOutputStream ByteArrayInputStream InputStreamReader BufferedReader InputStream Writer OutputStream FileInputStream File)))
 
 (deftype StreamableResponse [f]
   IFn
@@ -19,16 +16,14 @@
   'ring.core.protocols
   (extend-protocol ring.core.protocols/StreamableResponseBody
     (Class/forName "[B")
-    (write-body-to-stream [this _ output-stream]
-      (.write ^OutputStream output-stream ^bytes this))
-
-    ByteResponse
-    (write-body-to-stream [this _ output-stream]
-      (.write ^OutputStream output-stream ^bytes (.bytes this)))
+    (write-body-to-stream [body _ ^OutputStream output-stream]
+      (with-open [out output-stream]
+        (.write out ^bytes body)))
 
     StreamableResponse
-    (write-body-to-stream [this _ output-stream]
-      ((.f this) output-stream))))
+    (write-body-to-stream [this _ ^OutputStream output-stream]
+      (with-open [out output-stream]
+        ((.f this) ^OutputStream out)))))
 
 (extend StreamableResponse
   io/IOFactory
@@ -50,51 +45,27 @@
   [_ ^Writer w]
   (.write w (str "<<StreamableResponse>>")))
 
-(extend ByteResponse
-  io/IOFactory
-  (assoc io/default-streams-impl
-    :make-input-stream (fn [^ByteResponse this _]
-                         (with-open [out (ByteArrayOutputStream. 4096)]
-                           (.write out ^bytes (.bytes this))
-                           (ByteArrayInputStream.
-                             (.toByteArray out))))
-    :make-reader (fn [^ByteResponse this _]
-                   (with-open [out (ByteArrayOutputStream. 4096)]
-                     (.write out ^bytes (.bytes this))
-                     (BufferedReader.
-                       (InputStreamReader.
-                         (ByteArrayInputStream.
-                           (.toByteArray out))))))))
-
-(defmethod print-method ByteResponse
-  [_ ^Writer w]
-  (.write w (str "<<ByteResponse>>")))
-
 (defprotocol IntoInputStream
-  (-input-stream ^java.io.InputStream [this]))
+  (into-input-stream ^java.io.InputStream [this]))
 
 (extend-protocol IntoInputStream
   (Class/forName "[B")
-  (-input-stream [this] (ByteArrayInputStream. this))
+  (into-input-stream [this] (ByteArrayInputStream. this))
 
   File
-  (-input-stream [this] (FileInputStream. this))
+  (into-input-stream [this] (FileInputStream. this))
 
   InputStream
-  (-input-stream [this] this)
+  (into-input-stream [this] this)
 
   StreamableResponse
-  (-input-stream [this]
-    (io/make-input-stream this nil))
-
-  ByteResponse
-  (-input-stream [this]
+  (into-input-stream [this]
     (io/make-input-stream this nil))
 
   String
-  (-input-stream [this]
+  (into-input-stream [this]
     (ByteArrayInputStream. (.getBytes this "utf-8")))
 
   nil
-  (-input-stream [_]
+  (into-input-stream [_]
     (ByteArrayInputStream. (byte-array 0))))
