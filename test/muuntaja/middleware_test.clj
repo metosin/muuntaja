@@ -249,3 +249,13 @@
             respond (promise), raise (promise)]
         (app (->request "application/json" nil nil json-string) respond raise)
         (is (= (m/decode m "application/json" (:body @respond)) data))))))
+
+(deftest negotiation-results-helpers
+  (let [types (atom nil)
+        app (middleware/wrap-format
+              (fn [request]
+                (reset! types [(m/get-negotiated-request-content-type request)
+                               (m/get-negotiated-response-content-type request)])
+                nil))]
+    (app {:headers {"content-type" "application/edn", "accept" "application/transit+json"}})
+    (is (= ["application/edn" "application/transit+json"] @types))))

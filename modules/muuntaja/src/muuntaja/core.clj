@@ -82,7 +82,7 @@
   ([m format data charset]
    (if-let [encoder (encoder m format)]
      (encoder data charset)
-     (util/throw! m format "invalid encode format"))))
+     (util/throw! m format "encoder not found for"))))
 
 (defn decode
   "Decode data into the given format. Returns InputStream or throws."
@@ -91,7 +91,7 @@
   ([m format data charset]
    (if-let [decoder (decoder m format)]
      (decoder data charset)
-     (util/throw! m format "invalid decode format"))))
+     (util/throw! m format "decoder not found for"))))
 
 ;;
 ;; default options
@@ -194,6 +194,12 @@
 (defn disable-request-decoding [request]
   (assoc request :muuntaja/format nil))
 
+(defn get-negotiated-request-content-type [request]
+  (-> request :muuntaja/request :format))
+
+(defn get-negotiated-response-content-type [request]
+  (-> request :muuntaja/response :format))
+
 ;;
 ;; response helpers
 ;;
@@ -289,59 +295,64 @@
                 spec)
         in (if decode? protocols/into-input-stream identity)
         on-exception (partial on-exception allow-empty-input?)
-        valid-protocols (if decode?
-                          core/decode-protocols
-                          core/encode-protocols)]
-
-    (when-not (some #(satisfies? % coder) valid-protocols)
-      (throw
-        (ex-info
-          (str "Invalid format " (pr-str format) " for type " type ". "
-               "It should have key " key " satistying one of the following protocols: "
-               (mapv :on valid-protocols))
-          {:format format
-           :type type
-           :spec spec
-           :coder coder
-           :valid-protocols valid-protocols})))
+        ensure! (fn [protocol f]
+                 (if (satisfies? protocol coder)
+                   f
+                   (throw
+                     (ex-info
+                       (str "Invalid format " (pr-str format) " for type " type ". "
+                            "It should satisfy " (pr-str (:on protocol)))
+                       {:format format
+                        :type type
+                        :spec spec
+                        :coder coder
+                        :protocol protocol}))))]
 
     {key
      (if decode?
-       (fn decode
-         ([data]
-          (decode data default-charset))
-         ([data charset]
-          (try
-            (core/decode coder (in data) charset)
-            (catch Exception e
-              (on-exception e format type)))))
+       (ensure!
+         core/Decode
+         (fn decode
+           ([data]
+            (decode data default-charset))
+           ([data charset]
+            (try
+              (core/decode coder (in data) charset)
+              (catch Exception e
+                (on-exception e format type))))))
        (case return
          :bytes
-         (fn encode
-           ([data]
-            (encode data default-charset))
-           ([data charset]
-            (try
-              (core/encode-to-bytes coder data charset)
-              (catch Exception e
-                (on-exception e format type)))))
+         (ensure!
+           core/EncodeToBytes
+           (fn encode
+             ([data]
+              (encode data default-charset))
+             ([data charset]
+              (try
+                (core/encode-to-bytes coder data charset)
+                (catch Exception e
+                  (on-exception e format type))))))
          :input-stream
-         (fn encode
-           ([data]
-            (encode data default-charset))
-           ([data charset]
-            (try
-              (ByteArrayInputStream.
-                (core/encode-to-bytes coder data charset))
-              (catch Exception e
-                (on-exception e format type)))))
+         (ensure!
+           core/EncodeToBytes
+           (fn encode
+             ([data]
+              (encode data default-charset))
+             ([data charset]
+              (try
+                (ByteArrayInputStream.
+                  (core/encode-to-bytes coder data charset))
+                (catch Exception e
+                  (on-exception e format type))))))
          :output-stream
-         (fn encode
-           ([data]
-            (encode data default-charset))
-           ([data charset]
-            (protocols/->StreamableResponse
-              (core/encode-to-output-stream coder data charset))))))}))
+         (ensure!
+           core/EncodeToOutputStream
+           (fn encode
+             ([data]
+              (encode data default-charset))
+             ([data charset]
+              (protocols/->StreamableResponse
+                (core/encode-to-output-stream coder data charset)))))))}))
 
 (defn- create-adapters [formats default-charset allow-empty-input? default-return]
   (->> (for [[format {:keys [opts decoder decoder-opts encoder encoder-opts return]}] formats]

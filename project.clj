@@ -1,15 +1,20 @@
 (defproject metosin/muuntaja "0.6.0-SNAPSHOT"
-  :description "Clojure library for fast http format negotiation, encoding and decoding."
+  :description "Clojure library for format encoding, decoding and content-negotiation"
   :url "https://github.com/metosin/muuntaja"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"
             :distribution :repo
             :comments "same as Clojure"}
-  :source-paths ["src/clj"]
   :javac-options ["-Xlint:unchecked" "-target" "1.7" "-source" "1.7"]
   :java-source-paths ["src/java"]
-  :dependencies [[metosin/jsonista "0.2.1"]
-                 [com.cognitect/transit-clj "0.8.309"]]
+  :source-paths ["modules/muuntaja/src"]
+  :managed-dependencies [[metosin/muuntaja "0.6.0-SNAPSHOT"]
+                         [metosin/jsonista "0.2.1"]
+                         [com.cognitect/transit-clj "0.8.309"]
+                         [cheshire "5.8.0"]
+                         [circleci/clj-yaml "0.5.6"]
+                         [clojure-msgpack "1.2.1" :exclusions [org.clojure/clojure]]]
+  :dependencies []
   :plugins [[lein-codox "0.10.3"]]
   :codox {:src-uri "http://github.com/metosin/muuntaja/blob/master/{filepath}#L{line}"
           :output-path "doc"
@@ -18,16 +23,24 @@
         :url "https://github.com/metosin/muuntaja"}
   :deploy-repositories [["releases" :clojars]]
   :profiles {:dev {:jvm-opts ^:replace ["-server"]
+
+                   ;; all module sources for development
+                   :source-paths ["modules/muuntaja/src"
+                                  "modules/muuntaja-cheshire/src"
+                                  "modules/muuntaja-yaml/src"
+                                  "modules/muuntaja-msgpack/src"]
+
                    :dependencies [[org.clojure/clojure "1.9.0"]
                                   [ring/ring-core "1.6.3"]
                                   [ring-middleware-format "0.7.2"]
                                   [ring-transit "0.1.6"]
                                   [ring/ring-json "0.4.0"]
 
-                                  ;; extra formatters
-                                  [circleci/clj-yaml "0.5.6"]
-                                  [clojure-msgpack "1.2.1" :exclusions [org.clojure/clojure]]
-                                  [cheshire "5.8.0"]
+                                  ;; modules
+                                  [metosin/muuntaja "0.6.0-SNAPSHOT"]
+                                  [metosin/muuntaja-cheshire "0.6.0-SNAPSHOT"]
+                                  [metosin/muuntaja-msgpack "0.6.0-SNAPSHOT"]
+                                  [metosin/muuntaja-yaml "0.6.0-SNAPSHOT"]
 
                                   ;; Pedestal
                                   [org.clojure/core.async "0.4.474" :exclusions [org.clojure/tools.reader]]

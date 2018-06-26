@@ -7,7 +7,7 @@
 (defn throw! [formats format message]
   (throw
     (ex-info
-      (str message ": " format)
+      (str message " " (pr-str format))
       {:formats (-> formats :formats keys)
        :format format})))
 
