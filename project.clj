@@ -1,4 +1,4 @@
-(defproject metosin/muuntaja "0.6.0-SNAPSHOT"
+(defproject metosin/muuntaja "0.6.0-alpha1"
   :description "Clojure library for format encoding, decoding and content-negotiation"
   :url "https://github.com/metosin/muuntaja"
   :license {:name "Eclipse Public License"
@@ -8,7 +8,7 @@
   :javac-options ["-Xlint:unchecked" "-target" "1.7" "-source" "1.7"]
   :java-source-paths ["src/java"]
   :source-paths ["modules/muuntaja/src"]
-  :managed-dependencies [[metosin/muuntaja "0.6.0-SNAPSHOT"]
+  :managed-dependencies [[metosin/muuntaja "0.6.0-alpha1"]
                          [metosin/jsonista "0.2.1"]
                          [com.cognitect/transit-clj "0.8.309"]
                          [cheshire "5.8.0"]
@@ -37,10 +37,10 @@
                                   [ring/ring-json "0.4.0"]
 
                                   ;; modules
-                                  [metosin/muuntaja "0.6.0-SNAPSHOT"]
-                                  [metosin/muuntaja-cheshire "0.6.0-SNAPSHOT"]
-                                  [metosin/muuntaja-msgpack "0.6.0-SNAPSHOT"]
-                                  [metosin/muuntaja-yaml "0.6.0-SNAPSHOT"]
+                                  [metosin/muuntaja "0.6.0-alpha1"]
+                                  [metosin/muuntaja-cheshire "0.6.0-alpha1"]
+                                  [metosin/muuntaja-msgpack "0.6.0-alpha1"]
+                                  [metosin/muuntaja-yaml "0.6.0-alpha1"]
 
                                   ;; Pedestal
                                   [org.clojure/core.async "0.4.474" :exclusions [org.clojure/tools.reader]]

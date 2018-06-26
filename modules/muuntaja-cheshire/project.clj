@@ -1,4 +1,4 @@
-(defproject metosin/muuntaja-cheshire "0.6.0-SNAPSHOT"
+(defproject metosin/muuntaja-cheshire "0.6.0-alpha1"
   :description "Cheshire/JSON format for Muuntaja"
   :url "https://github.com/metosin/muuntaja"
   :license {:name "Eclipse Public License"

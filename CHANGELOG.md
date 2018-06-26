@@ -1,4 +1,4 @@
-## 0.6.0-SNAPSHOT
+## 0.6.0-alpha1
 
 * **BREAKING**: [Cheshire](https://github.com/dakrone/cheshire) in dropped in favor of [Jsonista](https://github.com/metosin/jsonista) as the default JSON formatter (faster, explicit configuration)
   * `muuntaja.format.json` => `muuntaja.format.cheshire`
