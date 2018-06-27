@@ -27,6 +27,9 @@ but a complete rewrite ([and up to 30x faster](https://github.com/metosin/muunta
 * `metosin/muuntaja-msgpack` - Messagepack format
 * `metosin/muuntaja-yaml` - YAML format
 
+## Posts
+
+* [Muuntaja, a boring library everyone should use](https://www.metosin.fi/blog/muuntaja/)
 
 Check the [Wiki](https://github.com/metosin/muuntaja/wiki) & [api-docs](http://metosin.github.com/muuntaja) for more details.
 
