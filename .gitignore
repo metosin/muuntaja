@@ -7,5 +7,4 @@ pom.xml*
 .lein-deps-sum
 .lein-repl-history
 .nrepl-port
-/doc/
 \#*\#
