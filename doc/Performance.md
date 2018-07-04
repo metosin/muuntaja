@@ -66,4 +66,4 @@ Muuntaja:
 
 Instead of using generic encoders, one can also do custom endocing for Records. This can yield better performance.
 
-See https://github.com/metosin/muuntaja/wiki/Configuration#custom-encoding for details.
+See [the docs on customizing encoding](doc/Configuration.md#custom-encoding) for details.
