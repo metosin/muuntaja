@@ -1,4 +1,4 @@
-# Muuntaja [![Continuous Integration status](https://secure.travis-ci.org/metosin/muuntaja.png)](http://travis-ci.org/metosin/muuntaja)
+# Muuntaja [![Continuous Integration status](https://secure.travis-ci.org/metosin/muuntaja.png)](http://travis-ci.org/metosin/muuntaja) [![cljdoc badge](https://cljdoc.xyz/badge/metosin/muuntaja)](https://cljdoc.xyz/jump/release/metosin/muuntaja)
 
 <img src="https://raw.githubusercontent.com/wiki/metosin/muuntaja/muuntaja-small.png" align="right"/>
 
@@ -8,7 +8,7 @@ out-of-the-box [JSON](http://www.json.org/), [EDN](https://github.com/edn-format
 Ships with optional adapters for [MessagePack](http://msgpack.org/) and [YAML](http://yaml.org/).
 
 Based on [ring-middleware-format](https://github.com/ngrunwald/ring-middleware-format),
-but a complete rewrite ([and up to 30x faster](https://github.com/metosin/muuntaja/wiki/Performance)).
+but a complete rewrite ([and up to 30x faster](doc/Performance.md)).
 
 ## Rationale
 
@@ -31,7 +31,8 @@ but a complete rewrite ([and up to 30x faster](https://github.com/metosin/muunta
 
 * [Muuntaja, a boring library everyone should use](https://www.metosin.fi/blog/muuntaja/)
 
-Check the [Wiki](https://github.com/metosin/muuntaja/wiki) & [api-docs](http://metosin.github.com/muuntaja) for more details.
+Check [the docs on cljdoc.xyz](https://cljdoc.xyz/jump/release/metosin/muutaja)
+for detailed API documentation as well as more guides on how to use Muuntaja.
 
 ## Latest version
 
@@ -73,7 +74,7 @@ Muuntaja requires Java 1.8+
 ;  :headers {"Content-Type" "application/json; charset=utf-8"}}
 ```
 
-There is a [Ring guide](https://github.com/metosin/muuntaja/wiki/With-Ring) in a wiki. See also [differences](https://github.com/metosin/muuntaja/wiki/Differences-to-existing-formatters) to ring-middleware-format & ring-json if you are migrating from those.
+There is a more detailed [Ring guide](doc/With-Ring.md) too. See also [differences](doc/Differences-to-existing-formatters.md) to ring-middleware-format & ring-json if you are migrating from those.
 
 ## Interceptors
 
@@ -188,7 +189,8 @@ All return types satisfy the following Protocols & Interfaces:
 
 HTTP format negotiation is done via request headers for both request (`content-type`, including the charset)
 and response (`accept` and `accept-charset`). With the default options, a full match on the content-type is
-required, e.g. `application/json`. Adding a `:matches` regexp for formats enables more loose matching. See [Configuration wiki-page](https://github.com/metosin/muuntaja/wiki/Configuration#loose-matching-on-content-type) for more info.
+required, e.g. `application/json`. Adding a `:matches` regexp for formats enables more loose matching.
+See [Configuration docs](doc/Configuration.md#loose-matching-on-content-type) for more info.
 
 Results of the negotiation are published into request & response under namespaced keys for introspection.
 These keys can also be set manually, overriding the content negotiation process.

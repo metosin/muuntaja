@@ -1,0 +1,6 @@
+{:cljdoc.doc/tree [["Readme" {:file "README.md"}]
+                   ["Configuration" {:file "doc/Configuration.md"}]
+                   ["Creating new formats" {:file "doc/Creating-new-formats.md"}]
+                   ["Differences to existing formatters" {:file "doc/Differences-to-existing-formatters.md"}]
+                   ["Performance" {:file "doc/Performance.md"}]
+                   ["With Ring" {:file "doc/With-Ring.md"}]]}

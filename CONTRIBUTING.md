@@ -14,6 +14,14 @@ Please file bug reports and feature requests to https://github.com/metosin/muunt
 * Push your code to your fork of the repository
 * Make a Pull Request
 
+Installing jars and changing of version numbers can be done with the following scripts:
+
+```sh
+./script/set-version 1.0.0
+./script/lein-modules install
+```
+
+
 ## Commit messages
 
 1. Separate subject from body with a blank line
