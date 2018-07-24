@@ -31,7 +31,7 @@ but a complete rewrite ([and up to 30x faster](doc/Performance.md)).
 
 * [Muuntaja, a boring library everyone should use](https://www.metosin.fi/blog/muuntaja/)
 
-Check [the docs on cljdoc.xyz](https://cljdoc.xyz/jump/release/metosin/muutaja)
+Check [the docs on cljdoc.xyz](https://cljdoc.xyz/jump/release/metosin/muuntaja)
 for detailed API documentation as well as more guides on how to use Muuntaja.
 
 ## Latest version
