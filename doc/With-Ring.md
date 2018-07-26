@@ -19,7 +19,7 @@ Let's create a Ring application that can read and write JSON, EDN and Transit.
 (->> request app)
 ; {:status 200,
 ;  :body #object[java.io.ByteArrayInputStream 0x1d07d794 "java.io.ByteArrayInputStream@1d07d794"],
-;  :muuntaja/format "application/transit+json",
+;  :muuntaja/format "application/json",
 ;  :headers {"Content-Type" "application/json; charset=utf-8"}}
 
 (->> request app :body slurp)
