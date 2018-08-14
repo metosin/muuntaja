@@ -87,6 +87,8 @@
          (sort-by :q >)
          (map :type))))
 
+(defn- reverse-compare [x y] (compare y x))
+
 (defn parse-accept-charset [^String s]
   (if s
     (let [segments (str/split s #",")
@@ -99,7 +101,6 @@
                                        (catch Exception e 1))]]
                     [(str/trim charset) qscore])]
       (->> choices
-           (sort-by second)
-           (reverse)
+           (sort-by second reverse-compare)
            (map first)
            (map str/lower-case)))))
