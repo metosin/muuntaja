@@ -253,7 +253,7 @@
               (= body "{\n  \"baz\" : \"quz\",\n  \"foo\" : \"bar\"\n}")))))
 
   (testing "don’t overwrite Content-Type if already set"
-    (let [handler (constantly {:status 200 :headers {"Content-Type" "application/json; some-param=some-value"} :body {:foo "bar"}})
+    (let [handler (constantly {:status 200 :headers {"Content-Type" "application/json; some-param=some-value"} :body {:foo "bar"}, :muuntaja/encode true})
           response ((wrap-json-response handler) {})
           body (-> response :body slurp)]
       (is (= (get-in response [:headers "Content-Type"]) "application/json; some-param=some-value"))

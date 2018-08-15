@@ -10,6 +10,12 @@
 * move everyting from `muuntaja.records` into `muuntaja.core`
 * helpers `m/get-negotiated-request-content-type` & `m/get-negotiated-response-content-type`
 * `m/slurp` to consume whatever Muuntaja can encode into a String. Not performance optimized, e.g. for testing.
+* **BREAKING**: Changes in special Muuntaja keys in request & response
+  * `:muuntaja/format` is not published into request or response
+  * `muuntaja.core/disable-request-encoding` helper is removed
+  * `muuntaja.core/disable-response-encoding` helper is removed
+  * `:muuntaja/encode?` response key (to force encoding) is renamed to `:muuntaja/encode`
+* **BREAKING**: if a "Content-Type" header is set in a response, the body will not be encoded, unless `:muuntaja/encode` is set
 * **BREAKING**: formats are written as Protocols instead of just functions.
   * encoders should satisfy `muuntaja.format.core/EncodeToBytes` or `muuntaja.format.core/EncodeToOutputStream`
   * decoders should satisfy `muuntaja.format.core/Decode`

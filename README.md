@@ -70,7 +70,6 @@ Muuntaja requires Java 1.8+
       :body "{:kikka 42}"})
 ; {:status 200,
 ;  :body #object[java.io.ByteArrayInputStream]
-;  :muuntaja/format "application/json",
 ;  :headers {"Content-Type" "application/json; charset=utf-8"}}
 ```
 
@@ -209,8 +208,6 @@ have an `ex-data` with the following `:type` value (plus extra info to generate 
 
 ### Request
 
-* `:muuntaja/format`, format name that was used to decode the request body, e.g. `application/json`. If
-   the key is already present in the request map, muuntaja middleware/interceptor will skip the decoding process.
 * `:muuntaja/request`, client-negotiated request format and charset as `FormatAndCharset` record. Will
 be used in the response pipeline.
 * `:muuntaja/response`, client-negotiated response format and charset as `FormatAndCharset` record. Will
@@ -219,9 +216,7 @@ be used in the response pipeline.
 
 ### Response
 
-* `:muuntaja/encode?`, if set to true, the response body will be encoded regardles of the type (primitives!)
-* `:muuntaja/format`, format name that was used to encode the response body, e.g. `application/json`. If
-   the key is already present in the response map, muuntaja middleware/interceptor will skip the encoding process.
+* `:muuntaja/encode`, if set to truthy value, the response body will be encoded regardles of the type (primitives!)
 * `:muuntaja/content-type`, handlers can use this to override the negotiated content-type for response encoding,
    e.g. setting it to `application/edn` will cause the response to be formatted in JSON.
 

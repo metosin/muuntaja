@@ -28,7 +28,7 @@ verify behavior and demonstrate differences.
 
 * Does not recreate a `:body` stream after consuming the body
 * Multiple `wrap-format` (or `wrap-request`) middleware can be used in the same mw stack, first one acts, rest are no-op
-* By default, encodes only collections (or responses with `:muuntaja/encode?` set)
+* By default, encodes only collections (or responses with `:muuntaja/encode` set)
 * By default, reads the `content-type` from request headers (as defined in the RING Spec), not `:content-type` request key
 * Does not set the `Content-Length` header (which is done by the ring-adapters)
 * `:yaml-in-html` / `text/html` is not supported, roll you own formats if you need these
