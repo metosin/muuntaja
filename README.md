@@ -230,7 +230,7 @@ be used in the response pipeline.
         :extract-accept-charset extract-accept-charset-ring
         :extract-accept extract-accept-ring
         :decode-request-body? (constantly true)
-        :encode-response-body? encode-collections-with-override}
+        :encode-response-body? encode-collections}
 
  :allow-empty-input? true
  :return :input-stream
