@@ -404,8 +404,11 @@
              -negotiate-accept-charset (parse/fast-memoize 1000 (partial -negotiate-accept-charset m))
              -negotiate-accept (parse/fast-memoize 1000 (partial -negotiate-accept m))
              -negotiate-content-type (parse/fast-memoize 1000 (partial -negotiate-content-type m))
+             -decode-request-body? (fn [request]
+                                     (and (not (:body-params request))
+                                          (decode-request-body? request)))
              -decode-request-body (fn [m request ^FormatAndCharset req-fc ^FormatAndCharset res-fc]
-                                    (if (decode-request-body? request)
+                                    (if (-decode-request-body? request)
                                       (if-let [decode (decoder m (if req-fc (.-format req-fc)))]
                                         (try
                                           (decode (:body request) (.-charset req-fc))

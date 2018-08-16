@@ -1,3 +1,7 @@
+## 0.6.0-alpha3
+
+* If `:body-params` is set in request, don't try to decode request body.
+
 ## 0.6.0-alpha2
 
 * **BREAKING**: Changes in special Muuntaja keys in request & response
