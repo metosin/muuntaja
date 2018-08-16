@@ -24,20 +24,19 @@ Muuntaja is data-driven, allowing [mostly](#evil-global-state) everything to be 
         :extract-accept-charset extract-accept-charset-ring
         :extract-accept extract-accept-ring
         :decode-request-body? (constantly true)
-        :encode-reseponse-body? encode-collections-with-override}
+        :encode-response-body? encode-collections}
+
+ :allow-empty-input? true
+ :return :input-stream
 
  :default-charset "utf-8"
- :charsets muuntaja/available-charsets
+ :charsets available-charsets
 
  :default-format "application/json"
- :formats {"application/json" {:decoder [formats/make-json-decoder {:key-fn true}]
-                               :encoder [formats/make-json-encoder]}
-           "application/edn" {:decoder [formats/make-edn-decoder]
-                              :encoder [formats/make-edn-encoder]}
-           "application/transit+json" {:decoder [(partial formats/make-transit-decoder :json)]
-                                       :encoder [(partial formats/make-transit-encoder :json)]}
-           "application/transit+msgpack" {:decoder [(partial formats/make-transit-decoder :msgpack)]
-                                          :encoder [(partial formats/make-transit-encoder :msgpack)]}}}
+ :formats {"application/json" json-format/json-format
+           "application/edn" edn-format/edn-format
+           "application/transit+json" transit-format/transit-json-format
+           "application/transit+msgpack" transit-format/transit-msgpack-format}}
 ```
 
 ## Custom options
