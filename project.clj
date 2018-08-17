@@ -2,9 +2,7 @@
   :description "Clojure library for format encoding, decoding and content-negotiation"
   :url "https://github.com/metosin/muuntaja"
   :license {:name "Eclipse Public License"
-            :url "http://www.eclipse.org/legal/epl-v10.html"
-            :distribution :repo
-            :comments "same as Clojure"}
+            :url "http://www.eclipse.org/legal/epl-v20.html"}
   :javac-options ["-Xlint:unchecked" "-target" "1.7" "-source" "1.7"]
   :java-source-paths ["src/java"]
   :source-paths ["modules/muuntaja/src"]

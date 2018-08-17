@@ -272,4 +272,4 @@ Copyright &copy; 2015, 2016 Juho Teperi
 
 Copyright &copy; 2016-2018 [Metosin Oy](http://www.metosin.fi)
 
-Distributed under the Eclipse Public License, the same as Clojure.
+Distributed under the Eclipse Public License 2.0.
