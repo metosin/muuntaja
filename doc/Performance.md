@@ -38,13 +38,13 @@ Muuntaja is tested against the current common ring-based formatters. It's fastes
    * similar perf on large messages
 
 ### JSON
-![perf-json-relative](https://raw.githubusercontent.com/wiki/metosin/muuntaja/perf/perf-json-relative.png)
-![perf-json-relative2](https://raw.githubusercontent.com/wiki/metosin/muuntaja/perf/perf-json-relative2.png)
-![perf-json](https://raw.githubusercontent.com/wiki/metosin/muuntaja/perf/perf-json.png)
+![perf-json-relative](https://raw.githubusercontent.com/metosin/muuntaja/master/doc/images/perf-json-relative.png)
+![perf-json-relative2](https://raw.githubusercontent.com/metosin/muuntaja/master/doc/images/perf-json-relative2.png)
+![perf-json](https://raw.githubusercontent.com/metosin/muuntaja/master/doc/images/perf-json.png)
 
 ## Transit
-![perf-transit](https://raw.githubusercontent.com/wiki/metosin/muuntaja/perf/perf-transit.png)
-![perf-transit-relative](https://raw.githubusercontent.com/wiki/metosin/muuntaja/perf/perf-transit-relative.png)
+![perf-transit](https://raw.githubusercontent.com/metosin/muuntaja/master/doc/images/perf-transit.png)
+![perf-transit-relative](https://raw.githubusercontent.com/metosin/muuntaja/master/doc/images/perf-transit-relative.png)
 
 ## Interceptors
 
@@ -59,8 +59,8 @@ Muuntaja:
  * `muuntaja.interceptor/format-response` to encode responses
  * `muuntaja.interceptor/format` all on one step
 
-![interceptor-perf-json-relative2](https://raw.githubusercontent.com/wiki/metosin/muuntaja/perf/interceptors-perf-json-relative.png)
-![interceptor-perf-json-relative](https://raw.githubusercontent.com/wiki/metosin/muuntaja/perf/interceptors-perf-json.png)
+![interceptor-perf-json-relative2](https://raw.githubusercontent.com/metosin/muuntaja/master/doc/images/interceptors-perf-json-relative.png)
+![interceptor-perf-json-relative](https://raw.githubusercontent.com/metosin/muuntaja/master/doc/images/interceptors-perf-json.png)
 
 ## Custom encoding
 
