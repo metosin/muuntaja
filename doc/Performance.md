@@ -61,9 +61,3 @@ Muuntaja:
 
 ![interceptor-perf-json-relative2](https://raw.githubusercontent.com/metosin/muuntaja/master/doc/images/interceptors-perf-json-relative.png)
 ![interceptor-perf-json-relative](https://raw.githubusercontent.com/metosin/muuntaja/master/doc/images/interceptors-perf-json.png)
-
-## Custom encoding
-
-Instead of using generic encoders, one can also do custom endocing for Records. This can yield better performance.
-
-See [the docs on customizing encoding](doc/Configuration.md#custom-encoding) for details.
