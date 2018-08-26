@@ -18,6 +18,12 @@
 ;                  :raw-charset "cheese-16"}
 ```
 
+* updated deps:
+
+```clj
+[com.cognitect/transit-clj "0.8.313"] is available but we use "0.8.309"
+```
+
 ## 0.6.0-alpha3
 
 * If `:body-params` is set in request, don't try to decode request body.
