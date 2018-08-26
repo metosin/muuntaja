@@ -232,13 +232,13 @@
           charset-raw)))))
 
 ;; TODO: fail if no match?
-(defn- -negotiate-accept [m s]
+(defn- -negotiate-accept [m parse s]
   (let [produces (encodes m)
         default-format (default-format m)]
     (or
       (util/some-value
         produces
-        (parse/parse-accept s))
+        (parse s))
       default-format)))
 
 ;; TODO: fail if no match?
@@ -404,7 +404,8 @@
                         (if-let [^Adapter adapter (adapters format)]
                           (.-decoder adapter)))
              -negotiate-accept-charset (parse/fast-memoize 1000 (partial -negotiate-accept-charset m))
-             -negotiate-accept (parse/fast-memoize 1000 (partial -negotiate-accept m))
+             -parse-accept (parse/fast-memoize 1000 parse/parse-accept)
+             -negotiate-accept (parse/fast-memoize 1000 (partial -negotiate-accept m -parse-accept))
              -negotiate-content-type (parse/fast-memoize 1000 (partial -negotiate-content-type m))
              -decode-request-body? (fn [request]
                                      (and (not (:body-params request))
@@ -459,7 +460,7 @@
                (->FormatAndCharset
                  (-negotiate-accept accept-raw)
                  (-negotiate-accept-charset charset-raw)
-                 accept-raw
+                 (first (-parse-accept accept-raw))
                  charset-raw)))
            (negotiate-request-response [this request]
              (-> request

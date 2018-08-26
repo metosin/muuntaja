@@ -259,9 +259,8 @@
                 nil))]
     (testing "managed formats"
       (app {:headers {"content-type" "application/edn; charset=utf-16"
-                      "accept" "application/transit+json"
+                      "accept" "application/transit+json, text/html, application/edn"
                       "accept-charset" "utf-16"}})
-      (println @types)
       (is (= [(m/map->FormatAndCharset
                 {:charset "utf-16"
                  :format "application/edn"
@@ -275,7 +274,7 @@
              @types)))
     (testing "non-managed formats"
       (app {:headers {"content-type" "application/cheese; charset=utf-16"
-                      "accept" "application/cake"
+                      "accept" "application/cake, text/html, application/edn"
                       "accept-charset" "utf-16"}})
       (is (= [(m/map->FormatAndCharset
                 {:charset "utf-16"
@@ -284,7 +283,7 @@
                  :raw-format "application/cheese"})
               (m/map->FormatAndCharset
                 {:charset "utf-16"
-                 :format "application/json"
+                 :format "application/edn"
                  :raw-charset "utf-16"
                  :raw-format "application/cake"})]
              @types)))))
