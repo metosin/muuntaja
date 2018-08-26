@@ -254,8 +254,37 @@
   (let [types (atom nil)
         app (middleware/wrap-format
               (fn [request]
-                (reset! types [(m/get-negotiated-request-content-type request)
-                               (m/get-negotiated-response-content-type request)])
+                (reset! types [(m/get-request-format-and-charset request)
+                               (m/get-response-format-and-charset request)])
                 nil))]
-    (app {:headers {"content-type" "application/edn", "accept" "application/transit+json"}})
-    (is (= ["application/edn" "application/transit+json"] @types))))
+    (testing "managed formats"
+      (app {:headers {"content-type" "application/edn; charset=utf-16"
+                      "accept" "application/transit+json"
+                      "accept-charset" "utf-16"}})
+      (println @types)
+      (is (= [(m/map->FormatAndCharset
+                {:charset "utf-16"
+                 :format "application/edn"
+                 :raw-charset "utf-16"
+                 :raw-format "application/edn"})
+              (m/map->FormatAndCharset
+                {:charset "utf-16"
+                 :format "application/transit+json"
+                 :raw-charset "utf-16"
+                 :raw-format "application/transit+json"})]
+             @types)))
+    (testing "non-managed formats"
+      (app {:headers {"content-type" "application/cheese; charset=utf-16"
+                      "accept" "application/cake"
+                      "accept-charset" "utf-16"}})
+      (is (= [(m/map->FormatAndCharset
+                {:charset "utf-16"
+                 :format nil
+                 :raw-charset "utf-16"
+                 :raw-format "application/cheese"})
+              (m/map->FormatAndCharset
+                {:charset "utf-16"
+                 :format "application/json"
+                 :raw-charset "utf-16"
+                 :raw-format "application/cake"})]
+             @types)))))

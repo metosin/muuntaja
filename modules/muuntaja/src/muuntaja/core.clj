@@ -31,7 +31,7 @@
 (defn muuntaja? [x]
   (satisfies? Muuntaja x))
 
-(defrecord FormatAndCharset [^String format, ^String charset])
+(defrecord FormatAndCharset [^String format, ^String charset, ^String raw-format, ^String raw-charset])
 
 (defmethod print-method FormatAndCharset
   [this ^Writer w]
@@ -190,11 +190,11 @@
 ;; request helpers
 ;;
 
-(defn get-negotiated-request-content-type [request]
-  (-> request :muuntaja/request :format))
+(defn get-request-format-and-charset [request]
+  (:muuntaja/request request))
 
-(defn get-negotiated-response-content-type [request]
-  (-> request :muuntaja/response :format))
+(defn get-response-format-and-charset [request]
+  (:muuntaja/response request))
 
 ;;
 ;; response helpers
@@ -227,7 +227,9 @@
             ;; only set default if none were set
             (and (not charset-raw) default-charset)
             ;; negotiation failed
-            (fail-on-request-charset-negotiation m)))))))
+            (fail-on-request-charset-negotiation m))
+          content-type-raw
+          charset-raw)))))
 
 ;; TODO: fail if no match?
 (defn- -negotiate-accept [m s]
@@ -452,9 +454,13 @@
            (request-format [_ request]
              (-negotiate-content-type (extract-content-type request)))
            (response-format [_ request]
-             (->FormatAndCharset
-               (-negotiate-accept (extract-accept request))
-               (-negotiate-accept-charset (extract-accept-charset request))))
+             (let [accept-raw (extract-accept request)
+                   charset-raw (extract-accept-charset request)]
+               (->FormatAndCharset
+                 (-negotiate-accept accept-raw)
+                 (-negotiate-accept-charset charset-raw)
+                 accept-raw
+                 charset-raw)))
            (negotiate-request-response [this request]
              (-> request
                  (assoc :muuntaja/request (request-format this request))
