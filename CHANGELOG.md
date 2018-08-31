@@ -1,5 +1,6 @@
 ## 0.6.0-alpha4
 
+* Use `:default-charset` for response encoding if found anywhere in the `accept` header, fixes [#79](https://github.com/metosin/muuntaja/issues/79) 
 * Publish the raw content-negotiation results into `FormatAndCharset` too
 * Removed helpers `m/get-negotiated-request-content-type` and `m/get-negotiated-response-content-type`
 * Added helpers `m/get-request-format-and-charset` and `get-response-format-and-charset`
@@ -8,14 +9,18 @@
 (require '[muuntaja.middleware :as middleware])
 (require '[muuntaja.core :as m])
 
-(->> {:headers {"accept" "cheese/cake"
+(->> {:headers {"content-type" "application/edn; charset=utf-16"
+                "accept" "cheese/cake"
                 "accept-charset" "cheese-16"}}
      ((middleware/wrap-format identity))
-     (m/get-response-format-and-charset))
-;#FormatAndCharset{:format "application/json"
-;                  :charset "utf-8"
-;                  :raw-format "cheese/cake"
-;                  :raw-charset "cheese-16"}
+     ((juxt m/get-request-format-and-charset
+            m/get-response-format-and-charset)))
+;[#FormatAndCharset{:format "application/edn"
+;                   :charset "utf-16"
+;                   :raw-format "application/edn"}
+; #FormatAndCharset{:format "application/json"
+;                   :charset "utf-8"
+;                   :raw-format "cheese/cake"}]
 ```
 
 * updated deps:

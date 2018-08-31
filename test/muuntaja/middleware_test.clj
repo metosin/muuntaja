@@ -146,11 +146,6 @@
             (catch Exception e
               (is (= (-> e ex-data :type) :muuntaja/request-charset-negotiation))))))
 
-      (testing "without valid request charset, a non-matching format is ok"
-        (let [app (middleware/wrap-format echo (dissoc m/default-options :default-charset))]
-          (let [response (app (->request nil nil nil json-string))]
-            (is (= response {:status 200, :body nil})))))
-
       (testing "without valid accept charset, response charset negotiation fails"
         (let [app (middleware/wrap-format echo (dissoc m/default-options :default-charset))]
           (try
@@ -257,6 +252,7 @@
                 (reset! types [(m/get-request-format-and-charset request)
                                (m/get-response-format-and-charset request)])
                 nil))]
+
     (testing "managed formats"
       (app {:headers {"content-type" "application/edn; charset=utf-16"
                       "accept" "application/transit+json, text/html, application/edn"
@@ -264,14 +260,27 @@
       (is (= [(m/map->FormatAndCharset
                 {:charset "utf-16"
                  :format "application/edn"
-                 :raw-charset "utf-16"
                  :raw-format "application/edn"})
               (m/map->FormatAndCharset
                 {:charset "utf-16"
                  :format "application/transit+json"
-                 :raw-charset "utf-16"
                  :raw-format "application/transit+json"})]
              @types)))
+
+    (testing "pick default-charset if accepted, #79"
+      (app {:headers {"content-type" "application/cheese; charset=utf-16"
+                      "accept" "application/cake, text/html, application/edn"
+                      "accept-charset" "x-ibm300, cheese/cake, utf-8, ibm775"}})
+      (is (= [(m/map->FormatAndCharset
+                {:charset "utf-16"
+                 :format nil
+                 :raw-format "application/cheese"})
+              (m/map->FormatAndCharset
+                {:charset "utf-8" ;; the default
+                 :format "application/edn"
+                 :raw-format "application/cake"})]
+             @types)))
+
     (testing "non-managed formats"
       (app {:headers {"content-type" "application/cheese; charset=utf-16"
                       "accept" "application/cake, text/html, application/edn"
@@ -279,11 +288,9 @@
       (is (= [(m/map->FormatAndCharset
                 {:charset "utf-16"
                  :format nil
-                 :raw-charset "utf-16"
                  :raw-format "application/cheese"})
               (m/map->FormatAndCharset
                 {:charset "utf-16"
                  :format "application/edn"
-                 :raw-charset "utf-16"
                  :raw-format "application/cake"})]
              @types)))))

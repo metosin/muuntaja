@@ -31,7 +31,7 @@
 (defn muuntaja? [x]
   (satisfies? Muuntaja x))
 
-(defrecord FormatAndCharset [^String format, ^String charset, ^String raw-format, ^String raw-charset])
+(defrecord FormatAndCharset [^String format, ^String charset, ^String raw-format])
 
 (defmethod print-method FormatAndCharset
   [this ^Writer w]
@@ -228,28 +228,29 @@
             (and (not charset-raw) default-charset)
             ;; negotiation failed
             (fail-on-request-charset-negotiation m))
-          content-type-raw
-          charset-raw)))))
+          content-type-raw)))))
 
-;; TODO: fail if no match?
 (defn- -negotiate-accept [m parse s]
   (let [produces (encodes m)
-        default-format (default-format m)]
+        default-format (default-format m)
+        accepts (parse s)]
     (or
-      (util/some-value
-        produces
-        (parse s))
-      default-format)))
+      (and (not accepts) default-format)
+      (util/some-value produces accepts)
+      default-format
+      (fail-on-response-format-negotiation m))))
 
-;; TODO: fail if no match?
 (defn- -negotiate-accept-charset [m s]
   (let [charsets (charsets m)
-        default-charset (default-charset m)]
+        default-charset (default-charset m)
+        accepts (parse/parse-accept-charset s)
+        accept? (set accepts)]
     (or
-      (util/some-value
-        (or charsets identity)
-        (parse/parse-accept-charset s))
-      default-charset)))
+      (and (not accepts) default-charset)
+      (accept? default-charset)
+      (util/some-value (or charsets identity) accepts)
+      default-charset
+      (fail-on-response-charset-negotiation m))))
 
 ;;
 ;; Creation
@@ -460,8 +461,7 @@
                (->FormatAndCharset
                  (-negotiate-accept accept-raw)
                  (-negotiate-accept-charset charset-raw)
-                 (first (-parse-accept accept-raw))
-                 charset-raw)))
+                 (first (-parse-accept accept-raw)))))
            (negotiate-request-response [this request]
              (-> request
                  (assoc :muuntaja/request (request-format this request))
