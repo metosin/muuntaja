@@ -31,7 +31,7 @@
 (defn muuntaja? [x]
   (satisfies? Muuntaja x))
 
-(defrecord FormatAndCharset [^String format, ^String charset])
+(defrecord FormatAndCharset [^String format, ^String charset, ^String raw-format])
 
 (defmethod print-method FormatAndCharset
   [this ^Writer w]
@@ -190,11 +190,11 @@
 ;; request helpers
 ;;
 
-(defn get-negotiated-request-content-type [request]
-  (-> request :muuntaja/request :format))
+(defn get-request-format-and-charset [request]
+  (:muuntaja/request request))
 
-(defn get-negotiated-response-content-type [request]
-  (-> request :muuntaja/response :format))
+(defn get-response-format-and-charset [request]
+  (:muuntaja/response request))
 
 ;;
 ;; response helpers
@@ -227,27 +227,30 @@
             ;; only set default if none were set
             (and (not charset-raw) default-charset)
             ;; negotiation failed
-            (fail-on-request-charset-negotiation m)))))))
+            (fail-on-request-charset-negotiation m))
+          content-type-raw)))))
 
-;; TODO: fail if no match?
-(defn- -negotiate-accept [m s]
+(defn- -negotiate-accept [m parse s]
   (let [produces (encodes m)
-        default-format (default-format m)]
+        default-format (default-format m)
+        accepts (parse s)]
     (or
-      (util/some-value
-        produces
-        (parse/parse-accept s))
-      default-format)))
+      (and (not accepts) default-format)
+      (util/some-value produces accepts)
+      default-format
+      (fail-on-response-format-negotiation m))))
 
-;; TODO: fail if no match?
 (defn- -negotiate-accept-charset [m s]
   (let [charsets (charsets m)
-        default-charset (default-charset m)]
+        default-charset (default-charset m)
+        accepts (parse/parse-accept-charset s)
+        accept? (set accepts)]
     (or
-      (util/some-value
-        (or charsets identity)
-        (parse/parse-accept-charset s))
-      default-charset)))
+      (and (not accepts) default-charset)
+      (accept? default-charset)
+      (util/some-value (or charsets identity) accepts)
+      default-charset
+      (fail-on-response-charset-negotiation m))))
 
 ;;
 ;; Creation
@@ -402,7 +405,8 @@
                         (if-let [^Adapter adapter (adapters format)]
                           (.-decoder adapter)))
              -negotiate-accept-charset (parse/fast-memoize 1000 (partial -negotiate-accept-charset m))
-             -negotiate-accept (parse/fast-memoize 1000 (partial -negotiate-accept m))
+             -parse-accept (parse/fast-memoize 1000 parse/parse-accept)
+             -negotiate-accept (parse/fast-memoize 1000 (partial -negotiate-accept m -parse-accept))
              -negotiate-content-type (parse/fast-memoize 1000 (partial -negotiate-content-type m))
              -decode-request-body? (fn [request]
                                      (and (not (:body-params request))
@@ -452,9 +456,12 @@
            (request-format [_ request]
              (-negotiate-content-type (extract-content-type request)))
            (response-format [_ request]
-             (->FormatAndCharset
-               (-negotiate-accept (extract-accept request))
-               (-negotiate-accept-charset (extract-accept-charset request))))
+             (let [accept-raw (extract-accept request)
+                   charset-raw (extract-accept-charset request)]
+               (->FormatAndCharset
+                 (-negotiate-accept accept-raw)
+                 (-negotiate-accept-charset charset-raw)
+                 (first (-parse-accept accept-raw)))))
            (negotiate-request-response [this request]
              (-> request
                  (assoc :muuntaja/request (request-format this request))

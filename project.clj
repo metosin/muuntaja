@@ -8,7 +8,7 @@
   :source-paths ["modules/muuntaja/src"]
   :managed-dependencies [[metosin/muuntaja "0.6.0-alpha3"]
                          [metosin/jsonista "0.2.1"]
-                         [com.cognitect/transit-clj "0.8.309"]
+                         [com.cognitect/transit-clj "0.8.313"]
                          [cheshire "5.8.0"]
                          [circleci/clj-yaml "0.5.6"]
                          [clojure-msgpack "1.2.1" :exclusions [org.clojure/clojure]]]

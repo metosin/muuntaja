@@ -59,19 +59,7 @@
 (defn- to-byte-stream [^String x ^String charset]
   (ByteArrayInputStream. (.getBytes x charset)))
 
-(defprotocol EncodeJson
-  (encode-json [this charset]))
-
-(def default-options-with-encode-protocol
-  (-> m/default-options
-      (assoc-in
-        [:formats "application/json" :encode-protocol]
-        [EncodeJson encode-json])))
-
-(defrecord Hello [^String name]
-  EncodeJson
-  (encode-json [_ charset]
-    (to-byte-stream (j/write-value-as-string {"hello" name}) charset)))
+(defrecord Hello [^String name])
 
 (def +handler+ (fn [request] {:status 200 :body (:body-params request)}))
 (def +handler2+ (fn [_] {:status 200 :body (->Hello "yello")}))
@@ -396,20 +384,6 @@
     (title "muuntaja: TRANSIT-REQUEST-RESPONSE")
     (assert (= (:body +transit-json-request+) (str (ring-stream! (app (request!))))))
     (cc/quick-bench (app (request!)))
-    (cc/quick-bench (ring-stream! (app (request!)))))
-
-  ; 3.8µs
-  ; 2.6µs Protocol (-30%)
-  ; 3.3µs (negotions)
-  ; 3.2µs (content-type)
-  ; 3.3µs && 5.7µs
-  ; 2.1µs && 3.7µs (jsonista)
-  (let [app (middleware/wrap-format +handler2+ default-options-with-encode-protocol)
-        request! (request-stream +json-request+)]
-
-    (title "muuntaja: JSON-REQUEST-RESPONSE (PROTOCOL)")
-    (assert (= "{\"hello\":\"yello\"}" (str (ring-stream! (app (request!))))))
-    (cc/quick-bench (app (request!)))
     (cc/quick-bench (ring-stream! (app (request!))))))
 
 (defn pedestal-interceptor-e2e []
@@ -515,8 +489,11 @@
           (:outliers result) (update :outliers (partial into {}))))
 
 (defmacro bench [& body]
-  `(let [result# (cc/quick-benchmark ~@body {})]
+  `(let [{[lower#] :lower-q :as result#} (cc/quick-benchmark ~@body {})]
+     (println "\u001B[32m\n" (format "%.2fµs" (* 1000000 lower#)) "\u001B[0m")
+     (println)
      (cc/report-result result#)
+     (println)
      result#))
 
 (defmacro report-bench [acc type size tool & body]
@@ -739,23 +716,6 @@
 
     (save-results! (format "perf/interceptor/json-results%s.edn" (next-number)) @results)))
 
-(defrecord Json10b [^Long imu]
-  EncodeJson
-  (encode-json [_ charset]
-    (to-byte-stream (j/write-value-as-string {:imu imu}) charset)))
-
-(defn e2e-jsonista []
-  (let [data (->Json10b 42)
-        handler (fn [_] {:status 200 :body data})
-        request (json-request data)
-        request! (request-stream request)]
-
-    ; 5.4µs (10b)
-    (title "muuntaja: JSON-REQUEST-RESPONSE (hand-crafted)")
-    (let [app (-> handler (middleware/wrap-format default-options-with-encode-protocol))]
-      #_(println (str (ring-stream! (app (request!)))))
-      (cc/quick-bench (ring-stream! (app (request!)))))))
-
 (defn request-streams []
 
   ;; 28ns
@@ -784,7 +744,6 @@
   (e2e-json-comparison-different-payloads)
   (e2e-transit-comparison-different-payloads)
   (e2e-json-interceptor-comparison-different-payloads)
-  (e2e-jsonista)
   (all))
 
 (comment
