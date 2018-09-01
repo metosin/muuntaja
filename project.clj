@@ -40,6 +40,9 @@
                                   [metosin/muuntaja-msgpack "0.6.0-alpha4"]
                                   [metosin/muuntaja-yaml "0.6.0-alpha4"]
 
+                                  ;; Sieppari
+                                  [metosin/sieppari "0.0.0-alpha4"]
+
                                   ;; Pedestal
                                   [org.clojure/core.async "0.4.474" :exclusions [org.clojure/tools.reader]]
                                   [io.pedestal/pedestal.service "0.5.4" :exclusions [org.clojure/tools.reader
