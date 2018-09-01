@@ -2,6 +2,27 @@
   (:refer-clojure :exclude [format])
   (:require [muuntaja.core :as m]))
 
+; [^Exception e format request]
+(defn- default-on-exception [_ format _]
+  {:status 400
+   :headers {"Content-Type" "text/plain"}
+   :body (str "Malformed " format " request.")})
+
+(defn create-exception-interceptor
+  "Interceptor that catches exceptions of type `:muuntaja/decode`
+   and invokes a 3-arity callback [^Exception e format request] which
+   returns a response."
+  ([]
+   (create-exception-interceptor default-on-exception))
+  ([on-exception]
+   {:error (fn [ctx]
+             (let [error (:error ctx)]
+               (if-let [data (ex-data error)]
+                 (if (-> data :type (= :muuntaja/decode))
+                   (-> ctx
+                       (dissoc :error)
+                       (assoc :response (on-exception error (:format data) (:request ctx))))))))}))
+
 (def params-interceptor
   "Interceptor that merges request `:body-params` into `:params`."
   {:enter (fn [ctx]

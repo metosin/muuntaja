@@ -208,92 +208,14 @@
     (is (= {:body-params [1 2 3]}
            (execute interceptors {:body-params [1 2 3]})))))
 
-#_(deftest wrap-exceptions-test
-    (let [->handler (fn [type]
-                      (fn
-                        ([_]
-                         (condp = type
-                           :decode (throw (ex-info "kosh" {:type :muuntaja/decode}))
-                           :runtime (throw (RuntimeException.))
-                           :return nil))
-                        ([_ respond raise]
-                         (condp = type
-                           :decode (raise (ex-info "kosh" {:type :muuntaja/decode}))
-                           :runtime (raise (RuntimeException.))
-                           :return (respond nil)))))
-          ->mw (partial interceptor/exception)]
-      (testing "sync"
-        (is (nil? ((->mw (->handler :return)) {})))
-        (is (thrown? RuntimeException ((->mw (->handler :runtime)) {})))
-        (is (= 400 (:status ((->mw (->handler :decode)) {})))))
-      (testing "async"
-        (let [respond (promise), raise (promise)]
-          ((->mw (->handler :return)) {} respond raise)
-          (is (nil? @respond)))
-        (let [respond (promise), raise (promise)]
-          ((->mw (->handler :runtime)) {} respond raise)
-          (is (= RuntimeException (class @raise))))
-        (let [respond (promise), raise (promise)]
-          ((->mw (->handler :decode)) {} respond raise)
-          (is (= 400 (:status @respond)))))))
-
-#_(deftest async-normal
-    (let [m (m/create)
-          data {:kikka 42}
-          json-string (slurp (m/encode m "application/json" data))]
-
-      (testing "happy case"
-        (let [app (interceptor/format async-echo)
-              respond (promise), raise (promise)]
-          (app (->request "application/json" nil nil json-string) respond raise)
-          (is (= (m/decode m "application/json" (:body @respond)) data))))))
-
-#_(deftest negotiation-results-helpers
-    (let [types (atom nil)
-          app (interceptor/format
-                (fn [request]
-                  (reset! types [(m/get-request-format-and-charset request)
-                                 (m/get-response-format-and-charset request)])
-                  nil))]
-
-      (testing "managed formats"
-        (app {:headers {"content-type" "application/edn; charset=utf-16"
-                        "accept" "application/transit+json, text/html, application/edn"
-                        "accept-charset" "utf-16"}})
-        (is (= [(m/map->FormatAndCharset
-                  {:charset "utf-16"
-                   :format "application/edn"
-                   :raw-format "application/edn"})
-                (m/map->FormatAndCharset
-                  {:charset "utf-16"
-                   :format "application/transit+json"
-                   :raw-format "application/transit+json"})]
-               @types)))
-
-      (testing "pick default-charset if accepted, #79"
-        (app {:headers {"content-type" "application/cheese; charset=utf-16"
-                        "accept" "application/cake, text/html, application/edn"
-                        "accept-charset" "x-ibm300, cheese/cake, utf-8, ibm775"}})
-        (is (= [(m/map->FormatAndCharset
-                  {:charset "utf-16"
-                   :format nil
-                   :raw-format "application/cheese"})
-                (m/map->FormatAndCharset
-                  {:charset "utf-8" ;; the default
-                   :format "application/edn"
-                   :raw-format "application/cake"})]
-               @types)))
-
-      (testing "non-managed formats"
-        (app {:headers {"content-type" "application/cheese; charset=utf-16"
-                        "accept" "application/cake, text/html, application/edn"
-                        "accept-charset" "utf-16"}})
-        (is (= [(m/map->FormatAndCharset
-                  {:charset "utf-16"
-                   :format nil
-                   :raw-format "application/cheese"})
-                (m/map->FormatAndCharset
-                  {:charset "utf-16"
-                   :format "application/edn"
-                   :raw-format "application/cake"})]
-               @types)))))
+(deftest exceptions-interceptor-test
+  (let [->handler (fn [type]
+                    (fn [_]
+                      (condp = type
+                        :decode (throw (ex-info "kosh" {:type :muuntaja/decode}))
+                        :runtime (throw (RuntimeException.))
+                        :return nil)))
+        interceptors (fn [handler] [(interceptor/create-exception-interceptor) handler])]
+    (is (nil? (execute (interceptors (->handler :return)) {})))
+    (is (thrown? RuntimeException (execute (interceptors (->handler :runtime)) {})))
+    (is (= 400 (:status (execute (interceptors (->handler :decode)) {}))))))
