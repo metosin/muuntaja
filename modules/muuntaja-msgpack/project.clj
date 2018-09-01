@@ -1,4 +1,4 @@
-(defproject metosin/muuntaja-msgpack "0.6.0-alpha3"
+(defproject metosin/muuntaja-msgpack "0.6.0-alpha4"
   :description "Messagepack format for Muuntaja"
   :url "https://github.com/metosin/muuntaja"
   :license {:name "Eclipse Public License"
