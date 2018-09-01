@@ -1,3 +1,16 @@
+## 0.6.0-alpha5
+
+* **BREAKING**: new interceptors
+  * based on the [Sieppari](https://github.com/metosin/sieppari) interceptor model
+  * all synchronous
+  * just like `muuntaja.middleware`, but in `muuntaja.interceptors`:
+    * `create-exception-interceptor` ~= `wrap-exception` 
+    * `params-interceptor` ~= `wrap-params`
+    * `create-format-interceptor` ~= `wrap-format`
+    * `create-format-negotiate-interceptor` ~= `wrap-format-negotiate`
+    * `create-format-request-interceptor` ~= `wrap-format-request`
+    * `create-format-response-interceptor` ~= `wrap-format-response`
+
 ## 0.6.0-alpha4
 
 * Use `:default-charset` for response encoding if found anywhere in the `accept` header, fixes [#79](https://github.com/metosin/muuntaja/issues/79) 
