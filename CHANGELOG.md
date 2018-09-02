@@ -1,15 +1,14 @@
 ## 0.6.0-alpha5
 
-* **BREAKING**: new interceptors
+* **BREAKING**: rewrote the interceptors
   * based on the [Sieppari](https://github.com/metosin/sieppari) interceptor model
-  * all synchronous
-  * just like `muuntaja.middleware`, but in `muuntaja.interceptors`:
-    * `create-exception-interceptor` ~= `wrap-exception` 
+  * just like the middleware in `muuntaja.middleware`, but `muuntaja.interceptors`.
+    * `exception-interceptor` ~= `wrap-exception`
     * `params-interceptor` ~= `wrap-params`
-    * `create-format-interceptor` ~= `wrap-format`
-    * `create-format-negotiate-interceptor` ~= `wrap-format-negotiate`
-    * `create-format-request-interceptor` ~= `wrap-format-request`
-    * `create-format-response-interceptor` ~= `wrap-format-response`
+    * `format-interceptor` ~= `wrap-format`
+    * `format-negotiate-interceptor` ~= `wrap-format-negotiate`
+    * `format-request-interceptor` ~= `wrap-format-request`
+    * `format-response-interceptor` ~= `wrap-format-response`
 
 ## 0.6.0-alpha4
 

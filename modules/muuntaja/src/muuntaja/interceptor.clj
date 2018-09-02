@@ -8,14 +8,15 @@
    :headers {"Content-Type" "text/plain"}
    :body (str "Malformed " format " request.")})
 
-(defn create-exception-interceptor
+(defn exception-interceptor
   "Interceptor that catches exceptions of type `:muuntaja/decode`
    and invokes a 3-arity callback [^Exception e format request] which
    returns a response."
   ([]
-   (create-exception-interceptor default-on-exception))
+   (exception-interceptor default-on-exception))
   ([on-exception]
-   {:error (fn [ctx]
+   {:name ::exceptions
+    :error (fn [ctx]
              (let [error (:error ctx)]
                (if-let [data (ex-data error)]
                  (if (-> data :type (= :muuntaja/decode))
@@ -23,9 +24,11 @@
                        (dissoc :error)
                        (assoc :response (on-exception error (:format data) (:request ctx))))))))}))
 
-(def params-interceptor
+(defn params-interceptor
   "Interceptor that merges request `:body-params` into `:params`."
-  {:enter (fn [ctx]
+  []
+  {:name ::params
+   :enter (fn [ctx]
             (letfn [(set-params
                       ([request]
                        (let [params (:params request)
@@ -38,7 +41,7 @@
               (let [request (:request ctx)]
                 (assoc ctx :request (set-params request)))))})
 
-(defn create-format-interceptor
+(defn format-interceptor
   "Interceptor that negotiates a request body based on accept, accept-charset
   and content-type headers and decodes the body with an attached Muuntaja
   instance into `:body-params`. Encodes also the response body with the same
@@ -48,7 +51,7 @@
   Takes a pre-configured Muuntaja or options maps an argument.
   See https://github.com/metosin/muuntaja for all options and defaults."
   ([]
-   (create-format-interceptor m/instance))
+   (format-interceptor m/instance))
   ([prototype]
    (let [m (m/create prototype)]
      {:name ::format
@@ -60,7 +63,7 @@
                      response (:response ctx)]
                  (assoc ctx :response (m/format-response m request response))))})))
 
-(defn create-format-negotiate-interceptor
+(defn format-negotiate-interceptor
   "Interceptor that negotiates a request body based on accept, accept-charset
   and content-type headers with an attached Muuntaja instance. Injects negotiation
   results into request for `format-request` interceptor to use.
@@ -68,7 +71,7 @@
   Takes a pre-configured Muuntaja or options maps an argument.
   See https://github.com/metosin/muuntaja for all options and defaults."
   ([]
-   (create-format-negotiate-interceptor m/instance))
+   (format-negotiate-interceptor m/instance))
   ([prototype]
    (let [m (m/create prototype)]
      {:name ::format-negotiate
@@ -76,7 +79,7 @@
                (let [request (:request ctx)]
                  (assoc ctx :request (m/negotiate-request-response m request))))})))
 
-(defn create-format-request-interceptor
+(defn format-request-interceptor
   "Interceptor that decodes the request body with an attached Muuntaja
   instance into `:body-params` based on the negotiation information provided
   by `format-negotiate` interceptor.
@@ -84,7 +87,7 @@
   Takes a pre-configured Muuntaja or options maps an argument.
   See https://github.com/metosin/muuntaja for all options and defaults."
   ([]
-   (create-format-request-interceptor m/instance))
+   (format-request-interceptor m/instance))
   ([prototype]
    (let [m (m/create prototype)]
      {:name ::format-request
@@ -92,7 +95,7 @@
                (let [request (:request ctx)]
                  (assoc ctx :request (m/format-request m request))))})))
 
-(defn create-format-response-interceptor
+(defn format-response-interceptor
   "Interceptor that encodes also the response body with the attached
   Muuntaja instance, based on request negotiation information provided by
   `format-negotiate` interceptor or override information provided by the handler.
@@ -100,7 +103,7 @@
   Takes a pre-configured Muuntaja or options maps an argument.
   See https://github.com/metosin/muuntaja for all options and defaults."
   ([]
-   (create-format-response-interceptor m/instance))
+   (format-response-interceptor m/instance))
   ([prototype]
    (let [m (m/create prototype)]
      {:name ::format-response

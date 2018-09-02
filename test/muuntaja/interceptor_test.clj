@@ -36,31 +36,31 @@
           (= edn-string (some-> (execute (conj interceptors echo) request) :body slurp))
 
           ;; without arguments
-          [(interceptor/create-format-interceptor)]
+          [(interceptor/format-interceptor)]
 
           ;; with default options
-          [(interceptor/create-format-interceptor m/default-options)]
+          [(interceptor/format-interceptor m/default-options)]
 
           ;; with compiled muuntaja
-          [(interceptor/create-format-interceptor m)]
+          [(interceptor/format-interceptor m)]
 
           ;; without arguments
-          [(interceptor/create-format-negotiate-interceptor)
-           (interceptor/create-format-response-interceptor)
-           (interceptor/create-format-request-interceptor)]
+          [(interceptor/format-negotiate-interceptor)
+           (interceptor/format-response-interceptor)
+           (interceptor/format-request-interceptor)]
 
           ;; with default options
-          [(interceptor/create-format-negotiate-interceptor m/default-options)
-           (interceptor/create-format-response-interceptor m/default-options)
-           (interceptor/create-format-request-interceptor m/default-options)]
+          [(interceptor/format-negotiate-interceptor m/default-options)
+           (interceptor/format-response-interceptor m/default-options)
+           (interceptor/format-request-interceptor m/default-options)]
 
           ;; with compiled muuntaja
-          [(interceptor/create-format-negotiate-interceptor m)
-           (interceptor/create-format-response-interceptor m)
-           (interceptor/create-format-request-interceptor m)])))
+          [(interceptor/format-negotiate-interceptor m)
+           (interceptor/format-response-interceptor m)
+           (interceptor/format-request-interceptor m)])))
 
     (testing "with defaults"
-      (let [interceptors [(interceptor/create-format-interceptor) echo]]
+      (let [interceptors [(interceptor/format-interceptor) echo]]
 
         (testing "symmetric request decode + response encode"
           (are [format]
@@ -106,7 +106,7 @@
               (is (= json-string (some-> (execute interceptors request) :body slurp))))))))
 
     (testing "with regexp matchers"
-      (let [interceptors [(interceptor/create-format-interceptor
+      (let [interceptors [(interceptor/format-interceptor
                             (assoc-in
                               m/default-options
                               [:formats "application/json" :matches]
@@ -135,7 +135,7 @@
                 "applicationz/+json"))))))
 
     (testing "without :default-format & valid accept format, response format negotiation fails"
-      (let [interceptors [(interceptor/create-format-interceptor
+      (let [interceptors [(interceptor/format-interceptor
                             (dissoc m/default-options :default-format))
                           echo]]
         (try
@@ -147,7 +147,7 @@
     (testing "without :default-charset"
 
       (testing "without valid request charset, request charset negotiation fails"
-        (let [interceptors [(interceptor/create-format-interceptor
+        (let [interceptors [(interceptor/format-interceptor
                               (dissoc m/default-options :default-charset))
                             echo]]
           (try
@@ -157,7 +157,7 @@
               (is (= (-> e ex-data :type) :muuntaja/request-charset-negotiation))))))
 
       (testing "without valid accept charset, response charset negotiation fails"
-        (let [interceptors [(interceptor/create-format-interceptor
+        (let [interceptors [(interceptor/format-interceptor
                               (dissoc m/default-options :default-charset))
                             echo]]
           (try
@@ -172,7 +172,7 @@
                          {:status 200
                           :muuntaja/content-type "application/edn"
                           :body (:body-params request)})
-              interceptors [(interceptor/create-format-interceptor) echo-edn]
+              interceptors [(interceptor/format-interceptor) echo-edn]
               request (->request "application/json" "application/json" nil "{\"kikka\":42}")
               response (execute interceptors request)]
           (is (= "{:kikka 42}" (-> response :body slurp)))
@@ -181,7 +181,7 @@
 
     (testing "different bodies"
       (let [m (m/create (assoc-in m/default-options [:http :encode-response-body?] (constantly true)))
-            interceptors [(interceptor/create-format-interceptor m) echo]
+            interceptors [(interceptor/format-interceptor m) echo]
             edn-request #(->request "application/edn" "application/edn" nil (pr-str %))
             e2e #(m/decode m "application/edn" (:body (execute interceptors (edn-request %))))]
         (are [primitive]
@@ -197,7 +197,7 @@
           1)))))
 
 (deftest params-interceptor-test
-  (let [interceptors [interceptor/params-interceptor identity]]
+  (let [interceptors [(interceptor/params-interceptor) identity]]
     (is (= {:params {:a 1, :b {:c 1}}
             :body-params {:b {:c 1}}}
            (execute interceptors {:params {:a 1}
@@ -215,7 +215,7 @@
                         :decode (throw (ex-info "kosh" {:type :muuntaja/decode}))
                         :runtime (throw (RuntimeException.))
                         :return nil)))
-        interceptors (fn [handler] [(interceptor/create-exception-interceptor) handler])]
+        interceptors (fn [handler] [(interceptor/exception-interceptor) handler])]
     (is (nil? (execute (interceptors (->handler :return)) {})))
     (is (thrown? RuntimeException (execute (interceptors (->handler :runtime)) {})))
     (is (= 400 (:status (execute (interceptors (->handler :decode)) {}))))))
