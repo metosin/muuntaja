@@ -111,9 +111,9 @@
    (let [m (m/create prototype)]
      (fn
        ([request]
-        (handler (m/negotiate-and-format-request m request)))
+        (handler (m/format-request m request)))
        ([request respond raise]
-        (handler (m/negotiate-and-format-request m request) respond raise))))))
+        (handler (m/format-request m request) respond raise))))))
 
 (defn wrap-format-response
   "Middleware that encodes also the response body with the attached
