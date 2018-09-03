@@ -1,3 +1,144 @@
+## 0.6.0 (3.9.2018)
+
+* all the changes in the 0.6.0 alphas
+
+### Cumulative changes
+
+* **BREAKING**: rewrote the interceptors
+  * based on the [Sieppari](https://github.com/metosin/sieppari) interceptor model
+  * just like the middleware in `muuntaja.middleware`, but `muuntaja.interceptors`.
+    * `exception-interceptor` ~= `wrap-exception`
+    * `params-interceptor` ~= `wrap-params`
+    * `format-interceptor` ~= `wrap-format`
+    * `format-negotiate-interceptor` ~= `wrap-format-negotiate`
+    * `format-request-interceptor` ~= `wrap-format-request`
+    * `format-response-interceptor` ~= `wrap-format-response`
+
+* Use `:default-charset` for response encoding if found anywhere in the `accept` header, fixes [#79](https://github.com/metosin/muuntaja/issues/79) 
+* Publish the raw content-negotiation results into `FormatAndCharset` too
+* Added helpers `m/get-request-format-and-charset` and `get-response-format-and-charset`
+
+```clj
+(require '[muuntaja.middleware :as middleware])
+(require '[muuntaja.core :as m])
+
+(->> {:headers {"content-type" "application/edn; charset=utf-16"
+                "accept" "cheese/cake"
+                "accept-charset" "cheese-16"}}
+     ((middleware/wrap-format identity))
+     ((juxt m/get-request-format-and-charset
+            m/get-response-format-and-charset)))
+;[#FormatAndCharset{:format "application/edn"
+;                   :charset "utf-16"
+;                   :raw-format "application/edn"}
+; #FormatAndCharset{:format "application/json"
+;                   :charset "utf-8"
+;                   :raw-format "cheese/cake"}]
+```
+
+* **BREAKING**: If `:body-params` is set in request, don't try to decode request body.
+
+* **BREAKING**: Changes in special Muuntaja keys in request & response
+  * `:muuntaja/format` is not published into request or response
+  * `muuntaja.core/disable-request-encoding` helper is removed
+  * `muuntaja.core/disable-response-encoding` helper is removed
+  * `:muuntaja/encode?` response key (to force encoding) is renamed to `:muuntaja/encode`
+
+* **BREAKING**: [Cheshire](https://github.com/dakrone/cheshire) in dropped in favor of [Jsonista](https://github.com/metosin/jsonista) as the default JSON formatter (faster, explicit configuration)
+  * `muuntaja.format.json` => `muuntaja.format.cheshire`
+  * `muuntaja.format.jsonista` => `muuntaja.format.json`
+  * The `muuntaja.format.json` formatter takes now jsonista options directly, with an asertion to fail fast if old options are used:
+     * `:key-fn` => `:encode-key-fn` and `:decode-key-fn`
+     * `:bigdecimals?` => `:bigdecimals`
+  * `:mapper` option can be used to set the preconfigured `ObjectMapper`.
+* move everyting from `muuntaja.records` into `muuntaja.core`
+* `m/slurp` to consume whatever Muuntaja can encode into a String. Not performance optimized, e.g. for testing.
+* **BREAKING**: formats are written as Protocols instead of just functions.
+  * encoders should satisfy `muuntaja.format.core/EncodeToBytes` or `muuntaja.format.core/EncodeToOutputStream`
+  * decoders should satisfy `muuntaja.format.core/Decode`
+  * as a migration guard - if functions are used, there is an descrptive error message at Muuntaja creation time
+* With Muuntaja option `:return` one can control what is the encoding target. Valid values are:
+
+| value            | description                                                                      |
+| -----------------|----------------------------------------------------------------------------------|
+| `:input-stream`  | encodes into `java.io.ByteArrayInputStream` (default)                            |
+| `:bytes`         | encodes into `byte[]`. Faster than Stream, enables NIO for servers supporting it |
+| `:output-stream` | encodes lazily into `java.io.OutputStream` via a callback function               |
+
+* Formats can override `:return` value
+* Formats can also have `:name` (e.g. `"application/json"`) and for installing new formats there is `muuntaja.core/install`
+* **BREAKING**: Muuntaja has now a multi-module layout! The modules are:
+  * `metosin/muuntaja` - the core + [Jsonista](https://github.com/metosin/jsonista), EDN and Transit formats
+  * `metosin/muuntaja-cheshire` - optional [Cheshire](https://github.com/dakrone/cheshire) JSON format
+  * `metosin/muuntaja-msgpack` - Messagepack format
+  * `metosin/muuntaja-yaml` - YAML format
+
+```clj
+(require '[muuntaja.core :as m])
+
+;; [metosin/muuntaja-msgpack]
+(require '[muuntaja.format.msgpack])
+
+;; [metosin/muuntaja-yaml]
+(require '[muuntaja.format.yaml])
+
+(def m (m/create
+         (-> m/default-options
+             (m/install muuntaja.format.msgpack/format)
+             (m/install muuntaja.format.yaml/format)
+             (assoc :return :bytes))))
+```
+
+* **BREAKING**: `with-streaming-***-format` helpers are removed, use `:return` `:output-stream` to set it.
+* formats can now also take `:opts` keys, which gets merged into encoder and decoder arguments and opts, so these decoders are effectively the same:
+
+```clj
+(require '[muuntaja.core :as m])
+
+(m/decoder
+  (m/create
+    (assoc-in
+      m/default-options
+      [:formats "application/json" :opts]
+      {:decode-key-fn false}))
+  "application/json")
+
+(m/decoder
+  (m/create
+    (assoc-in
+      m/default-options
+      [:formats "application/json" :decoder-opts]
+      {:decode-key-fn false}))
+  "application/json")
+```
+
+... and also this:
+
+```clj  
+(require '[jsonista.core :as j])
+
+(m/decoder
+  (m/create
+    (assoc-in
+      m/default-options
+      [:formats "application/json" :opts]
+      {:mapper (j/object-mapper {:decode-key-fn false})}))
+  "application/json")  
+```
+
+* dropped dependencies:
+
+```clj
+[cheshire "5.8.0"]
+```
+
+* updated deps:
+
+```clj
+[metosin/jsonista "0.2.1"]
+[com.cognitect/transit-clj "0.8.313"] is available but we use "0.8.309"
+```
+
 ## 0.6.0-alpha5
 
 * **BREAKING**: rewrote the interceptors
