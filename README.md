@@ -77,7 +77,7 @@ There is a more detailed [Ring guide](doc/With-Ring.md) too. See also [differenc
 
 ## Interceptors
 
-See [`muuntaja.interceptor`](https://github.com/metosin/muuntaja/blob/master/src/clj/muuntaja/interceptor.clj).
+See [`muuntaja.interceptor`](https://github.com/metosin/muuntaja/blob/master/modules/muuntaja/src/muuntaja/interceptor.clj).
 
 ## Standalone
 
