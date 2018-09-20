@@ -11,7 +11,8 @@
                          [com.cognitect/transit-clj "0.8.313"]
                          [cheshire "5.8.0"]
                          [circleci/clj-yaml "0.5.6"]
-                         [clojure-msgpack "1.2.1" :exclusions [org.clojure/clojure]]]
+                         [clojure-msgpack "1.2.1" :exclusions [org.clojure/clojure]]
+                         [org.synchronoss.cloud/nio-multipart-parser "1.1.0"]]
   :dependencies []
   :plugins [[lein-codox "0.10.3"]]
   :codox {:src-uri "http://github.com/metosin/muuntaja/blob/master/{filepath}#L{line}"
@@ -26,7 +27,8 @@
                    :source-paths ["modules/muuntaja/src"
                                   "modules/muuntaja-cheshire/src"
                                   "modules/muuntaja-yaml/src"
-                                  "modules/muuntaja-msgpack/src"]
+                                  "modules/muuntaja-msgpack/src"
+                                  "modules/muuntaja-multipart/src"]
 
                    :dependencies [[org.clojure/clojure "1.9.0"]
                                   [ring/ring-core "1.6.3"]
@@ -39,6 +41,7 @@
                                   [metosin/muuntaja-cheshire "0.6.0"]
                                   [metosin/muuntaja-msgpack "0.6.0"]
                                   [metosin/muuntaja-yaml "0.6.0"]
+                                  [metosin/muuntaja-multipart "0.6.0"]
 
                                   ;; Sieppari
                                   [metosin/sieppari "0.0.0-alpha4"]
