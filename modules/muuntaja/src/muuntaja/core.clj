@@ -85,6 +85,7 @@
      (util/throw! m format "encoder not found for"))))
 
 (defn decode
+  ;; FIXME: data is input stream? Returns the decoded value.
   "Decode data into the given format. Returns InputStream or throws."
   ([m format data]
    (decode m format data (default-charset m)))
