@@ -82,7 +82,10 @@
                                max-memory-usage-per-body-part (.setMaxMemoryUsagePerBodyPart max-memory-usage-per-body-part)
                                limit-nesting-parts-to (.setLimitNestingPartsTo limit-nesting-parts-to)))
                        (.forNIO listener))]
-        (io/copy data parser)
+        (try
+          (io/copy data parser)
+          (finally
+            (.close parser)))
         @result))))
 
 (def format
