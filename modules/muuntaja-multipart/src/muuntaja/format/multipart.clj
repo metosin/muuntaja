@@ -29,7 +29,9 @@
           (getInputStream []
             is))))))
 
-(defn decoder [{:keys [store fallback-encoding encoding
+(defn decoder [{:keys [;; ring middleware options
+                       ;; FIXME: Do these make sense?
+                       store fallback-encoding encoding
                        ;; nio-multipart options
                        buffer-size headers-size-limit
                        max-memory-usage-per-body-part
