@@ -159,6 +159,7 @@
     (println request*)
     (is (= (get-in request* [:multipart-params "foo"]) "äÄÖöÅå€"))))
 
+;; FIXME: this has not been implemented but utf8 is default or something, so this works accidentally.
 (deftest charset-may-be-defined-html5-style-parameter
   (let [form-body (str "--XXXX\r\n"
                        "Content-Disposition: form-data;"
