@@ -65,13 +65,14 @@
                                                                   [v data])
                                                                 data))))))
                        (onNestedPartStarted [this headersFromParentPart]
-                         )
+                         nil)
                        (onNestedPartFinished [this]
-                         )
+                         nil)
                        (onAllPartsFinished [this]
-                         )
+                         nil)
                        (onError [this message cause]
-                         ))
+                         ;; Not sure if works, is this thrown in main thread?
+                         (throw (Exception. message cause))))
             parser (-> (Multipart/multipart context)
                        ;; Setup always our own piped-input-stream storage
                        ;; Ring-style :store function can be used to convert input-stream to file.
