@@ -73,12 +73,14 @@
                        (onError [this message cause]
                          ))
             parser (-> (Multipart/multipart context)
+                       ;; Setup always our own piped-input-stream storage
+                       ;; Ring-style :store function can be used to convert input-stream to file.
+                       (.usePartBodyStreamStorageFactory (stream-storage))
                        (doto (cond->
                                buffer-size (.setBufferSize buffer-size)
                                headers-size-limit (.setHeadersSizeLimit headers-size-limit)
                                max-memory-usage-per-body-part (.setMaxMemoryUsagePerBodyPart max-memory-usage-per-body-part)
-                               limit-nesting-parts-to (.setLimitNestingPartsTo limit-nesting-parts-to)
-                               store (.usePartBodyStreamStorageFactory (stream-storage))))
+                               limit-nesting-parts-to (.setLimitNestingPartsTo limit-nesting-parts-to)))
                        (.forNIO listener))]
         (io/copy data parser)
         @result))))
