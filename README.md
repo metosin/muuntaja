@@ -37,15 +37,15 @@ for detailed API documentation as well as more guides on how to use Muuntaja.
 ## Latest version
 
 ```clj
-[metosin/muuntaja "0.6.0"]
+[metosin/muuntaja "0.6.1"]
 ```
 
 Optionally, the parts can be required separately:
 
 ```clj
-[metosin/muuntaja-cheshire "0.6.0"]
-[metosin/muuntaja-msgpack "0.6.0"]
-[metosin/muuntaja-yaml "0.6.0"]
+[metosin/muuntaja-cheshire "0.6.1"]
+[metosin/muuntaja-msgpack "0.6.1"]
+[metosin/muuntaja-yaml "0.6.1"]
 ```
 
 Muuntaja requires Java 1.8+

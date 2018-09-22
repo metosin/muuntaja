@@ -6,7 +6,7 @@
   :javac-options ["-Xlint:unchecked" "-target" "1.7" "-source" "1.7"]
   :java-source-paths ["src/java"]
   :source-paths ["modules/muuntaja/src"]
-  :managed-dependencies [[metosin/muuntaja "0.6.0"]
+  :managed-dependencies [[metosin/muuntaja "0.6.1"]
                          [metosin/jsonista "0.2.2"]
                          [com.cognitect/transit-clj "0.8.313"]
                          [cheshire "5.8.1"]
@@ -35,10 +35,10 @@
                                   [ring/ring-json "0.4.0"]
 
                                   ;; modules
-                                  [metosin/muuntaja "0.6.0"]
-                                  [metosin/muuntaja-cheshire "0.6.0"]
-                                  [metosin/muuntaja-msgpack "0.6.0"]
-                                  [metosin/muuntaja-yaml "0.6.0"]
+                                  [metosin/muuntaja "0.6.1"]
+                                  [metosin/muuntaja-cheshire "0.6.1"]
+                                  [metosin/muuntaja-msgpack "0.6.1"]
+                                  [metosin/muuntaja-yaml "0.6.1"]
 
                                   ;; Sieppari
                                   [metosin/sieppari "0.0.0-alpha5"]
