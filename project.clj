@@ -1,4 +1,4 @@
-(defproject metosin/muuntaja "0.6.0"
+(defproject metosin/muuntaja "0.6.1"
   :description "Clojure library for format encoding, decoding and content-negotiation"
   :url "https://github.com/metosin/muuntaja"
   :license {:name "Eclipse Public License"
@@ -7,9 +7,9 @@
   :java-source-paths ["src/java"]
   :source-paths ["modules/muuntaja/src"]
   :managed-dependencies [[metosin/muuntaja "0.6.0"]
-                         [metosin/jsonista "0.2.1"]
+                         [metosin/jsonista "0.2.2"]
                          [com.cognitect/transit-clj "0.8.313"]
-                         [cheshire "5.8.0"]
+                         [cheshire "5.8.1"]
                          [circleci/clj-yaml "0.5.6"]
                          [clojure-msgpack "1.2.1" :exclusions [org.clojure/clojure]]]
   :dependencies []
@@ -29,7 +29,7 @@
                                   "modules/muuntaja-msgpack/src"]
 
                    :dependencies [[org.clojure/clojure "1.9.0"]
-                                  [ring/ring-core "1.6.3"]
+                                  [ring/ring-core "1.7.0"]
                                   [ring-middleware-format "0.7.2"]
                                   [ring-transit "0.1.6"]
                                   [ring/ring-json "0.4.0"]
@@ -41,7 +41,7 @@
                                   [metosin/muuntaja-yaml "0.6.0"]
 
                                   ;; Sieppari
-                                  [metosin/sieppari "0.0.0-alpha4"]
+                                  [metosin/sieppari "0.0.0-alpha5"]
 
                                   ;; Pedestal
                                   [org.clojure/core.async "0.4.474" :exclusions [org.clojure/tools.reader]]
@@ -54,6 +54,7 @@
                                   [criterium "0.4.4"]]}
              :1.7 {:dependencies [[org.clojure/clojure "1.7.0"]]}
              :1.8 {:dependencies [[org.clojure/clojure "1.8.0"]]}
+             :1.10 {:dependencies [[org.clojure/clojure "1.10.0-alpha5"]]}
              :perf {:jvm-opts ^:replace ["-server"
                                          "-Xmx4096m"
                                          "-Dclojure.compiler.direct-linking=true"]}
@@ -62,6 +63,6 @@
                                             "-XX:+PrintCompilation"
                                             "-XX:+UnlockDiagnosticVMOptions"
                                             "-XX:+PrintInlining"]}}
-  :aliases {"all" ["with-profile" "dev:dev,1.7:dev,1.8"]
+  :aliases {"all" ["with-profile" "dev:dev,1.7:dev,1.8:dev,1.10"]
             "perf" ["with-profile" "default,dev,perf"]
             "analyze" ["with-profile" "default,dev,analyze"]})

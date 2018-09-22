@@ -1,3 +1,21 @@
+## 0.6.1 (22.9.2018)
+
+### `muuntaja`
+
+* Updated deps:
+
+```clj
+[metosin/jsonista "0.2.2"] is available but we use "0.2.1"
+```
+
+### `muuntaja-cheshire`
+
+* Updated deps:
+
+```clj
+[cheshire "5.8.1"] is available but we use "5.8.0"
+```
+
 ## 0.6.0 (3.9.2018)
 
 * all the changes in the 0.6.0 alphas
