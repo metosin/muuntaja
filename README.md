@@ -1,6 +1,6 @@
 # Muuntaja [![Continuous Integration status](https://secure.travis-ci.org/metosin/muuntaja.png)](http://travis-ci.org/metosin/muuntaja) [![cljdoc badge](https://cljdoc.xyz/badge/metosin/muuntaja)](https://cljdoc.xyz/jump/release/metosin/muuntaja)
 
-<img src="https://raw.githubusercontent.com/wiki/metosin/muuntaja/muuntaja-small.png" align="right"/>
+<img src="https://raw.githubusercontent.com/metosin/muuntaja/master/doc/muuntaja-small.png" align="right"/>
 
 Clojure library for fast http format negotiation, encoding and decoding. Standalone library, but ships with adapters for ring (async) middleware & Pedestal-style interceptors. Explicit & extendable, supporting out-of-the-box [JSON](http://www.json.org/), [EDN](https://github.com/edn-format/edn) and [Transit](https://github.com/cognitect/transit-format) (both JSON & Msgpack). Ships with optional adapters for [MessagePack](http://msgpack.org/) and [YAML](http://yaml.org/).
 
