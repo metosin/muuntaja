@@ -14,8 +14,6 @@
            (java.io FileInputStream)
            (java.nio.file Files)))
 
-(defn- to-byte-stream [x charset] (util/byte-stream (.getBytes x charset)))
-
 (defn set-jvm-default-charset! [charset]
   (System/setProperty "file.encoding" charset)
   (doto
@@ -23,14 +21,6 @@
     (.setAccessible true)
     (.set nil nil))
   nil)
-
-(defprotocol EncodeJson
-  (encode-json [this charset]))
-
-(defrecord Hello [^String name]
-  EncodeJson
-  (encode-json [_ charset]
-    (to-byte-stream (j/write-value-as-string {"hello" name}) charset)))
 
 (defmacro with-default-charset [charset & body]
   `(let [old-charset# (str (Charset/defaultCharset))]

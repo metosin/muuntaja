@@ -1,3 +1,16 @@
+## UNRELEASED
+
+* Added 2-arity to `encode` & `decode`, using the default instance, fixes [#86](https://github.com/metosin/muuntaja/issues/86), thanks to [valerauko](https://github.com/valerauko).
+
+```clj
+(require '[muuntaja.core :as m])
+
+(->> {:lonely "planet"}
+     (m/encode "application/edn")
+     (m/decode "application/edn"))
+; => {:lonely "planet"}
+```
+
 ## 0.6.1 (22.9.2018)
 
 ### `muuntaja`
