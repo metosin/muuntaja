@@ -1,13 +1,16 @@
-# Creating new formats
+# Creating New Formats
 
 Formats are presented as Clojure maps, registered into options under `:formats` with format name as a key.
 Format maps can the following optional keys:
 
-* `:decoder` a function (or a function generator) to parse an InputStreams into Clojure data structure. If the key is missing or value is `nil`, no decoding will be done.
-* `:encoder` a function (or a function generator) to encode Clojure data structures into an `InputStream` or to `muuntaja.protocols/Stremable`. If the key is missing or value is `nil`, no encoding will be done.
-* `:decoder-opts` extra options maps for the decoder function generator.
-* `:encoder-opts` extra options maps for the encoder function generator.
-* `:matches` a regexp for additional matching of the content-type in request negotiation. Added for legacy support, e.g. `#"^application/(.+\+)?json$"`. Results of the regexp are memoized against the given content-type for near constant-time performance.
+| key                | description
+| -------------------|---------------
+| `:decoder`         | a function (or a function generator) to parse an InputStreams into Clojure data structure. If the key is missing or value is `nil`, no decoding will be done.
+| `:encoder`         | a function (or a function generator) to encode Clojure data structures into an `InputStream` or to `muuntaja.protocols/Stremable`. If the key is missing or value is `nil`, no encoding will be done.
+| `:opts`            | extra options maps for both the decoder and encoder function generator.
+| `:decoder-opts`    | extra options maps for the decoder function generator.
+| `:encoder-opts`    | extra options maps for the encoder function generator.
+| `:matches`         | a regexp for additional matching of the content-type in request negotiation. Added for legacy support, e.g. `#"^application/(.+\+)?json$"`. Results of the regexp are memoized against the given content-type for near constant-time performance.
 
 ## Function generators
 
