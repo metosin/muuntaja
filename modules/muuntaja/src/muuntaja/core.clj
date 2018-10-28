@@ -482,6 +482,8 @@
 
 (defn encode
   "Encode data into the given format. Returns InputStream or throws."
+  ([format data]
+   (encode instance format data))
   ([m format data]
    (encode m format data (default-charset m)))
   ([m format data charset]
@@ -491,6 +493,8 @@
 
 (defn decode
   "Decode data into the given format. Returns InputStream or throws."
+  ([format data]
+   (decode instance format data))
   ([m format data]
    (decode m format data (default-charset m)))
   ([m format data charset]
