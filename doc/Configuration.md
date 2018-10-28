@@ -203,38 +203,6 @@ matching like in `ring-middleware-format`:
 ;; #muuntaja.core.FormatAndCharset{:format "application/json", :charset "utf-8"}
 ```
 
-### Custom encoding
-
-Muuntaja supports custom encoding for Records. To enable this, one has to create a custom Protocol with a 2-arity function of `data charset => byte-stream` and mount it to formatter under `:encode-protocol` with a vector containing the protocol and it's function:
-
-```clj
-;; custom protocol to encode JSON
-(defprotocol EncodeJson
-  ;; the 2-arity callback
-  (encode-json [this charset]))
-
-;; mount it to a formatter
-(def m
-  (muuntaja/create
-    (-> muuntaja/default-options
-        (assoc-in
-          [:formats "application/json" :encode-protocol]
-          [EncodeJson encode-json]))))
-
-;; custom record with hand-crafted JSON:
-(defrecord Hello []
-  EncodeJson
-  (encode-json [_ _]
-    (ByteArrayInputStream.
-      (.getBytes "{\"hello\":\"world\"}"))))
-
-
-(->> (->Hello)
-     (muuntaja/encode m "application/json")
-     (muuntaja/decode m "application/json"))
-; {:hello "world"}
-```
-
 ### Creating a new format
 
 See [[Creating new formats]].
