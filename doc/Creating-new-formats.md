@@ -8,7 +8,6 @@ Format maps can the following optional keys:
 * `:decoder-opts` extra options maps for the decoder function generator.
 * `:encoder-opts` extra options maps for the encoder function generator.
 * `:matches` a regexp for additional matching of the content-type in request negotiation. Added for legacy support, e.g. `#"^application/(.+\+)?json$"`. Results of the regexp are memoized against the given content-type for near constant-time performance.
-* `:encode-protocol` vector tuple of protocol name and function that can be used to encode a data.
 
 ## Function generators
 
