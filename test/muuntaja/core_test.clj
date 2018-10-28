@@ -53,8 +53,12 @@
 
   (testing "encode & decode"
     (let [data {:kikka 42}]
-      (is (= "{\"kikka\":42}" (slurp (m/encode m "application/json" data))))
-      (is (= data (m/decode m "application/json" (m/encode m "application/json" data))))))
+      (testing "with default instance"
+        (is (= "{\"kikka\":42}" (slurp (m/encode "application/json" data))))
+        (is (= data (m/decode "application/json" (m/encode "application/json" data)))))
+      (testing "with muuntaja instance"
+        (is (= "{\"kikka\":42}" (slurp (m/encode m "application/json" data))))
+        (is (= data (m/decode m "application/json" (m/encode m "application/json" data)))))))
 
   (testing "symmetic encode + decode for all formats"
     (let [data {:kikka 42, :childs {:facts [1.2 true {:so "nested"}]}}]

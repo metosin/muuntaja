@@ -72,28 +72,6 @@
   [m] (->> m (options) :formats (map first) (set)))
 
 ;;
-;; encode & decode
-;;
-
-(defn encode
-  "Encode data into the given format. Returns InputStream or throws."
-  ([m format data]
-   (encode m format data (default-charset m)))
-  ([m format data charset]
-   (if-let [encoder (encoder m format)]
-     (encoder data charset)
-     (util/throw! m format "encoder not found for"))))
-
-(defn decode
-  "Decode data into the given format. Returns InputStream or throws."
-  ([m format data]
-   (decode m format data (default-charset m)))
-  ([m format data charset]
-   (if-let [decoder (decoder m format)]
-     (decoder data charset)
-     (util/throw! m format "decoder not found for"))))
-
-;;
 ;; default options
 ;;
 
@@ -497,6 +475,33 @@
 (defmethod print-method ::muuntaja
   [_ ^Writer w]
   (.write w (str "<<Muuntaja>>")))
+
+;;
+;; encode & decode
+;;
+
+(defn encode
+  "Encode data into the given format. Returns InputStream or throws."
+  ([format data]
+   (encode instance format data))
+  ([m format data]
+   (encode m format data (default-charset m)))
+  ([m format data charset]
+   (if-let [encoder (encoder m format)]
+     (encoder data charset)
+     (util/throw! m format "encoder not found for"))))
+
+(defn decode
+  "Decode data into the given format. Returns InputStream or throws."
+  ([format data]
+   (decode instance format data))
+  ([m format data]
+   (decode m format data (default-charset m)))
+  ([m format data charset]
+   (if-let [decoder (decoder m format)]
+     (decoder data charset)
+     (util/throw! m format "decoder not found for"))))
+
 
 ;;
 ;; options
