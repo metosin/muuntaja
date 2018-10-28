@@ -9,8 +9,7 @@ but a complete rewrite ([and up to 30x faster](doc/Performance.md)).
 
 ## Rationale
 
-- both standalone & http (middleware & interceptors)
-- explicit configuration over mutable state (e.g. multimethods)
+- explicit configuration
 - fast with good defaults
 - extendable & pluggable: new formats, behavior
 - typed exceptions - caught elsewhere
