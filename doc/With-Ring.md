@@ -2,7 +2,7 @@
 
 ## Simplest thing that works
 
-Let's create a Ring application that can read and write JSON, EDN and Transit.
+Ring application that can read and write JSON, EDN and Transit:
 
 ```clj
 (require '[muuntaja.middleware :as mw])
@@ -27,7 +27,7 @@ Let's create a Ring application that can read and write JSON, EDN and Transit.
 
 ## With Muuntaja instance
 
-As previous, but with custom Transit options and a standalone Muuntaja.
+Like previous, but with custom Transit options and a standalone Muuntaja:
 
 ```clj
 (require '[cognitect.transit :as transit])
@@ -74,17 +74,17 @@ As previous, but with custom Transit options and a standalone Muuntaja.
 ; {:ping #user.Ping{}}
 ```
 
-## Middleware pipeline
+## Middleware Chain
 
 Muuntaja doesn't catch formatting exceptions itself, but throws them instead. If you want to format those also, you need to split the `wrap-format` into parts.
 
-so this:
+This:
 
 ```clj
 (-> app (mw/wrap-format muuntaja))
 ```
 
-can be written as:
+Can be written as:
 
 ```clj
 (-> app
@@ -95,7 +95,8 @@ can be written as:
     ;; negotiate the request & response formats
     (mw/wrap-format-negotiate muuntaja))
 ```
-Now you can add your own exception-handling mw between the `wrap-format-request` and `wrap-format-response`. It sees the formatting exceptions and it's results are written with the response formatter.
+
+Now you can add your own exception-handling middleware between the `wrap-format-request` and `wrap-format-response`. It can catch the formatting exceptions and it's results are written with the response formatter.
 
 Here's a "complete" stack:
 

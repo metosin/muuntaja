@@ -2,10 +2,7 @@
 
 <img src="https://raw.githubusercontent.com/wiki/metosin/muuntaja/muuntaja-small.png" align="right"/>
 
-Clojure library for fast http format negotiation, encoding and decoding. Standalone library, but
-ships with adapters for ring (async) middleware & Pedestal-style interceptors. Explicit & extendable, supporting
-out-of-the-box [JSON](http://www.json.org/), [EDN](https://github.com/edn-format/edn) and [Transit](https://github.com/cognitect/transit-format) (both JSON & Msgpack).
-Ships with optional adapters for [MessagePack](http://msgpack.org/) and [YAML](http://yaml.org/).
+Clojure library for fast http format negotiation, encoding and decoding. Standalone library, but ships with adapters for ring (async) middleware & Pedestal-style interceptors. Explicit & extendable, supporting out-of-the-box [JSON](http://www.json.org/), [EDN](https://github.com/edn-format/edn) and [Transit](https://github.com/cognitect/transit-format) (both JSON & Msgpack). Ships with optional adapters for [MessagePack](http://msgpack.org/) and [YAML](http://yaml.org/).
 
 Based on [ring-middleware-format](https://github.com/ngrunwald/ring-middleware-format),
 but a complete rewrite ([and up to 30x faster](doc/Performance.md)).
@@ -52,6 +49,28 @@ Muuntaja requires Java 1.8+
 
 ## Quickstart
 
+### Standalone
+
+Use default Muuntaja instance to encode & decode JSON:
+
+```clj
+(require '[muuntaja.core :as m])
+
+(->> {:kikka 42}
+     (m/encode "application/json"))
+; => #object[java.io.ByteArrayInputStream]
+
+(->> {:kikka 42}
+     (m/encode "application/json")
+     slurp)
+; => "{\"kikka\":42}"
+
+(->> {:kikka 42}
+     (m/encode "application/json")
+     (m/decode "application/json"))
+; => {:kikka 42}
+```
+
 ### Ring
 
 ```clj
@@ -75,32 +94,13 @@ Muuntaja requires Java 1.8+
 
 There is a more detailed [Ring guide](doc/With-Ring.md) too. See also [differences](doc/Differences-to-existing-formatters.md) to ring-middleware-format & ring-json if you are migrating from those.
 
-## Interceptors
+### Interceptors
 
 See [`muuntaja.interceptor`](https://github.com/metosin/muuntaja/blob/master/modules/muuntaja/src/muuntaja/interceptor.clj).
 
-## Standalone
+### Configuration
 
-Create a Muuntaja and use it to encode & decode JSON:
-
-```clj
-(require '[muuntaja.core :as m])
-
-;; with defaults
-(def m (m/create))
-
-(->> {:kikka 42}
-     (m/encode m "application/json")
-     slurp)
-; => "{\"kikka\":42}"
-
-(->> {:kikka 42}
-     (m/encode m "application/json")
-     (m/decode m "application/json"))
-; => {:kikka 42}
-```
-
-With custom EDN decoder options:
+Explicit Muuntaja instance with custom EDN decoder options:
 
 ```clj
 (def m
@@ -115,7 +115,7 @@ With custom EDN decoder options:
 ; => {:value 42}
 ```
 
-Defining a encoding function for Transit-json:
+Creating a encoding function for Transit-json:
 
 ```clj
 (def encode-transit-json
@@ -125,15 +125,15 @@ Defining a encoding function for Transit-json:
 ; => "[\"^ \",\"~:kikka\",42]"
 ```
 
-## Encode format
+## Encoded format
 
-By default, encoding writes value into a `java.io.ByteArrayInputStream`. This can be changed with a `:return` option, accepting the following values:
+By default, `encode` writes value into a `java.io.ByteArrayInputStream`. This can be changed with a `:return` option, accepting the following values:
 
-| value            | description                                                                      |
-| -----------------|----------------------------------------------------------------------------------|
-| `:input-stream`  | encodes into `java.io.ByteArrayInputStream` (default)                            |
-| `:bytes`         | encodes into `byte[]`. Faster than Strean, enables NIO for servers supporting it |
-| `:output-stream` | encodes lazily into `java.io.OutputStream` via a callback function               |
+| value            | description
+|------------------|----------------------------------------------------------------------------------
+| `:input-stream`  | encodes into `java.io.ByteArrayInputStream` (default)
+| `:bytes`         | encodes into `byte[]`. Faster than Stream, enables NIO for servers supporting it
+| `:output-stream` | encodes lazily into `java.io.OutputStream` via a callback function
 
 All return types satisfy the following Protocols & Interfaces:
 
@@ -186,18 +186,13 @@ All return types satisfy the following Protocols & Interfaces:
 
 ## HTTP format negotiation
 
-HTTP format negotiation is done via request headers for both request (`content-type`, including the charset)
-and response (`accept` and `accept-charset`). With the default options, a full match on the content-type is
-required, e.g. `application/json`. Adding a `:matches` regexp for formats enables more loose matching.
-See [Configuration docs](doc/Configuration.md#loose-matching-on-content-type) for more info.
+HTTP format negotiation is done using request headers for both request (`content-type`, including the charset) and response (`accept` and `accept-charset`). With the default options, a full match on the content-type is required, e.g. `application/json`. Adding a `:matches` regexp for formats enables more loose matching. See [Configuration docs](doc/Configuration.md#loose-matching-on-content-type) for more info.
 
-Results of the negotiation are published into request & response under namespaced keys for introspection.
-These keys can also be set manually, overriding the content negotiation process.
+Results of the negotiation are published into request & response under namespaced keys for introspection. These keys can also be set manually, overriding the content negotiation process.
 
 ## Exceptions
 
-When something bad happens, an typed exception is thrown. You should handle it elsewhere. Thrown exceptions
-have an `ex-data` with the following `:type` value (plus extra info to generate descriptive erros to clients):
+When something bad happens, an typed exception is thrown. You should handle it elsewhere. Thrown exceptions have an `ex-data` with the following `:type` value (plus extra info to enable generating descriptive erros to clients):
 
 * `:muuntaja/decode`, input can't be decoded with the negotiated `format` & `charset`.
 * `:muuntaja/request-charset-negotiation`, request charset is illegal.
@@ -212,18 +207,16 @@ have an `ex-data` with the following `:type` value (plus extra info to generate 
 be used in the response pipeline.
 * `:muuntaja/response`, client-negotiated response format and charset as `FormatAndCharset` record. Will
 be used in the response pipeline.
-* `:body-params` decoded body is here.
+* `:body-params` contains the decoded body.
 
 ### Response
 
 * `:muuntaja/encode`, if set to truthy value, the response body will be encoded regardles of the type (primitives!)
-* `:muuntaja/content-type`, handlers can use this to override the negotiated content-type for response encoding,
-   e.g. setting it to `application/edn` will cause the response to be formatted in JSON.
+* `:muuntaja/content-type`, handlers can use this to override the negotiated content-type for response encoding, e.g. setting it to `application/edn` will cause the response to be formatted in JSON.
 
+## Options
 
-### Options
-
-#### Default options
+### Default options
 
 ```clj
 {:http {:extract-content-type extract-content-type-ring
@@ -249,19 +242,13 @@ be used in the response pipeline.
 
 <img src="https://raw.githubusercontent.com/wiki/metosin/muuntaja/yklogo.png"/>
 
-YourKit supports open source projects with its full-featured Java Profiler.
-YourKit, LLC is the creator of <a href="https://www.yourkit.com/java/profiler/index.jsp">YourKit Java Profiler</a>
-and <a href="https://www.yourkit.com/.net/profiler/index.jsp">YourKit .NET Profiler</a>,
-innovative and intelligent tools for profiling Java and .NET applications.
+YourKit supports open source projects with its full-featured Java Profiler. YourKit, LLC is the creator of <a href="https://www.yourkit.com/java/profiler/index.jsp">YourKit Java Profiler</a> and <a href="https://www.yourkit.com/.net/profiler/index.jsp">YourKit .NET Profiler</a>, innovative and intelligent tools for profiling Java and .NET applications.
 
 ## License
 
 ### [Picture](https://commons.wikimedia.org/wiki/File:Oudin_coil_Turpain.png)
 
-By Unknown. The drawing is signed "E. Ducretet", indicating that the apparatus was made
-by Eugene Ducretet, a prominent Paris scientific instrument manufacturer and radio researcher.
-The drawing was undoubtedly originally from the Ducretet instrument catalog. [Public domain],
-via Wikimedia Commons.
+By Unknown. The drawing is signed "E. Ducretet", indicating that the apparatus was made by Eugene Ducretet, a prominent Paris scientific instrument manufacturer and radio researcher. The drawing was undoubtedly originally from the Ducretet instrument catalog. [Public domain], via Wikimedia Commons.
 
 ### Original Code (ring-middleware-format)
 
