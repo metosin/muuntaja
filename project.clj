@@ -1,4 +1,4 @@
-(defproject metosin/muuntaja "0.6.1"
+(defproject metosin/muuntaja "0.6.2"
   :description "Clojure library for format encoding, decoding and content-negotiation"
   :url "https://github.com/metosin/muuntaja"
   :license {:name "Eclipse Public License"
@@ -13,7 +13,7 @@
                          [circleci/clj-yaml "0.5.6"]
                          [clojure-msgpack "1.2.1" :exclusions [org.clojure/clojure]]]
   :dependencies []
-  :plugins [[lein-codox "0.10.3"]]
+  :plugins [[lein-codox "0.10.5"]]
   :codox {:src-uri "http://github.com/metosin/muuntaja/blob/master/{filepath}#L{line}"
           :output-path "doc"
           :metadata {:doc/format :markdown}}
@@ -29,7 +29,7 @@
                                   "modules/muuntaja-msgpack/src"]
 
                    :dependencies [[org.clojure/clojure "1.9.0"]
-                                  [ring/ring-core "1.7.0"]
+                                  [ring/ring-core "1.7.1"]
                                   [ring-middleware-format "0.7.2"]
                                   [ring-transit "0.1.6"]
                                   [ring/ring-json "0.4.0"]
@@ -44,7 +44,7 @@
                                   [metosin/sieppari "0.0.0-alpha5"]
 
                                   ;; Pedestal
-                                  [org.clojure/core.async "0.4.474" :exclusions [org.clojure/tools.reader]]
+                                  [org.clojure/core.async "0.4.490" :exclusions [org.clojure/tools.reader]]
                                   [io.pedestal/pedestal.service "0.5.4" :exclusions [org.clojure/tools.reader
                                                                                      org.clojure/core.async
                                                                                      org.clojure/core.memoize]]
