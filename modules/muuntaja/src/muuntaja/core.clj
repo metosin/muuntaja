@@ -153,12 +153,15 @@
       e)))
 
 (defn- fail-on-response-decode [m response]
-  (throw
-    (ex-info
-      (str "Unknown response Content-Type: " (-> response :headers (get "Content-Type")))
-      {:type :muuntaja/decode
-       :default-format (default-format m)
-       :response response})))
+  (let [content-type (-> response :headers (get "Content-Type"))]
+    (throw
+      (ex-info
+        (if content-type
+          (str "Unknown response Content-Type: " content-type)
+          "No Content-Type found")
+        {:type :muuntaja/decode
+         :default-format (default-format m)
+         :response response}))))
 
 (defn- fail-on-request-charset-negotiation [m]
   (throw
@@ -493,13 +496,14 @@
                        (assoc $ :body-params body)
                        $))))
            (-decode-response-body [this response]
-             (if-let [res-fc (-> response :headers (get "Content-Type") -negotiate-content-type)]
-               (if-let [decode (decoder this (.-format res-fc))]
-                 (try
-                   (decode (:body response) (.-charset res-fc))
-                   (catch Exception e
-                     (fail-on-response-decode-exception m e res-fc response)))
-                 (fail-on-response-decode m response))))))))))
+             (or
+               (if-let [res-fc (-> response :headers (get "Content-Type") -negotiate-content-type)]
+                 (if-let [decode (decoder this (.-format res-fc))]
+                   (try
+                     (decode (:body response) (.-charset res-fc))
+                     (catch Exception e
+                       (fail-on-response-decode-exception m e res-fc response)))))
+               (fail-on-response-decode m response)))))))))
 
 (def instance "the default instance" (create))
 

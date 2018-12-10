@@ -99,6 +99,16 @@
                     #"Malformed application/json response"
                     (m/decode-response-body (app {}))))))
 
+          (testing "when no content-type is found"
+            (let [app (middleware/wrap-format
+                        (constantly
+                          {:status 200
+                           :body (m/encode "application/edn" {:kikka 123})}))]
+              (is (thrown-with-msg?
+                    Exception
+                    #"No Content-Type found"
+                    (m/decode-response-body (app {}))))))
+
           (testing "when no decoder is found"
             (let [app (middleware/wrap-format
                         (constantly
