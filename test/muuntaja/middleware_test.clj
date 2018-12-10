@@ -2,7 +2,8 @@
   (:require [clojure.test :refer :all]
             [muuntaja.core :as m]
             [muuntaja.middleware :as middleware]
-            [muuntaja.core]))
+            [muuntaja.core])
+  (:import (java.util Date)))
 
 (defn echo [request]
   {:status 200
@@ -73,6 +74,41 @@
             ;"application/msgpack"
             "application/transit+json"
             "application/transit+msgpack"))
+
+        (testing "auto-decoding response body"
+          (let [data {:kikka (Date. 0)}
+                app (middleware/wrap-format (constantly {:status 200, :body data}))]
+            (are [format]
+              (= data (-> {:headers {"accept" format}} app m/decode-response-body))
+              ;"application/json"
+              "application/edn"
+              ;"application/x-yaml"
+              ;"application/msgpack"
+              "application/transit+json"
+              "application/transit+msgpack")))
+
+        (testing "failing auto-decoding response body"
+          (testing "on decoding exception"
+            (let [app (middleware/wrap-format
+                        (constantly
+                          {:status 200
+                           :body (m/encode "application/edn" {:kikka 123})
+                           :headers {"Content-Type" "application/json"}}))]
+              (is (thrown-with-msg?
+                    Exception
+                    #"Malformed application/json response"
+                    (m/decode-response-body (app {}))))))
+
+          (testing "when no decoder is found"
+            (let [app (middleware/wrap-format
+                        (constantly
+                          {:status 200
+                           :body (m/encode "application/edn" {:kikka 123})
+                           :headers {"Content-Type" "application/json2"}}))]
+              (is (thrown-with-msg?
+                    Exception
+                    #"Unknown response Content-Type: application/json2"
+                    (m/decode-response-body (app {})))))))
 
         (testing "content-type & accept"
           (let [call (fn [content-type accept]

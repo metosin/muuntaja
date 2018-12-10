@@ -1,6 +1,15 @@
 ## UNRELEASED
 
 * don't run tests anymore with Clojure 1.7.0
+* new helper `m/decode-response-body` to return response body, decoded based on response `Content-Type` header. Throws if the body can't be parsed.
+
+```clj
+(-> {:headers {"accept" "application/edn"}}
+    ((middleware/wrap-format
+       (constantly {:status 200, :body {:date (Date. 0)}})))
+    (m/decode-response-body))
+; {:date #inst"1970-01-01T00:00:00.000-00:00"}
+```
 
 ## 0.6.2 (9.12.2018)
 
