@@ -419,13 +419,6 @@
                                           (decode (:body request) (.-charset req-fc))
                                           (catch Exception e
                                             (fail-on-request-decode-exception m e req-fc res-fc request))))))
-             --decode-response-body (fn [m response ^FormatAndCharset res-fc]
-                                      (if-let [decode (decoder m (if res-fc (.-format res-fc)))]
-                                        (try
-                                          (decode (:body response) (.-charset res-fc))
-                                          (catch Exception e
-                                            (fail-on-response-decode-exception m e res-fc response)))
-                                        (fail-on-response-decode m response)))
              -encode-response? (fn [request response]
                                  (and (or (not (contains? (:headers response) "Content-Type"))
                                           (:muuntaja/encode response))
@@ -500,8 +493,13 @@
                        (assoc $ :body-params body)
                        $))))
            (-decode-response-body [this response]
-             (if-let [ct (-> response :headers (get "Content-Type") -negotiate-content-type)]
-               (--decode-response-body this response ct)))))))))
+             (if-let [res-fc (-> response :headers (get "Content-Type") -negotiate-content-type)]
+               (if-let [decode (decoder this (.-format res-fc))]
+                 (try
+                   (decode (:body response) (.-charset res-fc))
+                   (catch Exception e
+                     (fail-on-response-decode-exception m e res-fc response)))
+                 (fail-on-response-decode m response))))))))))
 
 (def instance "the default instance" (create))
 
