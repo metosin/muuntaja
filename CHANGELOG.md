@@ -1,3 +1,7 @@
+## UNRELEASED
+
+* don't run tests anymore with Clojure 1.7.0
+
 ## 0.6.2 (9.12.2018)
 
 * Added 2-arity to `encode` & `decode`, using the default instance, fixes [#86](https://github.com/metosin/muuntaja/issues/86), thanks to [valerauko](https://github.com/valerauko).

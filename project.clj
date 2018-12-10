@@ -5,7 +5,6 @@
             :url "http://www.eclipse.org/legal/epl-v20.html"}
   :javac-options ["-Xlint:unchecked" "-target" "1.7" "-source" "1.7"]
   :java-source-paths ["src/java"]
-  :source-paths ["modules/muuntaja/src"]
   :managed-dependencies [[metosin/muuntaja "0.6.2"]
                          [metosin/jsonista "0.2.2"]
                          [com.cognitect/transit-clj "0.8.313"]
@@ -52,9 +51,8 @@
                                   [org.slf4j/slf4j-log4j12 "1.7.25"]
 
                                   [criterium "0.4.4"]]}
-             :1.7 {:dependencies [[org.clojure/clojure "1.7.0"]]}
              :1.8 {:dependencies [[org.clojure/clojure "1.8.0"]]}
-             :1.10 {:dependencies [[org.clojure/clojure "1.10.0-alpha5"]]}
+             :1.10 {:dependencies [[org.clojure/clojure "1.10.0-RC4"]]}
              :perf {:jvm-opts ^:replace ["-server"
                                          "-Xmx4096m"
                                          "-Dclojure.compiler.direct-linking=true"]}
@@ -63,6 +61,6 @@
                                             "-XX:+PrintCompilation"
                                             "-XX:+UnlockDiagnosticVMOptions"
                                             "-XX:+PrintInlining"]}}
-  :aliases {"all" ["with-profile" "dev:dev,1.7:dev,1.8:dev,1.10"]
+  :aliases {"all" ["with-profile" "dev:dev,1.8:dev,1.10"]
             "perf" ["with-profile" "default,dev,perf"]
             "analyze" ["with-profile" "default,dev,analyze"]})
