@@ -1,6 +1,5 @@
 ## UNRELEASED
 
-* don't run tests anymore with Clojure 1.7.0
 * new helper `m/decode-response-body` to return response body, decoded based on response `Content-Type` header. Throws if the body can't be parsed.
 
 ```clj

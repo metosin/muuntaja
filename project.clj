@@ -51,6 +51,7 @@
                                   [org.slf4j/slf4j-log4j12 "1.7.25"]
 
                                   [criterium "0.4.4"]]}
+             :1.7 {:dependencies [[org.clojure/clojure "1.7.0"]]}
              :1.8 {:dependencies [[org.clojure/clojure "1.8.0"]]}
              :1.10 {:dependencies [[org.clojure/clojure "1.10.0-RC4"]]}
              :perf {:jvm-opts ^:replace ["-server"
@@ -61,6 +62,6 @@
                                             "-XX:+PrintCompilation"
                                             "-XX:+UnlockDiagnosticVMOptions"
                                             "-XX:+PrintInlining"]}}
-  :aliases {"all" ["with-profile" "dev:dev,1.8:dev,1.10"]
+  :aliases {"all" ["with-profile" "dev:dev,1.7:dev,1.8"]
             "perf" ["with-profile" "default,dev,perf"]
             "analyze" ["with-profile" "default,dev,analyze"]})
