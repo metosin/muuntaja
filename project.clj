@@ -12,6 +12,7 @@
                          [circleci/clj-yaml "0.5.6"]
                          [clojure-msgpack "1.2.1" :exclusions [org.clojure/clojure]]]
   :dependencies []
+  :source-paths ["modules/muuntaja/src"]
   :plugins [[lein-codox "0.10.5"]]
   :codox {:src-uri "http://github.com/metosin/muuntaja/blob/master/{filepath}#L{line}"
           :output-path "doc"
@@ -22,8 +23,7 @@
   :profiles {:dev {:jvm-opts ^:replace ["-server"]
 
                    ;; all module sources for development
-                   :source-paths ["modules/muuntaja/src"
-                                  "modules/muuntaja-cheshire/src"
+                   :source-paths ["modules/muuntaja-cheshire/src"
                                   "modules/muuntaja-yaml/src"
                                   "modules/muuntaja-msgpack/src"]
 
