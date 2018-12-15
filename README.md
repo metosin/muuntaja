@@ -107,7 +107,9 @@ There is a more detailed [Ring guide](doc/With-Ring.md) too. See also [differenc
 
 ### Interceptors
 
-See [`muuntaja.interceptor`](https://github.com/metosin/muuntaja/blob/master/modules/muuntaja/src/muuntaja/interceptor.clj).
+Muuntaja support [Sieppari](https://github.com/metosin/sieppari) -style interceptors too. See [`muuntaja.interceptor`](https://github.com/metosin/muuntaja/blob/master/modules/muuntaja/src/muuntaja/interceptor.clj) for details.
+
+Interceptors can be used with [Pedestal](http://pedestal.io/) too, all but the `exception-interceptor` which conforms to the simplified exception handling model of Sieppari.
 
 ### Configuration
 
