@@ -25,6 +25,7 @@
   (negotiate-request-response [this request])
   (format-request [this request])
   (format-response [this request response])
+  (^:private -decode-response-body [this response])
 
   (negotiate-and-format-request [this request]))
 
@@ -136,6 +137,31 @@
        :charset (:charset request-format-and-charset)
        :request request}
       e)))
+
+(defn- fail-on-response-decode-exception [m
+                                          ^Exception e
+                                          ^FormatAndCharset response-format-and-charset
+                                          response]
+  (throw
+    (ex-info
+      (str "Malformed " (:format response-format-and-charset) " response.")
+      {:type :muuntaja/decode
+       :default-format (default-format m)
+       :format (:format response-format-and-charset)
+       :charset (:charset response-format-and-charset)
+       :response response}
+      e)))
+
+(defn- fail-on-response-decode [m response]
+  (let [content-type (-> response :headers (get "Content-Type"))]
+    (throw
+      (ex-info
+        (if content-type
+          (str "Unknown response Content-Type: " content-type)
+          "No Content-Type found")
+        {:type :muuntaja/decode
+         :default-format (default-format m)
+         :response response}))))
 
 (defn- fail-on-request-charset-negotiation [m]
   (throw
@@ -468,7 +494,16 @@
                      (assoc $ :muuntaja/response res-fc)
                      (if (not (nil? body))
                        (assoc $ :body-params body)
-                       $))))))))))
+                       $))))
+           (-decode-response-body [this response]
+             (or
+               (if-let [res-fc (-> response :headers (get "Content-Type") -negotiate-content-type)]
+                 (if-let [decode (decoder this (:format res-fc))]
+                   (try
+                     (decode (:body response) (:charset res-fc))
+                     (catch Exception e
+                       (fail-on-response-decode-exception m e res-fc response)))))
+               (fail-on-response-decode m response)))))))))
 
 (def instance "the default instance" (create))
 
@@ -492,7 +527,7 @@
      (util/throw! m format "encoder not found for"))))
 
 (defn decode
-  "Decode data into the given format. Returns InputStream or throws."
+  "Decode data into the given format. Returns Clojure Data or throws."
   ([format data]
    (decode instance format data))
   ([m format data]
@@ -502,6 +537,13 @@
      (decoder data charset)
      (util/throw! m format "decoder not found for"))))
 
+(defn decode-response-body
+  "Decode response :body using the format defined by \"Content-Type\" header.
+  Returns Clojure Data or throws."
+  ([response]
+   (-decode-response-body instance response))
+  ([m response]
+   (-decode-response-body m response)))
 
 ;;
 ;; options
