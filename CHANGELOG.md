@@ -1,6 +1,6 @@
-## UNRELEASED
+## 0.6.3 (15.12.2018)
 
-* new helper `m/decode-response-body` to return response body, decoded based on response `Content-Type` header. Throws if the body can't be parsed.
+* new helper `m/decode-response-body` to return response body, decoded based on response `Content-Type` header. Throws if the body can't be decoded.
 
 ```clj
 (-> {:headers {"accept" "application/edn"}}
