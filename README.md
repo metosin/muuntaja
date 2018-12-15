@@ -72,6 +72,8 @@ Use default Muuntaja instance to encode & decode JSON:
 
 ### Ring
 
+Automatic decoding of request body and response body encoding based on `Content-Type`, `Accept` and `Accept-Charset` headers:
+
 ```clj
 (require '[muuntaja.middleware :as middleware])
 
@@ -82,16 +84,26 @@ Use default Muuntaja instance to encode & decode JSON:
 ; with defaults
 (def app (middleware/wrap-format echo))
 
-(app {:headers
-      {"content-type" "application/edn"
-       "accept" "application/json"}
-      :body "{:kikka 42}"})
+(def request
+  {:headers
+   {"content-type" "application/edn"
+    "accept" "application/transit+json"}
+   :body "{:kikka 42}"})
+   
+(app request)
 ; {:status 200,
 ;  :body #object[java.io.ByteArrayInputStream]
-;  :headers {"Content-Type" "application/json; charset=utf-8"}}
+;  :headers {"Content-Type" "application/transit+json; charset=utf-8"}}
 ```
 
-There is a more detailed [Ring guide](doc/With-Ring.md) too. See also [differences](doc/Differences-to-existing-formatters.md) to ring-middleware-format & ring-json if you are migrating from those.
+Automatic decoding of response body based on `Content-Type` header:
+
+```clj
+(-> request app m/decode-response-body)
+; {:kikka 42}    
+```
+
+There is a more detailed [Ring guide](doc/With-Ring.md) too. See also [differences](doc/Differences-to-existing-formatters.md) to ring-middleware-format & ring-json.
 
 ### Interceptors
 
@@ -114,7 +126,7 @@ Explicit Muuntaja instance with custom EDN decoder options:
 ; => {:value 42}
 ```
 
-Creating a encoding function for Transit-json:
+Returning a function to encode transit-json:
 
 ```clj
 (def encode-transit-json
@@ -124,7 +136,7 @@ Creating a encoding function for Transit-json:
 ; => "[\"^ \",\"~:kikka\",42]"
 ```
 
-## Encoded format
+## Encoding format
 
 By default, `encode` writes value into a `java.io.ByteArrayInputStream`. This can be changed with a `:return` option, accepting the following values:
 
