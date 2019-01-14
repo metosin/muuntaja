@@ -2,14 +2,14 @@
   (:refer-clojure :exclude [format])
   (:require [clj-yaml.core :as yaml]
             [muuntaja.format.core :as core])
-  (:import (java.io OutputStream)))
+  (:import (java.io OutputStream InputStream)))
 
 (defn decoder [{:keys [unsafe mark keywords] :or {keywords true}}]
   (reify
     core/Decode
     (decode [_ data _]
       ;; Call SnakeYAML .load directly because clj-yaml only provides String version
-      (yaml/decode (.load (yaml/make-yaml :unsafe unsafe :mark mark) data) keywords))))
+      (yaml/decode (.load (yaml/make-yaml :unsafe unsafe :mark mark) ^InputStream data) keywords))))
 
 (defn encoder [options]
   (let [options-args (mapcat identity options)]
