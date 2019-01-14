@@ -8,20 +8,22 @@
   (let [options-args (mapcat identity options)]
     (reify
       core/Decode
-      (decode [_ data _]
-        (apply yaml/parse-string (slurp data) options-args)))))
+      (decode [_ data charset]
+        (apply yaml/parse-string (slurp data :encoding charset) options-args)))))
 
 (defn encoder [options]
   (let [options-args (mapcat identity options)]
     (reify
       core/EncodeToBytes
-      (encode-to-bytes [_ data _]
+      (encode-to-bytes [_ data charset]
         (.getBytes
-          ^String (apply yaml/generate-string data options-args)))
+          ^String (apply yaml/generate-string data options-args)
+          ^String charset))
       core/EncodeToOutputStream
-      (encode-to-output-stream [_ data _]
+      (encode-to-output-stream [_ data charset]
         (fn [^OutputStream output-stream]
-          (.write output-stream (.getBytes ^String (apply yaml/generate-string data options-args))))))))
+          (.write output-stream (.getBytes ^String (apply yaml/generate-string data options-args)
+                                           ^String charset)))))))
 
 (def format
   (core/map->Format
