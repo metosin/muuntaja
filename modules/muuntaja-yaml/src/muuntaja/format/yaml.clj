@@ -9,7 +9,7 @@
     (reify
       core/Decode
       (decode [_ data _]
-        (apply yaml/parse-string data options-args)))))
+        (apply yaml/parse-string (slurp data) options-args)))))
 
 (defn encoder [options]
   (let [options-args (mapcat identity options)]
