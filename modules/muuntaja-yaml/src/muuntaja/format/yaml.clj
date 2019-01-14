@@ -2,7 +2,8 @@
   (:refer-clojure :exclude [format])
   (:require [clj-yaml.core :as yaml]
             [muuntaja.format.core :as core])
-  (:import (java.io OutputStream InputStream)))
+  (:import (java.io OutputStream OutputStreamWriter InputStream)
+           (org.yaml.snakeyaml Yaml)))
 
 (defn decoder [{:keys [unsafe mark keywords] :or {keywords true}}]
   (reify
@@ -21,7 +22,8 @@
       core/EncodeToOutputStream
       (encode-to-output-stream [_ data _]
         (fn [^OutputStream output-stream]
-          (.write output-stream (.getBytes ^String (apply yaml/generate-string data options-args))))))))
+          (.dump ^Yaml (apply yaml/make-yaml options-args) (yaml/encode data) (OutputStreamWriter. output-stream))
+          (.flush output-stream))))))
 
 (def format
   (core/map->Format

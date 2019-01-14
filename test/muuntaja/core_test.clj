@@ -304,3 +304,22 @@
       (is (= expected (m/slurp expected))))
     (testing "nil"
       (is (= nil (m/slurp nil))))))
+
+(deftest encode-to-byte-stream-test
+  (testing "symmetic encode + decode for all formats"
+    (let [m (m/create
+              (-> m/default-options
+                  (assoc :return :output-stream)
+                  (m/install msgpack-format/format)
+                  (m/install yaml-format/format)
+                  (m/install cheshire-format/format "application/json+cheshire")))]
+      (let [data {:kikka 42, :childs {:facts [1.2 true {:so "nested"}]}}]
+        (are [format]
+             (= data (m/decode m format (m/encode m format data)))
+             "application/json"
+             "application/json+cheshire"
+             "application/edn"
+             "application/x-yaml"
+             "application/msgpack"
+             "application/transit+json"
+             "application/transit+msgpack")))))
