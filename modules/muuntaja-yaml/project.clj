@@ -7,4 +7,4 @@
   :parent-project {:path "../../project.clj"
                    :inherit [:deploy-repositories :managed-dependencies]}
   :dependencies [[metosin/muuntaja]
-                 [circleci/clj-yaml]])
+                 [clj-commons/clj-yaml]])
