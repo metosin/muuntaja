@@ -122,22 +122,20 @@
   (testing "non-binary-formats encoding with charsets"
     (let [data {:fée "böz"}
           iso-encoded #(slurp (m/encode m % data "ISO-8859-1"))]
-      (testing "application/json"
+      (testing "application/json & application/edn use the given charset"
         (is (= "{\"f�e\":\"b�z\"}" (iso-encoded "application/json")))
-        (is (= "{\"f�e\":\"b�z\"}" (iso-encoded "application/json+cheshire"))))
-
-      (testing "application/edn"
+        (is (= "{\"f�e\":\"b�z\"}" (iso-encoded "application/json+cheshire")))
         (is (= "{:f�e \"b�z\"}" (iso-encoded "application/edn"))))
 
-      (testing "application/x-yaml"
-        (is (= "{f�e: b�z}\n" (iso-encoded "application/x-yaml"))))
-
-      (testing "application/transit+json uses the platform charset"
+      (testing "application/x-yaml & application/transit+json use the platform charset"
         (testing "utf-8"
+          (is (= "{fée: böz}\n" (iso-encoded "application/x-yaml")))
           (is (= "[\"^ \",\"~:fée\",\"böz\"]" (iso-encoded "application/transit+json"))))
         (testing "when default charset is ISO-8859-1"
           (with-default-charset
             "ISO-8859-1"
+            (testing "application/x-yaml works"
+              (is (= "{f�e: b�z}\n" (iso-encoded "application/x-yaml"))))
             (testing "application/transit IS BROKEN"
               (is (not= "[\"^ \",\"~:f�e\",\"b�z\"]" (iso-encoded "application/transit+json")))))))))
 

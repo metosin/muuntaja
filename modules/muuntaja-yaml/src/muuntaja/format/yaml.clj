@@ -4,26 +4,24 @@
             [muuntaja.format.core :as core])
   (:import (java.io OutputStream)))
 
-(defn decoder [options]
-  (let [options-args (mapcat identity options)]
-    (reify
-      core/Decode
-      (decode [_ data charset]
-        (apply yaml/parse-string (slurp data :encoding charset) options-args)))))
+(defn decoder [{:keys [unsafe mark keywords] :or {keywords true}}]
+  (reify
+    core/Decode
+    (decode [_ data _]
+      ;; Call SnakeYAML .load directly because clj-yaml only provides String version
+      (yaml/decode (.load (yaml/make-yaml :unsafe unsafe :mark mark) data) keywords))))
 
 (defn encoder [options]
   (let [options-args (mapcat identity options)]
     (reify
       core/EncodeToBytes
-      (encode-to-bytes [_ data charset]
+      (encode-to-bytes [_ data _]
         (.getBytes
-          ^String (apply yaml/generate-string data options-args)
-          ^String charset))
+          ^String (apply yaml/generate-string data options-args)))
       core/EncodeToOutputStream
-      (encode-to-output-stream [_ data charset]
+      (encode-to-output-stream [_ data _]
         (fn [^OutputStream output-stream]
-          (.write output-stream (.getBytes ^String (apply yaml/generate-string data options-args)
-                                           ^String charset)))))))
+          (.write output-stream (.getBytes ^String (apply yaml/generate-string data options-args))))))))
 
 (def format
   (core/map->Format
