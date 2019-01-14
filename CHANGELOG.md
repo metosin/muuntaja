@@ -1,4 +1,12 @@
-## 0.6.3 (15.12.2018)
+## Unreleased
+
+**[compare](https://github.com/metosin/muuntaja/compare/0.6.3...master)**
+
+* Update clj-yaml to new clj-commons fork, for Java 11 support
+
+## 0.6.3 (2018-12-15)
+
+**[compare](https://github.com/metosin/muuntaja/compare/0.6.2...0.6.3)**
 
 * new helper `m/decode-response-body` to return response body, decoded based on response `Content-Type` header. Throws if the body can't be decoded.
 
@@ -10,7 +18,9 @@
 ; {:date #inst"1970-01-01T00:00:00.000-00:00"}
 ```
 
-## 0.6.2 (9.12.2018)
+## 0.6.2 (2018-12-09)
+
+**[compare](https://github.com/metosin/muuntaja/compare/0.6.1...0.6.2)**
 
 * Added 2-arity to `encode` & `decode`, using the default instance, fixes [#86](https://github.com/metosin/muuntaja/issues/86), thanks to [valerauko](https://github.com/valerauko).
 
@@ -23,7 +33,9 @@
 ; => {:lonely "planet"}
 ```
 
-## 0.6.1 (22.9.2018)
+## 0.6.1 (2018-09-22)
+
+**[compare](https://github.com/metosin/muuntaja/compare/0.6.0...0.6.1)**
 
 ### `muuntaja`
 
@@ -41,7 +53,9 @@
 [cheshire "5.8.1"] is available but we use "5.8.0"
 ```
 
-## 0.6.0 (3.9.2018)
+## 0.6.0 (2019-09-03)
+
+**[compare](https://github.com/metosin/muuntaja/compare/0.5.0...0.6.0)**
 
 * all the changes in the 0.6.0 alphas
 

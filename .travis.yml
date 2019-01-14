@@ -7,6 +7,7 @@ script:
   - lein do clean, all test #, all check
 jdk:
   - oraclejdk8
+  - openjdk11
 cache:
   directories:
   - $HOME/.m2
