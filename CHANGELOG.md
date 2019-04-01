@@ -1,6 +1,6 @@
-## Unreleased
+## 0.6.4 (2019-04-01)
 
-**[compare](https://github.com/metosin/muuntaja/compare/0.6.3...master)**
+**[compare](https://github.com/metosin/muuntaja/compare/0.6.3...0.6.4)**
 
 * Update clj-yaml to new clj-commons fork, for Java 11 support
 
