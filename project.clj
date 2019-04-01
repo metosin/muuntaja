@@ -29,7 +29,7 @@
 
                    :dependencies [[org.clojure/clojure "1.9.0"]
                                   [ring/ring-core "1.7.1"]
-                                  [ring-middleware-format "0.7.2"]
+                                  [ring-middleware-format "0.7.3"]
                                   [ring-transit "0.1.6"]
                                   [ring/ring-json "0.4.0"]
 
