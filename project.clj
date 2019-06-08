@@ -6,7 +6,7 @@
   :javac-options ["-Xlint:unchecked" "-target" "1.7" "-source" "1.7"]
   :java-source-paths ["src/java"]
   :managed-dependencies [[metosin/muuntaja "0.6.4"]
-                         [metosin/jsonista "0.2.2"]
+                         [metosin/jsonista "0.2.3"]
                          [com.cognitect/transit-clj "0.8.313"]
                          [cheshire "5.8.1"]
                          [clj-commons/clj-yaml "0.7.0"]
@@ -27,7 +27,7 @@
                                   "modules/muuntaja-yaml/src"
                                   "modules/muuntaja-msgpack/src"]
 
-                   :dependencies [[org.clojure/clojure "1.10.0"]
+                   :dependencies [[org.clojure/clojure "1.10.1"]
                                   [ring/ring-core "1.7.1"]
                                   [ring-middleware-format "0.7.4"]
                                   [ring-transit "0.1.6"]
@@ -50,7 +50,7 @@
                                   [javax.servlet/javax.servlet-api "4.0.1"]
                                   [org.slf4j/slf4j-log4j12 "1.7.26"]
 
-                                  [criterium "0.4.4"]]}
+                                  [criterium "0.4.5"]]}
              :1.7 {:dependencies [[org.clojure/clojure "1.7.0"]]}
              :1.8 {:dependencies [[org.clojure/clojure "1.8.0"]]}
              :1.9 {:dependencies [[org.clojure/clojure "1.9.0"]]}

@@ -1,3 +1,13 @@
+## Unreleased
+
+**[compare](https://github.com/metosin/muuntaja/compare/0.6.4...master)**
+
+* Update deps:
+
+```clj
+[metosin/jsonista "0.2.3"] is available but we use "0.2.2"
+```
+
 ## 0.6.4 (2019-04-01)
 
 **[compare](https://github.com/metosin/muuntaja/compare/0.6.3...0.6.4)**
