@@ -234,15 +234,26 @@
             (fail-on-request-charset-negotiation m))
           content-type-raw)))))
 
+(def ^:private token #"[\p{Alnum}\x60\x21\x23\x24\x25\x26\x27\x2a\x2b\x2d\x2e\x7c\x5e\x7e\x5f]+")
+
+(defn- -accepts-pred [accepts]
+  (apply some-fn
+         (keep
+          (fn [accept]
+            (when (.indexOf accept "*")
+              (fn [input] (re-matches (re-pattern (str/replace accept "*" (str token))) input))))
+          accepts)))
+
 (defn- -negotiate-accept [m parse s]
   (let [produces (encodes m)
         default-format (default-format m)
         accepts (parse s)]
     (or
-      (and (not accepts) default-format)
-      (util/some-value produces accepts)
-      default-format
-      (fail-on-response-format-negotiation m))))
+     (and (not accepts) default-format)
+     (util/some-value produces accepts)
+     (some (-accepts-pred accepts) produces)
+     default-format
+     (fail-on-response-format-negotiation m))))
 
 (defn- -negotiate-accept-charset [m s]
   (let [charsets (charsets m)

@@ -1,11 +1,11 @@
-(defproject metosin/muuntaja "0.6.4"
+(defproject juxt/muuntaja "0.6.4"
   :description "Clojure library for format encoding, decoding and content-negotiation"
-  :url "https://github.com/metosin/muuntaja"
+  :url "https://github.com/juxt/muuntaja"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v20.html"}
   :javac-options ["-Xlint:unchecked" "-target" "1.7" "-source" "1.7"]
   :java-source-paths ["src/java"]
-  :managed-dependencies [[metosin/muuntaja "0.6.4"]
+  :managed-dependencies [[json/muuntaja "0.6.4"]
                          [metosin/jsonista "0.2.3"]
                          [com.cognitect/transit-clj "0.8.313"]
                          [cheshire "5.8.1"]
@@ -34,7 +34,7 @@
                                   [ring/ring-json "0.4.0"]
 
                                   ;; modules
-                                  [metosin/muuntaja "0.6.4"]
+                                  [juxt/muuntaja "0.6.4"]
                                   [metosin/muuntaja-cheshire "0.6.4"]
                                   [metosin/muuntaja-msgpack "0.6.4"]
                                   [metosin/muuntaja-yaml "0.6.4"]
