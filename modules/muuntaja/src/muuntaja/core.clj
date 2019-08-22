@@ -251,7 +251,7 @@
     (or
      (and (not accepts) default-format)
      (util/some-value produces accepts)
-     (some (-accepts-pred accepts) produces)
+     (when-not (empty? accepts) (some (-accepts-pred accepts) produces))
      default-format
      (fail-on-response-format-negotiation m))))
 
