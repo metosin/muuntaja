@@ -134,7 +134,7 @@
                 "application/jsonz"
                 "applicationz/+json"))))))
 
-    (testing "testing wildcards (name/*) & (*/*) successfully negotiate"
+    (testing "wildcards (name/*) & (*/*) successfully negotiate"
       (let [interceptors [(interceptor/format-interceptor
                             (dissoc m/default-options :default-format))
                           echo]
