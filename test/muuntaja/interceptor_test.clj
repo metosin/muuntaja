@@ -134,6 +134,16 @@
                 "application/jsonz"
                 "applicationz/+json"))))))
 
+    (testing "testing wildcards (name/*) & (*/*) successfully negotiate"
+      (let [interceptors [(interceptor/format-interceptor
+                            (dissoc m/default-options :default-format))
+                          echo]
+            response (-> (execute interceptors (->request "application/json" "application/*" nil json-string)) :body slurp)
+            response' (-> (execute interceptors (->request "application/json" "*/*" nil json-string)) :body slurp)]
+
+        (is (= json-string response))
+        (is (= json-string response'))))
+
     (testing "without :default-format & valid accept format, response format negotiation fails"
       (let [interceptors [(interceptor/format-interceptor
                             (dissoc m/default-options :default-format))
@@ -145,7 +155,6 @@
             (is (= (-> e ex-data :type) :muuntaja/response-format-negotiation))))))
 
     (testing "without :default-charset"
-
       (testing "without valid request charset, request charset negotiation fails"
         (let [interceptors [(interceptor/format-interceptor
                               (dissoc m/default-options :default-charset))
@@ -177,24 +186,24 @@
               response (execute interceptors request)]
           (is (= "{:kikka 42}" (-> response :body slurp)))
           (is (not (contains? response :muuntaja/content-type)))
-          (is (= "application/edn; charset=utf-8" (get-in response [:headers "Content-Type"]))))))
+          (is (= "application/edn; charset=utf-8" (get-in response [:headers "Content-Type"])))))))
 
-    (testing "different bodies"
-      (let [m (m/create (assoc-in m/default-options [:http :encode-response-body?] (constantly true)))
-            interceptors [(interceptor/format-interceptor m) echo]
-            edn-request #(->request "application/edn" "application/edn" nil (pr-str %))
-            e2e #(m/decode m "application/edn" (:body (execute interceptors (edn-request %))))]
-        (are [primitive]
+  (testing "different bodies"
+    (let [m (m/create (assoc-in m/default-options [:http :encode-response-body?] (constantly true)))
+          interceptors [(interceptor/format-interceptor m) echo]
+          edn-request #(->request "application/edn" "application/edn" nil (pr-str %))
+          e2e #(m/decode m "application/edn" (:body (execute interceptors (edn-request %))))]
+      (are [primitive]
           (is (= primitive (e2e primitive)))
 
-          [:a 1]
-          {:a 1}
-          "kikka"
-          :kikka
-          true
-          false
-          nil
-          1)))))
+        [:a 1]
+        {:a 1}
+        "kikka"
+        :kikka
+        true
+        false
+        nil
+        1))))
 
 (deftest params-interceptor-test
   (let [interceptors [(interceptor/params-interceptor) identity]]
