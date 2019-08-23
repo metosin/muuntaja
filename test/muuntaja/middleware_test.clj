@@ -176,11 +176,11 @@
 
     (testing "wildcards (name/*) & (*/*) successfully negotiate"
       (let [app (middleware/wrap-format echo (dissoc m/default-options :default-format))
-            response  (->request "application/json" "application/*" nil json-string)
-            response' (->request "application/json" "*/*" nil json-string)]
+            response  (app  (->request "application/json" "application/*" nil json-string))
+            response' (app (->request "application/json" "*/*" nil json-string))]
 
-        (is (= json-string (:body response)))
-        (is (= json-string (:body response')))))
+        (is (= json-string (slurp (:body response))))
+        (is (= json-string (slurp (:body response'))))))
 
     (testing "without :default-format & valid accept format, response format negotiation fails"
       (let [app (middleware/wrap-format echo (dissoc m/default-options :default-format))]
