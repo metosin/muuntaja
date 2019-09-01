@@ -6,7 +6,7 @@ install:
 script:
   - lein do clean, all test #, all check
 jdk:
-  - oraclejdk8
+  - openjdk8
   - openjdk11
 cache:
   directories:
