@@ -1,19 +1,19 @@
-(defproject metosin/muuntaja "0.6.4"
+(defproject metosin/muuntaja "0.6.5"
   :description "Clojure library for format encoding, decoding and content-negotiation"
   :url "https://github.com/metosin/muuntaja"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v20.html"}
   :javac-options ["-Xlint:unchecked" "-target" "1.7" "-source" "1.7"]
   :java-source-paths ["src/java"]
-  :managed-dependencies [[metosin/muuntaja "0.6.4"]
-                         [metosin/jsonista "0.2.3"]
-                         [com.cognitect/transit-clj "0.8.313"]
-                         [cheshire "5.8.1"]
+  :managed-dependencies [[metosin/muuntaja "0.6.5"]
+                         [metosin/jsonista "0.2.5"]
+                         [com.cognitect/transit-clj "0.8.319"]
+                         [cheshire "5.9.0"]
                          [clj-commons/clj-yaml "0.7.0"]
                          [clojure-msgpack "1.2.1" :exclusions [org.clojure/clojure]]]
   :dependencies []
   :source-paths ["modules/muuntaja/src"]
-  :plugins [[lein-codox "0.10.6"]]
+  :plugins [[lein-codox "0.10.7"]]
   :codox {:src-uri "http://github.com/metosin/muuntaja/blob/master/{filepath}#L{line}"
           :output-path "doc"
           :metadata {:doc/format :markdown}}
@@ -31,24 +31,27 @@
                                   [ring/ring-core "1.7.1"]
                                   [ring-middleware-format "0.7.4"]
                                   [ring-transit "0.1.6"]
-                                  [ring/ring-json "0.4.0"]
+                                  [ring/ring-json "0.5.0"]
 
                                   ;; modules
-                                  [metosin/muuntaja "0.6.4"]
-                                  [metosin/muuntaja-cheshire "0.6.4"]
-                                  [metosin/muuntaja-msgpack "0.6.4"]
-                                  [metosin/muuntaja-yaml "0.6.4"]
+                                  [metosin/muuntaja "0.6.5"]
+                                  [metosin/muuntaja-cheshire "0.6.5"]
+                                  [metosin/muuntaja-msgpack "0.6.5"]
+                                  [metosin/muuntaja-yaml "0.6.5"]
+
+                                  ;; correct jackson
+                                  [com.fasterxml.jackson.core/jackson-databind "2.10.0"]
 
                                   ;; Sieppari
                                   [metosin/sieppari "0.0.0-alpha5"]
 
                                   ;; Pedestal
-                                  [org.clojure/core.async "0.4.490" :exclusions [org.clojure/tools.reader]]
-                                  [io.pedestal/pedestal.service "0.5.5" :exclusions [org.clojure/tools.reader
+                                  [org.clojure/core.async "0.4.500" :exclusions [org.clojure/tools.reader]]
+                                  [io.pedestal/pedestal.service "0.5.7" :exclusions [org.clojure/tools.reader
                                                                                      org.clojure/core.async
                                                                                      org.clojure/core.memoize]]
                                   [javax.servlet/javax.servlet-api "4.0.1"]
-                                  [org.slf4j/slf4j-log4j12 "1.7.26"]
+                                  [org.slf4j/slf4j-log4j12 "1.7.28"]
 
                                   [criterium "0.4.5"]]}
              :1.7 {:dependencies [[org.clojure/clojure "1.7.0"]]}
