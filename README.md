@@ -128,6 +128,22 @@ Explicit Muuntaja instance with custom EDN decoder options:
 ; => {:value 42}
 ```
 
+Explicit Muuntaja instance with custom date formatter:
+
+```clj
+(def m
+  (m/create
+    (assoc-in
+      m/default-options
+      [:formats "application/json" :encoder-opts]
+      {:date-format "yyyy-MM-dd"})))
+
+(->> {:value (java.util.Date.)}
+     (m/encode m "application/json")
+     slurp)
+; => "{\"value\":\"2019-10-15\"}"
+```
+
 Returning a function to encode transit-json:
 
 ```clj
