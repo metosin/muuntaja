@@ -64,7 +64,7 @@
 [cheshire "5.8.1"] is available but we use "5.8.0"
 ```
 
-## 0.6.0 (2019-09-03)
+## 0.6.0 (2018-09-03)
 
 **[compare](https://github.com/metosin/muuntaja/compare/0.5.0...0.6.0)**
 
