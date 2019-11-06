@@ -70,7 +70,7 @@
      (fn
        ([request]
         (let [req (m/negotiate-and-format-request m request)]
-          (->> (handler req) (m/format-response m req))))
+          (some->> (handler req) (m/format-response m req))))
        ([request respond raise]
         (let [req (m/negotiate-and-format-request m request)]
           (handler req #(respond (m/format-response m req %)) raise)))))))
@@ -129,6 +129,6 @@
    (let [m (m/create prototype)]
      (fn
        ([request]
-        (->> (handler request) (m/format-response m request)))
+        (some->> (handler request) (m/format-response m request)))
        ([request respond raise]
         (handler request #(respond (m/format-response m request %)) raise))))))
