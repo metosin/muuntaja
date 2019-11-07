@@ -1,11 +1,11 @@
-(defproject metosin/muuntaja "0.6.5"
+(defproject metosin/muuntaja "0.6.6"
   :description "Clojure library for format encoding, decoding and content-negotiation"
   :url "https://github.com/metosin/muuntaja"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v20.html"}
   :javac-options ["-Xlint:unchecked" "-target" "1.7" "-source" "1.7"]
   :java-source-paths ["src/java"]
-  :managed-dependencies [[metosin/muuntaja "0.6.5"]
+  :managed-dependencies [[metosin/muuntaja "0.6.6"]
                          [metosin/jsonista "0.2.5"]
                          [com.cognitect/transit-clj "0.8.319"]
                          [cheshire "5.9.0"]
@@ -34,10 +34,10 @@
                                   [ring/ring-json "0.5.0"]
 
                                   ;; modules
-                                  [metosin/muuntaja "0.6.5"]
-                                  [metosin/muuntaja-cheshire "0.6.5"]
-                                  [metosin/muuntaja-msgpack "0.6.5"]
-                                  [metosin/muuntaja-yaml "0.6.5"]
+                                  [metosin/muuntaja "0.6.6"]
+                                  [metosin/muuntaja-cheshire "0.6.6"]
+                                  [metosin/muuntaja-msgpack "0.6.6"]
+                                  [metosin/muuntaja-yaml "0.6.6"]
 
                                   ;; correct jackson
                                   [com.fasterxml.jackson.core/jackson-databind "2.10.0"]
@@ -51,7 +51,7 @@
                                                                                      org.clojure/core.async
                                                                                      org.clojure/core.memoize]]
                                   [javax.servlet/javax.servlet-api "4.0.1"]
-                                  [org.slf4j/slf4j-log4j12 "1.7.28"]
+                                  [org.slf4j/slf4j-log4j12 "1.7.29"]
 
                                   [criterium "0.4.5"]]}
              :1.7 {:dependencies [[org.clojure/clojure "1.7.0"]]}

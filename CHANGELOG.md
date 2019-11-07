@@ -1,3 +1,9 @@
+## 0.6.6 (2019-11-07)
+
+**[compare](https://github.com/metosin/muuntaja/compare/0.6.5...master)**
+
+* Fix handler chaining when `nil` is returned from handler.
+
 ## 0.6.5 (2019-10-07)
 
 **[compare](https://github.com/metosin/muuntaja/compare/0.6.4...master)**
