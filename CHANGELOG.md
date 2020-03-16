@@ -1,12 +1,17 @@
+## unreleased
+**[compare](https://github.com/metosin/muuntaja/compare/0.6.6...master)**
+
+* Fix case insensitive header comparison: In http-1.1, headers are to be compared case insensitive, and in http-2, headers are to be lower-cased before encoding. Thus, retrieving "Content-Type" in a case-sensitive fashion is likely to fail.
+
 ## 0.6.6 (2019-11-07)
 
-**[compare](https://github.com/metosin/muuntaja/compare/0.6.5...master)**
+**[compare](https://github.com/metosin/muuntaja/compare/0.6.5...0.6.6)**
 
 * Fix handler chaining when `nil` is returned from handler.
 
 ## 0.6.5 (2019-10-07)
 
-**[compare](https://github.com/metosin/muuntaja/compare/0.6.4...master)**
+**[compare](https://github.com/metosin/muuntaja/compare/0.6.4...0.6.5)**
 
 * Update deps:
 
