@@ -76,22 +76,39 @@
 ;; default options
 ;;
 
+(defn header
+  "Extract a specific header from a request or response map.
+  This has to be done in a case-insensitive manner for http-1.1.
+  With http-2 header names need to be lower-cased before encoding."
+  [^String header-name request-or-response]
+  (some (fn [[n v]]
+          (when (.equalsIgnoreCase header-name n)
+            v))
+        (:headers request-or-response)))
+
+(defn header?
+  "Returns true iff a specific header is present in the request or
+  response map."
+  [^String header-name request-or-response]
+  (some #(.equalsIgnoreCase header-name %)
+        (keys (:headers request-or-response))))
+
 (defn extract-content-type-ring
   "Extracts content-type from ring-request."
   [request]
   (or
     (:content-type request)
-    (get (:headers request) "content-type")))
+    (header "content-type" request)))
 
 (defn extract-accept-ring
   "Extracts accept from ring-request."
   [request]
-  (get (:headers request) "accept"))
+  (header "accept" request))
 
 (defn extract-accept-charset-ring
   "Extracts accept-charset from ring-request."
   [request]
-  (get (:headers request) "accept-charset"))
+  (header "accept-charset" request))
 
 (defn encode-collections [_ response]
   (-> response :body coll?))
@@ -101,23 +118,23 @@
   (into #{} (map str/lower-case (.keySet (Charset/availableCharsets)))))
 
 (def default-options
-  {:http {:extract-content-type extract-content-type-ring
-          :extract-accept-charset extract-accept-charset-ring
-          :extract-accept extract-accept-ring
-          :decode-request-body? (constantly true)
-          :encode-response-body? encode-collections}
+  {:http               {:extract-content-type   extract-content-type-ring
+                        :extract-accept-charset extract-accept-charset-ring
+                        :extract-accept         extract-accept-ring
+                        :decode-request-body?   (constantly true)
+                        :encode-response-body?  encode-collections}
 
    :allow-empty-input? true
-   :return :input-stream ;; :bytes :output-stream
+   :return             :input-stream                        ;; :bytes :output-stream
 
-   :default-charset "utf-8"
-   :charsets available-charsets
+   :default-charset    "utf-8"
+   :charsets           available-charsets
 
-   :default-format "application/json"
-   :formats {"application/json" json-format/format
-             "application/edn" edn-format/format
-             "application/transit+json" transit-format/json-format
-             "application/transit+msgpack" transit-format/msgpack-format}})
+   :default-format     "application/json"
+   :formats            {"application/json"            json-format/format
+                        "application/edn"             edn-format/format
+                        "application/transit+json"    transit-format/json-format
+                        "application/transit+msgpack" transit-format/msgpack-format}})
 
 ;;
 ;; HTTP stuff
@@ -131,11 +148,11 @@
   (throw
     (ex-info
       (str "Malformed " (:format request-format-and-charset) " request.")
-      {:type :muuntaja/decode
+      {:type           :muuntaja/decode
        :default-format (default-format m)
-       :format (:format request-format-and-charset)
-       :charset (:charset request-format-and-charset)
-       :request request}
+       :format         (:format request-format-and-charset)
+       :charset        (:charset request-format-and-charset)
+       :request        request}
       e)))
 
 (defn- fail-on-response-decode-exception [m
@@ -145,43 +162,43 @@
   (throw
     (ex-info
       (str "Malformed " (:format response-format-and-charset) " response.")
-      {:type :muuntaja/decode
+      {:type           :muuntaja/decode
        :default-format (default-format m)
-       :format (:format response-format-and-charset)
-       :charset (:charset response-format-and-charset)
-       :response response}
+       :format         (:format response-format-and-charset)
+       :charset        (:charset response-format-and-charset)
+       :response       response}
       e)))
 
 (defn- fail-on-response-decode [m response]
-  (let [content-type (-> response :headers (get "Content-Type"))]
+  (let [content-type (header "Content-Type" response)]
     (throw
       (ex-info
         (if content-type
           (str "Unknown response Content-Type: " content-type)
           "No Content-Type found")
-        {:type :muuntaja/decode
+        {:type           :muuntaja/decode
          :default-format (default-format m)
-         :response response}))))
+         :response       response}))))
 
 (defn- fail-on-request-charset-negotiation [m]
   (throw
     (ex-info
       "Can't negotiate on request charset"
-      {:type :muuntaja/request-charset-negotiation
+      {:type     :muuntaja/request-charset-negotiation
        :charsets (charsets m)})))
 
 (defn- fail-on-response-charset-negotiation [m]
   (throw
     (ex-info
       "Can't negotiate on response charset"
-      {:type :muuntaja/response-charset-negotiation
+      {:type     :muuntaja/response-charset-negotiation
        :charsets (charsets m)})))
 
 (defn- fail-on-response-format-negotiation [m]
   (throw
     (ex-info
       "Can't negotiate on response format"
-      {:type :muuntaja/response-format-negotiation
+      {:type    :muuntaja/response-format-negotiation
        :formats (encodes m)})))
 
 (defn- set-content-type [response content-type]
@@ -283,7 +300,7 @@
       (throw
         (ex-info
           (str "Malformed " format " in " type "")
-          {:type type
+          {:type   type
            :format format}
           e)))))
 
@@ -302,10 +319,10 @@
                       (ex-info
                         (str "Invalid format " (pr-str format) " for type " type ". "
                              "It should satisfy " (pr-str (:on protocol)))
-                        {:format format
-                         :type type
-                         :spec spec
-                         :coder coder
+                        {:format   format
+                         :type     type
+                         :spec     spec
+                         :coder    coder
                          :protocol protocol}))))]
 
     {key
@@ -361,7 +378,7 @@
              (throw
                (ex-info
                  (str "invalid format: " format)
-                 {:format format
+                 {:format  format
                   :formats (keys formats)}))
              [format (map->Adapter
                        (merge
@@ -391,7 +408,7 @@
          (throw
            (ex-info
              (str "Invalid default format " default-format)
-             {:formats valid-format?
+             {:formats        valid-format?
               :default-format default-format})))
        (let [m (reify Muuntaja
                  (adapters [_] adapters)
@@ -423,7 +440,7 @@
                                           (catch Exception e
                                             (fail-on-request-decode-exception m e req-fc res-fc request))))))
              -encode-response? (fn [request response]
-                                 (and (or (not (contains? (:headers response) "Content-Type"))
+                                 (and (or (not (header? "Content-Type" response))
                                           (:muuntaja/encode response))
                                       (encode-response-body? request response)))
              -resolve-response-charset (fn [_ request]
@@ -441,7 +458,7 @@
                                 (as-> response $
                                       (dissoc $ :muuntaja/content-type)
                                       (update $ :body encoder charset)
-                                      (if-not (get (:headers $) "Content-Type")
+                                      (if-not (header "Content-Type" $)
                                         (set-content-type $ (content-type format charset))
                                         $)))]
          ^{:type ::muuntaja}
@@ -497,7 +514,7 @@
                        $))))
            (-decode-response-body [this response]
              (or
-               (if-let [res-fc (-> response :headers (get "Content-Type") -negotiate-content-type)]
+               (if-let [res-fc (->> response (header "Content-Type") -negotiate-content-type)]
                  (if-let [decode (decoder this (:format res-fc))]
                    (try
                      (decode (:body response) (:charset res-fc))
@@ -559,8 +576,8 @@
       (throw
         (ex-info
           (str "invalid formats: " diff)
-          {:invalid (seq diff)
-           :formats (seq formats)
+          {:invalid  (seq diff)
+           :formats  (seq formats)
            :existing (seq existing-formats)})))
     (-> options
         (update :formats select-keys formats)
