@@ -1,4 +1,4 @@
-(defproject metosin/muuntaja-cheshire "0.6.6"
+(defproject metosin/muuntaja-cheshire "0.0.0" ;; use lein v
   :description "Cheshire/JSON format for Muuntaja"
   :url "https://github.com/metosin/muuntaja"
   :license {:name "Eclipse Public License"
@@ -6,8 +6,12 @@
   :scm {:name "git"
         :url "https://github.com/metosin/muuntaja"
         :dir "../.."}
-  :plugins [[lein-parent "0.3.2"]]
+  :plugins [[lein-parent "0.3.2"]
+            [com.roomkey/lein-v "7.0.0"]]
+  :middleware [leiningen.v/version-from-scm
+               leiningen.v/dependency-version-from-scm
+               leiningen.v/add-workspace-data]
   :parent-project {:path "../../project.clj"
-                   :inherit [:deploy-repositories :managed-dependencies]}
+                   :inherit [:deploy-repositories]}
   :dependencies [[metosin/muuntaja]
-                 [cheshire]])
+                 [cheshire "5.9.0"]])

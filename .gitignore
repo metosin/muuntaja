@@ -8,3 +8,5 @@ pom.xml*
 .lein-repl-history
 .nrepl-port
 \#*\#
+pom.properties
+leiningen.core.classpath.extract-native-dependencies
