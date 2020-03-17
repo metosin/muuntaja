@@ -1,4 +1,4 @@
-(defproject metosin/muuntaja "0.0.0"
+(defproject metosin/muuntaja-parent "0.0.0"
   :description "Clojure library for format encoding, decoding and content-negotiation"
   :url "https://github.com/metosin/muuntaja"
   :license {:name "Eclipse Public License"
@@ -52,7 +52,10 @@
                                       [javax.servlet/javax.servlet-api "4.0.1"]
                                       [org.slf4j/slf4j-log4j12 "1.7.29"]
 
-                                      [criterium "0.4.5"]]}
+                                      [criterium "0.4.5"]
+
+                                      [metosin/jsonista "0.2.5"]
+                                      ]}
              :1.7     {:dependencies [[org.clojure/clojure "1.7.0"]]}
              :1.8     {:dependencies [[org.clojure/clojure "1.8.0"]]}
              :1.9     {:dependencies [[org.clojure/clojure "1.9.0"]]}

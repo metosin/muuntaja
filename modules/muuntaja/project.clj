@@ -13,5 +13,6 @@
                leiningen.v/add-workspace-data]
   :parent-project {:path "../../project.clj"
                    :inherit [:deploy-repositories]}
-  :dependencies [[metosin/jsonista "0.2.5"]
+  :dependencies [[org.clojure/clojure "1.10.1"]
+                 [metosin/jsonista "0.2.5"]
                  [com.cognitect/transit-clj "0.8.319"]])
