@@ -26,6 +26,8 @@
   (format-request [this request])
   (format-response [this request response])
   (^:private -decode-response-body [this response])
+  (^:private -encode-request-body [this request])
+
 
   (negotiate-and-format-request [this request]))
 
@@ -169,6 +171,20 @@
        :response       response}
       e)))
 
+(defn- fail-on-request-encode-exception [m
+                                         ^Exception e
+                                         ^FormatAndCharset request-format-and-charset
+                                         request]
+  (throw
+    (ex-info
+      (str "Malformed " (:format request-format-and-charset) " request.")
+      {:type           :muuntaja/decode
+       :default-format (default-format m)
+       :format         (:format request-format-and-charset)
+       :charset        (:charset request-format-and-charset)
+       :request        request}
+      e)))
+
 (defn- fail-on-response-decode [m response]
   (let [content-type (header "Content-Type" response)]
     (throw
@@ -179,6 +195,17 @@
         {:type           :muuntaja/decode
          :default-format (default-format m)
          :response       response}))))
+
+(defn- fail-on-request-encode [m request]
+  (let [content-type (header "Content-Type" request)]
+    (throw
+      (ex-info
+        (if content-type
+          (str "Unknown request Content-Type: " content-type)
+          "No Content-Type found")
+        {:type           :muuntaja/decode
+         :default-format (default-format m)
+         :request       request}))))
 
 (defn- fail-on-request-charset-negotiation [m]
   (throw
@@ -238,6 +265,29 @@
         (->FormatAndCharset
           (if content-type-raw
             (or (consumes content-type-raw)
+                (some
+                  (fn [[name r]]
+                    (if (and r (re-find r content-type-raw)) name))
+                  matchers)))
+          (or
+            ;; if a provided charset was valid
+            (and charset-raw charsets (charsets charset-raw) charset-raw)
+            ;; only set default if none were set
+            (and (not charset-raw) default-charset)
+            ;; negotiation failed
+            (fail-on-request-charset-negotiation m))
+          content-type-raw)))))
+
+(defn- -negotiate-content-type-to-encode [m s]
+  (let [produces (encodes m)
+        matchers (matchers m)
+        default-charset (default-charset m)
+        charsets (charsets m)]
+    (if s
+      (let [[content-type-raw charset-raw] (parse/parse-content-type s)]
+        (->FormatAndCharset
+          (if content-type-raw
+            (or (produces content-type-raw)
                 (some
                   (fn [[name r]]
                     (if (and r (re-find r content-type-raw)) name))
@@ -429,6 +479,7 @@
              -parse-accept (parse/fast-memoize 1000 parse/parse-accept)
              -negotiate-accept (parse/fast-memoize 1000 (partial -negotiate-accept m -parse-accept))
              -negotiate-content-type (parse/fast-memoize 1000 (partial -negotiate-content-type m))
+             -negotiate-content-type-to-encode (parse/fast-memoize 1000 (partial -negotiate-content-type-to-encode m))
              -decode-request-body? (fn [request]
                                      (and (not (:body-params request))
                                           (decode-request-body? request)))
@@ -522,7 +573,19 @@
                        (fail-on-response-decode-exception m e res-fc response)))
                    (fail-on-response-decode m response))
                  (fail-on-response-decode m response))
-               ))))))))
+               ))
+           (-encode-request-body [this request]
+             (or
+               (if-let [res-fc (->> request (header "Content-Type") -negotiate-content-type-to-encode)]
+                 (if-let [encode (encoder this (:format res-fc))]
+                   (try
+                     (encode (:body request) (:charset res-fc))
+                     (catch Exception e
+                       (fail-on-request-encode-exception m e res-fc request)))
+                   (fail-on-request-encode m request))
+                 (fail-on-request-encode m request))
+               ))
+           ))))))
 
 (def instance "the default instance" (create))
 
@@ -544,6 +607,14 @@
    (if-let [encoder (encoder m format)]
      (encoder data charset)
      (util/throw! m format "encoder not found for"))))
+
+(defn encode-request-body
+  "Decode response :body using the format defined by \"Content-Type\" header.
+  Returns Clojure Data or throws."
+  ([request]
+   (-encode-request-body instance request))
+  ([m request]
+   (-encode-request-body m request)))
 
 (defn decode
   "Decode data into the given format. Returns Clojure Data or throws."
