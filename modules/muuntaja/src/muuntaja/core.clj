@@ -565,7 +565,8 @@
                        $))))
            (-decode-response-body [this response]
              (or
-               (if-let [res-fc (->> response (header "Content-Type") -negotiate-content-type)]
+               (if-let [res-fc (-negotiate-content-type (or (header "Content-Type" response)
+                                                            default-format))]
                  (if-let [decode (decoder this (:format res-fc))]
                    (try
                      (decode (:body response) (:charset res-fc))
@@ -576,7 +577,8 @@
                ))
            (-encode-request-body [this request]
              (or
-               (if-let [res-fc (->> request (header "Content-Type") -negotiate-content-type-to-encode)]
+               (if-let [res-fc (-negotiate-content-type-to-encode  (or (header "Content-Type" request)
+                                                                       default-format))]
                  (if-let [encode (encoder this (:format res-fc))]
                    (try
                      (encode (:body request) (:charset res-fc))
