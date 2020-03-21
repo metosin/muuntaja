@@ -9,5 +9,6 @@
   :plugins [[lein-parent "0.3.2"]]
   :parent-project {:path "../../project.clj"
                    :inherit [:deploy-repositories :managed-dependencies]}
-  :dependencies [[metosin/jsonista]
+  :dependencies [[ring/ring-codec]
+                 [metosin/jsonista]
                  [com.cognitect/transit-clj]])

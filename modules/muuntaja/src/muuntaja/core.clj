@@ -6,6 +6,7 @@
             [muuntaja.protocols :as protocols]
             [muuntaja.format.core :as core]
             [muuntaja.format.json :as json-format]
+            [muuntaja.format.form :as form-format]
             [muuntaja.format.edn :as edn-format]
             [muuntaja.format.transit :as transit-format]
             [clojure.set :as set])
@@ -116,6 +117,7 @@
    :default-format "application/json"
    :formats {"application/json" json-format/format
              "application/edn" edn-format/format
+             "application/x-www-form-urlencoded" form-format/format
              "application/transit+json" transit-format/json-format
              "application/transit+msgpack" transit-format/msgpack-format}})
 
