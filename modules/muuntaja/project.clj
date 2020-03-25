@@ -8,7 +8,9 @@
         :dir "../.."}
   :plugins [[lein-parent "0.3.2"]]
   :parent-project {:path "../../project.clj"
-                   :inherit [:deploy-repositories :managed-dependencies]}
-  :dependencies [[ring/ring-codec]
-                 [metosin/jsonista]
+                   :inherit [:deploy-repositories
+                             :managed-dependencies
+                             :profiles [:dev]]}
+  :dependencies [[metosin/jsonista]
+                 [ring/ring-codec]
                  [com.cognitect/transit-clj]])
