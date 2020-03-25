@@ -88,7 +88,7 @@
             v))
         (:headers request-or-response)))
 
-(defn header?
+(defn header-exists?
   "Returns true iff a specific header is present in the request or
   response map."
   [^String header-name request-or-response]
@@ -491,7 +491,7 @@
                                           (catch Exception e
                                             (fail-on-request-decode-exception m e req-fc res-fc request))))))
              -encode-response? (fn [request response]
-                                 (and (or (not (header? "Content-Type" response))
+                                 (and (or (not (header-exists? "Content-Type" response))
                                           (:muuntaja/encode response))
                                       (encode-response-body? request response)))
              -resolve-response-charset (fn [_ request]
