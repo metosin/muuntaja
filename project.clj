@@ -6,6 +6,7 @@
   :javac-options ["-Xlint:unchecked" "-target" "1.7" "-source" "1.7"]
   :java-source-paths ["src/java"]
   :managed-dependencies [[metosin/muuntaja "0.6.6"]
+                         [ring/ring-codec "1.1.2"]
                          [metosin/jsonista "0.2.5"]
                          [com.cognitect/transit-clj "0.8.319"]
                          [cheshire "5.9.0"]

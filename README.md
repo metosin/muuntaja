@@ -18,7 +18,7 @@ but a complete rewrite ([and up to 30x faster](doc/Performance.md)).
 
 ## Modules
 
-* `metosin/muuntaja` - the core abstractions + [Jsonista JSON](https://github.com/metosin/jsonista), EDN and Transit formats
+* `metosin/muuntaja` - the core abstractions + [Jsonista JSON](https://github.com/metosin/jsonista), `application/x-www-form-urlencoded`, EDN and Transit formats
 * `metosin/muuntaja-cheshire` - optional [Cheshire JSON](https://github.com/dakrone/cheshire) format
 * `metosin/muuntaja-msgpack` - Messagepack format
 * `metosin/muuntaja-yaml` - YAML format

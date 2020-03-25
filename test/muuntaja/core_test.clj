@@ -268,6 +268,19 @@
                   [:formats "application/jsonz" :decoder-opts]
                   {:keywords? false})))))))
 
+(deftest form-data
+  (testing "basic form encoding"
+    (let [data {:kikka 42, :childs ['not "so" "nested"]}
+          format "application/x-www-form-urlencoded"]
+      (is (= "kikka=42&childs=not&childs=so&childs=nested"
+             (slurp (m/encode m format data))))))
+
+  (testing "basic form decoding"
+    (let [data "kikka=42&childs=not&childs=so&childs=nested=but+messed+up"
+          format "application/x-www-form-urlencoded"]
+      (is (= {"kikka" "42", "childs" ["not" "so" "nested=but messed up"]}
+             (m/decode m format data))))))
+
 (deftest cheshire-json-options
   (testing "pre 0.6.0 options fail at creation time"
     (testing ":bigdecimals?"

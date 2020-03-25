@@ -12,4 +12,5 @@
                              :managed-dependencies
                              :profiles [:dev]]}
   :dependencies [[metosin/jsonista]
+                 [ring/ring-codec]
                  [com.cognitect/transit-clj]])
