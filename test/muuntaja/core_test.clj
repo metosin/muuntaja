@@ -275,11 +275,26 @@
       (is (= "kikka=42&childs=not&childs=so&childs=nested"
              (slurp (m/encode m format data))))))
 
+  (testing "basic form encoding with string keywords"
+    (let [data {"kikka" 42, "childs" ['not "so" "nested"]}
+          format "application/x-www-form-urlencoded"]
+      (is (= "kikka=42&childs=not&childs=so&childs=nested"
+             (slurp (m/encode m format data))))))
+
   (testing "basic form decoding"
     (let [data "kikka=42&childs=not&childs=so&childs=nested=but+messed+up"
           format "application/x-www-form-urlencoded"]
+      (is (= {:kikka "42", :childs ["not" "so" "nested=but messed up"]}
+             (m/decode m format data)))))
+
+  (testing "form decoding with different decode-key-fn"
+    (let [data "kikka=42&childs=not&childs=so&childs=nested=but+messed+up"
+          format "application/x-www-form-urlencoded"]
       (is (= {"kikka" "42", "childs" ["not" "so" "nested=but messed up"]}
-             (m/decode m format data))))))
+             (-> m/default-options
+                 (assoc-in [:formats "application/x-www-form-urlencoded" :decoder-opts :decode-key-fn] identity)
+                 m/create
+                 (m/decode format data)))))))
 
 (deftest cheshire-json-options
   (testing "pre 0.6.0 options fail at creation time"
