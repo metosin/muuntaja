@@ -1,5 +1,5 @@
-(defproject metosin/muuntaja "0.6.6"
-  :description "Clojure library for format encoding, decoding and content-negotiation"
+(defproject metosin/muuntaja-form "0.6.6"
+  :description "application/x-www-form-urlencoded format for Muuntaja"
   :url "https://github.com/metosin/muuntaja"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
@@ -11,5 +11,5 @@
                    :inherit [:deploy-repositories
                              :managed-dependencies
                              :profiles [:dev]]}
-  :dependencies [[metosin/jsonista]
-                 [com.cognitect/transit-clj]])
+  :dependencies [[metosin/muuntaja]
+                 [ring/ring-codec]])

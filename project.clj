@@ -29,6 +29,7 @@
 
                    ;; all module sources for development
                    :source-paths ["modules/muuntaja-cheshire/src"
+                                  "modules/muuntaja-form/src"
                                   "modules/muuntaja-yaml/src"
                                   "modules/muuntaja-msgpack/src"]
 
@@ -40,6 +41,7 @@
 
                                   ;; modules
                                   [metosin/muuntaja "0.6.6"]
+                                  [metosin/muuntaja-form "0.6.6"]
                                   [metosin/muuntaja-cheshire "0.6.6"]
                                   [metosin/muuntaja-msgpack "0.6.6"]
                                   [metosin/muuntaja-yaml "0.6.6"]
