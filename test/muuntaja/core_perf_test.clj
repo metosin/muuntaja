@@ -12,11 +12,7 @@
             [io.pedestal.http]
             [io.pedestal.http.body-params]
             [io.pedestal.http.content-negotiation]
-            [jsonista.core :as j]
             [muuntaja.format.cheshire :as cheshire-format]
-            [muuntaja.format.json :as json-format]
-            [muuntaja.format.transit :as transit-format]
-            [muuntaja.format.transit :as transit]
             [ring.core.protocols :as protocols]
             [clojure.java.io :as io])
   (:import (java.io InputStreamReader ByteArrayOutputStream ByteArrayInputStream File)))

@@ -343,11 +343,11 @@
                   (m/install cheshire-format/format "application/json+cheshire")))]
       (let [data {:kikka 42, :childs {:facts [1.2 true {:so "nested"}]}}]
         (are [format]
-             (= data (m/decode m format (m/encode m format data)))
-             "application/json"
-             "application/json+cheshire"
-             "application/edn"
-             "application/x-yaml"
-             "application/msgpack"
-             "application/transit+json"
-             "application/transit+msgpack")))))
+          (= data (m/decode m format (m/encode m format data)))
+          "application/json"
+          "application/json+cheshire"
+          "application/edn"
+          "application/x-yaml"
+          "application/msgpack"
+          "application/transit+json"
+          "application/transit+msgpack")))))

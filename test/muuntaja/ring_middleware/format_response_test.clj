@@ -98,7 +98,7 @@
                          (assoc-in
                            [:formats "application/json" :encoder-opts]
                            {:encode-key-fn (comp str/upper-case name)}))))
-                req)]
+               req)]
     (is (= "{\"FOO-BAR\":\"bar\"}"
            (slurp (:body resp2))))))
 
