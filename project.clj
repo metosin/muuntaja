@@ -11,7 +11,8 @@
                          [com.cognitect/transit-clj "0.8.319"]
                          [cheshire "5.9.0"]
                          [clj-commons/clj-yaml "0.7.0"]
-                         [clojure-msgpack "1.2.1" :exclusions [org.clojure/clojure]]]
+                         [clojure-msgpack "1.2.1" :exclusions [org.clojure/clojure]]
+                         [org.clojure/data.xml "0.2.0-alpha6"]]
   :dependencies []
   :source-paths ["modules/muuntaja/src"]
   :plugins [[lein-codox "0.10.7"]]
@@ -26,7 +27,8 @@
                    ;; all module sources for development
                    :source-paths ["modules/muuntaja-cheshire/src"
                                   "modules/muuntaja-yaml/src"
-                                  "modules/muuntaja-msgpack/src"]
+                                  "modules/muuntaja-msgpack/src"
+                                  "modules/muuntaja-xml/src"]
 
                    :dependencies [[org.clojure/clojure "1.10.1"]
                                   [ring/ring-core "1.7.1"]
@@ -39,6 +41,7 @@
                                   [metosin/muuntaja-cheshire "0.6.6"]
                                   [metosin/muuntaja-msgpack "0.6.6"]
                                   [metosin/muuntaja-yaml "0.6.6"]
+                                  [metosin/muuntaja-xml "0.6.6"]
 
                                   ;; correct jackson
                                   [com.fasterxml.jackson.core/jackson-databind "2.10.0"]

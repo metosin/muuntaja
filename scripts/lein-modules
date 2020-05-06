@@ -7,6 +7,7 @@ for ext in \
   muuntaja \
   muuntaja-cheshire \
   muuntaja-msgpack \
-  muuntaja-yaml; do
+  muuntaja-yaml \
+  muuntaja-xml; do
   cd modules/$ext; lein "$@"; cd ../..;
 done
