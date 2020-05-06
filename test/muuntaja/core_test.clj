@@ -3,6 +3,7 @@
             [muuntaja.core :as m]
             [clojure.string :as str]
             [muuntaja.format.core :as core]
+            [muuntaja.format.form :as form-format]
             [muuntaja.format.cheshire :as cheshire-format]
             [muuntaja.format.msgpack :as msgpack-format]
             [muuntaja.format.yaml :as yaml-format]
@@ -33,6 +34,7 @@
 (def m
   (m/create
     (-> m/default-options
+        (m/install form-format/format)
         (m/install msgpack-format/format)
         (m/install yaml-format/format)
         (m/install cheshire-format/format "application/json+cheshire"))))
@@ -40,6 +42,26 @@
 (deftest core-test
   (testing "muuntaja?"
     (is (m/muuntaja? m)))
+
+  (testing "default encodes & decodes"
+    (is (= #{"application/edn"
+             "application/json"
+             "application/transit+json"
+             "application/transit+msgpack"}
+           (m/encodes m/instance)
+           (m/decodes m/instance))))
+
+  (testing "custom encodes & decodes"
+    (is (= #{"application/edn"
+             "application/json"
+             "application/json+cheshire"
+             "application/msgpack"
+             "application/transit+json"
+             "application/transit+msgpack"
+             "application/x-www-form-urlencoded"
+             "application/x-yaml"}
+           (m/encodes m)
+           (m/decodes m))))
 
   (testing "encode & decode"
     (let [data {:kikka 42}]
@@ -291,9 +313,9 @@
     (let [data "kikka=42&childs=not&childs=so&childs=nested=but+messed+up"
           format "application/x-www-form-urlencoded"]
       (is (= {"kikka" "42", "childs" ["not" "so" "nested=but messed up"]}
-             (-> m/default-options
+             (-> (m/options m)
                  (assoc-in [:formats "application/x-www-form-urlencoded" :decoder-opts :decode-key-fn] identity)
-                 m/create
+                 (m/create)
                  (m/decode format data)))))))
 
 (deftest cheshire-json-options
@@ -338,6 +360,7 @@
     (let [m (m/create
               (-> m/default-options
                   (assoc :return :output-stream)
+                  (m/install form-format/format)
                   (m/install msgpack-format/format)
                   (m/install yaml-format/format)
                   (m/install cheshire-format/format "application/json+cheshire")))]

@@ -1,3 +1,22 @@
+## 0.6.7 
+
+* new module `muuntaja-form` to handle `application/x-www-form-urlencoded` using [ring-codec](https://github.com/ring-clojure/ring-codec) by [Mathieu Lirzin](https://github.com/metosin/muuntaja/pull/110)
+
+* Update deps:
+
+```clj
+[metosin/jsonista "0.2.6"] is available but we use "0.2.5"
+[com.cognitect/transit-clj "1.0.324"] is available but we use "0.8.319"
+```
+
+* Update optional deps:
+
+```clj
+[ring/ring-codec "1.1.2"]
+[cheshire "5.10.0"] is available but we use "5.9.0"
+[clj-commons/clj-yaml "0.7.1"] is available but we use "0.7.0"
+```
+
 ## 0.6.6 (2019-11-07)
 
 **[compare](https://github.com/metosin/muuntaja/compare/0.6.5...master)**
