@@ -4,6 +4,8 @@
             [muuntaja.core :as m]
             [muuntaja.middleware :as middleware]
             [muuntaja.format.yaml :as yaml-format]
+            [muuntaja.format.xml :as xml-format]
+            [clojure.data.xml :as data.xml]
             [clj-yaml.core :as yaml])
   (:import [java.io ByteArrayInputStream]))
 
@@ -38,6 +40,17 @@
         (-> m/default-options
             (m/install yaml-format/format)
             (m/select-formats ["application/x-yaml"])))))
+
+(def api-echo-xml
+  (-> (fn [req]
+        {:status 200
+         :params (:params req)
+         :body (:body-params req)})
+      (middleware/wrap-params)
+      (middleware/wrap-format
+       (-> m/default-options
+           (m/install xml-format/format)
+           (m/select-formats ["application/xml"])))))
 
 (deftest test-api-round-trip
   (let [ok-accept "application/edn"
@@ -77,4 +90,11 @@
                           "content-type" ok-accept}
                 :body (stream (yaml/generate-string msg))}
         r-trip (api-echo-yaml ok-req)]
-    (is (= (:params r-trip) {:test "ok"}))))
+    (is (= (:params r-trip) {:test "ok"})))
+  (let [ok-accept "application/xml"
+        msg #xml/element {:tag "test" :content [#xml/element {:tag "ok"}]}
+        ok-req {:headers {"accept" ok-accept
+                          "content-type" ok-accept}
+                :body (stream (data.xml/emit-str msg))}
+        r-trip (api-echo-xml ok-req)]
+    (is (= (:params r-trip) (data.xml/element :test {} (data.xml/element :ok))))))
