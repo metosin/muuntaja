@@ -5,6 +5,7 @@ set -e
 # Modules
 for ext in \
   muuntaja \
+  muuntaja-form \
   muuntaja-cheshire \
   muuntaja-msgpack \
   muuntaja-yaml; do

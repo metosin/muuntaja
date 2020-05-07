@@ -20,6 +20,7 @@ but a complete rewrite ([and up to 30x faster](doc/Performance.md)).
 
 * `metosin/muuntaja` - the core abstractions + [Jsonista JSON](https://github.com/metosin/jsonista), `application/x-www-form-urlencoded`, EDN and Transit formats
 * `metosin/muuntaja-cheshire` - optional [Cheshire JSON](https://github.com/dakrone/cheshire) format
+* `metosin/muuntaja-form` - optional `application/x-www-form-urlencoded` formatter using [ring-codec](https://github.com/ring-clojure/ring-codec)
 * `metosin/muuntaja-msgpack` - Messagepack format
 * `metosin/muuntaja-yaml` - YAML format
 
@@ -33,15 +34,15 @@ for detailed API documentation as well as more guides on how to use Muuntaja.
 ## Latest version
 
 ```clj
-[metosin/muuntaja "0.6.6"]
+[metosin/muuntaja "0.6.7"]
 ```
 
 Optionally, the parts can be required separately:
 
 ```clj
-[metosin/muuntaja-cheshire "0.6.6"]
-[metosin/muuntaja-msgpack "0.6.6"]
-[metosin/muuntaja-yaml "0.6.6"]
+[metosin/muuntaja-cheshire "0.6.7"]
+[metosin/muuntaja-msgpack "0.6.7"]
+[metosin/muuntaja-yaml "0.6.7"]
 ```
 
 Muuntaja requires Java 1.8+

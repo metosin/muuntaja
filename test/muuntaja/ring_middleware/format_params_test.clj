@@ -47,8 +47,8 @@
                               (assoc-in
                                 [:formats "application/json" :decoder-opts]
                                 {:decode-key-fn key-fn})))
-                         {:headers {"content-type" "application/json"}
-                          :body (stream "{\"foo_bar\":\"bar\"}")}))))
+                        {:headers {"content-type" "application/json"}
+                         :body (stream "{\"foo_bar\":\"bar\"}")}))))
   (is (= {:foo-bar "bar"}
          (:body-params ((wrap-api-params
                           identity
@@ -56,8 +56,8 @@
                               (assoc-in
                                 [:formats "application/json" :decoder-opts]
                                 {:decode-key-fn key-fn})))
-                         {:headers {"content-type" "application/json"}
-                          :body (stream "{\"foo_bar\":\"bar\"}")})))))
+                        {:headers {"content-type" "application/json"}
+                         :body (stream "{\"foo_bar\":\"bar\"}")})))))
 
 (defn yaml-echo [opts]
   (-> identity
@@ -251,13 +251,13 @@
                      (.getBytes "[\"gregor\", \"samsa\"]"))}]
     ((wrap-api-params
        (fn [{:keys [body-params]}] (is (= ["gregor" "samsa"] body-params))))
-      req)))
+     req)))
 
 (deftest test-optional-body
   ((wrap-api-params
      (fn [request]
        (is (nil? (:body request)))))
-    {:body nil}))
+   {:body nil}))
 
 (deftest test-custom-handle-error
   (are [format content-type body]
@@ -268,7 +268,7 @@
                       (-> default-options
                           (m/select-formats [format])))
                     (middleware/wrap-exception (constantly {:status 999})))
-                 req)]
+                req)]
       (= 999 (:status resp)))
     "application/json" "application/json" "{:a 1}"
     "application/edn" "application/edn" "{\"a\": 1}"))
