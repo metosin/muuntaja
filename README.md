@@ -40,6 +40,7 @@ for detailed API documentation as well as more guides on how to use Muuntaja.
 Optionally, the parts can be required separately:
 
 ```clj
+[metosin/muuntaja-form "0.6.7"]
 [metosin/muuntaja-cheshire "0.6.7"]
 [metosin/muuntaja-msgpack "0.6.7"]
 [metosin/muuntaja-yaml "0.6.7"]
@@ -287,6 +288,6 @@ Copyright &copy; 2015, 2016 Juho Teperi
 
 ### This library
 
-Copyright &copy; 2016-2019 [Metosin Oy](http://www.metosin.fi)
+Copyright &copy; 2016-2020 [Metosin Oy](http://www.metosin.fi)
 
 Distributed under the Eclipse Public License 2.0.
