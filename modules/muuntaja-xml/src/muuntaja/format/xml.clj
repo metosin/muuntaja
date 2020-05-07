@@ -1,9 +1,12 @@
 (ns muuntaja.format.xml
   (:refer-clojure :exclude [format])
   (:require [clojure.data.xml :as data.xml]
-            [clojure.java.io :as io]
             [muuntaja.format.core :as core])
-  (:import (java.io ByteArrayOutputStream DataInputStream DataOutputStream OutputStream)))
+  (:import (java.io ByteArrayOutputStream
+                    DataInputStream
+                    DataOutputStream
+                    OutputStream
+                    OutputStreamWriter)))
 
 (defn- tags-to-element [xml]
   (if (vector? xml)
@@ -20,23 +23,26 @@
   (reify
     core/EncodeToBytes
     (encode-to-bytes [_ data _]
-      (with-open [out-stream (ByteArrayOutputStream.)]
-        (let [data-out (DataOutputStream. out-stream)]
-          (with-open [w (io/writer out-stream)]
-            (let [tags (tags-to-element data)]
-              (data.xml/emit tags w)
-              (.toByteArray out-stream))))))
+      (let [encoding (:encoding options)]
+        (with-open [out-stream (ByteArrayOutputStream.)
+                    data-out (DataOutputStream. out-stream)
+                    w (OutputStreamWriter. data-out encoding)]
+          (let [tags (tags-to-element data)]
+            (data.xml/emit tags w :encoding encoding)
+            (.flush w)
+            (.toByteArray out-stream)))))
     core/EncodeToOutputStream
     (encode-to-output-stream [_ data _]
       (fn [^OutputStream output-stream]
-        (let [data-out (DataOutputStream. output-stream)
-              w (io/writer data-out)
+        (let [encoding (:encoding options)
+              data-out (DataOutputStream. output-stream)
+              w (OutputStreamWriter. data-out encoding)
               tags (tags-to-element data)]
-          (data.xml/emit tags w))))))
+          (data.xml/emit tags w :encoding encoding))))))
 
 (def format
   (core/map->Format
    {:name "application/xml"
     :decoder [decoder]
-    :encoder [encoder]}))
+    :encoder [encoder {:encoding "UTF-8"}]}))
 
