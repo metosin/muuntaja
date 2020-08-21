@@ -159,7 +159,7 @@ Explicit Muuntaja instance with camelCase encode-key-fn:
       {:encode-key-fn csk/->camelCase})))
 
 (->> {:some-property "some-value"}
-     (m/encode mun "application/json")
+     (m/encode m "application/json")
      slurp)
 ; => "{\":someProperty\":\"some-value\"}"
 ```
