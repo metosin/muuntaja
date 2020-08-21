@@ -146,6 +146,24 @@ Explicit Muuntaja instance with custom date formatter:
 ; => "{\"value\":\"2019-10-15\"}"
 ```
 
+Explicit Muuntaja instance with camelCase encode-key-fn:
+
+```clj
+(require '[camel-snake-kebab.core :as csk])
+
+(def m
+  (m/create
+    (assoc-in
+      m/default-options
+      [:formats "application/json" :encoder-opts]
+      {:encode-key-fn csk/->camelCase})))
+
+(->> {:some-property "some-value"}
+     (m/encode m "application/json")
+     slurp)
+; => "{\":someProperty\":\"some-value\"}"
+```
+
 Returning a function to encode transit-json:
 
 ```clj
