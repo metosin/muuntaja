@@ -64,6 +64,9 @@ Easiest way is to add a `:encoder-opts` key to the format with the options map a
 ;; "{\"KIKKA\":42}"
 ```
 
+Check [jsonista object-mapper docs](https://cljdoc.org/d/metosin/jsonista/CURRENT/api/jsonista.core#object-mapper)
+for available options.
+
 ### Setting Transit writers and readers
 
 ```clj
@@ -75,6 +78,9 @@ Easiest way is to add a `:encoder-opts` key to the format with the options map a
       merge {:decoder-opts {:handlers transit-dates/readers}
              :encoder-opts {:handlers transit-dates/writers}})))
 ```
+
+`:decoder-opts` is passed to [`reader`](https://cognitect.github.io/transit-clj/#cognitect.transit/reader)
+and `:encoder-opts` to [`writer`](https://cognitect.github.io/transit-clj/#cognitect.transit/writer).
 
 ### Using only selected formats
 

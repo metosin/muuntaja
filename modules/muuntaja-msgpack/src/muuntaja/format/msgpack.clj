@@ -1,4 +1,5 @@
 (ns muuntaja.format.msgpack
+  "Uses [clojure-msgpack](https://github.com/edma2/clojure-msgpack)"
   (:refer-clojure :exclude [format])
   (:require [clojure.walk :as walk]
             [msgpack.core :as msgpack]

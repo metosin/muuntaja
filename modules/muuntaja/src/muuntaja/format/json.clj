@@ -1,4 +1,6 @@
 (ns muuntaja.format.json
+  "Check [jsonista.core/object-mapper](https://cljdoc.org/d/metosin/jsonista/CURRENT/api/jsonista.core#object-mapper)
+  for available options."
   (:refer-clojure :exclude [format])
   (:require [jsonista.core :as j]
             [muuntaja.format.core :as core])

@@ -1,4 +1,5 @@
 (ns muuntaja.format.yaml
+  "[Clj-yaml API docs](https://cljdoc.org/d/clj-commons/clj-yaml/CURRENT/api/clj-yaml.core)"
   (:refer-clojure :exclude [format])
   (:require [clj-yaml.core :as yaml]
             [muuntaja.format.core :as core])

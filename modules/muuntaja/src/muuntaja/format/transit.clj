@@ -1,4 +1,9 @@
 (ns muuntaja.format.transit
+  "Check [Transit API](https://cognitect.github.io/transit-clj/#cognitect.transit/)
+  for available options.
+
+  :decoder-opts are passed to reader function and
+  :encoder-opts are passed to writer function."
   (:require [cognitect.transit :as transit]
             [muuntaja.format.core :as core])
   (:import (java.io ByteArrayOutputStream OutputStream)))
