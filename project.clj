@@ -3,8 +3,6 @@
   :url "https://github.com/metosin/muuntaja"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v20.html"}
-  :javac-options ["-Xlint:unchecked" "-target" "1.7" "-source" "1.7"]
-  :java-source-paths ["src/java"]
   :managed-dependencies [[metosin/muuntaja "0.6.7"]
                          [ring/ring-codec "1.1.2"]
                          [metosin/jsonista "0.2.6"]
@@ -16,7 +14,6 @@
                          [cheshire "5.10.0"]
                          [clj-commons/clj-yaml "0.7.1"]
                          [clojure-msgpack "1.2.1" :exclusions [org.clojure/clojure]]]
-  :dependencies []
   :source-paths ["modules/muuntaja/src"]
   :plugins [[lein-codox "0.10.7"]]
   :codox {:src-uri "http://github.com/metosin/muuntaja/blob/master/{filepath}#L{line}"
