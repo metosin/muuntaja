@@ -1,9 +1,9 @@
-(defproject metosin/muuntaja "0.6.7"
+(defproject metosin/muuntaja "0.6.8"
   :description "Clojure library for format encoding, decoding and content-negotiation"
   :url "https://github.com/metosin/muuntaja"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v20.html"}
-  :managed-dependencies [[metosin/muuntaja "0.6.7"]
+  :managed-dependencies [[metosin/muuntaja "0.6.8"]
                          [ring/ring-codec "1.1.2"]
                          [metosin/jsonista "0.3.1"]
                          [com.cognitect/transit-clj "1.0.324"]
@@ -27,17 +27,17 @@
                                   "modules/muuntaja-msgpack/src"]
 
                    :dependencies [[org.clojure/clojure "1.10.2"]
-                                  [ring/ring-core "1.8.2"]
+                                  [ring/ring-core "1.9.0"]
                                   [ring-middleware-format "0.7.4"]
                                   [ring-transit "0.1.6"]
                                   [ring/ring-json "0.5.0"]
 
                                   ;; modules
-                                  [metosin/muuntaja "0.6.7"]
-                                  [metosin/muuntaja-form "0.6.7"]
-                                  [metosin/muuntaja-cheshire "0.6.7"]
-                                  [metosin/muuntaja-msgpack "0.6.7"]
-                                  [metosin/muuntaja-yaml "0.6.7"]
+                                  [metosin/muuntaja "0.6.8"]
+                                  [metosin/muuntaja-form "0.6.8"]
+                                  [metosin/muuntaja-cheshire "0.6.8"]
+                                  [metosin/muuntaja-msgpack "0.6.8"]
+                                  [metosin/muuntaja-yaml "0.6.8"]
 
                                   ;; correct jackson
                                   [com.fasterxml.jackson.core/jackson-databind "2.12.1"]

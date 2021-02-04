@@ -1,4 +1,4 @@
-(defproject metosin/muuntaja-form "0.6.7"
+(defproject metosin/muuntaja-form "0.6.8"
   :description "application/x-www-form-urlencoded format for Muuntaja"
   :url "https://github.com/metosin/muuntaja"
   :license {:name "Eclipse Public License"

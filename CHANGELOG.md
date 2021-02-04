@@ -1,3 +1,13 @@
+## 0.6.8 (2021-02-04)
+
+* Update deps:
+
+```clj
+[metosin/jsonista "0.3.1"] is available but we use "0.2.6"
+[clj-commons/clj-yaml "0.7.106"] is available but we use "0.7.1"
+[ring/ring-core "1.9.0"] is available but we use "1.8.2"
+```
+
 ## 0.6.7 
 
 * new module `muuntaja-form` to handle `application/x-www-form-urlencoded` using [ring-codec](https://github.com/ring-clojure/ring-codec) by [Mathieu Lirzin](https://github.com/metosin/muuntaja/pull/110)
