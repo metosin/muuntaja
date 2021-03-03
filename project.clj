@@ -65,6 +65,6 @@
                                             "-XX:+PrintCompilation"
                                             "-XX:+UnlockDiagnosticVMOptions"
                                             "-XX:+PrintInlining"]}}
-  :aliases {"all" ["with-profile" "dev:dev,1.7:dev,1.8:dev,1.9" "test"]
+  :aliases {"all" ["with-profile" "dev:dev,1.7:dev,1.8:dev,1.9"]
             "perf" ["with-profile" "default,dev,perf"]
             "analyze" ["with-profile" "default,dev,analyze"]})
