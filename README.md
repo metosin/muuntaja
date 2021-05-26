@@ -18,7 +18,7 @@ but a complete rewrite ([and up to 30x faster](doc/Performance.md)).
 
 ## Modules
 
-* `metosin/muuntaja` - the core abstractions + [Jsonista JSON](https://github.com/metosin/jsonista), `application/x-www-form-urlencoded`, EDN and Transit formats
+* `metosin/muuntaja` - the core abstractions + [Jsonista JSON](https://github.com/metosin/jsonista), EDN and Transit formats
 * `metosin/muuntaja-cheshire` - optional [Cheshire JSON](https://github.com/dakrone/cheshire) format
 * `metosin/muuntaja-form` - optional `application/x-www-form-urlencoded` formatter using [ring-codec](https://github.com/ring-clojure/ring-codec)
 * `metosin/muuntaja-msgpack` - Messagepack format
