@@ -253,7 +253,7 @@ When something bad happens, an typed exception is thrown. You should handle it e
 ### Request
 
 * `:muuntaja/request`, client-negotiated request format and charset as `FormatAndCharset` record. Will
-be used in the response pipeline.
+be used in the request pipeline.
 * `:muuntaja/response`, client-negotiated response format and charset as `FormatAndCharset` record. Will
 be used in the response pipeline.
 * `:body-params` contains the decoded body.
