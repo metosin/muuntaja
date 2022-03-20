@@ -2,7 +2,7 @@
 
 <img src="https://raw.githubusercontent.com/metosin/muuntaja/master/doc/images/muuntaja-small.png" align="right"/>
 
-Clojure library for fast http format negotiation, encoding and decoding. Standalone library, but ships with adapters for ring (async) middleware & Pedestal-style interceptors. Explicit & extendable, supporting out-of-the-box [JSON](http://www.json.org/), [EDN](https://github.com/edn-format/edn) and [Transit](https://github.com/cognitect/transit-format) (both JSON & Msgpack). Ships with optional adapters for [MessagePack](http://msgpack.org/) and [YAML](http://yaml.org/).
+Clojure library for fast HTTP format negotiation, encoding and decoding. Standalone library, but ships with adapters for ring (async) middleware & Pedestal-style interceptors. Explicit & extendable, supporting out-of-the-box [JSON](http://www.json.org/), [EDN](https://github.com/edn-format/edn) and [Transit](https://github.com/cognitect/transit-format) (both JSON & Msgpack). Ships with optional adapters for [MessagePack](http://msgpack.org/) and [YAML](http://yaml.org/).
 
 Based on [ring-middleware-format](https://github.com/ngrunwald/ring-middleware-format),
 but a complete rewrite ([and up to 30x faster](doc/Performance.md)).
