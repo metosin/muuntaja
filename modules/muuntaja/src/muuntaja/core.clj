@@ -187,8 +187,12 @@
 (defn- set-content-type [response content-type]
   (util/assoc-assoc response :headers "Content-Type" content-type))
 
-(defn- content-type [format charset]
-  (str format "; charset=" charset))
+(defn- content-type [^Object format ^Object charset]
+  (.toString
+   (doto (StringBuilder.)
+     (.append (if (nil? format) "" (. format (toString))))
+     (.append "; charset=")
+     (.append (if (nil? charset) "" (. charset (toString)))))))
 
 ;;
 ;; request helpers
