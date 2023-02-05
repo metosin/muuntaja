@@ -133,6 +133,25 @@
     ;; we do not set the "Content-Length"
     #_(is (< 2 (Integer/parseInt (get-in resp [:headers "Content-Length"]))))))
 
+(defn- produce-element-with-log [n]
+  (prn "reading from db" n)
+  {:element n})
+
+(defn- dummy-handler-with-lazy-seq [_]
+  {:status 200
+   :body (map produce-element-with-log (range 4))})
+
+(deftest lazy-sequences-with-logs
+  (let [handler (wrap-api-response
+                 dummy-handler-with-lazy-seq
+                 (-> m/default-options
+                     (m/select-formats ["application/edn"])))
+        resp    (handler {})
+        body    (slurp (:body resp))]
+    ;; Lazy sequence realization interferes with `with-out-str`
+    #_(is (= body "(\"reading from db\" 0\n\"reading from db\" 1\n\"reading from db\" 2\n\"reading from db\" 3\n{:element 0} {:element 1} {:element 2} {:element 3})"))
+    (is (= body "({:element 0} {:element 1} {:element 2} {:element 3})"))))
+
 (def yaml-echo
   (wrap-api-response
     identity
