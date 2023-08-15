@@ -288,7 +288,29 @@
             (-> m/default-options
                 (assoc-in
                   [:formats "application/jsonz" :decoder-opts]
-                  {:keywords? false})))))))
+                  {:keywords? false}))))))
+
+  (testing "decode response body for all formats"
+    (let [m (m/create
+             (-> m/default-options
+                 (assoc :return :output-stream)
+                 (m/install form-format/format)
+                 (m/install msgpack-format/format)
+                 (m/install yaml-format/format)
+                 (m/install cheshire-format/format "application/json+cheshire")))
+          dataset [{:kikka 42, :childs {:facts [1.2 true {:so "nested"}]}}
+                   nil
+                   false]]
+      (doseq [data dataset]
+        (are [format]
+            (= data (m/decode-response-body m {:body (m/encode m format data) :headers {"Content-Type" format}}))
+          "application/json"
+          "application/json+cheshire"
+          "application/edn"
+          "application/x-yaml"
+          "application/msgpack"
+          "application/transit+json"
+          "application/transit+msgpack")))))
 
 (deftest form-data
   (testing "basic form encoding"
