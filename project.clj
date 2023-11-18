@@ -7,6 +7,7 @@
                          [ring/ring-codec "1.1.2"]
                          [metosin/jsonista "0.3.1"]
                          [com.cognitect/transit-clj "1.0.324"]
+                         [com.cnuernber/charred "1.033"]
                          [cheshire "5.10.0"]
                          [clj-commons/clj-yaml "0.7.106"]
                          [clojure-msgpack "1.2.1" :exclusions [org.clojure/clojure]]]
@@ -21,7 +22,8 @@
   :profiles {:dev {:jvm-opts ^:replace ["-server"]
 
                    ;; all module sources for development
-                   :source-paths ["modules/muuntaja-cheshire/src"
+                   :source-paths ["modules/muuntaja-charred/src"
+                                  "modules/muuntaja-cheshire/src"
                                   "modules/muuntaja-form/src"
                                   "modules/muuntaja-yaml/src"
                                   "modules/muuntaja-msgpack/src"]
@@ -35,6 +37,7 @@
                                   ;; modules
                                   [metosin/muuntaja "0.6.8"]
                                   [metosin/muuntaja-form "0.6.8"]
+                                  [metosin/muuntaja-charred "0.6.8"]
                                   [metosin/muuntaja-cheshire "0.6.8"]
                                   [metosin/muuntaja-msgpack "0.6.8"]
                                   [metosin/muuntaja-yaml "0.6.8"]
