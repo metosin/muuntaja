@@ -7,6 +7,7 @@
             [muuntaja.format.cheshire :as cheshire-format]
             [muuntaja.format.msgpack :as msgpack-format]
             [muuntaja.format.yaml :as yaml-format]
+            [muuntaja.format.charred :as charred-format]
             [jsonista.core :as j]
             [clojure.java.io :as io]
             [muuntaja.protocols :as protocols]
@@ -37,7 +38,8 @@
         (m/install form-format/format)
         (m/install msgpack-format/format)
         (m/install yaml-format/format)
-        (m/install cheshire-format/format "application/json+cheshire"))))
+        (m/install cheshire-format/format "application/json+cheshire")
+        (m/install charred-format/format "application/json+charred"))))
 
 (deftest core-test
   (testing "muuntaja?"
@@ -55,6 +57,7 @@
     (is (= #{"application/edn"
              "application/json"
              "application/json+cheshire"
+             "application/json+charred"
              "application/msgpack"
              "application/transit+json"
              "application/transit+msgpack"
@@ -78,6 +81,7 @@
         (= data (m/decode m format (m/encode m format data)))
         "application/json"
         "application/json+cheshire"
+        "application/json+charred"
         "application/edn"
         "application/x-yaml"
         "application/msgpack"
@@ -99,6 +103,7 @@
                    (m/install msgpack-format/format)
                    (m/install yaml-format/format)
                    (m/install cheshire-format/format "application/json+cheshire")
+                   (m/install charred-format/format "application/json+charred")
                    (assoc :allow-empty-input? false)))]
 
       (testing "by default - nil is returned for empty stream"
@@ -125,6 +130,7 @@
               (thrown-with-msg? Exception #"Malformed" (m/decode m2 format (empty)))
               "application/edn"
               "application/json"
+              "application/json+charred"
               "application/msgpack"
               "application/transit+json"
               "application/transit+msgpack")))
@@ -135,6 +141,7 @@
               (= nil (m/decode m format (empty)))
               "application/json"
               "application/json+cheshire"
+              "application/json+charred"
               "application/edn"
               "application/x-yaml"
               "application/msgpack"
@@ -147,6 +154,7 @@
       (testing "application/json & application/edn use the given charset"
         (is (= "{\"f�e\":\"b�z\"}" (iso-encoded "application/json")))
         (is (= "{\"f�e\":\"b�z\"}" (iso-encoded "application/json+cheshire")))
+        (is (= "{\"f�e\":\"b�z\"}" (iso-encoded "application/json+charred")))
         (is (= "{:f�e \"b�z\"}" (iso-encoded "application/edn"))))
 
       (testing "application/x-yaml & application/transit+json use the platform charset"
@@ -170,6 +178,7 @@
         (= data (encode-decode format))
         "application/json"
         "application/json+cheshire"
+        "application/json+charred"
         "application/edn"
         ;; platform charset
         "application/x-yaml"
@@ -363,12 +372,13 @@
                   (m/install form-format/format)
                   (m/install msgpack-format/format)
                   (m/install yaml-format/format)
-                  (m/install cheshire-format/format "application/json+cheshire")))]
+                  (m/install cheshire-format/format "application/json+cheshire")
+                  (m/install charred-format/format "application/json+charred")))]
       (let [data {:kikka 42, :childs {:facts [1.2 true {:so "nested"}]}}]
         (are [format]
           (= data (m/decode m format (m/encode m format data)))
           "application/json"
-          "application/json+cheshire"
+          "application/json+charred"
           "application/edn"
           "application/x-yaml"
           "application/msgpack"

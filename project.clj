@@ -9,6 +9,7 @@
                          [com.cognitect/transit-clj "1.0.324"]
                          [com.cnuernber/charred "1.033"]
                          [cheshire "5.10.0"]
+                         [com.cnuernber/charred "1.033"]
                          [clj-commons/clj-yaml "0.7.106"]
                          [clojure-msgpack "1.2.1" :exclusions [org.clojure/clojure]]]
   :source-paths ["modules/muuntaja/src"]

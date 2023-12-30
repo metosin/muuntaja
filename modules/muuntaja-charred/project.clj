@@ -12,4 +12,4 @@
                              :managed-dependencies
                              :profiles [:dev]]}
   :dependencies [[metosin/muuntaja]
-                 [charred]])
+                 [com.cnuernber/charred]])

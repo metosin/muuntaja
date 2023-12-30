@@ -43,4 +43,4 @@
     {:name    "application/json"
      :decoder [decoder {:key-fn keyword
                         :async? false}]
-     :encoder [encoder]}))
+     :encoder [encoder {:escape-unicode false}]}))
