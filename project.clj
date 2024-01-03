@@ -8,7 +8,7 @@
                          [metosin/jsonista "0.3.1"]
                          [com.cognitect/transit-clj "1.0.324"]
                          [cheshire "5.10.0"]
-                         [clj-commons/clj-yaml "0.7.106"]
+                         [clj-commons/clj-yaml "1.0.27"]
                          [clojure-msgpack "1.2.1" :exclusions [org.clojure/clojure]]]
   :source-paths ["modules/muuntaja/src"]
   :plugins [[lein-codox "0.10.7"]]
