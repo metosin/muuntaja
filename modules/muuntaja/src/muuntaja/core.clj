@@ -496,13 +496,13 @@
                        (assoc $ :body-params body)
                        $))))
            (-decode-response-body [this response]
-             (or
-               (if-let [res-fc (-> response :headers (get "Content-Type") -negotiate-content-type)]
-                 (if-let [decode (decoder this (:format res-fc))]
-                   (try
-                     (decode (:body response) (:charset res-fc))
-                     (catch Exception e
-                       (fail-on-response-decode-exception m e res-fc response)))))
+             (if-let [res-fc (-> response :headers (get "Content-Type") -negotiate-content-type)]
+               (if-let [decode (decoder this (:format res-fc))]
+                 (try
+                   (decode (:body response) (:charset res-fc))
+                   (catch Exception e
+                     (fail-on-response-decode-exception m e res-fc response)))
+                 (fail-on-response-decode m response))
                (fail-on-response-decode m response)))))))))
 
 (def instance "the default instance" (create))
