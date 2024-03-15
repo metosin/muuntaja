@@ -11,6 +11,10 @@
                          [cheshire "5.10.0"]
                          [clj-commons/clj-yaml "1.0.27"]
                          [clojure-msgpack "1.2.1" :exclusions [org.clojure/clojure]]]
+  :deploy-repositories [["releases" {:url "https://repo.clojars.org/"
+                                     :sign-releases false
+                                     :username :env/CLOJARS_USER
+                                     :password :env/CLOJARS_DEPLOY_TOKEN}]]
   :source-paths ["modules/muuntaja/src"]
   :plugins [[lein-codox "0.10.7"]]
   :codox {:src-uri "http://github.com/metosin/muuntaja/blob/master/{filepath}#L{line}"
@@ -18,7 +22,6 @@
           :metadata {:doc/format :markdown}}
   :scm {:name "git"
         :url "https://github.com/metosin/muuntaja"}
-  :deploy-repositories [["releases" :clojars]]
   :profiles {:dev {:jvm-opts ^:replace ["-server"]
 
                    ;; all module sources for development
