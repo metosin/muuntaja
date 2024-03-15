@@ -19,10 +19,6 @@ jobs:
       uses: DeLaGuardo/setup-clojure@master
       with:
         lein: 2.9.4
-    - name: Run tests
-      run: lein do clean, all test, all check
-    - name: Build jar
-      run: lein jar
     - name: Deploy to Clojars
       run: lein deploy
       env:

@@ -1,6 +1,8 @@
 ## Unreleased
 
-**[compare](https://github.com/metosin/muuntaja/compare/0.6.8...master)**
+**[compare](https://github.com/metosin/muuntaja/compare/0.6.9...master)**
+
+## 0.6.9 (2024-03-15)
 
 * Update deps:
 
@@ -9,12 +11,12 @@
 ```
 
 * Improvements
- - Added support for [Charred](https://github.com/cnuernber/charred) as a JSON formatter module, from [Nik Peric](https://github.com/nikolap) [#139](https://github.com/metosin/muuntaja/pull/139)
- - Improved performance for `content-type`, from [Ben Sless](https://github.com/bsless) [#128](https://github.com/metosin/muuntaja/pull/128), fixes [#127](https://github.com/metosin/muuntaja/issues/127)
+  - Added support for [Charred](https://github.com/cnuernber/charred) as a JSON formatter module, from [Nik Peric](https://github.com/nikolap) [#139](https://github.com/metosin/muuntaja/pull/139)
+  - Improved performance for `content-type`, from [Ben Sless](https://github.com/bsless) [#128](https://github.com/metosin/muuntaja/pull/128), fixes [#127](https://github.com/metosin/muuntaja/issues/127)
 
 * Fixes
- - Fixed CVEs in SnakeYAML dependency ([#137](https://github.com/metosin/muuntaja/issues/137))
- - Fixed `decode-response-body` when body content is falsey, from [lotuc](https://github.com/lotuc) [#136](https://github.com/metosin/muuntaja/pull/136), fixes [#134](https://github.com/metosin/muuntaja/issues/134) 
+  - Fixed CVEs in SnakeYAML dependency ([#137](https://github.com/metosin/muuntaja/issues/137))
+  - Fixed `decode-response-body` when body content is falsey, from [lotuc](https://github.com/lotuc) [#136](https://github.com/metosin/muuntaja/pull/136), fixes [#134](https://github.com/metosin/muuntaja/issues/134)
 
 ## 0.6.8 (2021-02-04)
 

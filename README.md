@@ -20,6 +20,7 @@ but a complete rewrite ([and up to 30x faster](doc/Performance.md)).
 
 * `metosin/muuntaja` - the core abstractions + [Jsonista JSON](https://github.com/metosin/jsonista), EDN and Transit formats
 * `metosin/muuntaja-cheshire` - optional [Cheshire JSON](https://github.com/dakrone/cheshire) format
+* `metosin/muuntaja-charred` - optional [Charred](https://github.com/cnuernber/charred) format
 * `metosin/muuntaja-form` - optional `application/x-www-form-urlencoded` formatter using [ring-codec](https://github.com/ring-clojure/ring-codec)
 * `metosin/muuntaja-msgpack` - Messagepack format
 * `metosin/muuntaja-yaml` - YAML format
@@ -34,16 +35,17 @@ for detailed API documentation as well as more guides on how to use Muuntaja.
 ## Latest version
 
 ```clj
-[metosin/muuntaja "0.6.8"]
+[metosin/muuntaja "0.6.9"]
 ```
 
 Optionally, the parts can be required separately:
 
 ```clj
-[metosin/muuntaja-form "0.6.8"]
-[metosin/muuntaja-cheshire "0.6.8"]
-[metosin/muuntaja-msgpack "0.6.8"]
-[metosin/muuntaja-yaml "0.6.8"]
+[metosin/muuntaja-form "0.6.9"]
+[metosin/muuntaja-cheshire "0.6.9"]
+[fi.metosin/muuntaja-charred "0.6.9"]
+[metosin/muuntaja-msgpack "0.6.9"]
+[metosin/muuntaja-yaml "0.6.9"]
 ```
 
 Muuntaja requires Java 1.8+
@@ -91,7 +93,7 @@ Automatic decoding of request body and response body encoding based on `Content-
    {"content-type" "application/edn"
     "accept" "application/transit+json"}
    :body "{:kikka 42}"})
-   
+
 (app request)
 ; {:status 200,
 ;  :body #object[java.io.ByteArrayInputStream]
@@ -102,7 +104,7 @@ Automatic decoding of response body based on `Content-Type` header:
 
 ```clj
 (-> request app m/decode-response-body)
-; {:kikka 42}    
+; {:kikka 42}
 ```
 
 There is a more detailed [Ring guide](doc/With-Ring.md) too. See also [differences](doc/Differences-to-existing-formatters.md) to ring-middleware-format & ring-json.
