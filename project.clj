@@ -1,4 +1,6 @@
-(defproject metosin/muuntaja "0.6.9"
+(defproject muuntaja-dev "0.6.9"
+  ;; See modules/muuntaja/project.clj for actual project.clj used when releasing.
+  ;; This project.clj is just for local development.
   :description "Clojure library for format encoding, decoding and content-negotiation"
   :url "https://github.com/metosin/muuntaja"
   :license {:name "Eclipse Public License"
