@@ -381,6 +381,7 @@
         (are [format]
           (= data (m/decode m format (m/encode m format data)))
           "application/json"
+          "application/json+cheshire"
           "application/json+charred"
           "application/edn"
           "application/x-yaml"
