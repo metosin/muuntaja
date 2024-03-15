@@ -4,11 +4,11 @@ set -e
 
 # Modules
 for ext in \
-  muuntaja \
   muuntaja-form \
   muuntaja-cheshire \
   muuntaja-charred \
   muuntaja-msgpack \
-  muuntaja-yaml; do
+  muuntaja-yaml \
+  muuntaja; do
   cd modules/$ext; lein "$@"; cd ../..;
 done
