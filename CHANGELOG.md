@@ -1,3 +1,20 @@
+## Unreleased
+
+**[compare](https://github.com/metosin/muuntaja/compare/0.6.8...master)**
+
+* Update deps:
+
+```clj
+[clj-commons/clj-yaml "1.0.27"] is available and fixes CVEs, but we use "0.7.106"
+```
+
+* Improvements
+ - Improved performance for `content-type`, from [Ben Sless](https://github.com/bsless) [#128](https://github.com/metosin/muuntaja/pull/128), fixes [#127](https://github.com/metosin/muuntaja/issues/127)
+
+* Fixes
+ - Fixed CVEs in SnakeYAML dependency ([#137](https://github.com/metosin/muuntaja/issues/137))
+ - Fixed `decode-response-body` when body content is falsey, from [lotuc](https://github.com/lotuc) [#136](https://github.com/metosin/muuntaja/pull/136), fixes [#134](https://github.com/metosin/muuntaja/issues/134) 
+
 ## 0.6.8 (2021-02-04)
 
 * Update deps:
