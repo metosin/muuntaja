@@ -9,6 +9,7 @@
 ```
 
 * Improvements
+ - Added support for [Charred](https://github.com/cnuernber/charred) as a JSON formatter module, from [Nik Peric](https://github.com/nikolap) [#139](https://github.com/metosin/muuntaja/pull/139)
  - Improved performance for `content-type`, from [Ben Sless](https://github.com/bsless) [#128](https://github.com/metosin/muuntaja/pull/128), fixes [#127](https://github.com/metosin/muuntaja/issues/127)
 
 * Fixes
