@@ -46,3 +46,7 @@ Tests can be ran standalone via `lein test`.
 7. Use the body to explain what and why vs. how
 
 For comprehensive explanation read this [post by Chris Beams](http://chris.beams.io/posts/git-commit/#seven-rules).
+
+## Releases
+
+Releases are built & deployed automatically by Github Actions. Just create a release via the Github UI.
