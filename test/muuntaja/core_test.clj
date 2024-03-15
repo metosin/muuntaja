@@ -16,7 +16,8 @@
            (java.io FileInputStream)
            (java.nio.file Files)))
 
-(defn set-jvm-default-charset! [charset]
+;;; Charset overriding doesn't work on newer JVMs
+#_(defn set-jvm-default-charset! [charset]
   (System/setProperty "file.encoding" charset)
   (doto
     (.getDeclaredField Charset "defaultCharset")
@@ -24,7 +25,7 @@
     (.set nil nil))
   nil)
 
-(defmacro with-default-charset [charset & body]
+#_(defmacro with-default-charset [charset & body]
   `(let [old-charset# (str (Charset/defaultCharset))]
      (try
        (set-jvm-default-charset! ~charset)
@@ -88,7 +89,8 @@
         "application/transit+json"
         "application/transit+msgpack")))
 
-  (testing "charsets"
+  ;;; Charset overriding doesn't work on newer JVMs
+ #_ (testing "charsets"
     (testing "default is UTF-8"
       (is (= "UTF-8" (str (Charset/defaultCharset)))))
     (testing "default can be changed"
@@ -161,7 +163,8 @@
         (testing "utf-8"
           (is (= "{fée: böz}\n" (iso-encoded "application/x-yaml")))
           (is (= "[\"^ \",\"~:fée\",\"böz\"]" (iso-encoded "application/transit+json"))))
-        (testing "when default charset is ISO-8859-1"
+        ;;; Charset overriding does not work on newer JVMs
+       #_ (testing "when default charset is ISO-8859-1"
           (with-default-charset
             "ISO-8859-1"
             (testing "application/x-yaml works"
