@@ -2,7 +2,7 @@
 
 **[compare](https://github.com/metosin/muuntaja/compare/0.6.9...master)**
 
-## 0.6.9 (2024-03-15)
+## 0.6.10 (2024-03-15)
 
 * Update deps:
 
@@ -17,6 +17,8 @@
 * Fixes
   - Fixed CVEs in SnakeYAML dependency ([#137](https://github.com/metosin/muuntaja/issues/137))
   - Fixed `decode-response-body` when body content is falsey, from [lotuc](https://github.com/lotuc) [#136](https://github.com/metosin/muuntaja/pull/136), fixes [#134](https://github.com/metosin/muuntaja/issues/134)
+
+## 0.6.9 BROKEN, DO NOT USE
 
 ## 0.6.8 (2021-02-04)
 
