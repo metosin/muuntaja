@@ -9,7 +9,6 @@
                          [com.cognitect/transit-clj "1.0.324"]
                          [com.cnuernber/charred "1.033"]
                          [cheshire "5.10.0"]
-                         [com.cnuernber/charred "1.033"]
                          [clj-commons/clj-yaml "0.7.106"]
                          [clojure-msgpack "1.2.1" :exclusions [org.clojure/clojure]]]
   :source-paths ["modules/muuntaja/src"]
@@ -30,6 +29,7 @@
                                   "modules/muuntaja-msgpack/src"]
 
                    :dependencies [[org.clojure/clojure "1.10.2"]
+                                  [com.cnuernber/charred "1.033"]
                                   [ring/ring-core "1.9.0"]
                                   [ring-middleware-format "0.7.4"]
                                   [ring-transit "0.1.6"]
@@ -38,7 +38,7 @@
                                   ;; modules
                                   [metosin/muuntaja "0.6.8"]
                                   [metosin/muuntaja-form "0.6.8"]
-                                  [metosin/muuntaja-charred "0.6.8"]
+;;                                  [fi.metosin/muuntaja-charred "0.6.8"] ;; not yet released
                                   [metosin/muuntaja-cheshire "0.6.8"]
                                   [metosin/muuntaja-msgpack "0.6.8"]
                                   [metosin/muuntaja-yaml "0.6.8"]
