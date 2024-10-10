@@ -7,6 +7,10 @@ Clojure library for fast HTTP format negotiation, encoding and decoding. Standal
 Based on [ring-middleware-format](https://github.com/ngrunwald/ring-middleware-format),
 but a complete rewrite ([and up to 30x faster](doc/Performance.md)).
 
+> Hi! We are [Metosin](https://metosin.fi), a consulting company. These libraries have evolved out of the work we do for our clients.
+> We maintain & develop this project, for you, for free. Issues and pull requests welcome!
+> However, if you want more help using the libraries, or want us to build something as cool for you, consider our [commercial support](https://www.metosin.fi/en/open-source-support).
+
 ## Rationale
 
 - explicit configuration
