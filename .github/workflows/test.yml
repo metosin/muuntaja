@@ -1,0 +1,31 @@
+name: Run tests
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build-clj:
+    strategy:
+      matrix:
+        jdk: [8, 11, 17, 21]
+
+    name: Clojure (Java ${{ matrix.jdk }})
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Setup Java ${{ matrix.jdk }}
+      uses: actions/setup-java@v3.12.0
+      with:
+        distribution: zulu
+        java-version: ${{ matrix.jdk }}
+    - name: Setup Clojure
+      uses: DeLaGuardo/setup-clojure@master
+      with:
+        lein: 2.9.4
+    - name: Run tests
+      run: lein test

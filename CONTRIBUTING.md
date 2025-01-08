@@ -17,9 +17,21 @@ Please file bug reports and feature requests to https://github.com/metosin/muunt
 Installing jars and changing of version numbers can be done with the following scripts:
 
 ```sh
-./script/set-version 1.0.0
-./script/lein-modules install
+./scripts/set-version 1.0.0
+./scripts/lein-modules install
 ```
+
+## Running locally
+
+You can run the a local nREPL with the following:
+
+```sh
+lein with-profile default,dev repl
+```
+
+Note: make sure you install modules first if you've made any changes you want reflected. See above.
+
+Tests can be ran standalone via `lein test`.
 
 
 ## Commit messages
@@ -34,3 +46,7 @@ Installing jars and changing of version numbers can be done with the following s
 7. Use the body to explain what and why vs. how
 
 For comprehensive explanation read this [post by Chris Beams](http://chris.beams.io/posts/git-commit/#seven-rules).
+
+## Releases
+
+Releases are built & deployed automatically by Github Actions. Just create a release via the Github UI.

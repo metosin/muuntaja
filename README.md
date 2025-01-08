@@ -7,6 +7,10 @@ Clojure library for fast HTTP format negotiation, encoding and decoding. Standal
 Based on [ring-middleware-format](https://github.com/ngrunwald/ring-middleware-format),
 but a complete rewrite ([and up to 30x faster](doc/Performance.md)).
 
+> Hi! We are [Metosin](https://metosin.fi), a consulting company. These libraries have evolved out of the work we do for our clients.
+> We maintain & develop this project, for you, for free. Issues and pull requests welcome!
+> However, if you want more help using the libraries, or want us to build something as cool for you, consider our [commercial support](https://www.metosin.fi/en/open-source-support).
+
 ## Rationale
 
 - explicit configuration
@@ -20,6 +24,7 @@ but a complete rewrite ([and up to 30x faster](doc/Performance.md)).
 
 * `metosin/muuntaja` - the core abstractions + [Jsonista JSON](https://github.com/metosin/jsonista), EDN and Transit formats
 * `metosin/muuntaja-cheshire` - optional [Cheshire JSON](https://github.com/dakrone/cheshire) format
+* `metosin/muuntaja-charred` - optional [Charred](https://github.com/cnuernber/charred) format
 * `metosin/muuntaja-form` - optional `application/x-www-form-urlencoded` formatter using [ring-codec](https://github.com/ring-clojure/ring-codec)
 * `metosin/muuntaja-msgpack` - Messagepack format
 * `metosin/muuntaja-yaml` - YAML format
@@ -34,16 +39,17 @@ for detailed API documentation as well as more guides on how to use Muuntaja.
 ## Latest version
 
 ```clj
-[metosin/muuntaja "0.6.8"]
+[metosin/muuntaja "0.6.10"]
 ```
 
 Optionally, the parts can be required separately:
 
 ```clj
-[metosin/muuntaja-form "0.6.8"]
-[metosin/muuntaja-cheshire "0.6.8"]
-[metosin/muuntaja-msgpack "0.6.8"]
-[metosin/muuntaja-yaml "0.6.8"]
+[metosin/muuntaja-form "0.6.10"]
+[metosin/muuntaja-cheshire "0.6.10"]
+[fi.metosin/muuntaja-charred "0.6.10"]
+[metosin/muuntaja-msgpack "0.6.10"]
+[metosin/muuntaja-yaml "0.6.10"]
 ```
 
 Muuntaja requires Java 1.8+
@@ -91,7 +97,7 @@ Automatic decoding of request body and response body encoding based on `Content-
    {"content-type" "application/edn"
     "accept" "application/transit+json"}
    :body "{:kikka 42}"})
-   
+
 (app request)
 ; {:status 200,
 ;  :body #object[java.io.ByteArrayInputStream]
@@ -102,7 +108,7 @@ Automatic decoding of response body based on `Content-Type` header:
 
 ```clj
 (-> request app m/decode-response-body)
-; {:kikka 42}    
+; {:kikka 42}
 ```
 
 There is a more detailed [Ring guide](doc/With-Ring.md) too. See also [differences](doc/Differences-to-existing-formatters.md) to ring-middleware-format & ring-json.
