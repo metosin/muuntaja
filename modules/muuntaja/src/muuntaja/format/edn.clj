@@ -11,25 +11,13 @@
       (decode [_ data charset]
         (edn/read options (PushbackReader. (InputStreamReader. ^InputStream data ^String charset)))))))
 
-(defn- pr-to-writer
-  ([w] w)
-  ([w x]
-   (print-method x w)
-   w)
-  ([w x & more]
-   (print-method x w)
-   (.append w \space)
-   (if-let [nmore (next more)]
-     (recur w (first more) nmore)
-     (apply pr-to-writer more))))
-
 (defn encoder [_]
   (reify
     core/EncodeToBytes
     (encode-to-bytes [_ data charset]
       (.getBytes
        (let [w (new java.io.StringWriter)]
-         (pr-to-writer w data)
+         (print-method data w)
          (.toString w))
        ^String charset))
     core/EncodeToOutputStream
