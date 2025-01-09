@@ -18,7 +18,8 @@
                                      :username :env/CLOJARS_USER
                                      :password :env/CLOJARS_DEPLOY_TOKEN}]]
   :source-paths ["modules/muuntaja/src"]
-  :plugins [[lein-codox "0.10.7"]]
+  :plugins [[lein-codox "0.10.7"]
+            [lein-ancient "1.0.0-RC3"]]
   :codox {:src-uri "http://github.com/metosin/muuntaja/blob/master/{filepath}#L{line}"
           :output-path "doc"
           :metadata {:doc/format :markdown}}
@@ -33,7 +34,7 @@
                                   "modules/muuntaja-yaml/src"
                                   "modules/muuntaja-msgpack/src"]
 
-                   :dependencies [[org.clojure/clojure "1.10.2"]
+                   :dependencies [[org.clojure/clojure "1.12.0"]
                                   [com.cnuernber/charred "1.033"]
                                   [ring/ring-core "1.9.0"]
                                   [ring-middleware-format "0.7.4"]
@@ -63,9 +64,9 @@
                                   [org.slf4j/slf4j-log4j12 "1.7.30"]
 
                                   [criterium "0.4.6"]]}
-             :1.7 {:dependencies [[org.clojure/clojure "1.7.0"]]}
              :1.8 {:dependencies [[org.clojure/clojure "1.8.0"]]}
              :1.9 {:dependencies [[org.clojure/clojure "1.9.0"]]}
+             :1.10 {:dependencies [[org.clojure/clojure "1.10.2"]]}
              :perf {:jvm-opts ^:replace ["-server"
                                          "-Xmx4096m"
                                          "-Dclojure.compiler.direct-linking=true"]}
@@ -74,6 +75,6 @@
                                             "-XX:+PrintCompilation"
                                             "-XX:+UnlockDiagnosticVMOptions"
                                             "-XX:+PrintInlining"]}}
-  :aliases {"all" ["with-profile" "dev:dev,1.7:dev,1.8:dev,1.9"]
+  :aliases {"all" ["with-profile" "dev:dev,1.8:dev,1.9:dev,1.10"]
             "perf" ["with-profile" "default,dev,perf"]
             "analyze" ["with-profile" "default,dev,analyze"]})
