@@ -57,10 +57,10 @@
 
                                   ;; Pedestal
                                   [org.clojure/core.async "1.7.701" :exclusions [org.clojure/tools.reader]]
-                                  [io.pedestal/pedestal.service "0.5.8" :exclusions [org.clojure/tools.reader
+                                  [io.pedestal/pedestal.service "0.7.2" :exclusions [org.clojure/tools.reader
                                                                                      org.clojure/core.async
                                                                                      org.clojure/core.memoize]]
-                                  [javax.servlet/javax.servlet-api "4.0.1"]
+                                  [jakarta.servlet/jakarta.servlet-api "5.0.0"]
                                   [org.slf4j/slf4j-log4j12 "2.0.16"]
 
                                   [criterium "0.4.6"]]}
