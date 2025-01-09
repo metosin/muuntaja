@@ -1,6 +1,22 @@
 ## Unreleased
 
-**[compare](https://github.com/metosin/muuntaja/compare/0.6.9...master)**
+**[compare](https://github.com/metosin/muuntaja/compare/0.6.11...master)**
+
+## 0.6.11 (2025-01-09)
+
+* Fixes
+  - Avoid output (like println or logging) interfering with edn output, thanks to [nvlass](https://github.com/nvlass) [#131](https://github.com/metosin/muuntaja/pull/131)
+
+* Update deps:
+
+```
+[ring/ring-codec "1.2.0"] is available but we use "1.1.2"
+[metosin/jsonista "0.3.13"] is available but we use "0.3.1"
+[com.cognitect/transit-clj "1.0.333"] is available but we use "1.0.324"
+[com.cnuernber/charred "1.034"] is available but we use "1.033"
+[cheshire "5.13.0"] is available but we use "5.10.0"
+[clj-commons/clj-yaml "1.0.29"] is available but we use "1.0.27"
+```
 
 ## 0.6.10 (2024-03-15)
 
@@ -30,7 +46,7 @@
 [ring/ring-core "1.9.0"] is available but we use "1.8.2"
 ```
 
-## 0.6.7 
+## 0.6.7
 
 * new module `muuntaja-form` to handle `application/x-www-form-urlencoded` using [ring-codec](https://github.com/ring-clojure/ring-codec) by [Mathieu Lirzin](https://github.com/metosin/muuntaja/pull/110)
 
@@ -139,7 +155,7 @@
     * `format-request-interceptor` ~= `wrap-format-request`
     * `format-response-interceptor` ~= `wrap-format-response`
 
-* Use `:default-charset` for response encoding if found anywhere in the `accept` header, fixes [#79](https://github.com/metosin/muuntaja/issues/79) 
+* Use `:default-charset` for response encoding if found anywhere in the `accept` header, fixes [#79](https://github.com/metosin/muuntaja/issues/79)
 * Publish the raw content-negotiation results into `FormatAndCharset` too
 * Added helpers `m/get-request-format-and-charset` and `get-response-format-and-charset`
 
@@ -239,7 +255,7 @@
 
 ... and also this:
 
-```clj  
+```clj
 (require '[jsonista.core :as j])
 
 (m/decoder
@@ -248,7 +264,7 @@
       m/default-options
       [:formats "application/json" :opts]
       {:mapper (j/object-mapper {:decode-key-fn false})}))
-  "application/json")  
+  "application/json")
 ```
 
 * dropped dependencies:
@@ -278,7 +294,7 @@
 
 ## 0.6.0-alpha4
 
-* Use `:default-charset` for response encoding if found anywhere in the `accept` header, fixes [#79](https://github.com/metosin/muuntaja/issues/79) 
+* Use `:default-charset` for response encoding if found anywhere in the `accept` header, fixes [#79](https://github.com/metosin/muuntaja/issues/79)
 * Publish the raw content-negotiation results into `FormatAndCharset` too
 * Removed helpers `m/get-negotiated-request-content-type` and `m/get-negotiated-response-content-type`
 * Added helpers `m/get-request-format-and-charset` and `get-response-format-and-charset`
@@ -393,7 +409,7 @@
 
 ... and also this:
 
-```clj  
+```clj
 (require '[jsonista.core :as j])
 
 (m/decoder
@@ -402,7 +418,7 @@
       m/default-options
       [:formats "application/json" :opts]
       {:mapper (j/object-mapper {:decode-key-fn false})}))
-  "application/json")  
+  "application/json")
 ```
 
 * dropped dependencies:

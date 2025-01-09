@@ -1,4 +1,4 @@
-(defproject fi.metosin/muuntaja-charred "0.6.10"
+(defproject fi.metosin/muuntaja-charred "0.6.11"
   :description "Charred/JSON format for Muuntaja"
   :url "https://github.com/metosin/muuntaja"
   :license {:name "Eclipse Public License"

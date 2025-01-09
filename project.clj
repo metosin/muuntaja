@@ -1,11 +1,11 @@
-(defproject muuntaja-dev "0.6.9"
+(defproject muuntaja-dev "0.6.11"
   ;; See modules/muuntaja/project.clj for actual project.clj used when releasing.
   ;; This project.clj is just for local development.
   :description "Clojure library for format encoding, decoding and content-negotiation"
   :url "https://github.com/metosin/muuntaja"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v20.html"}
-  :managed-dependencies [[metosin/muuntaja "0.6.10"]
+  :managed-dependencies [[metosin/muuntaja "0.6.11"]
                          [ring/ring-codec "1.2.0"]
                          [metosin/jsonista "0.3.13"]
                          [com.cognitect/transit-clj "1.0.333"]
@@ -32,7 +32,8 @@
                                   "modules/muuntaja-cheshire/src"
                                   "modules/muuntaja-form/src"
                                   "modules/muuntaja-yaml/src"
-                                  "modules/muuntaja-msgpack/src"]
+                                  "modules/muuntaja-msgpack/src"
+                                  "modules/muuntaja/src"]
 
                    :dependencies [[org.clojure/clojure "1.12.0"]
                                   [com.cnuernber/charred "1.034"]
@@ -40,14 +41,7 @@
                                   [ring-middleware-format "0.7.5"]
                                   [ring-transit "0.1.6"]
                                   [ring/ring-json "0.5.1"]
-
-                                  ;; modules
-                                  [metosin/muuntaja "0.6.10"]
-                                  [metosin/muuntaja-form "0.6.10"]
-                                  [fi.metosin/muuntaja-charred "0.6.10"]
-                                  [metosin/muuntaja-cheshire "0.6.10"]
-                                  [metosin/muuntaja-msgpack "0.6.10"]
-                                  [metosin/muuntaja-yaml "0.6.10"]
+                                  [metosin/jsonista "0.3.13"]
 
                                   ;; correct jackson
                                   [com.fasterxml.jackson.core/jackson-databind "2.18.2"]
