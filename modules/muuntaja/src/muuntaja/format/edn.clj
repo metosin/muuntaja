@@ -16,8 +16,10 @@
     core/EncodeToBytes
     (encode-to-bytes [_ data charset]
       (.getBytes
-        (pr-str data)
-        ^String charset))
+       (let [w (new java.io.StringWriter)]
+         (print-method data w)
+         (.toString w))
+       ^String charset))
     core/EncodeToOutputStream
     (encode-to-output-stream [_ data charset]
       (fn [^OutputStream output-stream]
