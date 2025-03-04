@@ -122,7 +122,7 @@ Same with `select-formats`:
       ["application/json"
        "application/edn"])))
 
-(:default-format m)
+(muuntaja/default-format m)
 ; "application/edn"
 ```
 
