@@ -1,4 +1,8 @@
-# Muuntaja [![Continuous Integration status](https://secure.travis-ci.org/metosin/muuntaja.png)](http://travis-ci.org/metosin/muuntaja) [![cljdoc badge](https://cljdoc.xyz/badge/metosin/muuntaja)](https://cljdoc.xyz/jump/release/metosin/muuntaja)
+# Muuntaja
+
+[![Build Status](https://github.com/metosin/muuntaja/actions/workflows/test.yml/badge.svg)](https://github.com/metosin/muuntaja/actions)
+[![cljdoc badge](https://cljdoc.org/badge/metosin/muuntaja)](https://cljdoc.org/jump/release/metosin/muuntaja)
+[![Clojars Project](https://img.shields.io/clojars/v/metosin/muuntaja.svg)](https://clojars.org/metosin/muuntaja)
 
 <img src="https://raw.githubusercontent.com/metosin/muuntaja/master/doc/images/muuntaja-small.png" align="right"/>
 
@@ -112,6 +116,11 @@ Automatic decoding of response body based on `Content-Type` header:
 ```
 
 There is a more detailed [Ring guide](doc/With-Ring.md) too. See also [differences](doc/Differences-to-existing-formatters.md) to ring-middleware-format & ring-json.
+
+### Reitit
+
+The [Reitit](https://github.com/metosin/reitit) routing library has Muuntaja integration.
+See the [Content Negotiation docs](https://github.com/metosin/reitit/blob/master/doc/ring/content_negotiation.md) for more info.
 
 ### Interceptors
 
