@@ -113,6 +113,11 @@ Automatic decoding of response body based on `Content-Type` header:
 
 There is a more detailed [Ring guide](doc/With-Ring.md) too. See also [differences](doc/Differences-to-existing-formatters.md) to ring-middleware-format & ring-json.
 
+### Reitit
+
+The [Reitit](https://github.com/metosin/reitit) routing library has Muuntaja integration.
+See the [Content Negotiation docs](https://github.com/metosin/reitit/blob/master/doc/ring/content_negotiation.md) for more info.
+
 ### Interceptors
 
 Muuntaja support [Sieppari](https://github.com/metosin/sieppari) -style interceptors too. See [`muuntaja.interceptor`](https://github.com/metosin/muuntaja/blob/master/modules/muuntaja/src/muuntaja/interceptor.clj) for details.
