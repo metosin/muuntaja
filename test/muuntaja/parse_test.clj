@@ -15,7 +15,10 @@
     ["text/html" "utf-16"]
 
     "application/edn;CharSet=UTF-32"
-    ["application/edn" "utf-32"])
+    ["application/edn" "utf-32"]
+
+    "multipart/form-data; charset=ISO-8859-1; boundary=httpclient_boundary_d11ef1ff-28bc-48f2-9d51-b9aece7cd31d"
+    ["multipart/form-data" "iso-8859-1"])
 
   (are [s r]
     (= r (parse/parse-accept-charset s))
