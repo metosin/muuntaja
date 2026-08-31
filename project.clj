@@ -8,7 +8,7 @@
   :managed-dependencies [[metosin/muuntaja "0.6.11"]
                          [ring/ring-codec "1.3.0"]
                          [metosin/jsonista "1.0.1"]
-                         [com.cognitect/transit-clj "1.0.333" :upgrade false]
+                         [com.cognitect/transit-clj "1.1.363"]
                          [com.cnuernber/charred "1.042"]
                          [cheshire "6.2.0"]
                          [clj-commons/clj-yaml "1.0.29"]

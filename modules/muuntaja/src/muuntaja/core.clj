@@ -277,6 +277,8 @@
                      (instance? EOFException e)
                      ;; transit
                      (some->> e .getCause (instance? EOFException))
+                     (and (instance? RuntimeException e)
+                          (= message "org.msgpack.core.MessageInsufficientBufferException"))
                      ;; jsonista
                      (and (instance? IOException e)
                           message (.startsWith message "No content to map due to end-of-input"))
