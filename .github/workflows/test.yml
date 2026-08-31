@@ -10,7 +10,7 @@ jobs:
   build-clj:
     strategy:
       matrix:
-        jdk: [8, 11, 17, 21]
+        jdk: [11, 17, 21, 25]
 
     name: Clojure (Java ${{ matrix.jdk }})
 

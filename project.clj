@@ -6,11 +6,11 @@
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v20.html"}
   :managed-dependencies [[metosin/muuntaja "0.6.11"]
-                         [ring/ring-codec "1.2.0"]
-                         [metosin/jsonista "0.3.13"]
-                         [com.cognitect/transit-clj "1.0.333"]
-                         [com.cnuernber/charred "1.034"]
-                         [cheshire "5.13.0"]
+                         [ring/ring-codec "1.3.0"]
+                         [metosin/jsonista "1.0.1"]
+                         [com.cognitect/transit-clj "1.1.363"]
+                         [com.cnuernber/charred "1.042"]
+                         [cheshire "6.2.0"]
                          [clj-commons/clj-yaml "1.0.29"]
                          [clojure-msgpack "1.2.1" :exclusions [org.clojure/clojure]]]
   :deploy-repositories [["releases" {:url "https://repo.clojars.org/"
@@ -35,32 +35,34 @@
                                   "modules/muuntaja-msgpack/src"
                                   "modules/muuntaja/src"]
 
-                   :dependencies [[org.clojure/clojure "1.12.0"]
-                                  [com.cnuernber/charred "1.034"]
-                                  [ring/ring-core "1.13.0"]
+                   :dependencies [[org.clojure/clojure "1.12.5"]
+                                  [com.cnuernber/charred "1.042"]
+                                  [ring/ring-core "1.15.5"]
                                   [ring-middleware-format "0.7.5"]
                                   [ring-transit "0.1.6"]
                                   [ring/ring-json "0.5.1"]
-                                  [metosin/jsonista "0.3.13"]
+                                  [metosin/jsonista "1.0.1"]
 
                                   ;; correct jackson
-                                  [com.fasterxml.jackson.core/jackson-databind "2.18.2"]
+                                  [com.fasterxml.jackson.core/jackson-databind "2.22.2"]
 
                                   ;; Sieppari
                                   [metosin/sieppari "0.0.0-alpha5"]
 
                                   ;; Pedestal
-                                  [org.clojure/core.async "1.7.701" :exclusions [org.clojure/tools.reader]]
+                                  [org.clojure/core.async "1.9.865" :exclusions [org.clojure/tools.reader]]
                                   [io.pedestal/pedestal.service "0.7.2" :exclusions [org.clojure/tools.reader
                                                                                      org.clojure/core.async
-                                                                                     org.clojure/core.memoize]]
-                                  [jakarta.servlet/jakarta.servlet-api "5.0.0"]
-                                  [org.slf4j/slf4j-log4j12 "2.0.16"]
+                                                                                     org.clojure/core.memoize]
+                                                                        ;; newer versions need migrations to tests
+                                                                        :upgrade false]
+                                  [jakarta.servlet/jakarta.servlet-api "6.1.0"]
+                                  [org.slf4j/slf4j-log4j12 "2.0.18"]
 
                                   [criterium "0.4.6"]]}
-             :1.8 {:dependencies [[org.clojure/clojure "1.8.0"]]}
-             :1.9 {:dependencies [[org.clojure/clojure "1.9.0"]]}
-             :1.10 {:dependencies [[org.clojure/clojure "1.10.2"]]}
+             :1.8 {:dependencies [[org.clojure/clojure "1.8.0" :upgrade false]]}
+             :1.9 {:dependencies [[org.clojure/clojure "1.9.0" :upgrade false]]}
+             :1.10 {:dependencies [[org.clojure/clojure "1.10.2" :upgrade false]]}
              :perf {:jvm-opts ^:replace ["-server"
                                          "-Xmx4096m"
                                          "-Dclojure.compiler.direct-linking=true"]}
