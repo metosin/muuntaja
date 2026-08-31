@@ -56,7 +56,7 @@ Optionally, the parts can be required separately:
 [metosin/muuntaja-yaml "0.6.11"]
 ```
 
-Muuntaja requires Java 1.8+
+Muuntaja requires Java 1.11+
 
 ## Quickstart
 
