@@ -1,4 +1,4 @@
-(defproject metosin/muuntaja-yaml "0.6.11"
+(defproject metosin/muuntaja-yaml "0.6.12"
   :description "YAML format for Muuntaja"
   :url "https://github.com/metosin/muuntaja"
   :license {:name "Eclipse Public License"

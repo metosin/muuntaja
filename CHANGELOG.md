@@ -1,6 +1,19 @@
 ## Unreleased
 
-**[compare](https://github.com/metosin/muuntaja/compare/0.6.11...master)**
+**[compare](https://github.com/metosin/muuntaja/compare/0.6.12...master)**
+
+## 0.6.12 (2026-08-31)
+
+* Drop support for Java 8 (Java 11 required now)
+* Update deps:
+
+```
+[ring/ring-codec "1.3.0"] is available but we use "1.2.0"
+[metosin/jsonista "1.0.1"] is available but we use "0.3.13"
+[com.cognitect/transit-clj "1.1.363"] is available but we use "1.0.333"
+[com.cnuernber/charred "1.042"] is available but we use "1.034"
+[cheshire "6.2.0"] is available but we use "5.13.0"
+```
 
 ## 0.6.11 (2025-01-09)
 

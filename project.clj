@@ -1,11 +1,11 @@
-(defproject muuntaja-dev "0.6.11"
+(defproject muuntaja-dev "0.6.12"
   ;; See modules/muuntaja/project.clj for actual project.clj used when releasing.
   ;; This project.clj is just for local development.
   :description "Clojure library for format encoding, decoding and content-negotiation"
   :url "https://github.com/metosin/muuntaja"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v20.html"}
-  :managed-dependencies [[metosin/muuntaja "0.6.11"]
+  :managed-dependencies [[metosin/muuntaja "0.6.12"]
                          [ring/ring-codec "1.3.0"]
                          [metosin/jsonista "1.0.1"]
                          [com.cognitect/transit-clj "1.1.363"]
