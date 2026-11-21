@@ -5,16 +5,19 @@ on:
     types:
       - published # reacts to releases and prereleases, but not their drafts
 
+permissions:
+  contents: read
+
 jobs:
   build-and-release:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v7
-    - name: "Setup Java 8"
+    - name: Setup Java
       uses: actions/setup-java@v6
       with:
         distribution: zulu
-        java-version: 11 # build releases with java 8 for maximum compatibility
+        java-version: 11 # oldest supported Java, for maximum compatibility
     - name: Setup Clojure
       uses: DeLaGuardo/setup-clojure@13.7.0
       with:

@@ -6,6 +6,9 @@ on:
   pull_request:
     branches: [ master ]
 
+permissions:
+  contents: read
+
 jobs:
   build-clj:
     strategy:
@@ -18,6 +21,13 @@ jobs:
 
     steps:
     - uses: actions/checkout@v7
+    - name: Cache dependencies
+      uses: actions/cache@v6
+      with:
+        path: ~/.m2/repository
+        key: ${{ runner.os }}-clj-${{ hashFiles('**/project.clj') }}
+        restore-keys: |
+          ${{ runner.os }}-clj-
     - name: Setup Java ${{ matrix.jdk }}
       uses: actions/setup-java@v6
       with:
