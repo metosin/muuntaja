@@ -31,8 +31,12 @@
 ;;
 
 (defn- extract-charset [^String s]
-  (if (.startsWith s "charset=")
-    (.trim (subs s 8))))
+  (when (.startsWith s "charset=")
+    (let [i (.indexOf s ";")
+          charset (if (neg? i)
+                    (subs s 8)
+                    (subs s 8 i))]
+      (.trim charset))))
 
 (defn parse-content-type [^String s]
   (let [i (.indexOf s ";")]
